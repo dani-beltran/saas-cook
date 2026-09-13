@@ -13,7 +13,7 @@ These are proposed architectural choices, not claims that every dependency or in
 | Package management | pnpm workspaces, Turborepo | Explicit package boundaries and incremental build tasks |
 | Database | Supported PostgreSQL major, Drizzle ORM/Kit, node-postgres | SQL control, typed queries, connection-bound transactions, migration generation |
 | Authentication | Better Auth behind an identity adapter | Reuse authentication/session handling; domain services own organization lifecycle |
-| Authorization | OpenFGA, separate service/database | Express resource relationships, inheritance, teams, and sharing |
+| Authorization | OpenFGA, separate service/database; protocol selected in Phase 0 | Express relationships; generation isolation and availability must pass the decision gates |
 | Background work | pg-boss + a Node.js worker | PostgreSQL-backed durable jobs; avoid mandatory Redis initially |
 | Fixed/seat billing | Stripe Billing, Checkout, Customer Portal | Hosted payment flow with local access-state projection |
 | Metered billing | UsageBillingProvider interface | Local usage/quotas always work; an external charging adapter is optional |
@@ -99,7 +99,7 @@ Dependency direction: web/worker → modules → core and infrastructure adapter
 
 1. Authenticate the session or API key.
 2. Resolve the requested organization from a browser path or API path; resolve an ID from a slug through a restricted identity/control-plane lookup.
-3. Verify current membership/service-account status and organization security policy. Invites and pre-membership onboarding use narrowly scoped dedicated services.
+3. Verify deployment recovery readiness, current membership/service-account status, organization lifecycle state, and security policy. Invites, owner recovery, and pre-membership onboarding use narrowly scoped dedicated services.
 4. Construct an immutable context containing actor, organization ID, request ID, authentication method, and verified policy state.
 5. Run tenant SQL on one connection in one transaction with a transaction-local tenant setting. Repositories require this context and cannot reach an unscoped pool.
 6. Apply relationship authorization, entitlement rules, and quota rules for the operation.
@@ -124,7 +124,7 @@ The tenant session setting is controlled by trusted application code, not a secu
 
 ### Isolation beyond SQL
 
-- Cache keys include organization, resource, relevant principal/access revision, and query parameters. Do not publicly cache personalized responses; disable shared caching for tenant data initially.
+- Cache keys include organization, resource, relevant principal/access revision, recovery epoch, graph generation, and query parameters. Do not publicly cache personalized responses; disable shared caching for tenant data initially.
 - Client query caches and optimistic updates include organization ID and are reset appropriately during navigation/logout.
 - Files use private keys plus tenant metadata; an object prefix alone never authorizes a download.
 - Jobs carry organization and actor/service-account identity, revalidate access at execution, and do not trust stale user permissions captured at enqueue time.
@@ -142,6 +142,9 @@ Identity rules:
 - Never link unrelated identities solely because an untrusted provider asserts the same email address.
 - Enforce organization-specific SSO/MFA on every tenant request; a valid session for a different organization may not satisfy it.
 - Map SCIM external subjects to an organization connection. Deactivating an employee revokes that membership, not automatically the global user.
+- Voluntary removal/demotion preserves a final active owner under the organization lock. Trusted security/SCIM deprovisioning takes precedence: revoke access even for the sole owner, atomically set `owner_recovery_required`, and freeze ordinary tenant operations. Resource ownership transfer or seat reconciliation cannot delay revocation.
+- Security deactivation uses a narrowly authenticated directory/operator control-plane command and authoritative local status checks. It can remove access while FGA is unavailable or projection is pending; it never depends on a positive check against a stale graph. Positive membership/grant changes retain the normal admission and authorization requirements. Test deactivation during an FGA outage.
+- Owner recovery uses a dedicated control-plane command with independently verified organizational authority, fresh MFA, recorded evidence, and a bounded audited operator scope. Do not automatically promote another member or restore the deprovisioned identity. Admit the verified replacement through the seat boundary and complete graph publication before clearing recovery state. Foundation ships this recovery command/runbook; Enterprise adds the operator UI and real SCIM adapter.
 - Store API-key hashes, show secrets once, support expiry/rotation, and intersect key scopes with the service account's current permissions and paid access.
 - Store only allowlisted identity attributes; encrypt provider secrets and redact them from logs.
 - Separate platform operators from customer organization owners. Require MFA and short-lived, audited, reason-bound support access with visible impersonation indicators; deny billing/security modifications by default.
@@ -184,20 +187,40 @@ OpenFGA describes organization/resource types and inherited permissions, as well
 
 ### Sources of truth and revocation
 
-Application PostgreSQL owns memberships, team membership, resource ownership/parents, and explicit grants. OpenFGA is a derived graph. Only the projector writes graph tuples; manual graph edits are unsupported and reconciled away. Use stable organization-qualified object IDs, an explicit model ID, and a separate store per deployment environment.
+Application PostgreSQL owns memberships, team membership, resource ownership/parents, and explicit grants. OpenFGA is a derived graph. Only the projector writes graph tuples; manual graph edits are unsupported and reconciled away. Application resource IDs remain stable; graph object IDs include organization and projection generation. Pin the store/model IDs and isolate deployment environments.
 
-**Conservative initial consistency design:**
+**Required consistency contract; Phase 0 must prove the projection protocol:**
 
-1. Maintain per-organization `desired_revision` and `applied_revision` plus the active model version.
+1. Maintain per-organization `desired_revision`, `applied_revision`, active graph generation/model, and projection health, plus a deployment recovery epoch and readiness gate.
 2. Authorization-changing writes acquire an exclusive organization authorization fence, update source records, advance the desired revision, and append an outbox event atomically.
-3. Protected operations take a shared fence for their bounded database transaction, require matching revisions, perform current identity/status checks, then check OpenFGA before reading or mutating domain data. Authorization-changing operations acquire the exclusive fence from the start; do not upgrade a shared lock mid-operation.
-4. The projector takes the exclusive fence, applies all changes in order using idempotent desired-state writes, then records the acknowledged revision. Partial failure leaves the organization out of sync and therefore denied for dependent operations.
+3. Protected operations take a shared fence for their bounded database transaction, require recovery readiness, matching revisions and a verified active generation, perform current identity/status checks, then check OpenFGA before reading or mutating domain data. Authorization-changing operations acquire the exclusive fence from the start; do not upgrade a shared lock mid-operation.
+4. Publish an applied revision only after all writes for its candidate generation are acknowledged and the projector revalidates its attempt, source revision, model, and recovery epoch under the exclusive fence. A timed-out or abandoned attempt cannot later publish. Partial failure leaves dependent operations denied.
 5. Graph reads use `HIGHER_CONSISTENCY` initially against the primary datastore. Do not interpret this setting as a transaction across PostgreSQL and OpenFGA.
 6. Revocation is logically effective when the authoritative database change commits. New dependent operations cannot use the old graph while projection is pending. Already-running operations that obtained the fence complete before that commit; already-delivered data cannot be recalled.
 
 OpenFGA's higher-consistency query option bypasses its caches; it is not an acknowledgement that an application outbox has been applied. [OpenFGA consistency modes](https://openfga.dev/docs/interacting/consistency)
 
-This deliberately trades brief organization-wide unavailability for a clear revocation guarantee. Keep fenced work short, cap remote-call timeouts, monitor projection lag, and test crashes at every step. Preserve read access to minimal account/recovery diagnostics through separately authorized control-plane services. Reduce fence granularity only after proving equivalent guarantees. Resource moves and team/custom-role changes also advance the revision.
+### Late writes and projection generations
+
+A PostgreSQL lock alone cannot fence an in-flight request to another service. Required failure scenario: attempt A sends a grant at revision N and loses its database connection; attempt B recovers and applies N, then N+1 revokes the grant; A's old request completes last. The old grant must remain unusable even when desired/applied revisions match. Client cancellation, retries, and periodic reconciliation do not establish this guarantee. OpenFGA documents atomicity within a write request, which does not order separate requests against the application's lock. [OpenFGA tuple writes](https://openfga.dev/docs/getting-started/update-tuples)
+
+The Phase 0 candidate uses a fresh, never-reused graph namespace for **each projection attempt**:
+
+1. Persist the attempt ID, generation, source revision, model, recovery epoch, and state before sending writes. Build from a consistent snapshot of authoritative organization relationships.
+2. Materialize the complete organization graph in that generation. Qualify every graph object and userset traversal with the generation; no parent/team/organization edge may reach a mutable or different generation. Stable principal IDs remain subject to current local eligibility checks.
+3. Treat the snapshot as fixed. Known retries may only repeat identical desired tuples. Any ambiguous write outcome abandons the candidate; recovery starts a new attempt and namespace. No other attempt writes that namespace, and no published generation is incrementally mutated.
+4. Under the exclusive fence, atomically activate the fully acknowledged candidate only if its source revision is still desired and its model/recovery epoch are current. Otherwise abandon it and build from the latest source. An old request can then affect only its retired or abandoned namespace.
+5. Retire generations after fenced readers drain. Cleanup may touch only retired/abandoned namespaces and must tolerate late writes recreating unreachable tuples; bound and monitor their storage. Namespace IDs are never reused, including after restores.
+
+This is a correctness-first prototype, with potentially expensive full-graph copies. Phase 0 must measure graph size, write amplification, abandoned builds, garbage collection, and availability. If it fails the budgets, record and prove a different protocol before Phase 3; receiver-enforced fencing or another authoritative authorization design may be evaluated. Update this contract, logical schema, and generator boundary with that ADR. Do not substitute mutable graph updates protected only by a database mutex or weaken revocation to pass the benchmark.
+
+Resource creation with its initial manager grant, deletion, parent moves, and team/custom-role changes all advance the revision. Dependent requests may be denied during projection, including immediately after a successful create. Use a bounded pending-readiness UI and idempotent retries; distinguish a committed mutation from a failed command. Keep transactions short and cap remote-call timeouts. Minimal account/recovery diagnostics remain separately authorized.
+
+Phase 0 must pass the healthy hot-tenant workload and fault suite in [operations §4.7](04-billing-usage-operations.md#phase-0-authorization-decision-gate), measuring eligible request failures, fence waits, and create-to-readable latency. Sparse authorized lists holding a shared fence must not starve revocations or projection. Re-run the gate on the real Phase 3 feature before extracting generator templates.
+
+### Authorization after restoration
+
+Matching revision counters from a backup do not prove that the separate OpenFGA database represents that backup. Any application/FGA restore invalidates authorization readiness. Allocate a fresh recovery epoch outside restored application state, stop old web/worker writers, replay the independent deletion journal, and rebuild surviving organizations into fresh graph generations before enabling tenant traffic or effects. Verify model, source revision, graph contents, and allow/deny fixtures; an unavailable or incomplete journal/graph keeps recovery gated. See [operations §4.8](04-billing-usage-operations.md#48-export-deletion-and-recovery-lifecycle).
 
 ### Lists, counts, and field policies
 
@@ -225,9 +248,9 @@ All writes follow: authenticate → resolve tenant → authorize → validate al
 | --- | --- | --- |
 | Backend shape | Modular monolith + worker | Independently scaling domain or organizational ownership requires extraction |
 | Tenant placement | Shared tables + RLS | Contractual isolation, residency, or a tenant's sustained noisy-neighbor load |
-| Authorization | OpenFGA with strict projection fence | Measured latency/availability pressure, with equivalent revocation proof |
+| Authorization | Phase 0 generation-isolated OpenFGA prototype plus transaction fences | Late-write safety or hot-tenant availability gate fails; select and prove an alternative before Phase 3 |
 | Database migrations | Drizzle SQL generation + reviewed custom SQL | A requirement cannot be expressed or safely maintained in this workflow |
-| Organization ownership | Application domain | Identity adapter cannot map enterprise lifecycle safely; resolve before F1 |
+| Organization ownership | Application domain; security deprovisioning overrides voluntary last-owner protection | Mapping, sole-owner recovery, or seat-admission spike fails; resolve in Phase 0 |
 | Queue | pg-boss | Queue workload competes materially with database traffic |
 | API | REST + shared services | A proven client requirement justifies another transport |
 | UI generation | Source files with extension boundaries | No default switch to runtime metadata rendering |

@@ -19,6 +19,8 @@ A generated entity includes:
 
 The generator does not infer domain meaning from a table name. Pricing, approval flows, sensitive fields, parent inheritance, deletion semantics, and usage triggers must be declared or implemented in explicit hooks.
 
+Foundation generation depends on already implemented platform services: tenant context, authorization generation/readiness, audit/outbox, typed local entitlements, transactional capacity reservations, and service-account/API-key enforcement. It must run without commercial provider credentials. Generated policies call the shared authorization adapter; entity templates do not implement their own projector, lock, or recovery protocol.
+
 ## 5.2 Proposed command surface
 
 ```bash
@@ -137,6 +139,8 @@ Database model types are not API DTOs. Sensitive/server-owned fields must not le
 
 Generate restore/share endpoints only when enabled and supported by a tested policy template. Bulk operations and export endpoints are separate declared capabilities with per-item authorization, not automatic copies of unrestricted CRUD.
 
+Resource creation, initial grants, restore, sharing, and deletion participate in the shared authorization revision/generation protocol. A committed create may precede graph readiness: generated clients display a bounded pending state and retry the read without creating another resource. Pending projection must not be reported as a rolled-back mutation. Verify the create-to-readable budget on the real feature before extracting this behavior into templates.
+
 ## 5.5 Generation pipeline
 
 1. **Load and validate:** check specification version, identifiers, paths, fields, supported policy/relationship combinations, and module dependencies. Reject reserved words, path traversal, duplicate route names, duplicate table names, invalid limits, and unknown templates. YAML input is data, not executable code.
@@ -191,15 +195,29 @@ Generate against these bounded templates first. Arbitrary relationship graph syn
 
 The generator is infrastructure: its defects multiply into every product. Tests should prove externally meaningful behavior, not just compare template text.
 
+### Foundation acceptance (Phases 3–4)
+
+All ten checks below run against real platform primitives available by Phase 3. Use the foundation local policy catalogue and no billing credentials. Missing commercial modules do not skip quota or scoped-principal enforcement. The human/team Project sample must reject service-account operations it does not declare; a separate explicitly service-account-enabled fixture proves allowed key access and scope intersection.
+
 1. Generate Project into a clean fixture application, migrate a real database, publish the test authorization model, start the app, and complete create/list/read/edit/delete through the dashboard/API.
 2. Generate a child Task with a same-tenant Project reference. Prove inheritance and reject a cross-tenant parent in both service and database layers.
-3. Exercise two organizations, overlapping users, a viewer, an editor, an administrator, a revoked member, and a scoped API key. Attempt list, count/search, read, mutation, export, and relation lookup leaks.
-4. Remove an individual/team grant, delay or crash graph projection, and prove new operations cannot use stale access. Also test resource parent changes and combined model upgrades.
+3. Exercise two organizations, overlapping users, a viewer, an editor, an administrator, a revoked member, and a scoped API key. Attempt list, count/search, read, mutation, and relation lookup leaks; assert undeclared export routes are unavailable. Verify key expiry/revocation, same-organization pinning, and explicit service-account policy capabilities.
+4. Remove an individual/team grant, delay or crash graph projection, and prove new operations cannot use stale access. Complete an old grant request after recovery has published a newer revocation; neither that late write nor its abandoned attempt may restore access. Also test resource parent changes, generation-qualified traversal, and combined model upgrades using the shared platform fault harness.
 5. Submit server-owned/hidden fields, unknown filters, malformed cursors, excessive page sizes, duplicate creates, and stale update versions. Confirm safe failures and no secret DTO/audit leakage.
-6. Race two creates against the final quota unit; only one succeeds. Retry one idempotency key and verify one record, one quota consumption, and one semantic event.
+6. Race two creates against the final quota unit; only one succeeds. Retry one idempotency key and verify one record, one quota consumption, and one semantic event. Run with provider modules disabled and verify local limits still apply.
 7. Change a declaration: add field, backfill required field, explicit rename, remove field, and alter permission inheritance. Prove data preservation or a clear refusal with required migration steps.
 8. Customize a hook/screen, regenerate, and prove developer edits survive; conflicting edits to a managed file produce a reviewable conflict.
 9. Run generation twice and compare the entire tree; the second run creates no changes. Interrupt a write and prove safe recovery without lost unrelated files.
-10. Run keyboard/accessibility checks for forms, errors, dialogs, and table controls. Test loading, empty, denied, quota, and conflict states.
+10. Run keyboard/accessibility checks for forms, errors, dialogs, and table controls. Test loading, empty, denied, quota, conflict, and committed-but-awaiting-authorization states. Verify create-to-readable latency against the Phase 0 gate on the hand-built feature.
 
-First implementation should hand-build the reference Project feature and pass these platform invariants before extracting generator templates. Generating unproven patterns would scale the initial mistakes.
+### Module acceptance added when the module ships
+
+| Release/phase | Additional suite | Prerequisite |
+| --- | --- | --- |
+| C / 5 | Provider entitlement transitions, seat/provider races, usage-window accounting and retries | Foundation quota/identity primitives plus billing/usage adapters |
+| C / 6 | Declared export/file/import authorization, immutable scanned-object finalization, cross-tenant downloads, recovery-journal replay and graph rebuild | Implemented file/bulk-data and baseline recovery modules |
+| E / 7–8 | Real SCIM activation/deactivation, sole-owner recovery, custom-role and support policies, expanded restoration | Enterprise identity/operator modules and existing baseline recovery |
+
+Run each applicable module suite before releasing a preset that enables it. An absent export or SCIM module is not a passed integration test; report it as outside the foundation preset. `doctor` rejects enabled capabilities with missing dependencies or required suites. The [roadmap matrix](06-delivery-roadmap.md#capability-to-phase-and-acceptance-matrix) is authoritative for milestone coverage.
+
+First implementation should hand-build the reference Project feature and pass the Foundation invariants and authorization availability gate before extracting generator templates. Later module adapters add their own acceptance suites when implemented. Generating unproven patterns would scale the initial mistakes.

@@ -23,7 +23,7 @@ The folder name intentionally follows the requested spelling, `common-sass`. It 
 - A modular monolith with a Next.js application and a separate Node.js background worker.
 - An organization is the tenant boundary; users can belong to several organizations.
 - Shared PostgreSQL tables with tenant keys, tenant-aware constraints, and row-level security.
-- OpenFGA for relationship-based permissions; authentication, permissions, paid entitlements, and quotas remain distinct.
+- OpenFGA for relationship-based permissions, subject to Phase 0 projection-safety and availability gates; authentication, permissions, paid entitlements, and quotas remain distinct.
 - Drizzle for database models and reviewed SQL migrations.
 - Better Auth for authentication, with enterprise identity integration behind adapters.
 - Stripe for fixed and seat subscriptions; an independent usage ledger and an optional usage-billing adapter.
@@ -31,12 +31,22 @@ The folder name intentionally follows the requested spelling, `common-sass`. It 
 
 ## Delivery boundaries
 
-**Foundation:** identity, organizations, tenant isolation, ReBAC, dashboard, one reference domain feature, and the generator.
+**Foundation:** identity, organizations, tenant isolation, ReBAC, dashboard, durable jobs/audit/outbox, provider-independent entitlement and capacity primitives, service-account/API-key enforcement, one reference domain feature, and the generator. A local policy catalogue makes this preset runnable without billing credentials.
 
-**Commercial core:** subscriptions, entitlements, seats, usage and quotas, audit, files, notifications, jobs, API keys, webhooks, and operational tooling.
+**Commercial core:** subscriptions, provider-confirmed seat capacity, commercial entitlement sources, metered usage, customer administration for audit/API keys, files, notifications, webhooks, organization export/deletion, and a baseline recovery drill before accepting customer data.
 
-**Enterprise release:** SSO, SCIM, custom roles, security policies, support access, retention controls, recovery drills, and a tested upgrade path.
+**Enterprise release:** SSO, SCIM, custom roles, security policies, support access, advanced retention/legal holds, expanded recovery drills, and a tested upgrade path.
 
 **Extensions:** dedicated tenant deployments, regional placement, complex metered contracts, custom domains, realtime collaboration, AI features, and industry-specific modules.
 
 The template should be a strong base for many SaaS products. Each product still supplies its own domain rules, pricing, regulatory requirements, and capacity targets.
+
+## Required design gates
+
+- A late projector request must not restore revoked access after a worker loses its database lock. Phase 0 tests generation-isolated projection and hot-tenant availability before selecting the authorization protocol.
+- Restores keep tenant traffic and workers gated until an independent deletion journal is replayed and the authorization graph is rebuilt and verified.
+- Security deprovisioning takes precedence over last-owner protection; ownerless organizations enter an audited recovery state.
+- File approval and downloads refer to the exact immutable bytes that passed scanning.
+- Every transition into a billable membership uses the same transactional seat-admission boundary.
+
+The [roadmap's capability-to-phase matrix](docs/06-delivery-roadmap.md#capability-to-phase-and-acceptance-matrix) assigns these requirements and the generator's dependencies to explicit delivery gates. These safeguards are planned acceptance criteria, not implemented guarantees.

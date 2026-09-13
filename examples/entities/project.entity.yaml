@@ -87,6 +87,8 @@ authorization:
   organizationAdminPolicy: manageAll
 
 commercial:
+  # Foundation resolves these keys through local policies and real quota services.
+  # Stripe and other commercial provider credentials are not required.
   entitlement: projects.enabled
   quota:
     feature: projects.max_active
@@ -143,14 +145,19 @@ hooks:
   customHooks: packages/modules/projects/src/custom/project.hooks.ts
 
 tests:
+  # Foundation suite; optional export/file/SCIM suites attach when those modules ship.
   required:
     - tenantIsolation
     - relationPermissions
     - revocationWhileProjectionDelayed
+    - lateProjectorWriteIsolation
+    - scopedApiKeyIsolation
     - fieldAllowlist
     - idempotentCreate
     - concurrentQuota
+    - foundationWithoutBillingCredentials
     - optimisticConcurrency
     - softDeleteAndRestore
     - auditAndOutboxAtomicity
     - dashboardCrud
+    - pendingAuthorizationReadiness

@@ -14,6 +14,8 @@
 
 An enabled feature flag does not grant permission or paid access. Paying for a feature does not grant every employee permission to use it. An analytics event is not a reliable billable usage record.
 
+Foundation delivers the typed entitlement resolver, local policy catalogue, transactional capacity reservations, and membership seat-admission service before the reference feature and generator. The foundation preset defines `projects.enabled`, `projects.max_active`, and membership capacity without provider credentials. These are working local policies and database enforcement, not fake billing confirmations. Commercial core adds provider-confirmed plan/seat sources, windowed usage, notices, and customer administration. Disabling a provider module never disables declared quota or authorization enforcement.
+
 ## 4.2 Billing architecture and ownership
 
 Default commercial mode: free/trial tiers plus Stripe fixed and seat subscriptions. Use hosted checkout and customer portal for payment details. The application stores provider references and local access state, not card information.
@@ -54,12 +56,17 @@ Never accept a caller-supplied customer ID as authority to administer a customer
 ### Seats, upgrades, and contracts
 
 - Default seat model: purchased capacity. Active owners/admins/members consume seats; pending invitations do not. Billing-only memberships and guests have explicit configurable classifications.
-- Invitation acceptance locks the organization's seat-capacity row and verifies confirmed available capacity. Two acceptances cannot claim the same final seat.
+- Every transition into or out of billable membership uses one transactional admission service. Invitation acceptance, SCIM creation/reactivation, manual reactivation, role/classification changes, ownership transfer/recovery, and initial owner bootstrap all compute the old/new billable delta through this boundary. No transport, directory adapter, or operator command writes occupancy directly.
+- Lock the organization authorization fence, lifecycle/owner row, seat-capacity row, and affected memberships in that order. For a positive delta, require `occupied + delta <= effective capacity`; atomically persist membership, occupancy, idempotency receipt, authorization revision, audit, and outbox. Nonpositive deltas remain possible while over capacity. Two transitions through different entry points cannot claim the same final seat.
+- Foundation capacity comes from the local policy catalogue; commercial capacity comes from confirmed provider state or an effective contract. Bootstrap creates the capacity row and admits the first owner in the same transaction, and refuses to expose a usable tenant if admission fails. A verified owner-recovery replacement uses the same rule; capacity changes require an explicit authorized policy/contract action.
 - Buying seats completes only after the provider confirms the quantity. Capacity and current active seats are distinct values.
-- Do not reduce purchased capacity below active eligible memberships. Schedule a decrease after administrator-selected offboarding; no silent employee removal.
+- Application-requested decreases cannot reduce purchased capacity below active eligible memberships. Schedule a decrease after administrator-selected offboarding. Disable provider portal quantity changes unless the adapter can enforce the same rule. An external/provider-console downgrade can still cause a discrepancy: record actual confirmed capacity, block positive admission deltas, notify administrators, and reconcile without silent employee removal or invented purchased seats.
+- Deprovisioning always removes access and releases occupied capacity exactly once; a billing outage, pending quantity command, or sole-owner condition cannot block it. SCIM activation with insufficient capacity remains inactive/pending with a documented adapter error/retry contract; it never grants access and repairs the counter later.
 - Preview proration and effective dates through provider APIs. Default upgrades can be immediate after confirmation; downgrades take effect at renewal.
 - Contract mode supports manually approved entitlements, effective dates, invoice terms, and renewal metadata. Avoid creating both manual and self-service charges for the same obligation.
 - Taxes, refunds, credits, disputes, and accounting exports use provider capabilities and explicit operator workflows. Product launch chooses jurisdiction-specific settings and retention; the template does not certify compliance.
+
+Seat acceptance evidence includes invite-versus-reactivation, invite-versus-SCIM, concurrent billable role changes, owner bootstrap/recovery, repeated deactivation, and a provider downgrade racing with admission. Recompute occupancy from eligible memberships during reconciliation. Test the local transition service in Foundation, provider races in Commercial core, and the real SCIM adapter in Enterprise.
 
 ## 4.3 Entitlements and quota semantics
 
@@ -129,7 +136,17 @@ Email/in-app templates are versioned and localized, with preferences, unsubscrib
 
 ### Files and bulk data
 
-Upload lifecycle: authorize resource → reserve storage capacity → issue constrained upload URL → verify stored object size/type/digest → quarantine/scan → mark available → commit actual usage. Expire abandoned objects and release reservations. Downloads recheck resource access and use short-lived links; high-sensitivity deployments can proxy downloads for tighter revocation behavior.
+Upload lifecycle:
+
+1. Authorize the resource, reserve capacity, and create an idempotent upload attempt. Issue a constrained URL for a private **staging key** only; upload credentials cannot write the finalized namespace.
+2. The trusted finalizer captures the staged content into a fresh immutable quarantine object, using a pinned source version when available. Verify size/type/digest on the captured object. Never approve a mutable staging key or copy unverified bytes after a scan.
+3. Scan that exact captured object. Bind the scan result to its final key, immutable version when applicable, byte length, and digest. A rejection remains unavailable and follows the cleanup policy.
+4. Recheck current authorization, lifecycle, and reservation validity. Atomically record the immutable file identity, mark it available, settle actual capacity once, and append audit/outbox. Finalization retries return the same committed file; abandoned candidates are cleaned up. If the reservation expired, reacquire capacity before publication.
+5. Downloads resolve only the recorded approved object/version after a current resource-access check. No client parameter can substitute another key/version, and subsequent uploads cannot replace the approved bytes. Replacements start a new upload and scan lifecycle.
+
+The storage adapter must prove create-once finalized keys or pinned immutable versions across copy/scan/download. A provider without either guarantee cannot enable uploads. S3 presigned URLs can be reused until expiry and can overwrite the same key, so short expiry alone does not protect the scan result. [AWS presigned URL behavior](https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-presigned-url.html)
+
+Expire abandoned objects and release reservations; account for quarantine and retry-object storage so staging cannot bypass storage budgets. Downloads use short-lived links with a documented maximum revocation window after issuance; deployments requiring authorization on every new download request use a proxy. File tests overwrite staging before/during/after scanning, replay finalization concurrently, forge a version/key, and race reservation expiry or permission revocation with publication. None may serve unscanned replacement bytes or settle capacity twice.
 
 CSV import includes mapping, dry-run validation, duplicate rules, row-level errors, idempotent chunk processing, and progress. Export uses the requester's current permitted data and authorized fields, prevents spreadsheet-formula injection, expires objects, and audits creation/download. Large transfers are worker jobs, never unbounded HTTP requests.
 
@@ -151,12 +168,24 @@ Proposed reference acceptance targets, to be measured against a documented workl
 | --- | --- |
 | Availability | 99.9% monthly target for core application, with clearly defined measurement/exclusions |
 | CRUD API latency | p95 reads under 500 ms; writes under 800 ms at the reference load |
-| Reference dataset/load | 100 tenants, 1,000 memberships, 100,000 resources; 50 concurrent clients with skewed permissions and tenant load |
-| Authorization projection | Healthy p95 under 2 seconds; alert on sustained lag; deny affected operations while stale |
+| Reference dataset/load | 100 tenants, 1,000 memberships, 100,000 resources; 50 concurrent clients; hot-tenant distribution and request mix specified below |
+| Authorization projection | Healthy p95 under 2 seconds, measured through generation activation; report write amplification/abandoned generations; deny affected operations while stale |
+| Create-to-readable | Healthy p95 under 2 seconds from create submission to the first authorized read of its committed resource, including projection/retries |
+| Authorization fence wait | Healthy p95 under 100 ms; report p99/max and revocation-writer starvation |
+| Healthy eligible requests | At least 99.9% succeed without projection-induced `503` or lock timeout in the benchmark; report first-attempt and eventual results separately |
 | Usage visibility | Healthy event-to-dashboard p95 under 60 seconds; hard quotas enforced transactionally |
 | Recovery | Initial RPO at most 15 minutes and RTO at most 4 hours, demonstrated through a restore drill |
 
 These are engineering targets, not capacity claims or contractual SLAs. Load-test sparse authorization lists, import/export contention, noisy tenants, and provider outages. Set budgets for pools, timeouts, event sizes, and per-tenant work.
+
+### Phase 0 authorization decision gate
+
+Before committing to the authorization protocol, run a minimal prototype with real PostgreSQL/OpenFGA and the reference dataset. After warm-up, sustain at least 30 minutes with 50 concurrent clients: one organization owns half the resources and receives 80% of traffic; the request mix is 60% reads/lists, 20% ordinary updates, 10% resource creates/deletes, and 10% sharing/revocation/parent changes. Include a principal who can read only 1% of hot-tenant candidates and concurrent work in other organizations. Record achieved request rate, hardware, pool sizes, limits, graph/tuple sizes, and all retry policies so results are reproducible.
+
+- Healthy runs must meet the CRUD, projection, create-to-readable, fence-wait, and eligible-request targets above. Deliberate authorization denials are counted separately; an otherwise authorized request rejected because projection is stale counts as an availability failure. The short benchmark does not prove the monthly availability objective.
+- Report first-attempt failures, eventual outcomes, p95/p99/max lock waits, end-to-end revocation latency, generation build/cleanup cost, and abandoned-build rate. Ordinary creates with initial manager grants are authorization changes; measuring share-only traffic is insufficient.
+- Run a separate fault suite for projector connection loss, remote timeouts, duplicate work, delayed old writes arriving after a newer revocation, FGA outage, sparse-list contention, and recovery. Assert zero obsolete grants, no publication by an abandoned attempt, bounded queues/timeouts, and eventual recovery after dependencies return. Record recovery time and set the acceptable recovery budget in the Phase 0 ADR before approving the protocol.
+- Phase 0 exits only with recorded correctness and availability evidence. If the candidate fails, redesign and rerun these gates before Phase 3; do not conceal failures with retries, relaxed revocation, or a lower undocumented workload. Re-run on the real Project feature before Phase 4 and on the release deployment during hardening.
 
 CI checks formatting/types, dependency boundaries, unit/integration/E2E suites, migration upgrades, OpenFGA model assertions, generator output, dependency/secret scans, and production builds. Preview environments use synthetic data, isolated provider test accounts, and isolated FGA stores.
 
@@ -165,10 +194,22 @@ Run migrations as a release job, deploy compatible application/worker versions, 
 ## 4.8 Export, deletion, and recovery lifecycle
 
 1. Authorize/reauthenticate the requester, record scope and retention constraints, and offer export before deletion.
-2. Suspend new tenant writes/integrations, revoke credentials/support sessions, and schedule the documented deletion grace period.
+2. Persist an idempotent deletion intent and suspend new tenant writes/integrations; revoke credentials/support sessions. Append the tenant ID, request ID, effective/grace dates, and retention scope to the independently durable deletion journal. Acknowledge deletion as scheduled only after that journal write is confirmed. An unavailable journal leaves the request pending and blocks purge; reconciliation resumes interrupted intent/journal updates.
 3. Cancel or settle billing according to the subscription/contract; avoid treating successful data deletion as proof that a provider subscription was canceled.
 4. Purge eligible tenant tables, files, caches, search indexes, queued payloads, and graph tuples through a resumable workflow. Preserve only explicitly retained records with restricted access.
-5. Retain a minimal deletion tombstone/manifest so restores do not resurrect deleted tenants. Replay deletion tombstones after restoring backups before serving traffic.
+5. Append deletion progress/completion to the independent journal and retain a minimal local receipt/manifest. Journal permitted cancellation and retention changes before restoring access or changing purge scope. Keep only the identifiers and lifecycle evidence required to replay the decision; journal retention covers every restorable backup plus the replay window.
 6. Expire historical backups according to the published backup policy; explain that normal live-data deletion and backup expiry occur on different schedules.
 
-Full-database recovery is the default drill. Single-tenant restoration from a shared database is a separate export/import procedure with referential validation, graph reconstruction, billing reconciliation, and collision checks; it is not a simple SQL rollback.
+### Recovery readiness protocol
+
+The deletion journal and recovery epoch/readiness record must survive independently of application and OpenFGA database restores, with separate access controls, backup/recovery policy, and completeness verification. A tombstone existing only inside the restored backup cannot represent a later deletion. A missing or unverifiable journal must keep tenant serving gated.
+
+1. Close the deployment readiness gate for tenant routes, APIs, workers, integrations, and provider effects. Stop or isolate old processes/credentials and allocate a fresh recovery epoch in the independent control plane. Keep only narrowly authorized recovery diagnostics available.
+2. Restore application data and treat all saved authorization readiness, generation pointers, revision equality, and cached permissions as unverified. Application and FGA snapshots can be from different times; restoring just one still requires this procedure.
+3. Read the complete independent journal through a verified watermark and replay lifecycle state, grace/cancellation decisions, retention exceptions, and completed deletions. Catch up new journal entries under a coordinated readiness barrier before release. Purge/suspend restored tenants as required, including their objects, queues, credentials, and graph data; do not reactivate deleted tenants while reconciling.
+4. Reconcile surviving identity/security state and external billing commands before effects resume. Build surviving organizations' graphs from authoritative restored/reconciled records into fresh namespaces using the current model and recovery epoch. Never reactivate a pre-restore generation. Invalidate sessions/caches or require fresh authentication as needed to prevent restored credentials from resurrecting revoked access.
+5. Verify source revisions, acknowledged graph manifests, tenant/resource allow/deny cases, deletion completeness, and pending provider effects. Record evidence and atomically release readiness only for the verified epoch. Errors keep the gate closed; changing revision counters alone cannot repair readiness.
+
+Commercial core must demonstrate this baseline restore procedure before storing customer data or marking tenant deletion complete. Enterprise hardening expands the drill and verifies the stated RPO/RTO on the release deployment. Required scenarios: application/FGA snapshots deliberately mismatched, restoring only FGA, a deletion after the application backup, journal outage/incomplete replay, interrupted rebuild, and an old projector request completing during recovery. Verify denial throughout recovery and correct access afterward, with no deleted tenant resurrection.
+
+Full-database recovery is the default drill. Single-tenant restoration from a shared database is a separate export/import procedure using the same deletion-journal and graph-generation gates, referential validation, billing reconciliation, and collision checks; it is not a simple SQL rollback.
