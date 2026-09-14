@@ -89,7 +89,8 @@ Release labels below are **F — foundation**, **C — commercial core**, **E �
 | Feature flags | Platform rollout switches separate from paid entitlements, safe targeting, kill switches, expiry owner | C |
 | Operator console | Tenant health, job/reconciliation failures, suspension, plan overrides, controlled support sessions | E |
 | Observability | Structured logs, traces, metrics, error tracking, queue lag, isolation alerts, usage discrepancies | F/C |
-| Delivery tooling | Local dependencies, seed data, CI, preview environments, migrations, release/version policy | F |
+| Delivery tooling | Local dependencies, seed data, GitHub Actions CI/CD, single-container Docker deployment, registry/promotion, preview environments, migrations, rollback, release/version policy; production customer-data gate in C | F/C |
+| Kubernetes deployment | Optional Helm profile with separate web/worker containers, migration Jobs, and independent scaling; direct Docker deployment remains supported without cluster tooling | X |
 | Data lifecycle | Organization export/deletion, independent deletion journal, baseline retention/backup expiry in C; advanced retention and legal-hold hooks in E | C/E |
 | Recovery | Encrypted backups, point-in-time recovery and gated baseline restore drill before customer data in C; expanded disaster recovery and measured enterprise targets in E | C/E |
 | Security engineering | Threat model, dependency/secret scanning, restricted DB roles, security regression suite | F/E |

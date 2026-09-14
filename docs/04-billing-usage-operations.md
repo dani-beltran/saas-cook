@@ -160,6 +160,8 @@ Encrypt integration credentials using managed keys, scope them minimally, and su
 
 Provide local containers for PostgreSQL, OpenFGA with its own database, worker/web, an S3-compatible service, and mail capture. Production uses secrets management, TLS, restricted networks/egress, independently sized pools, encrypted storage, and tested backup configuration.
 
+The [CI/CD and deployment plan](07-ci-cd-and-deployment.md) specifies GitHub Actions checks, image publication and promotion by digest, one application container running web/worker directly with Docker, one-off migration/model commands, health checks, worker draining, and rollback. Kubernetes/Helm and separate Jobs are optional. Phase 1 proves direct Docker staging delivery with synthetic data; production customer data still requires the Phase 6 recovery gate below. Docker hosts use a TLS reverse proxy, external data services, and a documented maintenance interval for container replacement; measure availability with that interval and the single host failure domain included.
+
 Include logs/traces for request, tenant, actor reference, event, job, and external operation IDs with redaction. Avoid organization IDs as unbounded metric labels; use logs or sampled traces for per-tenant diagnostics. Collect latency/error rates, DB pool saturation, slow queries, authorization denial/unavailability, projection lag, queue backlog, webhook failures, quota conflicts, and billing discrepancies.
 
 Proposed reference acceptance targets, to be measured against a documented workload and deployment:

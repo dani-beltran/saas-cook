@@ -22,7 +22,8 @@ These are proposed architectural choices, not claims that every dependency or in
 | API | Next.js Route Handlers, REST `/api/v1`, OpenAPI | One stable public contract; no second API framework by default |
 | Observability | OpenTelemetry, structured JSON logging, pluggable error sink | Correlate requests, events, worker runs, and providers |
 | Verification | Vitest, Playwright, real PostgreSQL/OpenFGA integration environments | Exercise actual isolation and authorization behavior |
-| Deployment | Containers for web/worker/FGA, managed PostgreSQL and object storage | Portable reference deployment; serverless web remains an alternative |
+| CI/CD | GitHub Actions, Docker BuildKit/buildx, GHCR | Required checks, immutable image releases, staging validation, protected production promotion |
+| Deployment | One Docker application container running web + worker; external OpenFGA, PostgreSQL and object storage | Direct Docker is the default; Kubernetes + Helm with split workloads is optional; both use one-off migrations and compatible rollback |
 
 shadcn/ui documents shared UI packages in monorepos; use that arrangement for the component layer. [shadcn/ui monorepo documentation](https://ui.shadcn.com/docs/monorepo)
 
@@ -49,6 +50,8 @@ flowchart TD
 ```
 
 Use a modular monolith. A Next.js adapter parses transport input, creates a trusted context, and invokes a domain service. Services coordinate authorization, business rules, repositories, entitlements, and events. Repositories own SQL. Workers call the same services with explicit job/service identities.
+
+The diagram shows logical services, not required container boundaries. The default Docker image runs web and worker as supervised processes in one application container, with graceful shutdown and combined health checks. Their source packages and database roles stay separate; migration credentials are provided only to one-off commands. PostgreSQL, OpenFGA, and object storage remain external. The optional Kubernetes profile places web and worker in separate Deployments for independent scaling without changing domain behavior.
 
 Server Components call services directly; they do not perform an HTTP round trip to their own API. Server Actions and Route Handlers are thin entry points to the same services. No business rule should exist only in a page or action.
 
@@ -85,7 +88,13 @@ common-sass/
     testing/                                # Factories, multi-tenant fixtures, helpers
     cli/                                    # Project bootstrap and entity generation
   entities/                                 # Application-owned entity specifications
-  infra/                                    # Containers, local services, deploy examples
+  .github/workflows/                        # CI, release, deployment, infrastructure
+  infra/docker/                             # Combined app image; optional split targets
+  infra/helm/common-sass/                    # Optional Kubernetes application chart
+  infra/environments/                       # Non-secret staging/production values
+  infra/k8s/jobs/                            # Optional Kubernetes migration/publication Jobs
+  infra/terraform/                           # Optional host/cluster/service provisioning
+  scripts/                                  # Docker deployment/rollback; optional Kubernetes
   docs/                                     # Plan, ADRs, module and operator guides
   examples/                                 # Illustrative inputs and extension recipes
   saas.config.ts                            # Product manifest, once implemented
@@ -255,4 +264,6 @@ All writes follow: authenticate → resolve tenant → authorize → validate al
 | API | REST + shared services | A proven client requirement justifies another transport |
 | UI generation | Source files with extension boundaries | No default switch to runtime metadata rendering |
 | Monetization | Fixed/seat subscriptions; metered adapter optional | Product requires advanced usage contracts |
-| Deployment | Portable containers in one region | Product-specific hosting or availability requirements |
+| Deployment | Single Docker container on a host/VM; GitHub Actions/GHCR with digest promotion | Opt into Kubernetes + Helm for independent scaling/orchestration; choose host/registry provider and availability requirements |
+
+The [CI/CD and deployment plan](07-ci-cd-and-deployment.md) defines the combined Docker image and direct run commands, optional Kubernetes resources, workflow files, release sequencing, and failure handling.
