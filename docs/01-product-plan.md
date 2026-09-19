@@ -32,7 +32,7 @@ Release labels below are **F — foundation**, **C — commercial core**, **E �
 | Memberships | Invite, resend, expire, accept, remove, suspend, transfer ownership; voluntary changes preserve an active owner, security deprovisioning can enter owner recovery | F |
 | Organization ownership transfer | Nominate an eligible verified active member, recipient acceptance, atomic owner-role transition and seat checks, expiry/cancel, notifications, and audit; used by account deletion | F |
 | Organization onboarding | Checklist, profile, first resource, invitation, local foundation policy, completion tracking; paid plan/trial selection arrives in C | F/C |
-| Teams and workspaces | Team membership; optional workspaces for resource grouping and inherited access | F |
+| Teams and workspaces | Team membership in Phase 2; optional workspace CRUD/archive and resource grouping/inherited access in Phase 3, with same-tenant move and revocation tests | F |
 | Tenant isolation | Tenant-scoped database access, storage, caches, search, jobs, exports, and integrations | F |
 | ReBAC | Parent-child inheritance, direct sharing, team access, per-resource viewer/editor/manager relations | F |
 | Roles | Owner, administrator, member, billing manager, and resource viewer defaults; roles assign capabilities through the relationship model | F |
@@ -66,16 +66,16 @@ Release labels below are **F — foundation**, **C — commercial core**, **E �
 | Capability | Required behavior | Release |
 | --- | --- | --- |
 | Dashboard shell | Organization switcher, navigation, breadcrumbs, global commands, account menu, responsive layout | F |
-| Reusable CRUD experience | Search, filters, sorting, cursor pagination, create/edit/detail screens, authorized actions, confirmation dialogs | F |
+| Reusable CRUD experience | Feature-local search, filters, sorting, cursor pagination, create/edit/detail screens, authorized actions, confirmation dialogs; Project list search ships in Phase 3 | F |
 | Accessibility and themes | Keyboard navigation, focus management, semantic labels, contrast, reduced motion, light/dark themes | F |
 | State handling | Loading, empty, error, unavailable, denied, validation, stale-update conflict, and quota states | F |
 | Internationalization | next-intl translation keys, locale-aware numbers/dates, time zones, currency formatting; English seed catalogue | F |
 | User preferences | Profile, avatar, locale, time zone, notifications, sessions, MFA | F/C |
 | Transactional notifications | React Email templates for verification/reset/magic-link/invitation/ownership-transfer and security/recovery delivery in F; full email/in-app preferences and commercial notices in C | F/C |
 | Files | Private uploads, immutable scanned bytes, signed access, type/size checks, quarantine/scanning, storage quotas | C |
-| Search | PostgreSQL search for tenant resources with permission-aware results and snippets | C |
+| Search | Cross-resource PostgreSQL search in Phase 6 over registered, enabled resource types; permission-aware results, snippets and counts; distinct from Foundation feature-local list search | C |
 | Import/export | Validated CSV imports, preview/errors, resumable bulk processing, authorized downloadable exports | C |
-| Activity history | Resource activity feeds separate from restricted security audit | C |
+| Activity history | Customer-visible resource activity feeds in Phase 6, projected from allowlisted domain events with current resource permissions; separate from restricted security audit | C |
 | Public website | Branding, landing/pricing page, sign-in, product links, legal-page placeholders, basic SEO metadata | C |
 | Help and support | Contextual help links, diagnostics/reference IDs, support contact, changelog entry point | C |
 | Custom domains/branding | Domain ownership checks, certificates, tenant branding, safe host routing | X |
@@ -137,6 +137,8 @@ Proposed browser routes, with `[orgSlug]` resolved to an authorized immutable or
 /app/[orgSlug]/projects/new
 /app/[orgSlug]/projects/[id]
 /app/[orgSlug]/projects/[id]/edit
+/app/[orgSlug]/workspaces                # Optional Foundation workspace module
+/app/[orgSlug]/search                    # Commercial cross-resource search
 /app/[orgSlug]/settings/general
 /app/[orgSlug]/settings/members
 /app/[orgSlug]/settings/ownership

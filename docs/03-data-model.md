@@ -40,14 +40,14 @@ The diagram shows logical relationships, not exhaustive SQL constraints. Polymor
 | --- | --- |
 | `users`, `auth_accounts`, `sessions`, `verification_challenges`, `mfa_credentials` | Identity-adapter records; global account lifecycle status/fence, verified identities, session method/assurance and expiry/revocation; hashed single-use magic-link challenges; never expose full rows as DTOs |
 | `passkey_credentials` | Adapter-owned WebAuthn credential ID/public key, user handle, counter/device metadata, user-facing name and timestamps; unique credential ID; no private keys; enrollment/revocation audited |
-| `user_preferences` | User, locale, time zone, theme, product-analytics preference; own-user access only |
+| `user_preferences` | User, locale, time zone, theme; own-user access only; analytics choices are owned exclusively by `analytics_preferences` |
 | `ownership_transfers` | Organization, initiating/recipient memberships, requested outgoing role, ownership version, expiry, pending/accepted/canceled/expired state, acceptance and audit receipt; same-tenant foreign keys, one active transfer per outgoing ownership |
 | `account_deletion_requests`, `account_deletion_org_steps` | Global requester, idempotency key, reauthentication evidence reference, awaiting_prerequisites/frozen/purging/complete state, per-organization ownership resolution/transfer receipt, cleanup progress and journal receipt; own-user or restricted lifecycle-service access |
 | `organizations` | ID, unique routing slug, display name, status including `owner_recovery_required`, locale, time zone, deletion scheduling; an explicitly controlled registry table |
 | `memberships` | Organization, user, status, baseline role, billable classification, joined/suspended timestamps; unique `(organization_id, user_id)` |
 | `invitations` | Organization, normalized destination identity, token hash, requested membership, inviter, expiry, acceptance/cancellation; single-use atomic acceptance |
 | `teams`, `team_members` | Organization, team name/slug; membership references with same-tenant constraints; no nested teams in first release |
-| `workspaces` | Organization, name/slug, archived state; optional subdivision module |
+| `workspaces` | Organization, name/tenant-unique slug, archived state and version; optional Phase 3 subdivision module; registered target for inherited grants |
 | `organization_settings`, `security_policies` | Typed settings and security requirements, policy version; organization-wide changes audited |
 | `verified_domains` | Organization, hostname, verification challenge/status/expiry; uniqueness and takeover protection |
 | `sso_connections`, `directory_connections`, `directory_subjects` | Organization-scoped provider mappings, encrypted credentials, external stable subjects, sync state, source ownership |
@@ -55,7 +55,9 @@ The diagram shows logical relationships, not exhaustive SQL constraints. Polymor
 
 Prevent voluntary removal/demotion/suspension of the final active owner under concurrent requests using an organization-level lock. Trusted security/SCIM deprovisioning overrides this rule: deactivate the membership and atomically enter `owner_recovery_required` if no active owner remains. Deny ordinary tenant operations until the dedicated, audited recovery command verifies organizational authority, admits a replacement owner, and publishes current authorization. Do not retain access merely to satisfy an owner-count invariant. Ownership transfer is a dedicated command, not an unrestricted membership PATCH. Invitation tokens, reset tokens, and API keys are never stored in plaintext application logs.
 
-All membership creation, activation, role/classification changes, and ownership transfers use one transition service. User-authorized commands and membership/ownership transitions first acquire relevant user lifecycle fences in user-ID order (shared for normal work, exclusive for account freeze), then organization locks in organization-ID order: authorization fence → lifecycle/owner row → seat-capacity row → affected memberships. This ordering also applies to invitations, SCIM admission, transfer acceptance, and resource responsibility changes; no path acquires the user fence after an organization lock. Atomically validate lifecycle/owner rules, compute the old/new billable delta, check admission, update membership and occupancy, advance authorization state, and append audit/outbox records. Bootstrap initializes the capacity row and admits the first owner atomically. Deactivation releases occupancy exactly once and never waits on a billing provider or available capacity.
+### Canonical lifecycle lock order
+
+This is the authoritative lock-order contract (`R-LIFECYCLE` in the roadmap); billing, identity, recovery, and feature services reference it rather than defining their own order. All membership creation, activation, role/classification changes, and ownership transfers use one transition service. User-authorized commands and membership/ownership transitions first acquire relevant user lifecycle fences in user-ID order (shared for normal work, exclusive for account freeze), then organization locks in organization-ID order: authorization fence → lifecycle/owner row → seat-capacity row → affected memberships. This ordering also applies to invitations, SCIM admission, transfer acceptance, and resource responsibility changes; no path acquires the user fence after an organization lock. Atomically validate lifecycle/owner rules, compute the old/new billable delta, check admission, update membership and occupancy, advance authorization state, and append audit/outbox records. Bootstrap initializes the capacity row and admits the first owner atomically. Deactivation releases occupancy exactly once and never waits on a billing provider or available capacity.
 
 Account closure checks every current ownership obligation under these locks, freezes the global identity, and cancels pending incoming transfers/admissions before releasing the fences. A transfer acceptance conditionally rechecks active recipient/initiator state and expected ownership version in the same transaction as role/seat/audit updates. Use bounded transactions for freeze and per-organization state changes; run external cleanup later. Repeated deletion steps cannot release seats twice. Test closure racing new invitations, SCIM admission, recipient deprovisioning, and reciprocal transfers. Do not cascade-delete tenant resources through a user foreign key; reassign responsibility or retain a restricted historical actor reference.
 
@@ -70,7 +72,7 @@ Global identity access uses narrowly scoped adapters and separate DB privileges.
 | `roles`, `role_permissions`, `role_assignments` | Tenant custom-role definitions from a versioned platform permission catalogue; assignments to validated subjects and scopes |
 | `authorization_revisions` | One row per organization: desired/applied revision, active generation/model/store, recovery epoch, verified readiness and failure status; restored equality alone cannot authorize access |
 | `authorization_projection_attempts` | Organization, unique attempt/generation ID, immutable source revision/model/recovery epoch, prepared/building/verified/active/abandoned/retired state, acknowledgement manifest and failure details; persist before remote writes |
-| `projects` | Organization, ID, name, tenant-unique slug, description, status, owner membership, version, timestamps; optional soft deletion |
+| `projects` | Organization, ID, name, tenant-unique slug, description, status, owner membership, optional workspace reference, version, timestamps; owner/workspace composite foreign keys include organization; optional soft deletion |
 | `tasks` | Optional reference extension: organization, ID, required parent project, title, state, assignee membership, version/timestamps |
 
 Use dedicated nullable subject columns with a CHECK requiring exactly one of membership/team/service account, or introduce a typed principal registry. Do not rely on an unconstrained subject string. Register/unregister resources and create/remove their local grants in the same transaction as domain lifecycle changes; graph projection follows the outbox.
@@ -79,7 +81,7 @@ Every resource table provides a unique `(organization_id, id)` target for child 
 
 The actual OpenFGA tuple storage is in its own database and managed by OpenFGA migrations. Application code never writes its internal tables.
 
-Generation IDs are never reused. Activation conditionally checks the current desired revision, model, recovery epoch, and candidate state while holding the exclusive authorization fence. Only one generation is active per organization; no published generation is incrementally mutated. Restore invalidates all saved readiness and switches to newly built generations as specified in [architecture §2.6](02-architecture-and-security.md#late-writes-and-projection-generations).
+Enforce unique, never-reused generation IDs and one active generation per organization. Projection activation and retirement follow the canonical [architecture §2.6 protocol](02-architecture-and-security.md#late-writes-and-projection-generations); schema constraints support that protocol rather than defining a second publication sequence.
 
 ## 3.5 Billing, entitlements, and usage tables
 
@@ -109,6 +111,7 @@ Foundation implements typed local entitlement policies, capacity buckets/reserva
 | Table or group | Essential data and rules |
 | --- | --- |
 | `audit_events` | Organization where applicable, actor/effective actor, action/version, target, outcome, UTC time, request/trace ID, allowlisted changes, redacted network context |
+| `activity_events` | Tenant/resource, source event ID, event type/version, safe actor label and allowlisted customer-visible payload; unique source event per feed projection; current resource authorization required on reads |
 | `security_events` | Failed sign-ins, denied access, suspected abuse and platform-level security events; separate read/retention policy |
 | `outbox_events` | Event ID, tenant, aggregate, aggregate sequence, type/schema version, payload, timestamp; durable domain-to-worker boundary |
 | `consumer_receipts` | Consumer and event ID unique; side-effect state/references; repeated delivery cannot create duplicate business changes |
@@ -123,13 +126,17 @@ Foundation implements typed local entitlement policies, capacity buckets/reserva
 | `deletion_requests`, `retention_policies`, `legal_holds` | Organization deletion lifecycle and scoped retention rules; account requests use the separate global lifecycle tables; effective dates, blocked categories, verification and completion manifest |
 | `owner_recovery_cases` | Organization, cause, deprovisioned actor reference, evidence/ticket, verified claimant, approver/scope, timestamps and outcome; separate control-plane access |
 | `deletion_journal_receipts` | Local projection of independent journal sequence, subject kind (`account` or `organization`), subject ID, request ID, ownership-resolution receipts, effective dates, cancellation/retention/completion and provider cleanup state; never the recovery source of truth |
-| `analytics_subjects`, `analytics_preferences` | Opaque provider subject mapping, user/organization scope, tracking policy/version and suppression state; restricted access, no global directory exposure |
+| `analytics_subjects` | Opaque provider subject mapping and suppression state; restricted access, no global directory exposure |
+| `analytics_preferences` | Sole authoritative store for user and organization tracking choices; unique typed scope/subject, allowed/denied value and policy version; own-user or authorized organization administration; no duplicate writable preference in profile/settings tables |
+| `recovery_revalidations` | Local projection of independently retained recovery evidence: epoch, organization/principal or relationship, verifier, scope, decision and evidence reference; restored security state is unverified until the current epoch is approved |
 | `analytics_deliveries`, `analytics_deletion_jobs` | Versioned allowlisted event, stable event ID, trusted attribution, bounded expiry/retries, provider acknowledgement; separately durable deletion/suppression jobs retained until reconciled |
 | Queue-owned tables | Managed by pg-boss in an isolated schema with restricted credentials and operational retention |
 
 Domain and audit timestamps are independent of delivery timestamps. Events use versioned payloads; consumers declare supported versions. Large exports/log payloads live in private object storage with metadata in PostgreSQL.
 
-The deletion journal and deployment recovery epoch/readiness record live in a protected control-plane store with an independent recovery lifecycle. Restoring application or FGA databases must not roll them back. Journal IDs/sequences are immutable, writes are idempotent, and retention covers every restorable backup plus the replay window. Both global account deletion and organization deletion are journaled, including accepted ownership-resolution receipts and analytics-provider cleanup. No deleted user, credential, or analytics identity can become active merely because it exists in a restored snapshot. Recovery records identify restored databases, the complete journal watermark, graph generation manifests, validation evidence, and the operator who releases readiness. These are explicit exceptions to application-database ownership, not an unscoped tenant query path.
+The deletion journal and deployment recovery epoch/readiness/evidence records live in a protected control-plane store with an independent recovery lifecycle. Journal IDs/sequences are immutable, writes are idempotent, and retention covers every restorable backup plus the replay window. Journal entries cover account/organization deletion, ownership-resolution receipts and analytics cleanup; they are not a complete history of ordinary access revocations. Recovery records identify restored databases, the journal watermark, independently verified security decisions, graph manifests, and the operator releasing readiness. These are explicit exceptions to application-database ownership. Replay, credential invalidation and security revalidation follow the canonical [operations §4.8 recovery protocol](04-billing-usage-operations.md#recovery-readiness-protocol).
+
+Identity adapters and service-key validation retain issuance/revalidation epoch metadata outside provider-owned fields where necessary. After an application-database restore, credentials and security relationships from the snapshot cannot become valid merely by copying the current epoch onto them; only the recovery protocol can establish new trusted state. Keep denied historical memberships for content references and rebuild active seat occupancy through the shared transition service.
 
 ## 3.7 Constraints and indexes
 
@@ -141,7 +148,7 @@ Required starting indexes and safeguards:
 - Ownership transfers: at most one active request for an outgoing ownership; conditional acceptance/version checks and same-tenant membership references.
 - Account closure: unique active request per user and unique `(request_id, organization_id)` step; minimal durable completion receipts; controlled status transitions.
 - Analytics: unique event/delivery keys, subject lookup for deletion, delivery expiry and pending deletion scans; analytics queue indexes isolated from financial-ledger indexes.
-- Membership lookup: unique `(organization_id, user_id)` and `(user_id, status)` for the user's organization switcher.
+- Membership lookup: unique `(organization_id, user_id)`; a separate **non-unique** `(user_id, status)` index supports the organization switcher. Test that one user can have active memberships in two organizations while duplicate membership in one organization is rejected.
 - Parent traversal: `(organization_id, parent_id, id)`; grant traversal by target and subject.
 - Usage: unique `(organization_id, metric_key, deduplication_key)`; aggregation access by organization, metric, occurred time.
 - Reservations: unique `(organization_id, bucket_id, operation_key)` and an expiry scan index.

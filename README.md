@@ -10,7 +10,7 @@ The template is intended to be source code you own and customize. You supply you
 
 The default deployment runs the web app and background worker together in one Docker container, connected to external data services. Kubernetes deployment is optional.
 
-**Status:** planning only. This repository currently contains the project plan, architecture and design specifications, and an example feature brief. The application, agent skills, and tooling have not yet been implemented.
+**Status:** planning only. This repository currently contains the project plan and architecture and design specifications. The application, agent skills, and tooling have not yet been implemented.
 
 ## Planning and design
 

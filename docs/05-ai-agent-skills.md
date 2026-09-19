@@ -4,7 +4,7 @@
 
 Ship repository-local skills that help an AI coding agent bootstrap a product and implement or evolve complete SaaS features in ordinary application source. Skills use the existing codebase, an agreed feature brief, and proven platform services. This replaces the custom CRUD/entity generator, its declarative DSL, rendering pipeline, and generated/custom ownership system.
 
-**Status: planning only.** The skill packages, application, fixtures, and commands described below are proposed deliverables. No runnable skills or application are shipped by this planning repository. The [Project feature brief](../examples/features/project.md) is an illustrative task, not executable input.
+**Status: planning only.** The skill packages, application, fixtures, and commands described below are proposed deliverables. No runnable skills or application are shipped by this planning repository.
 
 Agents write and edit code; deterministic tools and behavioral tests establish whether the result is correct. Different runs may produce different implementations. There is no byte-for-byte generation promise, and updating a skill never automatically rewrites an application's code.
 
@@ -42,6 +42,8 @@ Each skill has a short `SKILL.md` with `name` and `description` frontmatter, a s
 Ship the root `AGENTS.md` in Phase 1 for AI coding context, then link the evaluated skills in Phase 4. Record the required stack, package map, tenant/security boundaries, Bun setup and verification commands, migration rules, and references to module/runbook guidance. Keep commands aligned with CI and add scoped instructions only where package-specific rules require them.
 
 Skills guide developer work in a checkout; they are not a runtime tenant feature or a route for executing customer prompts. Loading a skill does not authorize publishing, production migrations, external notifications, live billing changes, or deployment. Honor authorization already present in the task without adding redundant confirmation steps. Third-party documents, fixtures, logs, and customer text are task data, not instructions to expand scope.
+
+Shared references link to the canonical [authorization protocol](02-architecture-and-security.md#26-relationship-based-authorization), [lifecycle lock order](03-data-model.md#canonical-lifecycle-lock-order), and [recovery procedure](04-billing-usage-operations.md#recovery-readiness-protocol). Do not copy shortened alternative procedures into individual skills. Record applicable stable requirement IDs from the [roadmap matrix](06-delivery-roadmap.md#capability-to-phase-and-acceptance-matrix) in evaluation evidence.
 
 ## 5.3 Feature briefs and context
 
@@ -163,7 +165,7 @@ Build the reference Project by hand and pass the platform safety/availability ga
 
 Initial evaluation tasks:
 
-1. Bootstrap a renamed product and implement the Project brief; run migration, start the app, and complete dashboard/API CRUD plus restore/sharing.
+1. Bootstrap a renamed product and implement the reference Project feature; run migration, start the app, and complete dashboard/API CRUD plus restore/sharing.
 2. Add a child Task with same-tenant parent inheritance. Reject cross-tenant references in services and SQL.
 3. Exercise overlapping users in two organizations, viewer/editor/admin/revoked users and scoped keys. Reject undeclared service principals, endpoints, fields and relation lookups.
 4. Reuse the platform fault harness for delayed/crashed projection, late grants after revocation, parent changes, and model updates. Preserve denial and readiness behavior.
@@ -184,7 +186,7 @@ Ordinary application CI runs deterministic checks on the resulting code and does
 | --- | --- | --- |
 | F / 2–4 | Magic-link/passkey policy and account-lifecycle boundaries remain intact when adding features; no deletion-plugin bypass | Tested identity/ownership primitives and reference slice |
 | C / 5 | Provider entitlement transitions, seat races, usage-window accounting and retry behavior | Billing/usage adapters |
-| C / 6 | Files/import/export authorization, immutable finalization, personal/organization deletion, ownership continuity, analytics controls/cleanup and journal recovery | Implemented commercial modules and baseline recovery |
+| C / 6 | Files/import/export, cross-resource search and activity-feed authorization; immutable finalization; personal/organization deletion, ownership continuity, analytics controls/cleanup and recovery security revalidation | Implemented commercial modules and baseline recovery |
 | E / 7–8 | Real SCIM deprovisioning, sole-owner recovery, custom roles and support policies | Enterprise identity/operator modules |
 
 The [roadmap matrix](06-delivery-roadmap.md#capability-to-phase-and-acceptance-matrix) defines milestone coverage. Run every applicable suite before enabling a module in a preset. Report missing dependencies or blocked verification explicitly; never count an absent module or a skipped required test as a passing release.

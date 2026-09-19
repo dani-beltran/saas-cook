@@ -65,10 +65,10 @@ Use one multi-stage Dockerfile with a supported Node.js LTS base pinned by diges
 
 | Target | Image contents and process |
 | --- | --- |
-| `app` (default) | Next.js standalone server, static/public assets, compiled worker, production dependencies, reviewed migrations and publication tooling; `serve` starts both application processes, while `migrate` and `authz-publish` run one-off commands without starting web/worker |
+| `app` (default) | Next.js standalone server, static/public assets, compiled worker, production dependencies, reviewed migrations and publication tooling; `serve` starts both application processes, while `migrate`, `bootstrap`, and `authz-publish` run one-off commands without starting web/worker |
 | `web` (optional Kubernetes profile) | Same compiled web output and dependencies; Node serves on `0.0.0.0:3000` |
 | `worker` (optional Kubernetes profile) | Same compiled worker and dependencies; Node runs the durable job/outbox consumer |
-| `migrate` (optional Kubernetes profile) | Migration/publication tools and SQL history; runs a selected one-off command and exits |
+| `migrate` (optional Kubernetes profile) | Migration/bootstrap/publication tools and SQL history; runs a selected one-off command and exits |
 
 Configure Next.js `output: 'standalone'` and a monorepo tracing root. Copy static/public assets explicitly and verify the emitted server entry path in the image test. [Next.js standalone output](https://nextjs.org/docs/app/api-reference/config/next-config-js/output)
 
@@ -102,9 +102,15 @@ After publication, pull and test/scan the exact output digests. Record the profi
 
 The `app` entrypoint defaults to `serve`, starts web and worker as separate supervised child processes, sends both logs to stdout/stderr, and exits nonzero after stopping the sibling if either child unexpectedly exits. Use Docker's `--init` for child reaping. On SIGTERM, stop new requests/job claims, drain bounded work, close database pools, and exit within the configured grace period. Keep runtime web and worker DB credentials distinct even though the container is their shared failure/security boundary. [Docker multi-process containers](https://docs.docker.com/engine/containers/multi-service_container/)
 
-Prepare a Docker Engine host with registry access, outbound access to the external services, a TLS reverse proxy forwarding to localhost port 3000, and a root-owned configuration directory. Store runtime and migration environment files separately with mode `0600`; generate them from the selected secret store or provision them on the host. The persistent application container receives only runtime credentials. Configure CPU/memory limits and log rotation; do not mount the Docker socket into the application.
+Prepare a Docker Engine host with registry access, outbound access to the external services, a TLS reverse proxy forwarding to localhost port 3000, and a root-owned configuration directory. Store runtime, migration, and bootstrap/publication environment files separately with mode `0600`; generate them from the selected secret store or provision them on the host. The persistent application container receives only runtime credentials. Configure CPU/memory limits and log rotation; do not mount the Docker socket into the application.
 
-The following initial-install example runs on that host after verifying the signed release. `APP_IMAGE` is the full `app` image reference with its digest from `release.json`; paths refer to host files prepared by bootstrap. The image entrypoint implements the `migrate` command and defaults to `serve` when no command is supplied. The cache path is part of the proposed image packaging contract.
+### Fresh-install initialization
+
+The deployment workflow explicitly selects `install` or `upgrade`; a missing readiness record is never an automatic reason to initialize. `install` requires an operator-authorized new environment identity, an empty application database apart from reviewed migrations, and an independently recorded installation intent. Under the environment release lock, run migrations, then the one-off `bootstrap` command. It initializes a closed recovery gate/epoch in the independent control plane, creates or verifies the environment's FGA store, invokes the same model-publication implementation as `authz-publish`, and records the pinned store/model and schema/configuration identity. It verifies any explicitly authorized seed organizations through the projection protocol before releasing initial readiness. Normal web/worker processes are not needed to complete this command.
+
+Bootstrap is resumable for the same installation identity and release: reuse verified store/model records, reject mismatches, and keep traffic gated on failure. A completed bootstrap may return its verified receipt on retry, but cannot reset readiness or overwrite state. Tenant data outside that installation's declared seeds, a different prior installation, missing historical control-plane evidence, or a restore marker rejects fresh initialization and requires the upgrade or [recovery procedure](04-billing-usage-operations.md#recovery-readiness-protocol). An upgrade cannot reset the epoch to make an unhealthy environment appear fresh. Phase 1 proves installation/readiness bookkeeping against synthetic infrastructure; Phase 2 adds real model publication and authorization fixtures before any identity/tenant acceptance can pass.
+
+The following initial-install excerpt runs on that host inside the deployment workflow's release lock, after verifying the signed release and preparing the authorized installation identity. `APP_IMAGE` is the full `app` image reference with its digest from `release.json`; paths refer to host files prepared by infrastructure setup. The image entrypoint defaults to `serve` when no command is supplied. The cache path is part of the proposed image packaging contract.
 
 ```sh
 set -eu
@@ -117,6 +123,13 @@ docker run --rm --init --read-only \
   --tmpfs /tmp:rw,nosuid,nodev,size=64m,mode=1777 \
   --env-file /etc/common-sass/migrate.env \
   "$APP_IMAGE" migrate
+
+# Initialize recovery state and publish the first authorization model before serving.
+docker run --rm --init --read-only \
+  --cap-drop ALL --security-opt no-new-privileges=true \
+  --tmpfs /tmp:rw,nosuid,nodev,size=64m,mode=1777 \
+  --env-file /etc/common-sass/bootstrap.env \
+  "$APP_IMAGE" bootstrap
 
 docker run --detach --name common-sass \
   --init --restart unless-stopped --stop-timeout 60 \
@@ -135,7 +148,7 @@ The Dockerfile includes a bounded `HEALTHCHECK` using the packaged Node health s
 
 For upgrades, the deployment script pulls/verifies the candidate, acquires the release lock, and runs compatible one-off migrations/publication before replacement. It then puts the proxy in maintenance mode, drains/stops the existing container, retains its digest/configuration for rollback, and starts one replacement under the same name/port. Run readiness and synthetic smoke checks before reopening traffic. A failed replacement is removed and the prior verified image/configuration is recreated only when schema/model compatibility permits. One running application container means a brief deployment interruption and a single host failure domain; measure the availability target with this limitation. No zero-downtime or automatic host failover guarantee is implied.
 
-The `authz-publish` one-off mode uses the same digest with separate publication credentials when the authorization model changes. Both one-off modes must work without launching the normal web/worker processes. Database backups and uploaded files live outside the application container; recreating it must preserve data. Transitioning to Kubernetes drains the combined container before activating the split deployments and uses the same application contracts and external data services; that transition has its own deployment validation.
+The `authz-publish` one-off mode uses the same digest with separate publication credentials for later authorization model changes. All one-off modes must work without launching the normal web/worker processes. Database backups and uploaded files live outside the application container; recreating it must preserve data. Transitioning to Kubernetes drains the combined container before activating the split deployments and uses the same application contracts and external data services; that transition has its own deployment validation.
 
 ## 7.6 Kubernetes runtime (optional)
 
@@ -159,10 +172,10 @@ For Docker, the protected deployment job invokes the host's deployment script th
 
 The reusable workflow and `scripts/deploy.sh` implement this order:
 
-1. Acquire an environment-wide release lock across migrations and rollout; do not cancel an in-progress deployment for a newer commit. Verify the profile and target host or cluster/namespace, signed release identity, configuration, required secrets, supported schema/model range, and current recovery readiness. Reject stale promotions that would move the environment backwards without an explicit rollback.
-2. Validate the runtime configuration and host prerequisites for Docker, or render/validate the immutable chart and perform a server-side dry run for Kubernetes. Retain redacted evidence. Bootstrap prepares host access/secrets or namespaces/RBAC/secrets beforehand; application deployment cannot silently provision new infrastructure or select a different environment.
+1. Acquire an environment-wide release lock across migrations and rollout; do not cancel an in-progress deployment for a newer commit. Verify the profile and target host or cluster/namespace, signed release identity, configuration, required secrets, and supported schema/model range. An `upgrade` requires current recovery readiness; an explicit `install` instead verifies the new-environment prerequisites in [§7.5](#fresh-install-initialization) and keeps traffic closed until bootstrap passes. Reject stale promotions that would move the environment backwards without an explicit rollback.
+2. Validate the runtime configuration and host prerequisites for Docker, or render/validate the immutable chart and perform a server-side dry run for Kubernetes. Retain redacted evidence. Infrastructure setup prepares host access/secrets or namespaces/RBAC/secrets beforehand; application deployment cannot silently provision new infrastructure or select a different environment.
 3. Run a one-off container with the `app` digest in `migrate` mode for Docker, or a separate Job with the `migrate` digest for Kubernetes. Use separate DDL credentials, a database advisory lock, and bounded execution/retry limits. Run the packaged equivalent of `bun run db:migrate` and wait for success before replacing the application. Never run migrations automatically on normal container/pod startup. A failed or ambiguous migration stops deployment and requires reconciliation before retry.
-4. If the authorization model changes, run a separate one-off publication command/Job using the same release and the `bun run authz:publish` contract. Verify model/generation readiness through the selected projection protocol. Changes incompatible with the existing application require a documented maintenance/drain sequence before publication; publication or container/Helm success cannot bypass the recovery gate.
+4. For `install`, run `bootstrap` from the same verified release (`app` command for Docker, `migrate` image Job for Kubernetes) with separate initialization credentials; require its recorded readiness evidence. For `upgrade`, run a separate one-off publication command/Job if the authorization model changes, using the `bun run authz:publish` contract. Verify model/generation readiness through the selected projection protocol. Changes incompatible with the existing application require a documented maintenance/drain sequence before publication; publication or container/Helm success cannot bypass the recovery gate.
 5. For Docker, replace the combined container using §7.5 and wait for combined health. For Kubernetes only, upgrade the web/worker chart with verified digests using the commands below. `CHART_PACKAGE` is the verified archive recorded in that profile's release; the script supplies reviewed environment files and explicit context. The Docker branch never invokes these commands.
 
 ```sh
@@ -191,7 +204,7 @@ If rollout or smoke tests fail, stop further promotion, collect container logs/h
 Required evidence by milestone:
 
 - **Phase 1 / Foundation infrastructure:** a clean clone builds the combined image and deploys one persistent application container with direct Docker and external test services, without Kubernetes tools/credentials. Web and worker operate together; child-process failure, graceful stop, host reboot, additive upgrade and compatible rollback pass. Failed migration, readiness, or image pull blocks success. Smoke tests cover runtime behavior available in that phase.
-- **Phases 3–4 / Foundation release:** the actual Project and agent-authored feature suites run against deployed images, including two-tenant denial and worker processing; staging and production promotion inputs retain identical digests.
+- **Phases 2–4 / Foundation release:** Phase 2 proves `R-DEPLOY` fresh authorization bootstrap, interrupted retry, mismatch rejection, and refusal to initialize restored data; ownership transfer/recovery use real publication. Phases 3–4 run the actual Project and agent-authored feature suites against deployed images, including two-tenant denial and worker processing; staging and production promotion inputs retain identical digests.
 - **Phase 6 / Commercial release:** protected production promotion, secret rotation, infrastructure ownership, and the independent recovery drill covering backups, account and organization deletion, ownership continuity, analytics cleanup, and authorization pass before customer data is accepted.
 - **Phase 8 / Enterprise release:** load/drain/rollback exercises, measured RPO/RTO, previous-release upgrade rehearsal, retained provenance, and incident/runbook ownership pass on the selected reference deployment. Kubernetes is not required.
 - **Optional Kubernetes extension:** before offering this profile, its split images, fresh namespace install, migration/model Jobs, readiness, rolling upgrade, compatible rollback, and deployed feature suites pass on a reference cluster. These gates apply only to products enabling the extension.

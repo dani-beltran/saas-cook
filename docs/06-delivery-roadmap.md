@@ -11,16 +11,16 @@ All phases below are planned. Completion requires demonstrated acceptance criter
 | Phase | Deliverables | Depends on | Exit gate | Effort estimate |
 | --- | --- | --- | --- | --- |
 | 0. Validate decisions | Threat model; required-stack dependency/license/version matrix, including React 19 and Bun workspace compatibility; oRPC/Zod/Next.js adapter spike; magic-link/passkey assurance and ownership/account-lifecycle race spike; RLS/pool spike; generation-isolated OpenFGA prototype; hot-tenant benchmark; independent recovery-store design; billing/storage/analytics adapter feasibility; Docker host/registry/tool versions and CI identity/network ADR | This plan | Required technologies have compatible versions and mappings; late-write fault suite and healthy availability budgets pass; recovery ownership, immutable-object contract, and deployment ownership recorded in ADRs | 3–5 engineer-weeks |
-| 1. Repository and runtime | Bun/Turborepo; Next.js/React 19/TypeScript/shadcn/ui/Tailwind shell; next-intl/forms/Storybook patterns; worker; local services; T3 Env; oRPC skeleton; GitHub Actions and quality toolchain; AGENTS.md; combined web/worker application image and GHCR; direct Docker staging and deployment scripts; LogTape/OpenTelemetry; test fixtures | 0 | Phase 1 required-stack gates below pass; one application container runs web/worker without Kubernetes tooling; child-process failure/shutdown, migration ordering, failed replacement and compatible rollback preserve synthetic data | 2–4 |
-| 2. Identity and tenancy | Self-hosted Better Auth/MFA/sessions, email magic links, passkey enrollment/recovery and required React Email templates; organizations/members/invitations/teams and accepted ownership transfer; Drizzle/PostgreSQL lifecycle fences, tenant context/RLS and audit/outbox; local policy and shared seat admission; owner-recovery command/runbook and account/org UI | 1 | Passwordless replay/origin/assurance/recovery tests pass; two-tenant isolation, transfer/admission/deprovisioning races, safe bootstrap and multi-tab switching pass | 4–6 |
-| 3. Authorization and reference feature | Selected graph protocol, generations/readiness/fences and independent epoch control; service-account/API-key enforcement and provisioning commands; generic capacity reservations; Project CRUD/search/pagination; oRPC/Zod contracts, typed client, public OpenAPI and concurrency | 2 | Project works with local policies and no billing credentials; both oRPC transports pass quota/key/late-write suites; real feature meets Phase 0 availability and create-to-readable targets | 5–8 |
+| 1. Repository and runtime | Bun/Turborepo; Next.js/React 19/TypeScript/shadcn/ui/Tailwind shell; next-intl/forms/Storybook patterns; worker; local services; T3 Env; oRPC skeleton; GitHub Actions and quality toolchain; AGENTS.md; combined application image and GHCR; Docker staging, install/upgrade scripts and independent installation/readiness records; LogTape/OpenTelemetry; test fixtures | 0 | Required-stack gates and infrastructure portion of `R-DEPLOY` pass with synthetic data | 2–4 |
+| 2. Identity, tenancy and authorization primitives | Better Auth/MFA/sessions, magic links, passkeys and identity emails; organizations/members/invitations/teams and ownership transfer; tenant context/RLS, audit/outbox, local policy/seat admission; selected production graph protocol for organization/team roles, lifecycle/authorization fences, independent epoch/readiness and fresh model bootstrap; owner-recovery command/runbook and account/org UI | 1 | `R-TENANCY`, `R-LIFECYCLE`, `R-AUTHZ`, `R-SEATS`, `R-OWNER`, `R-MAGIC`, `R-PASSKEY`, `R-TRANSFER`, `R-EMAIL` and Phase 2 `R-DEPLOY` pass against real services; recovery/transfer complete graph publication | 5–8 |
+| 3. Resource authorization and reference feature | Extend the Phase 2 protocol to Project/workspace resources; optional workspace CRUD/archive and inherited access; service-account/API-key enforcement/provisioning; generic capacity reservations; Project CRUD and feature-local search/pagination; oRPC/Zod contracts, typed client, public OpenAPI and concurrency | 2 | `R-WORKSPACES`, `R-KEYS`, `R-POLICY` and real-feature `R-AUTHZ`/`R-AUTHZ-PERF` pass; both API transports use the same policy and concurrency boundary | 4–6 |
 | 4. AI agent skills | Bootstrap/add/evolve/verify feature skills, dashboard/email skills, feature briefs, shared references, discovery adapters and isolated behavior evaluations; deterministic migration/RLS/API checks | 3 | Agent implements Project + child Task and service-account variant; held-out behavior suites pass without commercial credentials; evolution/resume preserves custom code/data/history; repeated requests add no duplicate artifacts | 3–5 |
 | 5. Monetization | Plans, Stripe fixed/seat billing, Checkout and Customer Portal, webhook inbox, commercial entitlement sources, ledger/windowed quotas, usage dashboard, reconciliation and notices | 4 | Stripe lifecycle and replay/out-of-order tests pass; provider downgrades and admission races converge; no duplicate semantic charge or usage | 4–6 |
-| 6. Platform modules and baseline recovery | Files/import/export; personal account deletion with ownership continuity; organization deletion and independent journal for both scopes; product analytics events/reports/controls/cleanup; gated restore; notifications/API-key UI/webhooks/integrations/flags; audit/help/public UI and production promotion | 5 | Analytics attribution/preferences/outage/late-delivery deletion pass; multi-org account closure preserves continuing tenants/billing; immutable files and journal restore cannot revive deleted users/tenants; baseline recovery and production checks pass before customer data | 6–9 |
+| 6. Platform modules and baseline recovery | Files/import/export; cross-resource search and resource activity feeds; personal/organization deletion and independent journal; analytics events/reports/controls/cleanup; recovery with credential replacement and independent access revalidation; notifications/API-key UI/webhooks/integrations/flags; audit/help/public UI and production promotion | 5 | `R-SEARCH`, `R-ACTIVITY`, `R-ANALYTICS`, `R-ACCOUNT`, `R-FILES`, `R-ORG-DATA`, `R-RECOVERY` and Commercial `R-DEPLOY` pass before customer data | 6–9 |
 | 7. Enterprise administration | OIDC/SAML, SCIM, custom roles, security policies, guests, contract overrides, operator/support UI, advanced retention/legal-hold hooks | 6 | Real IdP deprovisioning is organization-scoped, including sole owner; SCIM uses shared seat admission; recovery/support/policy actions fully audited | 4–7 |
 | 8. Hardening and template release | Expanded performance/failure/recovery drills, measured RPO/RTO, accessibility, upgrade rehearsal, deployment/runbooks, bootstrap presets, release provenance | 7 | All applicable release gates pass on reference deployment; tagged template release with documented limitations | 3–5 |
 
-Revised indicative total: **34–55 engineer-weeks** for the enterprise baseline, including passwordless identity, account lifecycle/ownership transfer, product analytics, agent-skill evaluation, the authorization prototype, direct Docker delivery, and baseline recovery. Replacing the custom generator removes its DSL/rendering engine work but does not assume an unmeasured AI productivity gain. Phase 1 retains 1–2 engineer-weeks for combined-process packaging, image publication, Docker staging, and deployment/rollback validation. Kubernetes provisioning, split images, Helm tooling and cluster validation are optional additional scope, estimated separately when selected. With two experienced full-stack engineers and part-time product/design/security/operations support, allow roughly **21–34 calendar weeks**, depending on integration access and discovery. These are planning estimates, not delivery commitments; a failed Phase 0 architecture gate requires re-estimation before implementation proceeds. Re-estimate again after Phase 3 and the first Phase 4 skill evaluations. Advanced extensions are additional scope.
+Revised indicative total: **34–55 engineer-weeks** for the enterprise baseline, including passwordless identity, account lifecycle/ownership transfer, product analytics, agent-skill evaluation, the authorization prototype, direct Docker delivery, and baseline recovery. The Phase 2/3 estimates move 1–2 engineer-weeks of authorization primitives into Phase 2; this is a sequencing correction, not a scope reduction. The newly explicit workspace/search/activity gates cover existing catalogue promises. Validate their effort and the cost/time of recovery security revalidation in Phase 0; the current total remains provisional. Replacing the custom generator does not assume an unmeasured AI productivity gain. Phase 1 retains 1–2 engineer-weeks for combined-process packaging and delivery validation. Kubernetes remains additional scope. With two experienced full-stack engineers and part-time product/design/security/operations support, allow roughly **21–34 calendar weeks**. Re-estimate after Phase 0, Phase 3, and the first Phase 4 skill evaluations; failed architecture or recovery targets require revised estimates before implementation proceeds.
 
 Milestones:
 
@@ -45,28 +45,35 @@ All 26 selections in [architecture §2.1](02-architecture-and-security.md#21-sta
 
 ### Capability-to-phase and acceptance matrix
 
-This matrix resolves cross-document release boundaries. F/C/E labels describe when behavior is usable; later customer UI or provider integration does not postpone the enforcement primitive needed by an earlier phase. Phase 0 uses prototypes to settle contracts; shipping acceptance runs on the implemented services. Commercial customer data requires the Phase 6 baseline recovery gate even if billing functionality is available in Phase 5.
+This matrix is the canonical acceptance register for the cross-cutting requirements below. Stable `R-*` IDs identify requirements; backlog IDs identify implementation work. Phase rows schedule these requirements, and the release checklist records evidence against the same IDs instead of restating their test cases. F/C/E labels describe when behavior is usable; later UI/provider integration does not postpone earlier enforcement. Phase 0 prototypes settle contracts; shipping acceptance runs on implemented services. Commercial customer data requires the Phase 6 recovery gate even if billing is available in Phase 5.
 
-| Capability | First implementation | Acceptance evidence | Later extension |
-| --- | --- | --- | --- |
-| CI/CD and single-container Docker deployment | Phase 0 deployment ADR; F / 1 combined image, registry, Docker staging and scripts | Web + worker run in one persistent application container; fresh install, process failure, migration failure, unhealthy replacement and compatible rollback pass without Kubernetes; F / 3–4 adds deployed reference/agent-authored feature suites | C / 6 protected production promotion and recovery gate; E / 8 capacity/upgrade/provenance drills |
-| Kubernetes/Helm deployment | X / optional after the Docker delivery contract is established | Split images, fresh namespace install, migration/model Jobs, rolling upgrade and compatible rollback pass on a reference cluster | Independent scaling; never a prerequisite for Docker-only F/C/E milestones |
-| Authorization projection and late-write isolation | Phase 0 prototype; F / 3 production path | Old grant request completes after a newer revocation; abandoned attempt cannot activate or change current access | Re-run on agent-authored features and E / 8 deployment |
-| Hot-tenant availability | Phase 0 decision gate; F / 3 real slice | Operations §4.7 workload, first-attempt failures, fence waits, create-to-readable latency and graph build/cleanup cost | C bulk jobs and E / 8 capacity testing |
-| Local entitlement/capacity policy | F / 2–3 | Project quota race and disabled-provider preset pass with real database enforcement | C / 5 sold-plan sources and usage windows; E / 7 contracts |
-| Membership seat admission | F / 2 | Invite/reactivation/role/bootstrap/recovery races use one transition service | C / 5 provider downgrade races; E / 7 real SCIM |
-| Service accounts/API keys | F / 3 | Scoped, expired, revoked and wrong-tenant keys; explicit policy capability required | C / 6 customer administration UI |
-| Last-owner protection and security override | Phase 0 adapter spike; F / 2 command/runbook | Voluntary last-owner change refused; security deactivation enters recovery without preserving access | E / 7 real SCIM sole-owner case and operator UI |
-| Email magic links | Phase 0 adapter contract; F / 2 | Atomic single use, expiry, scanner confirmation, generic responses, safe redirects and tenant SSO/MFA enforcement | E / 7 identity-provider policies |
-| Passkeys | Phase 0 origin/RP/assurance contract; F / 2 | Enrollment/sign-in/revoke, replay/origin rejection, multiple credentials, recovery and passwordless sensitive actions | E / 7 enforced enterprise policy |
-| Ownership transfer and lifecycle fences | F / 2 | Verified active recipient acceptance, expiry/cancel, same-tenant/version checks, role/seat atomicity and deprovisioning races | C / 6 multi-org closure and recovery receipts |
-| Required identity/security emails | F / 2 | Verification/reset/magic-link/invite/transfer/recovery delivery, retry and redaction | C / 6 full preferences/in-app delivery and deletion notices |
-| Foundation AI agent skills | F / 4 | All ten evaluation tasks in skills §5.7 plus deterministic checks; preserved customization/history; no billing credentials or skipped quota/key tests | C/E suites in §5.8 only with implemented modules |
-| Product analytics | C / 6 | Typed events/report fixtures, user/org attribution, tracking controls, redaction, bounded outages, provider cleanup and restore suppression | Additional providers/reports through tested adapters |
-| Personal account deletion | C / 6 | All-org ownership resolution, credential revocation, resumable cleanup, preserved tenant subscriptions and account/transfer-after-backup replay | E / 7 advanced retention and SCIM cases |
-| Files/import/export | C / 6 | Staging overwrite, exact scanned bytes, concurrent finalization, authorized export/download | Further formats/providers require adapter tests |
-| Organization export/deletion and baseline retention | C / 6 | Journal acknowledgement, deletion/cancellation replay, provider settlement and scoped export | E / 7 advanced retention/legal holds |
-| Recovery readiness and independent journal | Phase 0 design; C / 6 complete baseline | Mismatched snapshots, restore of only one store, deletion after backup, journal outage and old projector arrival all keep traffic gated | E / 8 measured RPO/RTO and expanded drills |
+Protocol ownership is explicit: [architecture §2.6](02-architecture-and-security.md#26-relationship-based-authorization) owns authorization, [data model §3.3](03-data-model.md#canonical-lifecycle-lock-order) owns lock ordering, and [operations §4.8](04-billing-usage-operations.md#recovery-readiness-protocol) owns deletion/recovery. Other documents link to these procedures.
+
+| ID | Capability | First implementation | Acceptance evidence | Later extension |
+| --- | --- | --- | --- | --- |
+| `R-DEPLOY` | CI/CD and Docker deployment | F / 1 infrastructure; F / 2 authorization bootstrap | [Deployment §7.5–7.8](07-ci-cd-and-deployment.md#fresh-install-initialization): explicit install/upgrade paths, initial store/model/epoch, interrupted retry and restored-data rejection; process/migration/readiness failures and compatible rollback; deployed feature suites in F / 3–4 | C / 6 production/recovery; E / 8 capacity/upgrade/provenance |
+| `R-K8S` | Kubernetes/Helm | X / after Docker contract | Split images, fresh install/bootstrap, migration/model Jobs, rolling upgrade and compatible rollback on a reference cluster | Never required for Docker-only milestones |
+| `R-TENANCY` | Tenant isolation and multiple memberships | F / 2 | Same user active in two organizations; duplicate membership in one refused; actual restricted roles, cross-tenant FK/RLS, missing context, pooled connections and multi-tab switching; every later module extends isolation coverage | Files/search/exports/jobs/API coverage as modules ship |
+| `R-LIFECYCLE` | Shared lock order | F / 2 | [Canonical order](03-data-model.md#canonical-lifecycle-lock-order) exercised across invite, role, transfer, deprovisioning and freeze races; no user fence acquired after an organization lock | C / 6 account closure; E / 7 directory adapter |
+| `R-AUTHZ` | Projection and late-write isolation | Phase 0 prototype; F / 2 organization/team production protocol; F / 3 resources | [Architecture §2.6](02-architecture-and-security.md#26-relationship-based-authorization): abandoned/late grant cannot alter current access, expiry and FGA failure deny access, generation/model boundaries hold; Phase 2 recovery/transfer completes real publication | Agent-authored features; custom roles and deployment hardening |
+| `R-AUTHZ-PERF` | Hot-tenant availability | Phase 0 gate; F / 3 real slice | Full [operations §4.7 workload and targets](04-billing-usage-operations.md#phase-0-authorization-decision-gate), including first-attempt failures, fence waits, create-to-readable and cleanup cost | C bulk jobs; E / 8 deployment |
+| `R-POLICY` | Local entitlements and capacity | F / 2–3 | Real database enforcement, Project create/restore quota races, idempotency and disabled-provider preset; flags/permissions remain independent | C / 5 sold plans/windows; E / 7 contracts |
+| `R-SEATS` | Membership seat admission | F / 2 | Shared transition boundary and race suite in [billing §4.2](04-billing-usage-operations.md#seats-upgrades-and-contracts), using `R-LIFECYCLE` | C / 5 provider downgrade; E / 7 real SCIM |
+| `R-KEYS` | Service accounts/API keys | F / 3 | Scoped, expired, revoked, rotated, wrong-tenant and undeclared-principal cases | C / 6 customer UI; restored keys invalidated by `R-RECOVERY` |
+| `R-OWNER` | Last-owner protection and security override | F / 2 | Voluntary last-owner change refused; security deactivation succeeds during FGA outage, enters recovery, verifies replacement authority and publishes before reopening | E / 7 real SCIM and operator UI |
+| `R-MAGIC` | Email magic links | F / 2 | Atomic single use, expiry, scanner confirmation, generic responses, safe redirects and policy/assurance tests | E / 7 SSO policies |
+| `R-PASSKEY` | Passkeys | F / 2 | Enrollment/sign-in/revoke, challenge/origin/RP/assurance checks, multiple credentials, recovery and passwordless sensitive actions | E / 7 enforced enterprise policy |
+| `R-TRANSFER` | Ownership transfer | F / 2 | Verified active recipient acceptance, expiry/cancel, same-tenant/version checks, seat/audit atomicity and deprovisioning races under `R-LIFECYCLE` | C / 6 multi-org closure/recovery receipts |
+| `R-EMAIL` | Identity/security email | F / 2 | Verification/reset/magic-link/invite/transfer/recovery delivery, retry and redaction | C / 6 full preferences/in-app/deletion notices |
+| `R-WORKSPACES` | Optional Foundation workspaces | F / 3 | Create/rename/archive/list and attach/move Project; same-tenant parents, inherited allow/deny/revocation, source/destination authorization and disabled-module behavior; archived workspace refuses new assignments while existing resources retain documented access | Additional resource types reuse the contract |
+| `R-SKILLS` | Foundation AI agent skills | F / 4 | All ten [skills §5.7 tasks](05-ai-agent-skills.md#57-skill-evaluation-and-release-evidence), held-out repeat evaluations and deterministic checks; preserve customization/history without commercial credentials | Applicable C/E suites in §5.8 |
+| `R-SEARCH` | Cross-resource search | C / 6 | [Operations §4.6](04-billing-usage-operations.md#search-and-resource-activity-commercial-core): registered types, safe snippets/counts, tenant/permission filtering, revocation/deletion and sparse results; Foundation Project list search remains F / 3 | Additional registered types |
+| `R-ACTIVITY` | Resource activity feeds | C / 6 | [Operations §4.6](04-billing-usage-operations.md#search-and-resource-activity-commercial-core): detail feed, event replay/deduplication, pagination/order, current permission, redaction and retention; audit remains independent | Additional event types |
+| `R-ANALYTICS` | Product analytics | C / 6 | [Operations §4.9](04-billing-usage-operations.md#49-product-analytics): report/cohort fixtures, attribution, authoritative preferences, redaction, bounded outages, deletion and restore suppression | Additional tested adapters/reports |
+| `R-ACCOUNT` | Personal account deletion | C / 6 | [Operations §4.8](04-billing-usage-operations.md#personal-account-deletion-and-ownership-continuity-commercial-core): multi-org ownership, credentials, retry, tenant billing continuity and journal replay | E / 7 retention/SCIM |
+| `R-FILES` | Files/import/export | C / 6 | Immutable finalization and overwrite/replay/capacity races; current authorization on import/export/download; retention/expiry | Further formats/providers |
+| `R-ORG-DATA` | Organization export/deletion | C / 6 | Journal acknowledgement, cancellation/replay, provider settlement and scoped export per [operations §4.8](04-billing-usage-operations.md#organization-deletion) | E / 7 retention/legal holds |
+| `R-RECOVERY` | Recovery readiness and independent journal | Phase 0 design; C / 6 baseline | All [canonical recovery cases](04-billing-usage-operations.md#recovery-readiness-protocol), including post-backup ordinary revocations, credential replacement, independent revalidation and denied unverified organizations | E / 8 measured RPO/RTO including user revalidation |
 
 The skills' export/file and enterprise-identity suites are mandatory for presets that enable those modules, not prerequisites for the Foundation milestone. Foundation still rejects undeclared endpoints and unknown dependencies. No stub adapter or skipped required suite satisfies a milestone.
 
@@ -76,92 +83,72 @@ The skills' export/file and enterprise-identity suites are mandatory for presets
 | --- | --- | --- |
 | ARCH-01 | Record stack/version matrix and deployment ADR | Supported versions, licenses, Docker host/registry provider, runner connectivity, deployment identity/trust, upgrade policy, and infrastructure ownership documented |
 | SEC-01 | Threat-model browser/API/worker/provider boundaries | Tenant forgery, confused-deputy, stale-grant, secret exposure, and billing replay scenarios mapped to controls/tests |
-| DB-01 | Prove PostgreSQL transaction-local tenant context | Actual pooled connections alternate tenants; missing context/cross-tenant FK fail under runtime roles |
-| AUTH-01 | Prove identity-to-membership mapping and sole-owner recovery | SSO/SCIM affect only intended organization; sole-owner deactivation revokes access and enters verified recovery; no unsafe email-only linking |
-| AUTHZ-01 | Prototype generation-isolated projection and publication | Lost DB lock plus late remote grant after newer revocation cannot restore access; ambiguous attempts never activate; model/epoch and cross-generation edges validated |
-| AUTHZ-02 | Run Phase 0 hot-tenant decision benchmark | Operations §4.7 workload meets failure, latency, lock-wait and create-to-readable budgets; graph copying/cleanup measured; redesign required on failure |
-| REC-01 | Design independent journal and recovery readiness | Record failure domains, durability/retention/completeness rules, fresh recovery epoch, graph rebuild, and gate ownership in Phase 0; full baseline drill in Phase 6 |
-| FILE-01 | Prove immutable finalization adapter | No staging overwrite changes approved bytes; finalization/scan are bound to a fixed object identity; publication and capacity settle once in Phase 6 |
+| DB-01 | Prove PostgreSQL tenant context and membership constraints | `R-TENANCY`; exercise both membership indexes using the real restricted role |
+| AUTH-01 | Prove identity-to-membership mapping and sole-owner recovery | `R-OWNER` and `R-TRANSFER`; Phase 0 adapter evidence, then real Phase 2 services |
+| AUTHZ-01 | Prototype generation-isolated projection/publication | Phase 0 `R-AUTHZ` fault evidence |
+| AUTHZ-02 | Run hot-tenant decision benchmark | Phase 0 `R-AUTHZ-PERF`; rerun on the Phase 3 slice |
+| AUTHZ-03 | Implement the selected production authorization primitives in Phase 2 | `R-AUTHZ`, `R-LIFECYCLE` and Phase 2 `R-DEPLOY`; required before transfer/recovery acceptance |
+| REC-01 | Design and implement independent recovery controls | Phase 0 `R-RECOVERY` design and revalidation/RTO feasibility; full baseline drill in Phase 6 |
+| FILE-01 | Prove immutable finalization adapter | Phase 0 feasibility; complete `R-FILES` in Phase 6 |
 | DEV-01 | Create Bun/Turborepo monorepo, T3 Env/Zod config, local dependencies and AGENTS.md | Pinned Bun and committed lockfile reproduce setup; invalid runtime config fails early; fresh clone can start services without production credentials; agent context matches commands |
 | DEV-02 | Build GitHub Actions CI with Vitest/Playwright and two-organization synthetic fixtures | Repeatable integration environment; Biome/TypeScript/Commitlint/Knip, applicable security/integration/browser suites, fresh/upgrade migrations, Storybook and production builds gate merges |
 | DEV-03 | Implement combined `app` Docker target and release publication | Non-root container supervises web/worker; one-off migration/publication modes work; GHCR digest, scans, SBOM/provenance and signatures map to the tested commit; PR jobs cannot publish |
 | DEV-04 | Configure Biome, Commitlint, Lefthook and Knip | pre-commit and commit-msg hooks invoke shared policies; CI rejects formatting/lint/commit violations and unexplained unused code/dependencies even when local hooks are skipped |
 | DEV-05 | Configure LogTape logging and redaction with OpenTelemetry correlation | Web/worker request, job and trace references correlate; credentials, authentication URLs and sensitive payloads are excluded from output |
-| OPS-01 | Prepare Docker staging and direct-container deployment | Host bootstrap, environment isolation, external services, secrets, TLS proxy, health checks and limits; one application container passes smoke, shutdown and host reboot checks |
-| OPS-02 | Implement serialized migration, Docker deployment, and promotion workflows | One-off commands from the same app digest finish before compatible replacement; identical digest promoted; failed migration/readiness blocks success; compatible rollback preserves data |
-| OPS-03 | Complete production delivery and operational handover in Phase 6 | Protected environment, short-lived scoped access, secret rotation, ownership/runbooks and baseline restore pass before customer data |
-| OPS-X01 | Optional Kubernetes adapter and Helm chart | Split image targets, cluster access, manifests/Jobs, isolation, rollout and rollback pass adapter-specific checks; tracked outside the required baseline |
+| OPS-01 | Prepare Docker staging and host infrastructure | Phase 1 infrastructure portion of `R-DEPLOY` |
+| OPS-02 | Implement install/bootstrap, upgrade, and promotion workflows | `R-DEPLOY`; Phase 1 installation bookkeeping, Phase 2 real model/epoch bootstrap, later deployed module suites |
+| OPS-03 | Complete production delivery and operational handover in Phase 6 | Commercial `R-DEPLOY` and `R-RECOVERY`; production access, secret rotation and assigned runbook ownership |
+| OPS-X01 | Optional Kubernetes adapter and Helm chart | `R-K8S`; outside the required baseline |
 | UI-01 | Build React 19/Next.js shell with shadcn/ui, Tailwind CSS, next-intl, React Hook Form/Zod and Storybook | Responsive keyboard-accessible shell; locale/theme/form-state stories build; tenant change clears relevant state |
-| TEN-01 | Implement organization/member/invitation lifecycle | Single-use invites; shared admission for activation/role/owner changes; security deactivation wins over owner-count and capacity rules |
-| QUOTA-01 | Implement local typed policies and transactional capacity | Foundation Project runs with billing disabled; create/restore races cannot spend capacity twice |
+| TEN-01 | Implement organization/member/invitation lifecycle | `R-TENANCY`, `R-LIFECYCLE`, `R-SEATS` and `R-OWNER` in Phase 2 |
+| QUOTA-01 | Implement local typed policies and transactional capacity | `R-POLICY` in Phases 2–3 |
 | API-01 | Implement oRPC contracts/procedures, typed client, OpenAPI and context/error/DTO/idempotency/service-principal boundary | Runtime Zod validation and TypeScript client checks pass; RPC and REST calls cannot bypass checks; expiring/scoped/revoked keys and explicit principal capabilities tested by Phase 3 |
 | DOMAIN-01 | Build Project vertical slice by hand | Mutation, generation readiness, audit/outbox, quotas, conflict, list UI and measured create-to-readable behavior pass together |
-| SKILL-01 | Extract the six agent skills and supporting references from the proven slice | Isolated repeat evaluations implement/evolve Project/Task, preserve customization/history and pass held-out security/behavior checks |
-| AUTH-02 | Implement email magic links in Phase 2 | Hashed single-use expiry, safe confirmation/redirects, scanner/replay races and tenant-policy enforcement |
-| AUTH-03 | Implement passkeys in Phase 2 | Verified RP/origin/challenge/assurance, enrollment/revoke/recovery and passwordless reauthentication |
-| TEN-02 | Implement accepted ownership transfer and account lifecycle fences in Phase 2 | Transfer/admission/freeze/deprovisioning races preserve ownership, seat counts and revocation |
-| ACC-01 | Implement personal account deletion in Phase 6 | Multi-org prerequisites, independent journal, provider cleanup, credential revocation, retained tenant data/billing and restore tests |
-| ANALYTICS-01 | Implement product analytics in Phase 6 | Catalogue/reference adapter, defined reports and fixtures, tracking controls, attribution, redaction, outage and deletion reconciliation |
+| SKILL-01 | Extract six skills and references from the proven slice | `R-SKILLS`; record applicable requirement IDs with evaluation evidence |
+| AUTH-02 | Implement email magic links in Phase 2 | `R-MAGIC` and applicable `R-EMAIL` cases |
+| AUTH-03 | Implement passkeys in Phase 2 | `R-PASSKEY` |
+| TEN-02 | Implement ownership transfer and lifecycle fences in Phase 2 | `R-TRANSFER` and `R-LIFECYCLE`; depends on production authorization work `AUTHZ-03` |
+| ACC-01 | Implement personal account deletion in Phase 6 | `R-ACCOUNT`, `R-LIFECYCLE` and `R-RECOVERY` |
+| ANALYTICS-01 | Implement product analytics in Phase 6 | `R-ANALYTICS`; one authoritative preference service |
+| WORKSPACE-01 | Implement optional workspaces in Phase 3 | `R-WORKSPACES` |
+| SEARCH-01 | Implement cross-resource search in Phase 6 | `R-SEARCH`; reuses the Foundation list/field boundary |
+| ACTIVITY-01 | Implement resource activity feeds in Phase 6 | `R-ACTIVITY` |
 
 Implement security primitives before extracting agent skills. Add optional UI controls only after their server behavior exists. Do not ship visible placeholder enterprise settings that imply working protection.
 
 ## 6.4 Release checklist
 
+Attach evidence for each applicable requirement ID in the [acceptance matrix](#capability-to-phase-and-acceptance-matrix), recording template commit, enabled preset/modules, deployment profile, suite version and result. The matrix and linked contracts own the test cases; this checklist owns release sign-off. An optional disabled module is explicitly out of scope, never reported as a passed test. All F/C/E requirements due by the selected milestone must pass.
+
 ### Security and identity
 
-- [ ] All tenant tables carry the expected key, constraints, policies, and restricted-role coverage.
-- [ ] List/read/write/count/search/file/export/job/API tests cover cross-tenant attacks and forged contexts.
-- [ ] Direct grants, team grants, membership revocation, parent changes, and custom-role updates cannot use a stale graph.
-- [ ] An old projector write completing after lock loss and a newer revocation cannot alter current access; abandoned generations never activate and graph traversal cannot cross generations.
-- [ ] FGA/model/projection failures deny dependent access predictably and expose safe recovery diagnostics.
-- [ ] MFA, session revocation, SSO enforcement, SCIM deprovisioning, key rotation, and accepted ownership transfer are tested.
-- [ ] Magic-link single use/expiry/scanner handling and passkey RP/origin/assurance/recovery pass, including passwordless-only sensitive actions.
-- [ ] Personal deletion resolves every ownership obligation, survives concurrent transfers/admission, revokes credentials, and preserves continuing organizations and subscriptions.
-- [ ] Sole-owner security/SCIM deprovisioning removes access even during FGA outage, enters owner recovery, and requires independently verified replacement admission; voluntary last-owner removal remains refused.
-- [ ] Required field-level restrictions, redaction, CSRF/origin/CORS policies, and operator boundaries are verified.
+- [ ] `R-TENANCY`, `R-LIFECYCLE` and `R-AUTHZ` pass for every enabled transport/module, including list/read/write/count/search/file/export/job paths as applicable.
+- [ ] `R-MAGIC`, `R-PASSKEY`, `R-EMAIL`, `R-OWNER`, `R-TRANSFER` and `R-KEYS` pass for the milestone; MFA/session controls and applicable SSO/SCIM policies are covered.
+- [ ] Field restrictions, redaction, CSRF/origin/CORS, failed-action security recording and operator boundaries are verified.
+- [ ] Foundation workspace implementation passes `R-WORKSPACES`; a product disabling it verifies the disabled-module case.
 
-### Commercial correctness
+### Commercial correctness and data lifecycle
 
-- [ ] Fixed and seat subscriptions pass creation, upgrade, downgrade, renewal, delinquency, cancellation, and recovery scenarios.
-- [ ] Duplicate/out-of-order/missed provider events converge to current state through replay and reconciliation.
-- [ ] Plan entitlements, feature flags, permissions, hard quotas, and rate limits remain independent.
-- [ ] Seat and quota concurrency tests prove capacity cannot be spent twice.
-- [ ] Seat admission covers bootstrap, invite/SCIM/reactivation/role/ownership changes and provider downgrades; deactivation never waits for billing or owner transfer.
-- [ ] Usage deduplication, corrections, period boundaries, job retry, and billing reconciliation are covered.
-- [ ] Optional metered charging is labelled disabled unless a live-capable adapter has passed its separate contract tests.
+- [ ] `R-POLICY` and `R-SEATS` pass with the preset's actual entitlement/provider sources.
+- [ ] Fixed/seat subscriptions cover creation, upgrades, downgrades, renewal, delinquency, cancellation, provider outage and reconciliation; duplicate/out-of-order/missed events converge.
+- [ ] Usage deduplication, corrections, period boundaries, retry and financial reconciliation pass. Optional metered charging stays disabled until its separate adapter contract passes.
+- [ ] Commercial modules pass `R-SEARCH`, `R-ACTIVITY`, `R-ANALYTICS`, `R-FILES`, `R-ACCOUNT` and `R-ORG-DATA` as applicable.
+- [ ] `R-RECOVERY` passes before Commercial customer data; Enterprise evidence includes measured RPO/RTO and independent security revalidation time.
 
 ### AI agent skills and developer experience
 
-- [ ] All required-stack delivery gates pass for the release's phases; versions are pinned and the Bun lockfile is reproducible.
-- [ ] Biome, Commitlint, Lefthook and Knip use documented shared policies; GitHub Actions enforces checks independently of local hooks.
-- [ ] Vitest and Playwright suites, strict TypeScript checks, Storybook and production builds run through the documented Bun scripts.
-- [ ] AGENTS.md records the actual stack, boundaries and commands; skills and feature examples use oRPC, next-intl and the shared UI/form patterns.
-- [ ] Agent-authored feature migrates, builds, appears in navigation, and completes the dashboard/API workflow.
-- [ ] RLS/permissions/audit/DTO policies in agent-authored code are enforced, including on manually invoked APIs.
-- [ ] Foundation skill evaluation and deterministic behavior suites pass with real local entitlements/quotas and API-key enforcement and no commercial credentials; enabled C/E modules add their applicable suites.
-- [ ] Skills preserve ordinary developer-owned source, customizations and migration history; repeat/resume does not duplicate migrations or registrations.
-- [ ] Isolated skill evaluations record task/skill/template/model versions and held-out behavioral results; application CI does not require a live AI service.
-- [ ] Feature evolution handles data/backfill/API/model compatibility or refuses with a precise migration plan.
-- [ ] Renaming a new product updates manifests, branding, package identifiers, emails, and example content.
-- [ ] Template updates have a tested previous-release migration/codemod path.
+- [ ] All [required-stack delivery gates](#required-stack-delivery-gates) due for this milestone pass; versions and the Bun lockfile are reproducible, and CI enforces checks independently of local hooks.
+- [ ] AGENTS.md documents actual commands/contracts; `R-SKILLS` evidence includes evaluated skill/reference/model versions, held-out repeat results and ordinary deterministic application CI.
+- [ ] Applicable module evaluations from skills §5.8 pass, including preserved customization, history and feature evolution; no missing module or skipped required suite is counted as success.
+- [ ] Renaming a product updates manifests, branding, packages, emails and example content; template upgrades have a tested previous-release migration/codemod path.
 
 ### Operations and customer experience
 
-- [ ] Local setup uses only synthetic data; T3 Env rejects missing/unsafe runtime secrets and origins before serving or processing jobs.
-- [ ] [CI/CD plan](07-ci-cd-and-deployment.md) is implemented: required CI checks, tested combined Docker image, registry publication, signed provenance, and retained release digest/configuration.
-- [ ] Direct Docker staging install and upgrade run web/worker in one application container without Kubernetes; production promotion uses the same verified digest, isolated environment access, and protected release approval.
-- [ ] One-off migration/model commands gate replacement; failed migration, unavailable image, failed combined health and incompatible rollback stop release; compatible rollback passes synthetic data and worker checks.
-- [ ] If Kubernetes is enabled, its split-image/chart/Job/rollout tests pass; a Docker-only release does not depend on this optional gate.
-- [ ] LogTape logs and redaction, OpenTelemetry metrics/traces, alerts, dead-letter views, and reconciliation runbooks are usable.
-- [ ] The documented workload meets measured targets; permissions, exports, and tenant fairness are included.
-- [ ] Phase 0 and the real Phase 3 slice meet healthy hot-tenant failure/lock-wait/create-to-readable gates before skill extraction; retries do not conceal first-attempt failures.
-- [ ] Exact immutable object identity binds upload finalization, scan approval and download; staging overwrite and duplicate-finalization races cannot publish unscanned bytes or double-settle capacity.
-- [ ] Baseline recovery passes in C before customer data; independent journal completeness, fresh epoch and rebuilt graph are verified before any tenant serving/worker effects resume.
-- [ ] E recovery meets measured RPO/RTO and tests mismatched stores, later deletions, journal outage, partial rebuild and late old projector requests.
-- [ ] Account and organization deletion, accepted transfer replay, provider cleanup/cancellation, retention exceptions, and backup expiry are exercised.
-- [ ] Product analytics reports pass known-cohort fixtures and honor user/organization tracking policy, redaction, tenant switching, delayed retries, deletion suppression and provider outages.
-- [ ] Dashboard forms/tables/dialogs pass keyboard/accessibility checks and display all failure states.
-- [ ] Incident response, dependency updates, security contact, and deployment rollback/forward-fix ownership are assigned.
+- [ ] `R-DEPLOY` passes for the selected milestone with retained signed release/configuration evidence; `R-K8S` is additionally required only for that extension.
+- [ ] `R-AUTHZ-PERF` passes at its decision, real-feature and release-deployment gates; the documented workload also covers enabled bulk operations and tenant fairness.
+- [ ] Synthetic local setup, safe runtime configuration, logs/traces/redaction, alerts, dead-letter diagnostics and reconciliation runbooks are usable.
+- [ ] Dashboard forms/tables/dialogs meet keyboard/accessibility requirements and expose all required loading, pending, denied, conflict, quota and failure states.
+- [ ] Incident response, dependency updates, security contact, secret rotation, backup/revalidation, rollback/forward-fix ownership and recovery escalation contacts are assigned.
 
 ## 6.5 Configuration and adoption decisions
 
@@ -183,7 +170,7 @@ These defaults guide implementation, subject to the mandatory Phase 0 authorizat
 | Pricing | Versioned free/trial/fixed/seat definitions | Price amounts, currencies, trial rules, seat classes, grace duration |
 | Metered charges | Disabled; local ledger/quotas included | Provider, metric contracts, allowed overages, credits, hybrid charge ownership |
 | Retention | Configurable by data class | Required audit/financial retention, deletion grace, contractual holds |
-| Recovery control plane | Journal and epoch/readiness survive independently of both database restores | Provider, failure domains, backup horizon and journal completeness mechanism |
+| Recovery control plane | Independent journal/epoch/readiness/evidence; application restores require credential replacement and access revalidation under `R-RECOVERY` | Provider, failure domains, backup horizon, completeness, independent identity/owner evidence and achievable RTO |
 | File finalization | Private staging plus immutable approved object identity | Adapter create-once/version guarantees and download revocation window |
 | Availability/scale | Reference targets in operations plan | Paid SLA, recovery commitments, target tenant/resource/event volume |
 | Legal/compliance | Controls, evidence, and configuration hooks | Required agreements, certifications, regional obligations |
@@ -194,8 +181,8 @@ These defaults guide implementation, subject to the mandatory Phase 0 authorizat
 | --- | --- |
 | Excessive scope makes the template hard to adopt | Modular presets; demonstrate F before C/E; optional extensions remain removable |
 | A late projector request restores an obsolete grant | Unique immutable generations per attempt, conditional publication, recovery epoch, and the exact lost-lock/late-write fault test; Phase 0 proves the protocol |
-| Graph copies/fences make ordinary tenant traffic unavailable | Mandatory Phase 0 hot-tenant budgets including creates, sparse lists and first-attempt failures; redesign and re-estimate before Phase 3 if the candidate fails |
-| Restore counters look current while graph or deletion history is wrong | Independent journal/readiness, new epoch, rebuilt generations, and mismatched-snapshot/deletion-after-backup drills before C customer data |
+| Graph copies/fences make ordinary tenant traffic unavailable | Mandatory Phase 0 hot-tenant budgets including creates, sparse lists and first-attempt failures; redesign and re-estimate before Phase 2 if the candidate fails |
+| Restore counters look current while security or deletion history is obsolete | `R-RECOVERY`: independent replay, credential replacement, access revalidation and fresh graphs; ordinary post-backup revocations are explicit test cases |
 | Sole-owner protection prevents security offboarding | Security deactivation overrides voluntary owner-count protection; freeze tenant activity and use verified audited recovery |
 | Mutable upload changes after scan approval | Capture immutable bytes before scanning; bind download to the approved identity; overwrite/finalization race tests |
 | Membership paths bypass seat accounting | One atomic transition/admission service shared by user, operator, directory and recovery commands; cross-entry-point races and provider reconciliation |

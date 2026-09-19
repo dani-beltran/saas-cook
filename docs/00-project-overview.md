@@ -17,7 +17,6 @@ The folder name intentionally follows the requested spelling, `common-sass`. It 
 | [5. AI agent skills](05-ai-agent-skills.md) | Planned skills, feature briefs, implementation/evolution workflows, deterministic checks, and behavioral evaluation |
 | [6. Delivery roadmap](06-delivery-roadmap.md) | Dependencies, phases, effort assumptions, acceptance gates, and first implementation backlog |
 | [7. CI/CD and deployment](07-ci-cd-and-deployment.md) | GitHub Actions pipelines, single-container Docker deployment, optional Kubernetes/Helm, image promotion, migrations, and rollback |
-| [Example feature brief](../examples/features/project.md) | Concrete task and acceptance criteria for an agent building a Project feature |
 
 ## Recommended foundation
 
@@ -52,7 +51,7 @@ The template should be a strong base for many SaaS products. Each product still 
 ## Required design gates
 
 - A late projector request must not restore revoked access after a worker loses its database lock. Phase 0 tests generation-isolated projection and hot-tenant availability before selecting the authorization protocol.
-- Restores keep tenant traffic and workers gated until an independent deletion journal is replayed and the authorization graph is rebuilt and verified.
+- Restores follow the [canonical recovery procedure](04-billing-usage-operations.md#recovery-readiness-protocol): journal replay, independent security revalidation after an application restore, and verified graph reconstruction gate resumed access. A graph rebuilt from old permissions does not preserve later revocations by itself.
 - Security deprovisioning takes precedence over last-owner protection; ownerless organizations enter an audited recovery state.
 - Voluntary account deletion requires ownership resolution across all organizations and preserves continuing tenants and their subscriptions.
 - Magic-link redemption and passkey recovery cannot bypass tenant SSO/MFA policies or reactivate a deleting account.
