@@ -12,7 +12,7 @@ Initial assumptions:
 - The first reference deployment uses one region. Regional placement and dedicated databases are extensions.
 - The template is source code developers own and customize. It is not a runtime no-code application builder.
 - Products can disable optional modules. Tenant isolation, authorization, validation, and security audit cannot be disabled for convenience.
-- A demonstration Projects feature proves the architecture and generation workflow; it is removable from products that do not need projects.
+- A demonstration Projects feature proves the architecture and agent-assisted development workflow; it is removable from products that do not need projects.
 
 Release labels below are **F — foundation**, **C — commercial core**, **E — enterprise baseline**, and **X — optional extension**. E features are required before presenting the release as the enterprise template, even though they are delivered after F and C.
 
@@ -23,9 +23,13 @@ Release labels below are **F — foundation**, **C — commercial core**, **E �
 | Capability | Required behavior | Release |
 | --- | --- | --- |
 | Registration and sign-in | Email verification, password reset, secure sessions, generic account-discovery responses, optional social login | F |
+| Email magic links | Passwordless email sign-in, short-lived single-use tokens, generic responses, safe redirects, rate limits, and organization-policy enforcement | F |
+| Passkeys | WebAuthn registration/sign-in, multiple named credentials, revoke/replace, verified origins/RP ID, user verification, and tested recovery | F |
 | Account security | MFA, recovery codes, session inventory, revoke one/all sessions, sensitive-action reauthentication | F |
+| Personal account deletion | Self-service global-account closure, ownership resolution in every organization, credential revocation, resumable purge/anonymization, and provider cleanup; continuing tenant data/billing preserved | C |
 | Organizations | Create, rename, switch, configure, suspend; stable IDs independent of slugs; export/deletion arrive in C | F/C |
 | Memberships | Invite, resend, expire, accept, remove, suspend, transfer ownership; voluntary changes preserve an active owner, security deprovisioning can enter owner recovery | F |
+| Organization ownership transfer | Nominate an eligible verified active member, recipient acceptance, atomic owner-role transition and seat checks, expiry/cancel, notifications, and audit; used by account deletion | F |
 | Organization onboarding | Checklist, profile, first resource, invitation, local foundation policy, completion tracking; paid plan/trial selection arrives in C | F/C |
 | Teams and workspaces | Team membership; optional workspaces for resource grouping and inherited access | F |
 | Tenant isolation | Tenant-scoped database access, storage, caches, search, jobs, exports, and integrations | F |
@@ -49,6 +53,7 @@ Release labels below are **F — foundation**, **C — commercial core**, **E �
 | Entitlements | Typed local policy resolver in F; sold-plan/add-on sources in C and negotiated overrides in E, independent of permissions | F/C/E |
 | Usage metering | Durable events, deduplication, unit definitions, period totals, corrections, reconciliation | C |
 | Quotas | Transactional capacity reservations and membership admission in F; windowed usage, soft limits, warnings, and billing integration in C | F/C |
+| Product analytics | Typed product events, user/organization attribution, onboarding/conversion funnels, feature adoption and retention reports, tracking controls, and provider deletion; separate from billable usage | C |
 | Usage dashboard | Current usage, limits, reset date, reporting delay, alerts; clearly distinguish estimated charges | C |
 | Billing resilience | Signature verification, durable webhook inbox, retries, out-of-order handling, scheduled reconciliation | C |
 | Sales-led contracts | Manual invoicing mode, negotiated entitlements, effective dates, audit trail, renewal metadata | E |
@@ -65,7 +70,7 @@ Release labels below are **F — foundation**, **C — commercial core**, **E �
 | State handling | Loading, empty, error, unavailable, denied, validation, stale-update conflict, and quota states | F |
 | Internationalization | Translation keys, locale-aware numbers/dates, time zones, currency formatting; English seed catalogue | F |
 | User preferences | Profile, avatar, locale, time zone, notifications, sessions, MFA | F/C |
-| Transactional notifications | Verification/reset/invitation and security/recovery email delivery in F; full email/in-app preferences and commercial notices in C | F/C |
+| Transactional notifications | Verification/reset/magic-link/invitation/ownership-transfer and security/recovery email delivery in F; full email/in-app preferences and commercial notices in C | F/C |
 | Files | Private uploads, immutable scanned bytes, signed access, type/size checks, quarantine/scanning, storage quotas | C |
 | Search | PostgreSQL search for tenant resources with permission-aware results and snippets | C |
 | Import/export | Validated CSV imports, preview/errors, resumable bulk processing, authorized downloadable exports | C |
@@ -80,7 +85,7 @@ Release labels below are **F — foundation**, **C — commercial core**, **E �
 | Capability | Required behavior | Release |
 | --- | --- | --- |
 | Versioned API | REST contract, OpenAPI, validated payloads, pagination, rate limits, consistent errors | F/C |
-| Entity generator | Schema to migration/model/service/routes/screens/permissions/tests; controlled evolution | F |
+| AI agent skills | Bootstrap, add/evolve a domain feature, add a dashboard page or email, and verify a change using repository context, existing services, reviewable diffs, and executable checks | F |
 | Background processing | Durable jobs, retries, concurrency limits, timeouts, scheduling, dead-letter handling | F |
 | Domain events | Transactional outbox, versioned payloads, idempotent consumers | F |
 | Integration credentials | Encrypted secrets, minimum scopes, refresh/revocation lifecycle, connection health | C |
@@ -91,7 +96,7 @@ Release labels below are **F — foundation**, **C — commercial core**, **E �
 | Observability | Structured logs, traces, metrics, error tracking, queue lag, isolation alerts, usage discrepancies | F/C |
 | Delivery tooling | Local dependencies, seed data, GitHub Actions CI/CD, single-container Docker deployment, registry/promotion, preview environments, migrations, rollback, release/version policy; production customer-data gate in C | F/C |
 | Kubernetes deployment | Optional Helm profile with separate web/worker containers, migration Jobs, and independent scaling; direct Docker deployment remains supported without cluster tooling | X |
-| Data lifecycle | Organization export/deletion, independent deletion journal, baseline retention/backup expiry in C; advanced retention and legal-hold hooks in E | C/E |
+| Data lifecycle | Personal account deletion and organization export/deletion, independent deletion journal for both scopes, analytics-provider cleanup, baseline retention/backup expiry in C; advanced retention and legal-hold hooks in E | C/E |
 | Recovery | Encrypted backups, point-in-time recovery and gated baseline restore drill before customer data in C; expanded disaster recovery and measured enterprise targets in E | C/E |
 | Security engineering | Threat model, dependency/secret scanning, restricted DB roles, security regression suite | F/E |
 | Regional/dedicated hosting | Tenant placement registry, dedicated deployment profile, migration/export tools | X |
@@ -107,24 +112,32 @@ Release labels below are **F — foundation**, **C — commercial core**, **E �
 7. **Offboard an employee:** deactivate membership → revoke that organization's access and relevant tokens → remove team grants → transfer required resource responsibilities → reconcile seats → retain the user's access to other organizations. Security/SCIM deprovisioning proceeds even for the sole owner; atomically enter owner recovery and freeze ordinary tenant activity until a verified replacement is admitted. Preserve historical actor references with the configured privacy policy.
 8. **Leave the service (C):** owner requests export → receives scoped, expiring download → schedules deletion → the independent deletion journal durably records the request → cancellation and retention rules run → deletion status remains visible through a minimal recovery channel. Recovery from an older backup replays that journal before serving tenant traffic.
 
+9. **Sign in without a password:** request an email magic link or use a registered passkey → verify the single-use challenge → resolve identity → satisfy the target organization's SSO/MFA policy → establish a session. Expired/replayed links and invalid origins fail safely; recovery never silently weakens tenant policy.
+10. **Transfer organization ownership:** current owner reauthenticates → selects an eligible existing member → recipient accepts with fresh authentication → shared membership transition atomically promotes the recipient and applies the agreed outgoing role → audit and notify both parties. A pending invitation or transfer is not completed ownership.
+11. **Delete a personal account (C):** reauthenticate → list all affected memberships and ownership obligations → complete accepted transfers or finish separately authorized organization deletion → confirm → journal deletion and freeze the global identity → revoke credentials/access → clean up personal data and analytics identifiers → show completion through a minimal recovery channel. Other users retain their organizations, resources, and subscriptions; retry partial failures without duplicating seat changes.
+12. **Understand adoption (C):** product operator views onboarding completion, activation, feature adoption, paid conversion, and retention using documented event/report definitions. Test traffic is separated; tracking settings and deletion are respected; product analytics never decides billing or permissions.
+
 ## 1.4 Dashboard information architecture
 
 Proposed browser routes, with `[orgSlug]` resolved to an authorized immutable organization ID:
 
 ```text
 /login, /signup, /verify-email, /forgot-password, /reset-password
+/auth/magic-link                         # Confirmation/redemption flow
 /onboarding
 /invite/[token]
 /account/profile
-/account/security
+/account/security                       # Includes passkey management
+/account/delete                         # Ownership checklist and deletion status
 /account/notifications
 /app/[orgSlug]/overview
-/app/[orgSlug]/projects                   # Generated reference feature
+/app/[orgSlug]/projects                   # Reference feature used by agent skills
 /app/[orgSlug]/projects/new
 /app/[orgSlug]/projects/[id]
 /app/[orgSlug]/projects/[id]/edit
 /app/[orgSlug]/settings/general
 /app/[orgSlug]/settings/members
+/app/[orgSlug]/settings/ownership
 /app/[orgSlug]/settings/teams
 /app/[orgSlug]/settings/roles
 /app/[orgSlug]/settings/security
@@ -137,6 +150,7 @@ Proposed browser routes, with `[orgSlug]` resolved to an authorized immutable or
 /app/[orgSlug]/settings/integrations
 /app/[orgSlug]/settings/data
 /operator                               # Separate operator authentication boundary
+/operator/analytics                     # Product-wide reports, restricted to operators
 ```
 
 Navigation responds to enabled modules and permissions. Deep links still perform all server checks. Billing managers do not automatically receive access to product content; support staff do not automatically receive customer access.
@@ -156,10 +170,13 @@ Navigation responds to enabled modules and permissions. Deep links still perform
 ## 1.6 Success criteria
 
 - A developer can bootstrap a renamed application with synthetic demo data using a documented local setup.
-- A declared entity becomes a working feature without manually wiring database, API, permissions, and navigation.
+- An agent using the shipped skills turns an agreed feature brief into a working feature with database, API, permissions, navigation, and passing behavioral checks; ordinary source remains editable without regeneration.
+- Magic links/passkeys pass replay, expiry, origin, recovery, and tenant-policy tests.
+- Account deletion cannot orphan a continuing organization, cancel its subscription, or restore a deleted identity from backup.
+- Product analytics demonstrates the defined funnels/adoption/retention reports, accurate tenant attribution, disabled tracking, provider outage behavior, and deletion cleanup.
 - Cross-tenant access attempts fail through browser routes, APIs, direct repository calls, background jobs, files, search, and exports.
 - Sharing, revocation, quota races, webhook replay, and subscription changes have deterministic automated coverage.
 - Late projector writes, mismatched database restores, deletion after a backup, sole-owner deprovisioning, upload replacement after scanning, and seat races across entry points have explicit acceptance tests.
-- Phase 0 demonstrates hot-tenant authorization availability and create-to-readable latency alongside revocation correctness; failed gates require an architecture decision before feature generation.
+- Phase 0 demonstrates hot-tenant authorization availability and create-to-readable latency alongside revocation correctness; failed gates require an architecture decision before reusable skill workflows are released.
 - An enterprise administrator can provision, govern, bill, audit, and offboard an organization without operator database edits.
 - Every enabled module has ownership, configuration documentation, an upgrade strategy, and a measurable release gate.

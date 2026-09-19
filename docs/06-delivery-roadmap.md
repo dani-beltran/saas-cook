@@ -2,7 +2,7 @@
 
 ## 6.1 Delivery strategy
 
-Build a working vertical slice before expanding the catalogue. Prove identity, tenant isolation, resource permissions, a real database transaction, a dashboard operation, audit, and asynchronous delivery together. Implement provider-independent entitlement/capacity and service-principal primitives before the reference feature's acceptance suite. Extract the generator only after the slice passes authorization safety and availability gates, then use it for subsequent modules.
+Build a working vertical slice before expanding the catalogue. Prove identity, tenant isolation, resource permissions, a real database transaction, a dashboard operation, audit, and asynchronous delivery together. Implement provider-independent entitlement/capacity and service-principal primitives before the reference feature's acceptance suite. Extract AI agent skills from the proven slice after authorization safety and availability gates pass, then use them for subsequent modules. Validate resulting code with deterministic tools and evaluate skill behavior separately.
 
 All phases below are planned. Completion requires demonstrated acceptance criteria; a stub adapter, hidden navigation item, or documentation entry is not an implemented capability.
 
@@ -10,22 +10,22 @@ All phases below are planned. Completion requires demonstrated acceptance criter
 
 | Phase | Deliverables | Depends on | Exit gate | Effort estimate |
 | --- | --- | --- | --- | --- |
-| 0. Validate decisions | Threat model; dependency/license/version matrix; identity/sole-owner recovery spike; RLS/pool spike; generation-isolated OpenFGA prototype; hot-tenant benchmark; independent recovery-store design; billing/storage adapter feasibility; Docker host/registry/tool versions and CI identity/network ADR | This plan | Versions/mapping resolved; late-write fault suite and healthy availability budgets pass; recovery ownership, immutable-object contract, and deployment ownership recorded in ADRs | 2–4 engineer-weeks |
+| 0. Validate decisions | Threat model; dependency/license/version matrix; magic-link/passkey assurance and ownership/account-lifecycle race spike; RLS/pool spike; generation-isolated OpenFGA prototype; hot-tenant benchmark; independent recovery-store design; billing/storage/analytics adapter feasibility; Docker host/registry/tool versions and CI identity/network ADR | This plan | Versions/mapping resolved; late-write fault suite and healthy availability budgets pass; recovery ownership, immutable-object contract, and deployment ownership recorded in ADRs | 3–5 engineer-weeks |
 | 1. Repository and runtime | pnpm/Turborepo; Next/React/TS/shadcn shell; worker; local services; config validation; GitHub Actions CI/CD; combined web/worker application image and GHCR; direct Docker staging and deployment scripts; telemetry skeleton; test fixtures | 0 | Bootstrap passes smoke/type/build checks; one application container runs web/worker without Kubernetes tooling; child-process failure/shutdown, migration ordering, failed replacement and compatible rollback preserve synthetic data | 2–4 |
-| 2. Identity and tenancy | Authentication/MFA/sessions and required email; organizations/members/invitations/teams; optional workspaces; tenant context/RLS and mutation audit/outbox; typed local policy catalogue and shared seat-admission service; owner-recovery command/runbook; account/org UI | 1 | Two-tenant isolation passes; local capacity and voluntary-owner/security-revocation races pass; safe bootstrap/recovery and multi-tab switching | 3–5 |
+| 2. Identity and tenancy | Authentication/MFA/sessions, email magic links, passkey enrollment/recovery and required email; organizations/members/invitations/teams and accepted ownership transfer; lifecycle fences, tenant context/RLS and audit/outbox; local policy and shared seat admission; owner-recovery command/runbook and account/org UI | 1 | Passwordless replay/origin/assurance/recovery tests pass; two-tenant isolation, transfer/admission/deprovisioning races, safe bootstrap and multi-tab switching pass | 4–6 |
 | 3. Authorization and reference feature | Selected graph protocol, generations/readiness/fences and independent epoch control; service-account/API-key enforcement and provisioning commands; generic capacity reservations; Project CRUD/search/pagination; API/DTO/concurrency | 2 | Project works with local policies and no billing credentials; quota/key/late-write suites pass; real feature meets Phase 0 availability and create-to-readable targets | 5–8 |
-| 4. Entity CLI | Versioned declaration schema; create/plan/evolve/doctor; staged generation; migration/RLS integration; owned/custom files; foundation tests/docs and preset dependency validation | 3 | Generate Project + child Task and explicit service-account variant; foundation suites pass without commercial modules; second run has no diff; custom code/data survive evolution | 3–5 |
+| 4. AI agent skills | Bootstrap/add/evolve/verify feature skills, dashboard/email skills, feature briefs, shared references, discovery adapters and isolated behavior evaluations; deterministic migration/RLS/API checks | 3 | Agent implements Project + child Task and service-account variant; held-out behavior suites pass without commercial credentials; evolution/resume preserves custom code/data/history; repeated requests add no duplicate artifacts | 3–5 |
 | 5. Monetization | Plans, fixed/seat billing, portal, webhook inbox, commercial entitlement sources, ledger/windowed quotas, usage dashboard, reconciliation and notices | 4 | Provider lifecycle and replay/out-of-order tests pass; provider downgrades and admission races converge; no duplicate semantic charge or usage | 4–6 |
-| 6. Platform modules and baseline recovery | Immutable file finalization/import/export; organization deletion and independent journal; gated backup/restore; notifications; API-key/service-account customer UI; webhooks/integrations/flags; audit/help/public UI; protected production promotion and secret rotation | 5 | File overwrite/finalization races and isolation pass; deletion after backup and mismatched-store restore cannot reopen access; baseline restore drill/runbooks and production delivery checks pass before customer data | 4–6 |
+| 6. Platform modules and baseline recovery | Files/import/export; personal account deletion with ownership continuity; organization deletion and independent journal for both scopes; product analytics events/reports/controls/cleanup; gated restore; notifications/API-key UI/webhooks/integrations/flags; audit/help/public UI and production promotion | 5 | Analytics attribution/preferences/outage/late-delivery deletion pass; multi-org account closure preserves continuing tenants/billing; immutable files and journal restore cannot revive deleted users/tenants; baseline recovery and production checks pass before customer data | 6–9 |
 | 7. Enterprise administration | OIDC/SAML, SCIM, custom roles, security policies, guests, contract overrides, operator/support UI, advanced retention/legal-hold hooks | 6 | Real IdP deprovisioning is organization-scoped, including sole owner; SCIM uses shared seat admission; recovery/support/policy actions fully audited | 4–7 |
 | 8. Hardening and template release | Expanded performance/failure/recovery drills, measured RPO/RTO, accessibility, upgrade rehearsal, deployment/runbooks, bootstrap presets, release provenance | 7 | All applicable release gates pass on reference deployment; tagged template release with documented limitations | 3–5 |
 
-Revised indicative total: **30–50 engineer-weeks** for the enterprise baseline, including the expanded authorization prototype, CI/CD with direct Docker deployment, and baseline recovery work. Phase 1 retains 1–2 engineer-weeks for combined-process packaging, image publication, Docker staging, and deployment/rollback validation. Kubernetes provisioning, split images, Helm tooling and cluster validation are optional additional scope, estimated separately when selected. With two experienced full-stack engineers and part-time product/design/security/operations support, allow roughly **19–31 calendar weeks**, depending on integration access and discovery. These are planning estimates, not delivery commitments; a failed Phase 0 architecture gate requires re-estimation before implementation proceeds. Re-estimate again after Phase 3. Advanced extensions are additional scope.
+Revised indicative total: **34–55 engineer-weeks** for the enterprise baseline, including passwordless identity, account lifecycle/ownership transfer, product analytics, agent-skill evaluation, the authorization prototype, direct Docker delivery, and baseline recovery. Replacing the custom generator removes its DSL/rendering engine work but does not assume an unmeasured AI productivity gain. Phase 1 retains 1–2 engineer-weeks for combined-process packaging, image publication, Docker staging, and deployment/rollback validation. Kubernetes provisioning, split images, Helm tooling and cluster validation are optional additional scope, estimated separately when selected. With two experienced full-stack engineers and part-time product/design/security/operations support, allow roughly **21–34 calendar weeks**, depending on integration access and discovery. These are planning estimates, not delivery commitments; a failed Phase 0 architecture gate requires re-estimation before implementation proceeds. Re-estimate again after Phase 3 and the first Phase 4 skill evaluations. Advanced extensions are additional scope.
 
 Milestones:
 
-- **M1 Foundation:** Phases 0–4. Runnable foundation preset, reference domain, real local entitlements/capacity, service-principal enforcement, and entity generation; full commercial/export/deletion workflows are outside this milestone.
-- **M2 Commercial core:** through Phase 6. A product can sell subscriptions and operate common SaaS workflows after demonstrating baseline backup/restore, organization export/deletion, and the applicable module suites.
+- **M1 Foundation:** Phases 0–4. Runnable foundation preset, reference domain, real local entitlements/capacity, service-principal enforcement, and evaluated agent skills; full commercial/export/account-deletion workflows are outside this milestone.
+- **M2 Commercial core:** through Phase 6. A product can sell subscriptions and operate common SaaS workflows after demonstrating baseline backup/restore, personal account deletion/ownership continuity, organization export/deletion, analytics controls, and the applicable module suites.
 - **M3 Enterprise baseline:** through Phase 8. Enterprise identity/governance and operational recovery have been demonstrated.
 
 ### Capability-to-phase and acceptance matrix
@@ -34,21 +34,26 @@ This matrix resolves cross-document release boundaries. F/C/E labels describe wh
 
 | Capability | First implementation | Acceptance evidence | Later extension |
 | --- | --- | --- | --- |
-| CI/CD and single-container Docker deployment | Phase 0 deployment ADR; F / 1 combined image, registry, Docker staging and scripts | Web + worker run in one persistent application container; fresh install, process failure, migration failure, unhealthy replacement and compatible rollback pass without Kubernetes; F / 3–4 adds deployed feature/generator suites | C / 6 protected production promotion and recovery gate; E / 8 capacity/upgrade/provenance drills |
+| CI/CD and single-container Docker deployment | Phase 0 deployment ADR; F / 1 combined image, registry, Docker staging and scripts | Web + worker run in one persistent application container; fresh install, process failure, migration failure, unhealthy replacement and compatible rollback pass without Kubernetes; F / 3–4 adds deployed reference/agent-authored feature suites | C / 6 protected production promotion and recovery gate; E / 8 capacity/upgrade/provenance drills |
 | Kubernetes/Helm deployment | X / optional after the Docker delivery contract is established | Split images, fresh namespace install, migration/model Jobs, rolling upgrade and compatible rollback pass on a reference cluster | Independent scaling; never a prerequisite for Docker-only F/C/E milestones |
-| Authorization projection and late-write isolation | Phase 0 prototype; F / 3 production path | Old grant request completes after a newer revocation; abandoned attempt cannot activate or change current access | Re-run on generated features and E / 8 deployment |
+| Authorization projection and late-write isolation | Phase 0 prototype; F / 3 production path | Old grant request completes after a newer revocation; abandoned attempt cannot activate or change current access | Re-run on agent-authored features and E / 8 deployment |
 | Hot-tenant availability | Phase 0 decision gate; F / 3 real slice | Operations §4.7 workload, first-attempt failures, fence waits, create-to-readable latency and graph build/cleanup cost | C bulk jobs and E / 8 capacity testing |
 | Local entitlement/capacity policy | F / 2–3 | Project quota race and disabled-provider preset pass with real database enforcement | C / 5 sold-plan sources and usage windows; E / 7 contracts |
 | Membership seat admission | F / 2 | Invite/reactivation/role/bootstrap/recovery races use one transition service | C / 5 provider downgrade races; E / 7 real SCIM |
 | Service accounts/API keys | F / 3 | Scoped, expired, revoked and wrong-tenant keys; explicit policy capability required | C / 6 customer administration UI |
 | Last-owner protection and security override | Phase 0 adapter spike; F / 2 command/runbook | Voluntary last-owner change refused; security deactivation enters recovery without preserving access | E / 7 real SCIM sole-owner case and operator UI |
-| Required identity/security emails | F / 2 | Verification/reset/invite/recovery delivery, retry and redaction | C / 6 full notification preferences/in-app delivery |
-| Foundation generator | F / 4 | All ten Foundation checks in generator §5.8; no billing credentials or skipped quota/key tests | C/E module suites added only with implemented modules |
+| Email magic links | Phase 0 adapter contract; F / 2 | Atomic single use, expiry, scanner confirmation, generic responses, safe redirects and tenant SSO/MFA enforcement | E / 7 identity-provider policies |
+| Passkeys | Phase 0 origin/RP/assurance contract; F / 2 | Enrollment/sign-in/revoke, replay/origin rejection, multiple credentials, recovery and passwordless sensitive actions | E / 7 enforced enterprise policy |
+| Ownership transfer and lifecycle fences | F / 2 | Verified active recipient acceptance, expiry/cancel, same-tenant/version checks, role/seat atomicity and deprovisioning races | C / 6 multi-org closure and recovery receipts |
+| Required identity/security emails | F / 2 | Verification/reset/magic-link/invite/transfer/recovery delivery, retry and redaction | C / 6 full preferences/in-app delivery and deletion notices |
+| Foundation AI agent skills | F / 4 | All ten evaluation tasks in skills §5.7 plus deterministic checks; preserved customization/history; no billing credentials or skipped quota/key tests | C/E suites in §5.8 only with implemented modules |
+| Product analytics | C / 6 | Typed events/report fixtures, user/org attribution, tracking controls, redaction, bounded outages, provider cleanup and restore suppression | Additional providers/reports through tested adapters |
+| Personal account deletion | C / 6 | All-org ownership resolution, credential revocation, resumable cleanup, preserved tenant subscriptions and account/transfer-after-backup replay | E / 7 advanced retention and SCIM cases |
 | Files/import/export | C / 6 | Staging overwrite, exact scanned bytes, concurrent finalization, authorized export/download | Further formats/providers require adapter tests |
 | Organization export/deletion and baseline retention | C / 6 | Journal acknowledgement, deletion/cancellation replay, provider settlement and scoped export | E / 7 advanced retention/legal holds |
 | Recovery readiness and independent journal | Phase 0 design; C / 6 complete baseline | Mismatched snapshots, restore of only one store, deletion after backup, journal outage and old projector arrival all keep traffic gated | E / 8 measured RPO/RTO and expanded drills |
 
-The generator's export/file and enterprise-identity suites are mandatory for presets that enable those modules, not prerequisites for the Foundation milestone. Foundation still rejects undeclared endpoints and unknown dependencies. No stub adapter or skipped required suite satisfies a milestone.
+The skills' export/file and enterprise-identity suites are mandatory for presets that enable those modules, not prerequisites for the Foundation milestone. Foundation still rejects undeclared endpoints and unknown dependencies. No stub adapter or skipped required suite satisfies a milestone.
 
 ## 6.3 Initial implementation backlog
 
@@ -74,9 +79,14 @@ The generator's export/file and enterprise-identity suites are mandatory for pre
 | QUOTA-01 | Implement local typed policies and transactional capacity | Foundation Project runs with billing disabled; create/restore races cannot spend capacity twice |
 | API-01 | Implement context/error/DTO/idempotency and service-principal boundary | Direct API calls cannot bypass checks; expiring/scoped/revoked keys and explicit principal capabilities tested by Phase 3 |
 | DOMAIN-01 | Build Project vertical slice by hand | Mutation, generation readiness, audit/outbox, quotas, conflict, list UI and measured create-to-readable behavior pass together |
-| GEN-01 | Extract generator IR and templates from Project | Declared Project produces equivalent behavior and passes platform security tests |
+| SKILL-01 | Extract the six agent skills and supporting references from the proven slice | Isolated repeat evaluations implement/evolve Project/Task, preserve customization/history and pass held-out security/behavior checks |
+| AUTH-02 | Implement email magic links in Phase 2 | Hashed single-use expiry, safe confirmation/redirects, scanner/replay races and tenant-policy enforcement |
+| AUTH-03 | Implement passkeys in Phase 2 | Verified RP/origin/challenge/assurance, enrollment/revoke/recovery and passwordless reauthentication |
+| TEN-02 | Implement accepted ownership transfer and account lifecycle fences in Phase 2 | Transfer/admission/freeze/deprovisioning races preserve ownership, seat counts and revocation |
+| ACC-01 | Implement personal account deletion in Phase 6 | Multi-org prerequisites, independent journal, provider cleanup, credential revocation, retained tenant data/billing and restore tests |
+| ANALYTICS-01 | Implement product analytics in Phase 6 | Catalogue/reference adapter, defined reports and fixtures, tracking controls, attribution, redaction, outage and deletion reconciliation |
 
-Implement security primitives before generation. Add optional UI controls only after their server behavior exists. Do not ship visible placeholder enterprise settings that imply working protection.
+Implement security primitives before extracting agent skills. Add optional UI controls only after their server behavior exists. Do not ship visible placeholder enterprise settings that imply working protection.
 
 ## 6.4 Release checklist
 
@@ -87,7 +97,9 @@ Implement security primitives before generation. Add optional UI controls only a
 - [ ] Direct grants, team grants, membership revocation, parent changes, and custom-role updates cannot use a stale graph.
 - [ ] An old projector write completing after lock loss and a newer revocation cannot alter current access; abandoned generations never activate and graph traversal cannot cross generations.
 - [ ] FGA/model/projection failures deny dependent access predictably and expose safe recovery diagnostics.
-- [ ] MFA, session revocation, SSO enforcement, SCIM deprovisioning, key rotation, and last-owner transfer are tested.
+- [ ] MFA, session revocation, SSO enforcement, SCIM deprovisioning, key rotation, and accepted ownership transfer are tested.
+- [ ] Magic-link single use/expiry/scanner handling and passkey RP/origin/assurance/recovery pass, including passwordless-only sensitive actions.
+- [ ] Personal deletion resolves every ownership obligation, survives concurrent transfers/admission, revokes credentials, and preserves continuing organizations and subscriptions.
 - [ ] Sole-owner security/SCIM deprovisioning removes access even during FGA outage, enters owner recovery, and requires independently verified replacement admission; voluntary last-owner removal remains refused.
 - [ ] Required field-level restrictions, redaction, CSRF/origin/CORS policies, and operator boundaries are verified.
 
@@ -101,13 +113,14 @@ Implement security primitives before generation. Add optional UI controls only a
 - [ ] Usage deduplication, corrections, period boundaries, job retry, and billing reconciliation are covered.
 - [ ] Optional metered charging is labelled disabled unless a live-capable adapter has passed its separate contract tests.
 
-### Generator and developer experience
+### AI agent skills and developer experience
 
-- [ ] Generated feature migrates, builds, appears in navigation, and completes the dashboard/API workflow.
-- [ ] Generated RLS/permissions/audit/DTO policies are enforced, including on manually invoked APIs.
-- [ ] Foundation generator suites pass with real local entitlements/quotas and API-key enforcement and no commercial credentials; enabled C/E modules add their applicable suites.
-- [ ] Regeneration is deterministic and preserves developer-owned files and historical migrations.
-- [ ] Entity evolution handles data/backfill/API/model compatibility or refuses with a precise migration plan.
+- [ ] Agent-authored feature migrates, builds, appears in navigation, and completes the dashboard/API workflow.
+- [ ] RLS/permissions/audit/DTO policies in agent-authored code are enforced, including on manually invoked APIs.
+- [ ] Foundation skill evaluation and deterministic behavior suites pass with real local entitlements/quotas and API-key enforcement and no commercial credentials; enabled C/E modules add their applicable suites.
+- [ ] Skills preserve ordinary developer-owned source, customizations and migration history; repeat/resume does not duplicate migrations or registrations.
+- [ ] Isolated skill evaluations record task/skill/template/model versions and held-out behavioral results; application CI does not require a live AI service.
+- [ ] Feature evolution handles data/backfill/API/model compatibility or refuses with a precise migration plan.
 - [ ] Renaming a new product updates manifests, branding, package identifiers, emails, and example content.
 - [ ] Template updates have a tested previous-release migration/codemod path.
 
@@ -120,11 +133,12 @@ Implement security primitives before generation. Add optional UI controls only a
 - [ ] If Kubernetes is enabled, its split-image/chart/Job/rollout tests pass; a Docker-only release does not depend on this optional gate.
 - [ ] Logs/metrics/traces, alerts, dead-letter views, and reconciliation runbooks are usable.
 - [ ] The documented workload meets measured targets; permissions, exports, and tenant fairness are included.
-- [ ] Phase 0 and the real Phase 3 slice meet healthy hot-tenant failure/lock-wait/create-to-readable gates before generator extraction; retries do not conceal first-attempt failures.
+- [ ] Phase 0 and the real Phase 3 slice meet healthy hot-tenant failure/lock-wait/create-to-readable gates before skill extraction; retries do not conceal first-attempt failures.
 - [ ] Exact immutable object identity binds upload finalization, scan approval and download; staging overwrite and duplicate-finalization races cannot publish unscanned bytes or double-settle capacity.
 - [ ] Baseline recovery passes in C before customer data; independent journal completeness, fresh epoch and rebuilt graph are verified before any tenant serving/worker effects resume.
 - [ ] E recovery meets measured RPO/RTO and tests mismatched stores, later deletions, journal outage, partial rebuild and late old projector requests.
-- [ ] Tenant export/deletion, provider cancellation, retention exceptions, and backup expiry are exercised.
+- [ ] Account and organization deletion, accepted transfer replay, provider cleanup/cancellation, retention exceptions, and backup expiry are exercised.
+- [ ] Product analytics reports pass known-cohort fixtures and honor user/organization tracking policy, redaction, tenant switching, delayed retries, deletion suppression and provider outages.
 - [ ] Dashboard forms/tables/dialogs pass keyboard/accessibility checks and display all failure states.
 - [ ] Incident response, dependency updates, security contact, and deployment rollback/forward-fix ownership are assigned.
 
@@ -134,13 +148,16 @@ These defaults guide implementation, subject to the mandatory Phase 0 authorizat
 
 | Topic | Template default | Product-specific decision |
 | --- | --- | --- |
-| Naming | `common-sass` | Name/branding/package namespace for each generated product |
+| Naming | `common-sass` | Name/branding/package namespace for each bootstrapped product |
 | Tenant/billing boundary | One organization, one billing account | Consolidated billing across several organizations? |
 | Content administration | Org admins manage all tenant content | Need private content hidden even from tenant administrators? |
 | Guests | Explicit limited membership, disabled until E | Are guests billable and how long may grants last? |
 | Hosting | One Docker application container on a host/VM with external PostgreSQL/OpenFGA/object storage; separate production host | Cloud/region, host provider, residency, maintenance interval, network controls; opt into Kubernetes + Helm if needed |
 | CI/CD | GitHub Actions + BuildKit + GHCR; automatic staging, protected production promotion by digest | Registry, runner connectivity, OIDC provider, production reviewers, retention and vulnerability exceptions |
-| Authentication | Better Auth adapter; application-owned organization lifecycle | Identity vendor, self-service SSO licensing, supported IdPs |
+| Authentication | Better Auth with email magic links and passkeys; application-owned organization/account lifecycle | Canonical origin/RP ID, recovery and assurance policy, identity vendor/SSO licensing, supported IdPs |
+| Product analytics | Typed catalogue and PostHog reference adapter; collection disabled until configured | Provider/residency, tracking controls, retention, report definitions and operator access |
+| Account deletion | All-org ownership resolution, global freeze, independent journal and resumable cleanup | Deletion grace, retained categories, personal export and notification/status channels |
+| Agent skills | Repository-local portable instructions with deterministic checks and isolated evaluations | Supported agent/model configuration, discovery adapters and evaluation repeat set |
 | Owner recovery | Security deprovisioning revokes sole-owner access; verified recovery command | Evidence of organizational authority, recovery approvers and escalation contacts |
 | Pricing | Versioned free/trial/fixed/seat definitions | Price amounts, currencies, trial rules, seat classes, grace duration |
 | Metered charges | Disabled; local ledger/quotas included | Provider, metric contracts, allowed overages, credits, hybrid charge ownership |
@@ -161,12 +178,14 @@ These defaults guide implementation, subject to the mandatory Phase 0 authorizat
 | Sole-owner protection prevents security offboarding | Security deactivation overrides voluntary owner-count protection; freeze tenant activity and use verified audited recovery |
 | Mutable upload changes after scan approval | Capture immutable bytes before scanning; bind download to the approved identity; overwrite/finalization race tests |
 | Membership paths bypass seat accounting | One atomic transition/admission service shared by user, operator, directory and recovery commands; cross-entry-point races and provider reconciliation |
-| Generator milestone depends on later commercial modules | Local policy/quota/key primitives in F / 2–3; explicit foundation/module acceptance split and capability matrix |
+| Skill milestone depends on later commercial modules | Local policy/quota/key primitives in F / 2–3; explicit foundation/module acceptance split and capability matrix |
 | Identity plugin and application membership disagree | One documented source of truth; mapping/deprovisioning spike before organization implementation |
 | Billing replay or ambiguous state creates bad access/charges | Durable commands/inbox, idempotency, serialized projection, independent reconciliation |
-| Codegen destroys customization or history | Ownership manifest, staged diff, no edit of applied migrations, evolution/codemod tests |
+| Agent edits destroy customization or history | Inspect current code/diff, preserve ordinary source and applied migrations, review compatibility, run evolution/resume tests |
+| Skill instructions appear to guarantee correctness | Held-out behavioral evaluations and deterministic CI on real services; no text-equality or universal reliability claims |
+| Account deletion or late analytics writes revive removed access/data | Global lifecycle fences, independent account/transfer journal, provider suppression/deletion barriers and restore/replay tests |
 | Shared database introduces noisy tenants | Tenant fairness, query/index budgets, separate worker pools, measured path to dedicated placement |
 | Optional provider costs undermine a reusable template | Local fakes, adapters, optional modules, verified vendor terms; record operational cost categories |
-| Generated features look complete but miss security | Required integration/security acceptance tests; no bypassable transport-only checks |
+| Agent-authored features look complete but miss security | Required integration/security acceptance tests; no bypassable transport-only checks |
 
-Track operational costs by database/backups, worker/FGA compute, object storage/egress, email, monitoring, identity services, and billing services. Establish budgets after selecting a deployment and expected usage; this plan does not assume current vendor prices.
+Track operational costs by database/backups, worker/FGA compute, object storage/egress, email, monitoring, analytics, agent evaluation runs, identity services, and billing services. Establish budgets after selecting a deployment and expected usage; this plan does not assume current vendor prices.

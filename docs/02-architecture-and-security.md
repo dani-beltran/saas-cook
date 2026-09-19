@@ -12,7 +12,7 @@ These are proposed architectural choices, not claims that every dependency or in
 | Forms and tables | React Hook Form, Zod, TanStack Table | Typed validation and standard complex dashboard interactions |
 | Package management | pnpm workspaces, Turborepo | Explicit package boundaries and incremental build tasks |
 | Database | Supported PostgreSQL major, Drizzle ORM/Kit, node-postgres | SQL control, typed queries, connection-bound transactions, migration generation |
-| Authentication | Better Auth behind an identity adapter | Reuse authentication/session handling; domain services own organization lifecycle |
+| Authentication | Better Auth with magic-link and passkey adapters | Passwordless identity, sessions and MFA; domain services own organization lifecycle and account-deletion orchestration |
 | Authorization | OpenFGA, separate service/database; protocol selected in Phase 0 | Express relationships; generation isolation and availability must pass the decision gates |
 | Background work | pg-boss + a Node.js worker | PostgreSQL-backed durable jobs; avoid mandatory Redis initially |
 | Fixed/seat billing | Stripe Billing, Checkout, Customer Portal | Hosted payment flow with local access-state projection |
@@ -20,6 +20,8 @@ These are proposed architectural choices, not claims that every dependency or in
 | Storage | Private S3-compatible object store | Provider adapter, signed operations, tenant metadata |
 | Notifications | React Email + SMTP/provider adapter | Shared transactional templates; local mail capture |
 | API | Next.js Route Handlers, REST `/api/v1`, OpenAPI | One stable public contract; no second API framework by default |
+| Product analytics | Typed analytics adapter; PostHog reference integration, disabled without configuration | Product-event/report definitions and tracking controls; separate from audit, operational telemetry, and billable usage |
+| Development automation | Repository-local AI agent skills plus deterministic checks | Extend ordinary source using proven services; no custom CRUD generator or entity DSL |
 | Observability | OpenTelemetry, structured JSON logging, pluggable error sink | Correlate requests, events, worker runs, and providers |
 | Verification | Vitest, Playwright, real PostgreSQL/OpenFGA integration environments | Exercise actual isolation and authorization behavior |
 | CI/CD | GitHub Actions, Docker BuildKit/buildx, GHCR | Required checks, immutable image releases, staging validation, protected production promotion |
@@ -47,6 +49,9 @@ flowchart TD
     Inbox --> DB
     Web --> Telemetry[Logs, metrics and traces]
     Worker --> Telemetry
+    Web --> Analytics[Typed product analytics boundary]
+    Worker --> Analytics
+    Analytics --> AnalyticsProvider[Optional analytics provider]
 ```
 
 Use a modular monolith. A Next.js adapter parses transport input, creates a trusted context, and invokes a domain service. Services coordinate authorization, business rules, repositories, entitlements, and events. Repositories own SQL. Workers call the same services with explicit job/service identities.
@@ -80,14 +85,15 @@ common-sass/
     modules/
       organizations/ teams/ workspaces/ projects/
       billing/ entitlements/ usage/ audit/
-      files/ notifications/ integrations/
+      files/ notifications/ integrations/ account-lifecycle/
     api-contracts/                          # Zod DTOs and OpenAPI assembly
     ui/                                     # shadcn/ui, shared layouts/forms/tables
     email/                                  # Transactional templates
+    analytics/                              # Typed events, tracking policy, provider adapter
     observability/                          # Traces, metrics, logging and redaction
     testing/                                # Factories, multi-tenant fixtures, helpers
-    cli/                                    # Project bootstrap and entity generation
-  entities/                                 # Application-owned entity specifications
+  .agents/skills/                           # Planned SKILL.md packages and references
+  feature-briefs/                           # Human-readable tasks and acceptance criteria
   .github/workflows/                        # CI, release, deployment, infrastructure
   infra/docker/                             # Combined app image; optional split targets
   infra/helm/common-sass/                    # Optional Kubernetes application chart
@@ -108,7 +114,7 @@ Dependency direction: web/worker → modules → core and infrastructure adapter
 
 1. Authenticate the session or API key.
 2. Resolve the requested organization from a browser path or API path; resolve an ID from a slug through a restricted identity/control-plane lookup.
-3. Verify deployment recovery readiness, current membership/service-account status, organization lifecycle state, and security policy. Invites, owner recovery, and pre-membership onboarding use narrowly scoped dedicated services.
+3. Verify deployment recovery readiness, global user lifecycle status, current membership/service-account status, organization lifecycle state, and security policy. Invites, owner recovery, and pre-membership onboarding use narrowly scoped dedicated services.
 4. Construct an immutable context containing actor, organization ID, request ID, authentication method, and verified policy state.
 5. Run tenant SQL on one connection in one transaction with a transaction-local tenant setting. Repositories require this context and cannot reach an unscoped pool.
 6. Apply relationship authorization, entitlement rules, and quota rules for the operation.
@@ -142,7 +148,7 @@ The tenant session setting is controlled by trusted application code, not a secu
 
 ## 2.5 Authentication and identity ownership
 
-Use Better Auth for users, authentication accounts, verification challenges, sessions, and MFA. Domain organization and membership records remain the source of truth. Avoid simultaneously running an independent organization-role plugin and an application membership system without an explicit mapping contract.
+Use Better Auth for users, authentication accounts, verification challenges, sessions, MFA, email magic links, and passkeys. Domain organization and membership records remain the source of truth. Avoid simultaneously running an independent organization-role plugin and an application membership system without an explicit mapping contract.
 
 Better Auth documents SSO and SCIM plugins. Their existence does not establish that organization mapping, licensing, lifecycle hooks, and deprovisioning semantics match this template; prove those points in Phase 0. Self-service SSO configuration may require a vendor offering, so do not assume it is included. [Better Auth SSO](https://better-auth.com/docs/plugins/sso), [Better Auth SCIM](https://better-auth.com/docs/plugins/scim)
 
@@ -157,6 +163,32 @@ Identity rules:
 - Store API-key hashes, show secrets once, support expiry/rotation, and intersect key scopes with the service account's current permissions and paid access.
 - Store only allowlisted identity attributes; encrypt provider secrets and redact them from logs.
 - Separate platform operators from customer organization owners. Require MFA and short-lived, audited, reason-bound support access with visible impersonation indicators; deny billing/security modifications by default.
+
+### Email magic links and passkeys (Foundation)
+
+Use the pinned identity adapter's supported plugins and test their actual behavior in Phase 0. The plugin APIs are integration choices; the following are application requirements. [Better Auth magic links](https://better-auth.com/docs/plugins/magic-link), [Better Auth passkeys](https://better-auth.com/docs/plugins/passkey)
+
+- **Magic links:** high-entropy tokens stored hashed, bounded expiry, atomic single-use redemption across replicas, generic request responses, per-identity/source rate limits, and allowlisted same-origin destinations. Keep tokens out of logs, analytics, referrers, and ordinary persistent job payloads; any necessary email-delivery payload is short-lived and protected. Use an explicit confirmation step so email scanners/prefetchers do not consume sign-in links. Test expired/replayed/concurrently redeemed links, scanners, and wrong-account invitation acceptance. Sign-up through magic links follows the product's registration/invitation policy rather than plugin defaults.
+- **Passkeys:** support authenticated enrollment, multiple named credentials, listing and revocation, and WebAuthn sign-in. Verify challenge freshness/single use, expected origin, RP ID, and user verification through the identity library; store public credentials only. Require recent authentication for enrollment/removal and maintain a tested recovery path before removing the final usable credential. Use a canonical authentication origin/RP ID with separate development/staging configuration; custom tenant domains redirect there rather than silently changing credential scope.
+- **Assurance and recovery:** record verified authentication method/time and relevant assurance in sessions. Email possession alone does not satisfy MFA or enforced enterprise SSO. A passkey satisfies an MFA requirement only when the configured policy accepts the verified user-verification assurance. Recovery, lost-device replacement, linking, and login all recheck global account status and target-organization policy; never reactivate an account with pending/final deletion. Test passwordless-only users performing sensitive actions without requiring a nonexistent password.
+
+### Ownership transfer and personal account deletion
+
+Ownership transfer ships in F; the full account-deletion workflow ships in C with the independent journal and provider cleanup. Both use application domain services, not a direct identity-plugin delete endpoint. Block any adapter endpoint that can delete a user without this orchestration.
+
+- A current owner reauthenticates and nominates a verified, active existing member of the same organization. The recipient accepts with fresh authentication; the command rechecks both parties, policy, account status, capacity, expiry, and the expected ownership version. Atomically promote the recipient and demote/remove the outgoing owner as requested through the shared membership transition; audit/outbox and notifications identify both actors. Pending invitations, expired transfers, inactive recipients, and cross-tenant IDs never count as success.
+- Personal deletion is global: enumerate every membership and ownership obligation. A continuing organization needs another accepted active owner; the sole owner must complete a transfer or separately authorize and finish the organization's deletion workflow. Never delete an organization or cancel its subscription just because an owner deletes their personal account. Assign resource responsibilities and billing contacts to continuing members as needed.
+- Coordinate account closure with membership admission and ownership changes through the account lifecycle fence and lock order in [data model §3.3](03-data-model.md#33-identity-and-organization-tables). Revalidate obligations before freezing the identity; freeze blocks new memberships/ownership and all new user-authorized effects, even before graph projection catches up. Partial cross-organization cleanup is durable and resumable, not a claim of one distributed transaction.
+- Revoke sessions, pending sign-in/recovery challenges, passkeys, linked authentication credentials, and support sessions targeting the user. Remove memberships/team/resource grants with idempotent seat release; organization-owned service identities remain with the continuing organization, with any personal secrets reviewed/revoked. Preserve tenant content and minimal historical actor references under explicit retention rules.
+- Security/SCIM deprovisioning still takes precedence over ownership protection. If a recipient is deprovisioned during transfer or cleanup, enter the existing owner-recovery flow as needed; never retain or restore the deleting user's access to satisfy ownership.
+
+The resumable deletion, analytics cleanup, and restore protocol is specified in [operations §4.8](04-billing-usage-operations.md#48-export-deletion-and-recovery-lifecycle).
+
+### Product analytics boundary (Commercial core)
+
+Provide server and browser adapters using a shared versioned event catalogue. The server derives organization/user attribution from trusted context; browser events cannot assert authoritative billing, role, or ownership transitions. Deliver server-side success events after commit, with stable event IDs for retry deduplication. Analytics has a bounded, isolated delivery queue and may drop expired events with diagnostics; provider failure never fails a domain transaction or changes permissions, quotas, or billing.
+
+Default collection is off until configured. Apply deployment, organization, and user tracking controls before enqueue and again before delivery. Allowlist properties, use opaque analytics identifiers, and exclude names, emails, free-form resource content, secrets, and authentication URLs. Disable automatic capture/session replay by default. Operator access to cross-tenant reports is separate from customer access. Provider-independent report definitions and lifecycle cleanup are in [operations §4.9](04-billing-usage-operations.md#49-product-analytics).
 
 ## 2.6 Relationship-based authorization
 
@@ -188,9 +220,9 @@ task.read      = active_org_member AND (parent_project.read OR explicit_task_rea
 
 An ordinary member does not automatically read every private project. Owners/admins have the documented content-administration policy; the template can provide a stricter product variant. A viewer role is scoped to an explicitly assigned resource/container. Every grant target and group must belong to the same organization. Disable cross-organization sharing initially; guests receive explicit target-organization memberships.
 
-The pseudocode above describes human membership. Service accounts use an equivalent active, same-organization principal predicate and explicit resource grants; API-key scopes further restrict the result. The initial Project declaration enables human/team sharing; service-account sharing is a separately declared policy capability. Register organization create/list permissions explicitly, and ensure listing permission never implies access to every listed resource.
+The pseudocode above describes human membership; `active_org_member` includes an active global account and an active organization membership, checked under the lifecycle fences. Service accounts use an equivalent active, same-organization principal predicate and explicit resource grants; API-key scopes further restrict the result. The initial Project feature brief enables human/team sharing; service-account sharing is a separately declared policy capability. Register organization create/list permissions explicitly, and ensure listing permission never implies access to every listed resource.
 
-Expiring grants and guest memberships are checked against trusted server time on every authorization operation, including lists. Model time-bound edges using supported conditions or a tested synchronous eligibility guard; cleanup jobs alone cannot enforce expiry. The generator rejects an expiry declaration if its policy template cannot enforce it.
+Expiring grants and guest memberships are checked against trusted server time on every authorization operation, including lists. Model time-bound edges using supported conditions or a tested synchronous eligibility guard; cleanup jobs alone cannot enforce expiry. Skills must report unsupported expiry requirements rather than implement a permissive fallback; executable policy tests must reject expired access.
 
 OpenFGA describes organization/resource types and inherited permissions, as well as organization-context restrictions. These are reference mechanisms for the proposed model. [OpenFGA multi-tenant model](https://openfga.dev/docs/use-cases/multi-tenant-saas), [organization context](https://openfga.dev/docs/modeling/organization-context-authorization)
 
@@ -201,8 +233,8 @@ Application PostgreSQL owns memberships, team membership, resource ownership/par
 **Required consistency contract; Phase 0 must prove the projection protocol:**
 
 1. Maintain per-organization `desired_revision`, `applied_revision`, active graph generation/model, and projection health, plus a deployment recovery epoch and readiness gate.
-2. Authorization-changing writes acquire an exclusive organization authorization fence, update source records, advance the desired revision, and append an outbox event atomically.
-3. Protected operations take a shared fence for their bounded database transaction, require recovery readiness, matching revisions and a verified active generation, perform current identity/status checks, then check OpenFGA before reading or mutating domain data. Authorization-changing operations acquire the exclusive fence from the start; do not upgrade a shared lock mid-operation.
+2. After acquiring applicable user lifecycle fences in the shared lock order, authorization-changing writes acquire an exclusive organization authorization fence, update source records, advance the desired revision, and append an outbox event atomically.
+3. Protected user operations first acquire a shared user lifecycle fence, then a shared organization authorization fence for their bounded database transaction, require recovery readiness, matching revisions and a verified active generation, perform current identity/status checks, then check OpenFGA before reading or mutating domain data. Authorization-changing operations acquire the exclusive fence from the start; do not upgrade a shared lock mid-operation.
 4. Publish an applied revision only after all writes for its candidate generation are acknowledged and the projector revalidates its attempt, source revision, model, and recovery epoch under the exclusive fence. A timed-out or abandoned attempt cannot later publish. Partial failure leaves dependent operations denied.
 5. Graph reads use `HIGHER_CONSISTENCY` initially against the primary datastore. Do not interpret this setting as a transaction across PostgreSQL and OpenFGA.
 6. Revocation is logically effective when the authoritative database change commits. New dependent operations cannot use the old graph while projection is pending. Already-running operations that obtained the fence complete before that commit; already-delivered data cannot be recalled.
@@ -221,11 +253,11 @@ The Phase 0 candidate uses a fresh, never-reused graph namespace for **each proj
 4. Under the exclusive fence, atomically activate the fully acknowledged candidate only if its source revision is still desired and its model/recovery epoch are current. Otherwise abandon it and build from the latest source. An old request can then affect only its retired or abandoned namespace.
 5. Retire generations after fenced readers drain. Cleanup may touch only retired/abandoned namespaces and must tolerate late writes recreating unreachable tuples; bound and monitor their storage. Namespace IDs are never reused, including after restores.
 
-This is a correctness-first prototype, with potentially expensive full-graph copies. Phase 0 must measure graph size, write amplification, abandoned builds, garbage collection, and availability. If it fails the budgets, record and prove a different protocol before Phase 3; receiver-enforced fencing or another authoritative authorization design may be evaluated. Update this contract, logical schema, and generator boundary with that ADR. Do not substitute mutable graph updates protected only by a database mutex or weaken revocation to pass the benchmark.
+This is a correctness-first prototype, with potentially expensive full-graph copies. Phase 0 must measure graph size, write amplification, abandoned builds, garbage collection, and availability. If it fails the budgets, record and prove a different protocol before Phase 3; receiver-enforced fencing or another authoritative authorization design may be evaluated. Update this contract, logical schema, and shared skill guidance with that ADR. Do not substitute mutable graph updates protected only by a database mutex or weaken revocation to pass the benchmark.
 
 Resource creation with its initial manager grant, deletion, parent moves, and team/custom-role changes all advance the revision. Dependent requests may be denied during projection, including immediately after a successful create. Use a bounded pending-readiness UI and idempotent retries; distinguish a committed mutation from a failed command. Keep transactions short and cap remote-call timeouts. Minimal account/recovery diagnostics remain separately authorized.
 
-Phase 0 must pass the healthy hot-tenant workload and fault suite in [operations §4.7](04-billing-usage-operations.md#phase-0-authorization-decision-gate), measuring eligible request failures, fence waits, and create-to-readable latency. Sparse authorized lists holding a shared fence must not starve revocations or projection. Re-run the gate on the real Phase 3 feature before extracting generator templates.
+Phase 0 must pass the healthy hot-tenant workload and fault suite in [operations §4.7](04-billing-usage-operations.md#phase-0-authorization-decision-gate), measuring eligible request failures, fence waits, and create-to-readable latency. Sparse authorized lists holding a shared fence must not starve revocations or projection. Re-run the gate on the real Phase 3 feature before extracting reusable agent skills.
 
 ### Authorization after restoration
 
@@ -262,7 +294,7 @@ All writes follow: authenticate → resolve tenant → authorize → validate al
 | Organization ownership | Application domain; security deprovisioning overrides voluntary last-owner protection | Mapping, sole-owner recovery, or seat-admission spike fails; resolve in Phase 0 |
 | Queue | pg-boss | Queue workload competes materially with database traffic |
 | API | REST + shared services | A proven client requirement justifies another transport |
-| UI generation | Source files with extension boundaries | No default switch to runtime metadata rendering |
+| Feature development | AI agent skills edit ordinary source using shared services and deterministic checks | Skill evaluations or platform changes require revised guidance; no custom CRUD generator |
 | Monetization | Fixed/seat subscriptions; metered adapter optional | Product requires advanced usage contracts |
 | Deployment | Single Docker container on a host/VM; GitHub Actions/GHCR with digest promotion | Opt into Kubernetes + Helm for independent scaling/orchestration; choose host/registry provider and availability requirements |
 
