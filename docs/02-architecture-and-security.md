@@ -2,30 +2,59 @@
 
 ## 2.1 Stack decisions
 
-These are proposed architectural choices, not claims that every dependency or integration has been tested together. Phase 0 pins a compatible, supported version set and verifies the adapters.
+The following stack is required for implementation. Phase 0 pins a compatible, supported version set and verifies the adapters, including React 19 compatibility; it does not reopen these technology selections. These are planning requirements, not claims that the dependencies have already been integrated or tested together.
+
+| Area | Required technology | Reason and boundary |
+| --- | --- | --- |
+| Full-stack framework | Next.js App Router | Server-rendered shell, server entry points, and client components for interactive controls |
+| Authentication | Better Auth, self-hosted | Magic links, passkeys, sessions and MFA; domain services own organization lifecycle and account-deletion orchestration |
+| React components | shadcn/ui (Shadcn UI) | Owned component source and a reusable visual system |
+| Typed codebase | TypeScript with strict checks | Shared language for web, workers, tooling, and domain code |
+| SQL access and migrations | Drizzle ORM and Drizzle Kit | Type-safe SQL queries and reviewed SQL migrations |
+| Relational database | PostgreSQL, supported major | Tenant-aware constraints, transactions and row-level security |
+| Type-safe API | oRPC | Shared Zod contracts, typed clients and procedures hosted in Next.js; public REST/OpenAPI exposure through oRPC |
+| Payments and billing | Stripe Billing, Checkout, Customer Portal | Fixed/seat subscriptions, hosted payment flow and local access-state projection |
+| UI library | React 19 | Shared UI baseline for Next.js, components, forms, stories and email compatibility checks |
+| Utility CSS | Tailwind CSS | Shared design tokens, themes and utility styling |
+| Internationalization | next-intl | Translation catalogues and locale-aware application formatting; English seed catalogue |
+| Email templates | React Email | Typed transactional templates with localized content and local previews |
+| Validation | Zod | Explicit input/output schemas, forms and environment validation |
+| Forms | React Hook Form | Accessible form state and Zod-backed validation; server validation remains authoritative |
+| Unit tests | Vitest | Unit suites and integration suites against real PostgreSQL/OpenFGA fixtures |
+| End-to-end tests | Playwright | Browser journeys, tenant isolation and deployed smoke coverage |
+| Component development | Storybook | Isolated component development and stories for themes, locales and required UI states |
+| Linting and formatting | Biome | Shared formatting and lint rules, enforced locally and in CI |
+| Commit conventions | Commitlint | Conventional Commits checked by Git hooks and CI |
+| Git hooks | Lefthook | Repository-managed pre-commit checks and commit-msg validation |
+| Code cleanup | Knip | Detect unused files, exports and dependencies with explicit framework/tool entry points |
+| Package manager | Bun workspaces | Pinned Bun version, committed `bun.lock`, reproducible installs and workspace scripts |
+| Typed environment | T3 Env | Zod-backed server/client configuration with separate web, worker and one-off command validation |
+| CI/CD | GitHub Actions | Required checks, immutable image releases, staging validation and protected production promotion |
+| Logging | LogTape | Structured logs, request/job correlation and shared redaction policy |
+| AI coding context | `AGENTS.md` (Agents.md) | Repository instructions for the stack, architecture, commands and feature workflows |
+
+Additional infrastructure supports the required stack:
 
 | Area | Default | Reason and boundary |
 | --- | --- | --- |
-| Runtime | Supported Node.js LTS, strict TypeScript | Shared language for web, workers, tooling, and domain code |
-| Web | Next.js App Router + React | Server-rendered shell and reads, client components for interactive controls |
-| UI | shadcn/ui, Tailwind CSS, Lucide icons | Owned component source and a reusable visual system |
-| Forms and tables | React Hook Form, Zod, TanStack Table | Typed validation and standard complex dashboard interactions |
-| Package management | pnpm workspaces, Turborepo | Explicit package boundaries and incremental build tasks |
-| Database | Supported PostgreSQL major, Drizzle ORM/Kit, node-postgres | SQL control, typed queries, connection-bound transactions, migration generation |
-| Authentication | Better Auth with magic-link and passkey adapters | Passwordless identity, sessions and MFA; domain services own organization lifecycle and account-deletion orchestration |
+| Application runtime | Supported Node.js LTS | Runs Next.js and the background worker; Bun manages packages and scripts |
+| Build orchestration | Turborepo over Bun workspaces | Explicit package boundaries and incremental build tasks |
+| Tables and icons | TanStack Table, Lucide icons | Dashboard interactions composed with shadcn/ui |
+| PostgreSQL driver | node-postgres | Connection-bound transactions for Drizzle and tenant context |
 | Authorization | OpenFGA, separate service/database; protocol selected in Phase 0 | Express relationships; generation isolation and availability must pass the decision gates |
 | Background work | pg-boss + a Node.js worker | PostgreSQL-backed durable jobs; avoid mandatory Redis initially |
-| Fixed/seat billing | Stripe Billing, Checkout, Customer Portal | Hosted payment flow with local access-state projection |
 | Metered billing | UsageBillingProvider interface | Local usage/quotas always work; an external charging adapter is optional |
 | Storage | Private S3-compatible object store | Provider adapter, signed operations, tenant metadata |
-| Notifications | React Email + SMTP/provider adapter | Shared transactional templates; local mail capture |
-| API | Next.js Route Handlers, REST `/api/v1`, OpenAPI | One stable public contract; no second API framework by default |
+| Email delivery | SMTP/provider adapter | Delivers React Email output with local mail capture |
 | Product analytics | Typed analytics adapter; PostHog reference integration, disabled without configuration | Product-event/report definitions and tracking controls; separate from audit, operational telemetry, and billable usage |
 | Development automation | Repository-local AI agent skills plus deterministic checks | Extend ordinary source using proven services; no custom CRUD generator or entity DSL |
-| Observability | OpenTelemetry, structured JSON logging, pluggable error sink | Correlate requests, events, worker runs, and providers |
-| Verification | Vitest, Playwright, real PostgreSQL/OpenFGA integration environments | Exercise actual isolation and authorization behavior |
-| CI/CD | GitHub Actions, Docker BuildKit/buildx, GHCR | Required checks, immutable image releases, staging validation, protected production promotion |
+| Traces and metrics | OpenTelemetry, pluggable error sink | Correlate telemetry with LogTape logs across requests, events, workers and providers |
+| Image delivery | Docker BuildKit/buildx, GHCR | Build and promote immutable image releases through GitHub Actions |
 | Deployment | One Docker application container running web + worker; external OpenFGA, PostgreSQL and object storage | Direct Docker is the default; Kubernetes + Helm with split workloads is optional; both use one-off migrations and compatible rollback |
+
+Bun is the package manager and script entry point; the application runtime remains Node.js LTS. `bun run test:unit` invokes Vitest, and `bun run test:e2e` invokes Playwright. Phase 0 verifies the Bun workspace/Turborepo install and build path against the chosen Node.js and React 19 versions.
+
+Use T3 Env in `packages/config` with separate server/client schemas and per-process validation. Validate runtime secrets before serving requests, claiming jobs or running one-off commands. Build-time checks must not require production secrets or freeze environment-specific settings into a promoted image. [T3 Env Next.js documentation](https://env.t3.gg/docs/nextjs)
 
 shadcn/ui documents shared UI packages in monorepos; use that arrangement for the component layer. [shadcn/ui monorepo documentation](https://ui.shadcn.com/docs/monorepo)
 
@@ -35,7 +64,7 @@ pg-boss is a PostgreSQL-backed Node.js job system. The template still treats ext
 
 ```mermaid
 flowchart TD
-    Browser[Browser: React and shadcn/ui] --> Web[Next.js: pages, actions, API]
+    Browser[Browser: React 19 and shadcn/ui] --> Web[Next.js: pages, actions, oRPC API]
     APIClient[API clients] --> Web
     Web --> Services[Domain services and policy boundary]
     Services --> DB[(Application PostgreSQL)]
@@ -47,18 +76,18 @@ flowchart TD
     Worker --> Providers[Billing, email, outgoing webhooks]
     Providers --> Inbox[Verified incoming webhooks]
     Inbox --> DB
-    Web --> Telemetry[Logs, metrics and traces]
+    Web --> Telemetry[LogTape logs and OpenTelemetry metrics/traces]
     Worker --> Telemetry
     Web --> Analytics[Typed product analytics boundary]
     Worker --> Analytics
     Analytics --> AnalyticsProvider[Optional analytics provider]
 ```
 
-Use a modular monolith. A Next.js adapter parses transport input, creates a trusted context, and invokes a domain service. Services coordinate authorization, business rules, repositories, entitlements, and events. Repositories own SQL. Workers call the same services with explicit job/service identities.
+Use a modular monolith. oRPC handlers mounted in Next.js Route Handlers validate transport input, create a trusted context, and invoke domain services. Services coordinate authorization, business rules, repositories, entitlements, and events. Repositories own SQL. Workers call the same services with explicit job/service identities. [oRPC Next.js adapter](https://orpc.dev/docs/adapters/next)
 
 The diagram shows logical services, not required container boundaries. The default Docker image runs web and worker as supervised processes in one application container, with graceful shutdown and combined health checks. Their source packages and database roles stay separate; migration credentials are provided only to one-off commands. PostgreSQL, OpenFGA, and object storage remain external. The optional Kubernetes profile places web and worker in separate Deployments for independent scaling without changing domain behavior.
 
-Server Components call services directly; they do not perform an HTTP round trip to their own API. Server Actions and Route Handlers are thin entry points to the same services. No business rule should exist only in a page or action.
+Server Components call services directly; they do not perform an HTTP round trip to their own API. Interactive clients use the typed oRPC client. oRPC procedures and any Server Actions are thin entry points to the same services. Better Auth endpoints and verified provider webhooks keep their dedicated Next.js handlers. No business rule should exist only in a page, procedure or action.
 
 Next.js documentation treats Server Actions and Route Handlers as entry points that require their own authorization checks. Centralize that enforcement near the data-access boundary and return minimal DTOs. [Next.js authentication guidance](https://nextjs.org/docs/app/guides/authentication)
 
@@ -71,12 +100,16 @@ common-sass/
       src/app/(public)/
       src/app/(auth)/
       src/app/(dashboard)/app/[orgSlug]/
-      src/app/api/v1/organizations/[organizationId]/
+      src/app/api/rpc/[[...rest]]/            # oRPC RPC handler for typed clients
+      src/app/api/v1/[[...rest]]/             # oRPC OpenAPI handler for public REST
+      src/app/api/auth/[...all]/             # Better Auth handler
       src/app/api/webhooks/
       src/features/                         # Product UI composed from domain contracts
+      src/i18n/                             # next-intl routing and request configuration
+      messages/                             # next-intl locale catalogues
     worker/src/                             # Job runner, scheduled tasks, projections
   packages/
-    config/                                 # Validated environment and product manifest
+    config/                                 # T3 Env/Zod schemas and product manifest
     db/src/schema/                          # Identity, tenant, commercial, domain schemas
     db/migrations/                          # Ordered SQL and Drizzle metadata
     auth/                                   # Better Auth adapter and session boundary
@@ -86,12 +119,15 @@ common-sass/
       organizations/ teams/ workspaces/ projects/
       billing/ entitlements/ usage/ audit/
       files/ notifications/ integrations/ account-lifecycle/
-    api-contracts/                          # Zod DTOs and OpenAPI assembly
-    ui/                                     # shadcn/ui, shared layouts/forms/tables
-    email/                                  # Transactional templates
+    api-contracts/                          # oRPC contracts, Zod DTOs, OpenAPI metadata
+    api/                                    # oRPC procedures/router and trusted context
+    ui/                                     # shadcn/ui, Tailwind, React Hook Form, stories
+      .storybook/                           # Storybook configuration and providers
+    email/                                  # React Email templates and localized content
     analytics/                              # Typed events, tracking policy, provider adapter
-    observability/                          # Traces, metrics, logging and redaction
+    observability/                          # LogTape/redaction, OpenTelemetry traces/metrics
     testing/                                # Factories, multi-tenant fixtures, helpers
+  AGENTS.md                                # AI coding context and canonical commands
   .agents/skills/                           # Planned SKILL.md packages and references
   feature-briefs/                           # Human-readable tasks and acceptance criteria
   .github/workflows/                        # CI, release, deployment, infrastructure
@@ -103,6 +139,15 @@ common-sass/
   scripts/                                  # Docker deployment/rollback; optional Kubernetes
   docs/                                     # Plan, ADRs, module and operator guides
   examples/                                 # Illustrative inputs and extension recipes
+  package.json                              # Bun workspaces, pinned packageManager, scripts
+  bun.lock                                  # Committed dependency lockfile
+  turbo.json                                # Workspace task graph
+  biome.json                                # Biome lint and formatting rules
+  commitlint.config.ts                      # Conventional Commits policy
+  lefthook.yml                              # pre-commit and commit-msg hooks
+  knip.config.ts                            # Workspace entry points and cleanup policy
+  vitest.config.ts                          # Unit and integration test projects
+  playwright.config.ts                      # End-to-end browser projects
   saas.config.ts                            # Product manifest, once implemented
 ```
 
@@ -275,13 +320,16 @@ Matching revision counters from a backup do not prove that the separate OpenFGA 
 
 All writes follow: authenticate → resolve tenant → authorize → validate allowed input → check entitlement → reserve quota if needed → perform transactional write/audit/outbox → commit → dispatch effects asynchronously.
 
-- REST resources live under `/api/v1/organizations/{organizationId}/{resource}`; API keys are pinned to one organization.
+Define oRPC contracts with explicit Zod input/output schemas in `packages/api-contracts` and implement the procedures in `packages/api`. Mount the router through Next.js handlers: RPC at `/api/rpc` for typed clients and the oRPC OpenAPI handler at `/api/v1` for the public HTTP contract. The same procedures and domain services serve both transports; define REST methods/paths as oRPC metadata and generate the OpenAPI document from those contracts. [oRPC OpenAPI routing](https://orpc.dev/docs/openapi/routing), [oRPC OpenAPI handler](https://orpc.dev/docs/openapi/handler)
+
+- Public REST resources exposed by oRPC live under `/api/v1/organizations/{organizationId}/{resource}`; API keys are pinned to one organization. RPC organization inputs undergo the same trusted tenant resolution.
 - Use structured error codes, a safe human-readable message, validation issues, and a request ID. Return `401`, `403`, `404`, `409`, `422`, `429`, or `503` deliberately; conceal resource existence where appropriate.
 - Create commands support scoped idempotency keys with request hashes. Retries recheck the caller's current authorization before returning a stored result.
 - Use bounded cursor pagination, allowlisted filters/sorts, body-size limits, and explicit bulk-operation caps.
 - Use optimistic concurrency (`version`/ETag) for edits; return a conflict instead of silently overwriting concurrent changes.
 - Enforce cookie/CSRF/origin controls for browser mutations and explicit CORS for APIs. Route guards improve navigation but do not establish authorization.
 - External effects do not occur inside database transactions. Write outbox entries with the domain change and audit event.
+- Verify typed-client inference and runtime schema rejection, and run the same tenant, authorization, idempotency and error-contract cases through both oRPC transports.
 
 ## 2.8 Decision register
 
@@ -293,7 +341,7 @@ All writes follow: authenticate → resolve tenant → authorize → validate al
 | Database migrations | Drizzle SQL generation + reviewed custom SQL | A requirement cannot be expressed or safely maintained in this workflow |
 | Organization ownership | Application domain; security deprovisioning overrides voluntary last-owner protection | Mapping, sole-owner recovery, or seat-admission spike fails; resolve in Phase 0 |
 | Queue | pg-boss | Queue workload competes materially with database traffic |
-| API | REST + shared services | A proven client requirement justifies another transport |
+| API | oRPC contracts/procedures + shared services; typed RPC and public REST/OpenAPI adapters in Next.js | Contract/versioning or client requirements require adapter changes within oRPC |
 | Feature development | AI agent skills edit ordinary source using shared services and deterministic checks | Skill evaluations or platform changes require revised guidance; no custom CRUD generator |
 | Monetization | Fixed/seat subscriptions; metered adapter optional | Product requires advanced usage contracts |
 | Deployment | Single Docker container on a host/VM; GitHub Actions/GHCR with digest promotion | Opt into Kubernetes + Helm for independent scaling/orchestration; choose host/registry provider and availability requirements |

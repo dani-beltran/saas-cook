@@ -18,6 +18,10 @@ Keep production on a separate host, or a separate cluster when Kubernetes is sel
 | `.github/workflows/release.yml` | Build, test, scan, attest, and publish a release; deploy staging |
 | `.github/workflows/deploy.yml` | Reusable deployment workflow; production promotion of a verified release |
 | `.github/workflows/infra.yml` | Optional provisioning workflow: review infrastructure plans and apply approved environment changes |
+| `package.json`, `bun.lock`, `turbo.json` | Pinned Bun package manager, workspace scripts, reproducible dependency graph and build tasks |
+| `biome.json`, `commitlint.config.ts`, `lefthook.yml`, `knip.config.ts` | Formatting/lint, Conventional Commits, local Git hooks and unused-code/dependency checks |
+| `vitest.config.ts`, `playwright.config.ts`, `packages/ui/.storybook/` | Unit/integration projects, browser journeys and component development/build configuration |
+| `packages/config/`, `packages/observability/`, `AGENTS.md` | T3 Env schemas, LogTape/redaction and documented AI coding context/commands |
 | `infra/docker/Dockerfile`, `.dockerignore` | Default combined `app` target; optional separate `web`, `worker`, and `migrate` targets for Kubernetes |
 | `infra/docker/entrypoint.sh`, `infra/docker/healthcheck.js` | Supervise web/worker, forward signals, expose one-off command modes, and check combined health |
 | `infra/helm/common-sass/` | Optional Kubernetes chart, values schema, and web/worker resources |
@@ -28,19 +32,36 @@ Keep production on a separate host, or a separate cluster when Kubernetes is sel
 
 ## 7.3 Continuous integration
 
-Run required checks for pull requests and the exact merged commit on the protected default branch. The workspace scripts will expose formatting/lint, TypeScript checks, unit tests, `pnpm test:integration`, `pnpm test:e2e`, `pnpm authz:validate`, and production builds.
+Run required checks for pull requests and the exact merged commit on the protected default branch. Use Bun for package management and workspace script invocation, with Node.js LTS as the application/tool runtime where required. The planned command contracts are:
 
-1. Install pinned Node.js/pnpm versions and dependencies using `pnpm install --frozen-lockfile`; cache the dependency store with lockfile/tool-version keys.
+| Command | Implementation and purpose |
+| --- | --- |
+| `bun install --frozen-lockfile` | Reproduce the committed `bun.lock` without changing dependency resolution |
+| `bun run check` | Biome CI checks for formatting and lint; `bun run format` provides local formatting |
+| `bun run typecheck` | Strict TypeScript checks, including oRPC client/contract inference |
+| `bun run commitlint --from <base> --to <head>` | Commitlint Conventional Commits validation for the applicable commit range |
+| `bun run knip` | Detect unexplained unused files, exports and dependencies across configured workspaces |
+| `bun run test:unit` | Vitest unit suites |
+| `bun run test:integration` | Vitest suites using real isolated data/authorization services |
+| `bun run test:e2e` | Playwright end-to-end suites |
+| `bun run storybook`, `bun run storybook:build` | Storybook local component development and CI static build |
+| `bun run authz:validate` | OpenFGA model and assertion validation |
+| `bun run build` | Production package and Next.js builds |
+| `bun run hooks:install` | Explicit Lefthook installation during local setup |
+
+Lefthook runs Biome checks before commit and Commitlint against the commit message in `commit-msg`. Hooks invoke the same policies as CI. CI checks the PR commit range and proposed squash title, then validates actual new default-branch commits; define squash/merge conventions in `commitlint.config.ts` and fetch enough history to resolve the checked range. Knip configuration includes Next.js routes, oRPC registries, Storybook stories, React Email templates, tests and tooling entry points; document narrow exceptions rather than ignoring whole packages. `AGENTS.md` documents this setup and these commands.
+
+1. Install pinned Node.js/Bun versions and dependencies using `bun install --frozen-lockfile`; cache dependencies with `bun.lock` and tool-version keys. Review dependency lifecycle scripts and Bun trust configuration, and verify required native/tool setup during Phase 0. Install Playwright browser dependencies explicitly for browser jobs. Run Biome, TypeScript, Commitlint, Knip, Vitest unit tests, authorization validation, Storybook and production builds.
 2. Start disposable PostgreSQL, OpenFGA with its own database, object storage, and mail capture. Apply migrations to both an empty database and a previous-release fixture. Use real restricted runtime roles and the two-organization synthetic fixtures.
-3. Run the applicable tenant-isolation, authorization, entitlement/capacity, API-key, worker, and browser suites. Phase 2 adds magic-link/passkey/ownership-transfer suites. Phase 4 adds skill-artifact validation, customization/evolution checks and reference/agent-authored feature coverage; isolated skill behavior evaluations produce separate versioned release evidence rather than requiring a live AI service in ordinary CI. Phase 6 adds product-analytics attribution/controls/deletion and multi-organization account-closure/ownership-continuity recovery suites; later presets add their required module suites. Do not report an unimplemented capability as passed.
+3. Run the applicable Vitest integration and Playwright browser suites for tenant isolation, authorization, entitlements/capacity, API keys and workers. Exercise Zod input/output contracts and policy/error parity through the oRPC RPC and public OpenAPI handlers, next-intl rendering and React Hook Form validation, T3 Env startup rejection, and LogTape redaction. Phase 2 adds Better Auth magic-link/passkey/ownership-transfer suites and React Email rendering/delivery. Phase 4 adds skill-artifact validation, customization/evolution checks and reference/agent-authored feature coverage; isolated skill behavior evaluations produce separate versioned release evidence rather than requiring a live AI service in ordinary CI. Phase 5 adds Stripe billing/checkout/portal/webhook suites. Phase 6 adds product-analytics attribution/controls/deletion and multi-organization account-closure/ownership-continuity recovery suites; later presets add their required module suites. Do not report an unimplemented capability as passed.
 4. Build the combined `app` image and test it with direct `docker run`: startup, static assets, web/worker health, child-process failure, graceful shutdown, migration modes, install/upgrade, and rollback. Verify host reboot recovery on a disposable test VM. The default CI path needs no Kubernetes tools or cluster. When the optional Kubernetes adapter is implemented or changed, a separate opt-in job builds its split images, lints/renders its chart, validates manifests, and runs installation/upgrade tests in kind; these checks are required to release that adapter, not to release a Docker-only product.
-5. Check dependencies and built images against the recorded vulnerability policy; block critical/high findings unless a reviewed, owned, expiring exception applies. Preserve test reports, migration results, rendered manifests, and scan evidence with the workflow run.
+5. Check dependencies and built images against the recorded vulnerability policy; block critical/high findings unless a reviewed, owned, expiring exception applies. Preserve Vitest/Playwright reports, Storybook build output, migration results, rendered manifests, and scan evidence with the workflow run.
 
 Pull-request jobs have read-only repository access and no deployment credentials. Pin third-party Actions to reviewed commit SHAs. Never run untrusted pull-request code in a privileged release job. Optional previews use synthetic data, separate credentials and storage, restricted network access, and automatic cleanup when the pull request closes.
 
 ## 7.4 Building and publishing Docker images
 
-Use one multi-stage Dockerfile with a supported Node.js LTS base pinned by digest. A dependency stage installs the locked workspace dependencies; a build stage compiles the required packages and applications; final targets copy only their runtime files and production dependencies:
+Use one multi-stage Dockerfile with a supported Node.js LTS base pinned by digest. A dependency stage installs the pinned Bun binary and runs `bun install --frozen-lockfile`; a build stage uses Bun workspace scripts to compile the required packages and applications. Verify the dependency layout and any native modules against the final Node.js runtime. Final targets copy only their runtime files and production dependencies; one-off migration/publication modes invoke packaged Node.js commands and do not need a runtime package install:
 
 | Target | Image contents and process |
 | --- | --- |
@@ -53,7 +74,7 @@ Configure Next.js `output: 'standalone'` and a monorepo tracing root. Copy stati
 
 All targets run as non-root UID/GID `10001` and forward termination signals to Node. The combined target is the Dockerfile's final/default target. Exclude `.git`, local dependencies, `.env*`, credentials, and test output from the build context. Application/provider/database credentials are supplied at runtime. Private package credentials, if needed, use BuildKit secret mounts. Cache dependencies/build output without exporting credentials.
 
-Keep environment-specific browser configuration in an allowlisted runtime configuration endpoint: `NEXT_PUBLIC_*` values are frozen during compilation and therefore must not contain staging-specific settings in an image promoted to production. Replicas use the same build output; test Server Actions, deployment-version skew, and old-client asset handling during rollouts. Any build-generated Server Action key stays in the private server artifact and must never appear in public assets or logs. [Next.js self-hosting](https://nextjs.org/docs/app/guides/self-hosting)
+Keep environment-specific browser configuration in an allowlisted runtime configuration endpoint: `NEXT_PUBLIC_*` values are frozen during compilation and therefore must not contain staging-specific settings in an image promoted to production. T3 Env validates separate server/client schemas and each process's required runtime configuration before it starts work; the build validates only its declared build inputs and never needs production credentials. Replicas use the same build output; test Server Actions, deployment-version skew, and old-client asset handling during rollouts. Any build-generated Server Action key stays in the private server artifact and must never appear in public assets or logs. [Next.js self-hosting](https://nextjs.org/docs/app/guides/self-hosting)
 
 Proposed manual equivalent of the default release build, from the repository root after authenticating to the registry. Set `IMAGE_PREFIX` to the product's registry path, such as `ghcr.io/your-org/common-sass`:
 
@@ -140,8 +161,8 @@ The reusable workflow and `scripts/deploy.sh` implement this order:
 
 1. Acquire an environment-wide release lock across migrations and rollout; do not cancel an in-progress deployment for a newer commit. Verify the profile and target host or cluster/namespace, signed release identity, configuration, required secrets, supported schema/model range, and current recovery readiness. Reject stale promotions that would move the environment backwards without an explicit rollback.
 2. Validate the runtime configuration and host prerequisites for Docker, or render/validate the immutable chart and perform a server-side dry run for Kubernetes. Retain redacted evidence. Bootstrap prepares host access/secrets or namespaces/RBAC/secrets beforehand; application deployment cannot silently provision new infrastructure or select a different environment.
-3. Run a one-off container with the `app` digest in `migrate` mode for Docker, or a separate Job with the `migrate` digest for Kubernetes. Use separate DDL credentials, a database advisory lock, and bounded execution/retry limits. Run the packaged equivalent of `pnpm db:migrate` and wait for success before replacing the application. Never run migrations automatically on normal container/pod startup. A failed or ambiguous migration stops deployment and requires reconciliation before retry.
-4. If the authorization model changes, run a separate one-off publication command/Job using the same release and the `pnpm authz:publish` contract. Verify model/generation readiness through the selected projection protocol. Changes incompatible with the existing application require a documented maintenance/drain sequence before publication; publication or container/Helm success cannot bypass the recovery gate.
+3. Run a one-off container with the `app` digest in `migrate` mode for Docker, or a separate Job with the `migrate` digest for Kubernetes. Use separate DDL credentials, a database advisory lock, and bounded execution/retry limits. Run the packaged equivalent of `bun run db:migrate` and wait for success before replacing the application. Never run migrations automatically on normal container/pod startup. A failed or ambiguous migration stops deployment and requires reconciliation before retry.
+4. If the authorization model changes, run a separate one-off publication command/Job using the same release and the `bun run authz:publish` contract. Verify model/generation readiness through the selected projection protocol. Changes incompatible with the existing application require a documented maintenance/drain sequence before publication; publication or container/Helm success cannot bypass the recovery gate.
 5. For Docker, replace the combined container using §7.5 and wait for combined health. For Kubernetes only, upgrade the web/worker chart with verified digests using the commands below. `CHART_PACKAGE` is the verified archive recorded in that profile's release; the script supplies reviewed environment files and explicit context. The Docker branch never invokes these commands.
 
 ```sh

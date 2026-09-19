@@ -1,6 +1,6 @@
 # 0. Project overview
 
-An implementation plan for a reusable enterprise SaaS template built with **Node.js, TypeScript, React, Next.js, shadcn/ui, and PostgreSQL**.
+An implementation plan for a reusable enterprise SaaS template built with **Next.js, React 19, TypeScript, shadcn/ui, Tailwind CSS, Better Auth, Drizzle ORM, PostgreSQL, and oRPC**, using **Bun** for package management and **Stripe** for payments and billing.
 
 **Status:** planning only. The application, packages, migrations, agent skills, and lifecycle commands described here are proposed deliverables; they have not been implemented. Prepared on 2026-09-13; scope updated on 2026-09-19.
 
@@ -21,13 +21,17 @@ The folder name intentionally follows the requested spelling, `common-sass`. It 
 
 ## Recommended foundation
 
+The [required stack in architecture §2.1](02-architecture-and-security.md#21-stack-decisions) is the canonical technology list. It also specifies next-intl, React Email, Zod, React Hook Form, Vitest, Playwright, Storybook, Biome, Commitlint, Lefthook, Knip, T3 Env, GitHub Actions, LogTape, and `AGENTS.md` for AI coding context. Phase 0 selects compatible versions of these technologies.
+
 - A modular monolith with a Next.js application and a Node.js background worker, packaged together in one Docker container by default.
+- Bun workspaces and a committed `bun.lock`; Node.js LTS runs the web application and worker.
 - An organization is the tenant boundary; users can belong to several organizations.
 - Shared PostgreSQL tables with tenant keys, tenant-aware constraints, and row-level security.
 - OpenFGA for relationship-based permissions, subject to Phase 0 projection-safety and availability gates; authentication, permissions, paid entitlements, and quotas remain distinct.
-- Drizzle for database models and reviewed SQL migrations.
+- Drizzle ORM for database models and type-safe SQL; Drizzle Kit and reviewed SQL migrations.
+- oRPC contracts and procedures in Next.js provide typed clients and public REST/OpenAPI exposure through shared domain services.
 - GitHub Actions builds and publishes to GHCR, then promotes a verified image digest to a Docker host; Kubernetes with Helm is an optional deployment profile. PostgreSQL, OpenFGA, and object storage remain external services.
-- Better Auth for authentication, including email magic links and passkeys, with enterprise identity integration behind adapters.
+- Self-hosted Better Auth for authentication, including email magic links and passkeys, with enterprise identity integration behind adapters.
 - Stripe for fixed and seat subscriptions; an independent usage ledger and an optional usage-billing adapter.
 - Repository-local AI agent skills that build and evolve complete features using proven platform services: database changes, validation, services, permissions, APIs, dashboard, tests, and documentation. Deterministic tooling validates the result; there is no custom CRUD generator or entity DSL.
 - Product analytics through a typed event catalogue and an optional provider adapter, separate from audit, observability, and billable usage.

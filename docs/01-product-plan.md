@@ -13,6 +13,7 @@ Initial assumptions:
 - The template is source code developers own and customize. It is not a runtime no-code application builder.
 - Products can disable optional modules. Tenant isolation, authorization, validation, and security audit cannot be disabled for convenience.
 - A demonstration Projects feature proves the architecture and agent-assisted development workflow; it is removable from products that do not need projects.
+- Use the complete [required technology stack](02-architecture-and-security.md#21-stack-decisions) across all presets; the roadmap assigns its setup and feature integration to explicit phases.
 
 Release labels below are **F — foundation**, **C — commercial core**, **E — enterprise baseline**, and **X — optional extension**. E features are required before presenting the release as the enterprise template, even though they are delivered after F and C.
 
@@ -68,9 +69,9 @@ Release labels below are **F — foundation**, **C — commercial core**, **E �
 | Reusable CRUD experience | Search, filters, sorting, cursor pagination, create/edit/detail screens, authorized actions, confirmation dialogs | F |
 | Accessibility and themes | Keyboard navigation, focus management, semantic labels, contrast, reduced motion, light/dark themes | F |
 | State handling | Loading, empty, error, unavailable, denied, validation, stale-update conflict, and quota states | F |
-| Internationalization | Translation keys, locale-aware numbers/dates, time zones, currency formatting; English seed catalogue | F |
+| Internationalization | next-intl translation keys, locale-aware numbers/dates, time zones, currency formatting; English seed catalogue | F |
 | User preferences | Profile, avatar, locale, time zone, notifications, sessions, MFA | F/C |
-| Transactional notifications | Verification/reset/magic-link/invitation/ownership-transfer and security/recovery email delivery in F; full email/in-app preferences and commercial notices in C | F/C |
+| Transactional notifications | React Email templates for verification/reset/magic-link/invitation/ownership-transfer and security/recovery delivery in F; full email/in-app preferences and commercial notices in C | F/C |
 | Files | Private uploads, immutable scanned bytes, signed access, type/size checks, quarantine/scanning, storage quotas | C |
 | Search | PostgreSQL search for tenant resources with permission-aware results and snippets | C |
 | Import/export | Validated CSV imports, preview/errors, resumable bulk processing, authorized downloadable exports | C |
@@ -84,8 +85,9 @@ Release labels below are **F — foundation**, **C — commercial core**, **E �
 
 | Capability | Required behavior | Release |
 | --- | --- | --- |
-| Versioned API | REST contract, OpenAPI, validated payloads, pagination, rate limits, consistent errors | F/C |
-| AI agent skills | Bootstrap, add/evolve a domain feature, add a dashboard page or email, and verify a change using repository context, existing services, reviewable diffs, and executable checks | F |
+| Versioned API | oRPC typed contracts/clients with Zod validation, public REST/OpenAPI adapter, pagination, rate limits, consistent errors | F/C |
+| AI agent skills | Bootstrap, add/evolve a domain feature, add a dashboard page or email, and verify a change using AGENTS.md context, existing services, reviewable diffs, and executable checks | F |
+| Developer experience | Bun workspaces; Storybook components; Biome lint/format; Commitlint conventions; Lefthook hooks; Knip cleanup; Vitest unit tests and Playwright end-to-end tests | F |
 | Background processing | Durable jobs, retries, concurrency limits, timeouts, scheduling, dead-letter handling | F |
 | Domain events | Transactional outbox, versioned payloads, idempotent consumers | F |
 | Integration credentials | Encrypted secrets, minimum scopes, refresh/revocation lifecycle, connection health | C |
@@ -93,7 +95,7 @@ Release labels below are **F — foundation**, **C — commercial core**, **E �
 | Audit logs | Actor, organization, action, target, result, timestamp, request ID, redacted changes; controlled export | F/C |
 | Feature flags | Platform rollout switches separate from paid entitlements, safe targeting, kill switches, expiry owner | C |
 | Operator console | Tenant health, job/reconciliation failures, suspension, plan overrides, controlled support sessions | E |
-| Observability | Structured logs, traces, metrics, error tracking, queue lag, isolation alerts, usage discrepancies | F/C |
+| Observability | LogTape structured logs, OpenTelemetry traces/metrics, error tracking, queue lag, isolation alerts, usage discrepancies | F/C |
 | Delivery tooling | Local dependencies, seed data, GitHub Actions CI/CD, single-container Docker deployment, registry/promotion, preview environments, migrations, rollback, release/version policy; production customer-data gate in C | F/C |
 | Kubernetes deployment | Optional Helm profile with separate web/worker containers, migration Jobs, and independent scaling; direct Docker deployment remains supported without cluster tooling | X |
 | Data lifecycle | Personal account deletion and organization export/deletion, independent deletion journal for both scopes, analytics-provider cleanup, baseline retention/backup expiry in C; advanced retention and legal-hold hooks in E | C/E |
@@ -157,7 +159,8 @@ Navigation responds to enabled modules and permissions. Deep links still perform
 
 ## 1.5 Reusability and additional suggestions
 
-- Provide a product manifest for branding, enabled modules, navigation, plan definitions, email templates, and translations. Keep secrets in environment-specific secret stores.
+- Provide a product manifest for branding, enabled modules, navigation, plan definitions, React Email templates, and next-intl translations. Validate typed environment configuration with T3 Env and Zod; keep secrets in environment-specific secret stores.
+- Build React 19 dashboard components with shadcn/ui and Tailwind CSS, forms with React Hook Form and Zod, and reusable state examples in Storybook.
 - Ship reusable patterns for approval workflows, comments, tags, favorites, saved views, and custom fields as optional modules. Avoid forcing every entity to support them.
 - Include a realistic two-organization demo with overlapping users and different permissions. Make it useful for onboarding, demonstrations, and security regression tests.
 - Include a pricing simulator and an authorization inspector for developers/operators. Explain effective access without revealing inaccessible resource metadata to ordinary users.
