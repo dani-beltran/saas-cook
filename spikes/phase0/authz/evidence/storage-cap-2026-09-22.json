@@ -1,0 +1,104 @@
+{
+	"schemaVersion": 1,
+	"event": "terminated",
+	"capturedAt": "2026-09-22T12:57:36.735Z",
+	"gateStatus": "INCOMPLETE",
+	"candidateDecision": "REJECT",
+	"error": "Error: Storage budget exceeded: 77913355 > 1",
+	"smoke": true,
+	"prefix": "bench-31edf006-cd0e-4e36-b2c4-a0bc07beb979",
+	"model": "01M34K2X1SEHJHCSHXZTX8ZEQF",
+	"store": "01M34K2X1HHRX75RSXHE6X5RZ1",
+	"measuredSeconds": 0,
+	"requiredDurationSeconds": 1800,
+	"configuredDurationSeconds": 10,
+	"workload": {
+		"resourceCount": 1000,
+		"tenantCount": 10,
+		"memberships": 100,
+		"concurrency": 50,
+		"hotTenantFraction": 0.5,
+		"hotTrafficTarget": 0.8,
+		"mix": {
+			"read": 0,
+			"update": 0,
+			"createDelete": 0,
+			"sharing": 0
+		},
+		"hotRequests": 0,
+		"sparseLists": 0
+	},
+	"limits": {
+		"pool": 60,
+		"projectorPool": 4,
+		"lockTimeoutMs": 1000,
+		"statementTimeoutMs": 5000,
+		"remoteTimeoutMs": 1000,
+		"attemptLeaseMs": 120000,
+		"maxPendingPool": 100,
+		"storageBudgetBytes": 1,
+		"retainedTupleBudget": 1000000
+	},
+	"storage": {
+		"databaseBytes": 44358923,
+		"walBytes": 33554432,
+		"retainedTupleCount": 1021,
+		"sampledAt": "2026-09-22T12:57:36.734Z"
+	},
+	"requests": 0,
+	"firstSuccesses": 0,
+	"eventualSuccesses": 0,
+	"firstFailures": {},
+	"published": 0,
+	"abandoned": 0,
+	"projectionFailures": 0,
+	"cleanedTuples": 0,
+	"cleanupErrors": 0,
+	"createReadableTimeouts": 0,
+	"latencyMs": {
+		"reads": {
+			"samples": 0,
+			"p95": null,
+			"p99": null,
+			"max": null
+		},
+		"writes": {
+			"samples": 0,
+			"p95": null,
+			"p99": null,
+			"max": null
+		},
+		"fenceWaits": {
+			"samples": 2,
+			"p95": 0.678291999999999,
+			"p99": 0.678291999999999,
+			"max": 0.678291999999999
+		},
+		"build": {
+			"samples": 0,
+			"p95": null,
+			"p99": null,
+			"max": null
+		},
+		"cleanup": {
+			"samples": 0,
+			"p95": null,
+			"p99": null,
+			"max": null
+		},
+		"revocationCommit": {
+			"samples": 0,
+			"p95": null,
+			"p99": null,
+			"max": null
+		},
+		"createToReadable": {
+			"samples": 0,
+			"p95": null,
+			"p99": null,
+			"max": null
+		}
+	},
+	"errors": [],
+	"note": "Live snapshots include in-flight requests. A checkpoint is never evidence of completed duration or gate approval."
+}

@@ -1,0 +1,26 @@
+{
+	"name": "@common-sass/phase0-api",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"build": "node ../../../node_modules/next/dist/bin/next build --webpack",
+		"start": "node ../../../node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3100"
+	},
+	"dependencies": {
+		"next": "16.3.5",
+		"react": "19.3.0",
+		"react-dom": "19.3.0",
+		"@orpc/contract": "1.15.3",
+		"@orpc/server": "1.15.3",
+		"@orpc/client": "1.15.3",
+		"@orpc/openapi": "1.15.3",
+		"@orpc/zod": "1.15.3",
+		"zod": "4.6.5",
+		"next-intl": "4.14.6",
+		"react-hook-form": "7.88.0",
+		"@hookform/resolvers": "5.9.1",
+		"tailwindcss": "4.3.3",
+		"@tailwindcss/postcss": "4.3.3",
+		"@common-sass/phase0-contracts": "workspace:*"
+	}
+}

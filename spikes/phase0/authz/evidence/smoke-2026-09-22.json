@@ -1,0 +1,158 @@
+{
+	"schemaVersion": 1,
+	"protocol": "immutable full graph per attempt",
+	"backend": "real PostgreSQL and OpenFGA",
+	"smoke": true,
+	"startedAt": "2026-09-22T12:49:12.614Z",
+	"warmupAt": "2026-09-22T12:49:10.613Z",
+	"warmupActualSeconds": 2.000993625,
+	"elapsedSeconds": 10.000244499999999,
+	"qualifiedWorkload": false,
+	"environment": {
+		"node": "v24.19.0",
+		"platform": "darwin",
+		"arch": "arm64",
+		"cpu": "Apple M4 Pro",
+		"logicalCpus": 14,
+		"hostMemoryBytes": 51539607552,
+		"serviceVersions": {
+			"postgres": "18.6 (Debian 18.6-1.pgdg13+2)",
+			"openFga": "1.21.0"
+		},
+		"dockerLimits": "14cpu-8318976000bytes"
+	},
+	"workload": {
+		"tenants": 10,
+		"memberships": 100,
+		"resources": 1000,
+		"hotTenantResources": 500,
+		"clients": 50,
+		"mix": {
+			"read": 5196,
+			"update": 1765,
+			"createDelete": 857,
+			"sharing": 885
+		},
+		"sparseLists": 126,
+		"hotTrafficFraction": 0.8022520969780536,
+		"seed": 1729,
+		"listScanLimit": 100,
+		"listBatch": 20,
+		"listTimeBudgetMs": 250
+	},
+	"limits": {
+		"pool": 60,
+		"projectorPool": 4,
+		"lockTimeoutMs": 1000,
+		"statementTimeoutMs": 5000,
+		"remoteTimeoutMs": 1000,
+		"attemptLeaseMs": 120000,
+		"maxPendingPool": 100
+	},
+	"retries": {
+		"commandAttempts": 2,
+		"delayMs": 25,
+		"remoteWriteRetries": 0,
+		"createReadBudgetMs": 2000,
+		"createReadDelayMs": 25
+	},
+	"graph": {
+		"baseTuples": 2174,
+		"baseWriteCalls": 29,
+		"tuplesWrittenIncludingWarmup": 53367,
+		"writeCallsIncludingWarmup": 678,
+		"cleanedTuples": 5681,
+		"cleanupErrors": 0,
+		"writeAmplificationPerCommittedChange": 298.13966480446925,
+		"published": 184,
+		"abandoned": 0,
+		"projectionFailures": 0,
+		"pendingRevisions": 0
+	},
+	"requests": 8703,
+	"requestRate": 870.2787216852548,
+	"firstSuccesses": 794,
+	"eventualSuccesses": 890,
+	"firstFailures": {
+		"projection_pending": 7909
+	},
+	"deliberateDenials": 0,
+	"firstSuccessFraction": 0.09123290819257728,
+	"eventualSuccessFraction": 0.1022635872687579,
+	"latencyMs": {
+		"reads": {
+			"samples": 489,
+			"p95": 37.70783300000039,
+			"p99": 143.6197919999995,
+			"max": 174.00691600000027
+		},
+		"writes": {
+			"samples": 305,
+			"p95": 22.282084000000395,
+			"p99": 40.94829200000004,
+			"max": 178.25216700000055
+		},
+		"eventual": {
+			"samples": 890,
+			"p95": 53.12145899999996,
+			"p99": 85.79433299999982,
+			"max": 214.0516659999994
+		},
+		"fenceWaits": {
+			"samples": 18277,
+			"p95": 27.917333999999755,
+			"p99": 38.146875000000364,
+			"max": 176.01133300000038
+		},
+		"failedFenceWaits": {
+			"samples": 0,
+			"p95": null,
+			"p99": null,
+			"max": null
+		},
+		"poolWaits": {
+			"samples": 18253,
+			"p95": 0.00650000000041473,
+			"p99": 0.014583000000129687,
+			"max": 8.685042000000976
+		},
+		"projection": {
+			"samples": 179,
+			"p95": 839.353,
+			"p99": 2876.084,
+			"max": 5097.031
+		},
+		"revocationToDenied": {
+			"samples": 28,
+			"p95": 47.87450000000081,
+			"p99": 195.66662499999984,
+			"max": 195.66662499999984
+		},
+		"build": {
+			"samples": 184,
+			"p95": 516.2358329999997,
+			"p99": 716.9126670000005,
+			"max": 808.4748749999999
+		},
+		"cleanup": {
+			"samples": 23,
+			"p95": 1062.740417,
+			"p99": 1088.3075000000008,
+			"max": 1088.3075000000008
+		},
+		"createToReadable": {
+			"samples": 71,
+			"p95": 705.643916,
+			"p99": 1065.427541,
+			"max": 1065.427541
+		}
+	},
+	"createReadableTimeouts": 8,
+	"errors": [],
+	"gateStatus": "INCOMPLETE",
+	"failures": [
+		"eligible first-attempt success below 99.9%",
+		"create-to-readable exceeded bounded 2s window"
+	],
+	"note": "A passing healthy run does not replace the separate fault suite, real feature rerun, or monthly availability measurement. Outbox projection latency also bounds graph-ready revocation; authoritative revocation is effective at DB commit."
+}

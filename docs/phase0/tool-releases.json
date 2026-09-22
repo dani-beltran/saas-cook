@@ -1,0 +1,123 @@
+{
+  "checkedAt": "2026-09-22",
+  "status": "candidate release references, not tested installation evidence",
+  "releases": [
+    {
+      "repository": "moby/moby",
+      "tag": "docker-v29.8.1",
+      "sha": "b2d20c90a74af78b3f0f967db92292e4a603c03d",
+      "shaType": "tag",
+      "source": "https://github.com/moby/moby/releases/tag/docker-v29.8.1"
+    },
+    {
+      "repository": "docker/buildx",
+      "tag": "v0.37.1",
+      "sha": "363b7b083ea1a88098198d681f9d5054f1ca4629",
+      "shaType": "tag",
+      "source": "https://github.com/docker/buildx/releases/tag/v0.37.1"
+    },
+    {
+      "repository": "moby/buildkit",
+      "tag": "v0.33.0",
+      "sha": "63956db2950b78a2ab6f2aeef4672215fd969ca9",
+      "shaType": "tag",
+      "source": "https://github.com/moby/buildkit/releases/tag/v0.33.0"
+    },
+    {
+      "repository": "openfga/openfga",
+      "tag": "v1.21.0",
+      "sha": "ab557c5592670c899de35297e7aa067015f06502",
+      "shaType": "commit",
+      "source": "https://github.com/openfga/openfga/releases/tag/v1.21.0"
+    },
+    {
+      "repository": "actions/checkout",
+      "tag": "v7.0.1",
+      "sha": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+      "shaType": "commit",
+      "source": "https://github.com/actions/checkout/releases/tag/v7.0.1"
+    },
+    {
+      "repository": "actions/setup-node",
+      "tag": "v7.0.0",
+      "sha": "820762786026740c76f36085b0efc47a31fe5020",
+      "shaType": "commit",
+      "source": "https://github.com/actions/setup-node/releases/tag/v7.0.0"
+    },
+    {
+      "repository": "actions/upload-artifact",
+      "tag": "v7.0.1",
+      "sha": "043fb46d1a93c77aae656e7c1c64a875d1fc6a0a",
+      "shaType": "commit",
+      "source": "https://github.com/actions/upload-artifact/releases/tag/v7.0.1"
+    },
+    {
+      "repository": "docker/setup-buildx-action",
+      "tag": "v4.4.1",
+      "sha": "f87e5991a6d7451dcb8d9637bfbc97413f497069",
+      "shaType": "commit",
+      "source": "https://github.com/docker/setup-buildx-action/releases/tag/v4.4.1"
+    },
+    {
+      "repository": "docker/login-action",
+      "tag": "v4.6.0",
+      "sha": "dbcb813823bdd20940b903addbd779551569679f",
+      "shaType": "commit",
+      "source": "https://github.com/docker/login-action/releases/tag/v4.6.0"
+    },
+    {
+      "repository": "docker/build-push-action",
+      "tag": "v7.4.0",
+      "sha": "c3c9e263c25d99ce0380d002d59b67737d91b0dc",
+      "shaType": "commit",
+      "source": "https://github.com/docker/build-push-action/releases/tag/v7.4.0"
+    },
+    {
+      "repository": "sigstore/cosign",
+      "tag": "v3.1.3",
+      "sha": "2f3a85b04907df5b770eb049d7e4d08d4b018d86",
+      "shaType": "tag",
+      "source": "https://github.com/sigstore/cosign/releases/tag/v3.1.3"
+    },
+    {
+      "repository": "aws/aws-cli",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "repository": "caddyserver/caddy",
+      "tag": "v2.11.4",
+      "sha": "e2eee6a7fce366321294c9c2a79f3146891dcbdf",
+      "shaType": "commit",
+      "source": "https://github.com/caddyserver/caddy/releases/tag/v2.11.4"
+    },
+    {
+      "repository": "oven-sh/setup-bun",
+      "tag": "v2.2.0",
+      "sha": "0c5077e51419868618aeaa5fe8019c62421857d6",
+      "shaType": "commit",
+      "source": "https://github.com/oven-sh/setup-bun/releases/tag/v2.2.0"
+    },
+    {
+      "repository": "aws-actions/configure-aws-credentials",
+      "tag": "v6.3.0",
+      "sha": "e1253824e5c10ff9df46874f81ed3ec929e19cfd",
+      "shaType": "commit",
+      "source": "https://github.com/aws-actions/configure-aws-credentials/releases/tag/v6.3.0"
+    }
+  ],
+  "awsCliChangelog": {
+    "source": "https://raw.githubusercontent.com/aws/aws-cli/v2/CHANGELOG.rst",
+    "firstLines": [
+      "=========",
+      "CHANGELOG",
+      "=========",
+      "",
+      "2.36.50",
+      "=======",
+      "",
+      "* enhancement:configure: ``aws configure agent-toolkit`` now defaults to the ``us-east-1`` region unless ``--region`` is given, and always runs against ``us-east-1`` when launched from the Agent Toolkit prompt. Outside the commercial partition the prompt is replaced by a non-interactive tip, so accepting it does not results in a cross-partition call.",
+      "* enhancement:configure: Suggest installing the Agent Toolkit for AWS when a supported AI coding agent is detected. An interactive prompt is shown after ``aws configure``, ``aws configure sso``, and a first-time ``aws login`` that creates a new profile. The prompt only appears on a terminal when no AWS skills are installed yet, and can be permanently suppressed by answering ``never`` or by setting the ``AWS_CLI_AGENT_TOOLKIT_HINT_DISABLED`` environment variable to ``true``. A tip is also printed by the install scripts and after ``aws update``.",
+      "* api-change:``bedrock-agentcore``: Amazon Bedrock AgentCore Harness now supports lifecycle hooks for invocations and tool calls, with Lambda, SNS, and EventBridge targets. This release also adds apiBase for custom OpenAI-compatible endpoints."
+    ]
+  }
+}

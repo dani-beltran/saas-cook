@@ -10,7 +10,7 @@ The template is intended to be source code you own and customize. You supply you
 
 The default deployment runs the web app and background worker together in one Docker container, connected to external data services. Kubernetes deployment is optional.
 
-**Status:** planning only. This repository currently contains the project plan and architecture and design specifications. The application, agent skills, and tooling have not yet been implemented.
+**Status:** Phase 0 validation spikes and decision records are implemented. The authorization candidate failed its decision gate, so Phase 0 is not approved and the production application remains planned. See the [Phase 0 results and reproduction guide](docs/phase0/README.md).
 
 ## Planning and design
 

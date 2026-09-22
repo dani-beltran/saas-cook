@@ -2,7 +2,7 @@
 
 An implementation plan for a reusable enterprise SaaS template built with **Next.js, React 19, TypeScript, shadcn/ui, Tailwind CSS, Better Auth, Drizzle ORM, PostgreSQL, and oRPC**, using **Bun** for package management and **Stripe** for payments and billing.
 
-**Status:** planning only. The application, packages, migrations, agent skills, and lifecycle commands described here are proposed deliverables; they have not been implemented. Prepared on 2026-09-13; scope updated on 2026-09-19.
+**Status:** [Phase 0 validation artifacts](phase0/README.md) are implemented; its authorization candidate is rejected and its exit gate remains open. The production application, packages, migrations, agent skills and lifecycle commands described below remain planned. Prepared on 2026-09-13; validation status updated on 2026-09-22.
 
 The folder name intentionally follows the requested spelling, `common-sass`. It lives inside the existing `common-saas` workspace.
 
@@ -10,6 +10,7 @@ The folder name intentionally follows the requested spelling, `common-sass`. It 
 
 | Document | Contents |
 | --- | --- |
+| [Phase 0 validation](phase0/README.md) | Executable experiments, decision records, measured results and remaining exit gates |
 | [1. Product plan](01-product-plan.md) | Scope, complete capability catalogue, product journeys, dashboard, and optional modules |
 | [2. Architecture and security](02-architecture-and-security.md) | Stack, repository structure, tenant isolation, ReBAC, identity, API boundaries, and architectural decisions |
 | [3. Data model](03-data-model.md) | Core tables, relationships, constraints, indexes, and database lifecycle |

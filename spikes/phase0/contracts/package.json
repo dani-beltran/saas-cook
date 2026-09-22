@@ -1,0 +1,10 @@
+{
+	"name": "@common-sass/phase0-contracts",
+	"private": true,
+	"type": "module",
+	"exports": "./index.ts",
+	"dependencies": {
+		"@orpc/contract": "1.15.3",
+		"zod": "4.6.5"
+	}
+}

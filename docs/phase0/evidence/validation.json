@@ -1,0 +1,267 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-22T13:05:45.951585+00:00",
+  "phase0Exit": "HOLD",
+  "authorizationDecision": "REJECT full-organization-copy candidate",
+  "baseCommit": "22ab21d943e6e230cc86a5f0773842ecc963d473",
+  "sourceFingerprint": {
+    "algorithm": "sha256 over sorted path + NUL + bytes + NUL",
+    "sha256": "f042e0440e0597ac56cf6d1b23f8263e601c5e1250b245428c2fd83a1501c42f",
+    "files": [
+      ".node-version",
+      "bun.lock",
+      "package.json",
+      "scripts/phase0/api-smoke.ts",
+      "scripts/phase0/toolchain.ts",
+      "spikes/phase0/adapters/analytics.ts",
+      "spikes/phase0/adapters/providers.test.ts",
+      "spikes/phase0/adapters/storage.test.ts",
+      "spikes/phase0/adapters/storage.ts",
+      "spikes/phase0/api-next/.storybook/main.ts",
+      "spikes/phase0/api-next/.storybook/preview.ts",
+      "spikes/phase0/api-next/ValidationForm.stories.tsx",
+      "spikes/phase0/api-next/ValidationForm.tsx",
+      "spikes/phase0/api-next/api.test.ts",
+      "spikes/phase0/api-next/app/api/openapi/route.ts",
+      "spikes/phase0/api-next/app/api/rpc/[[...rest]]/route.ts",
+      "spikes/phase0/api-next/app/api/v1/[[...rest]]/route.ts",
+      "spikes/phase0/api-next/app/layout.tsx",
+      "spikes/phase0/api-next/app/page.tsx",
+      "spikes/phase0/api-next/app/styles.css",
+      "spikes/phase0/api-next/browser.spec.ts",
+      "spikes/phase0/api-next/contracts.ts",
+      "spikes/phase0/api-next/handlers.ts",
+      "spikes/phase0/api-next/next-env.d.ts",
+      "spikes/phase0/api-next/next.config.ts",
+      "spikes/phase0/api-next/package.json",
+      "spikes/phase0/api-next/playwright.config.ts",
+      "spikes/phase0/api-next/postcss.config.mjs",
+      "spikes/phase0/api-next/router.ts",
+      "spikes/phase0/api-next/service.ts",
+      "spikes/phase0/api-next/tsconfig.json",
+      "spikes/phase0/authz/benchmark.ts",
+      "spikes/phase0/authz/integration.test.ts",
+      "spikes/phase0/authz/model.ts",
+      "spikes/phase0/authz/postgres.ts",
+      "spikes/phase0/authz/protocol.test.ts",
+      "spikes/phase0/authz/protocol.ts",
+      "spikes/phase0/authz/schema.sql",
+      "spikes/phase0/compose.yaml",
+      "spikes/phase0/contracts/index.ts",
+      "spikes/phase0/contracts/package.json",
+      "spikes/phase0/database/drizzle.test.ts",
+      "spikes/phase0/database/init.sql",
+      "spikes/phase0/database/rls.test.ts",
+      "spikes/phase0/database/schema.sql",
+      "spikes/phase0/database/tenant.ts",
+      "spikes/phase0/identity/assurance.test.ts",
+      "spikes/phase0/identity/assurance.ts",
+      "spikes/phase0/identity/lifecycle.test.ts",
+      "spikes/phase0/identity/lifecycle.ts",
+      "spikes/phase0/identity/provider.test.ts",
+      "spikes/phase0/identity/provider.ts",
+      "spikes/phase0/identity/replica.ts",
+      "spikes/phase0/identity/scim.test.ts",
+      "spikes/phase0/identity/webauthn-fixture.ts",
+      "spikes/phase0/stack/compatibility.test.tsx",
+      "tsconfig.json",
+      "turbo.json",
+      "vitest.config.ts"
+    ]
+  },
+  "runtime": {
+    "node": "24.19.0",
+    "bun": "1.4.2",
+    "os": "macOS",
+    "architecture": "arm64",
+    "postgres": "18.6",
+    "openfga": "1.21.0",
+    "dockerEngine": "29.7.2",
+    "compose": "5.4.0"
+  },
+  "images": {
+    "postgres": "postgres:18.6@sha256:86c951e05bf56c93d95d397747fb8820ac76cc3bedb78f43abd83eedbe3666ae",
+    "openfga": "openfga/openfga:v1.21.0@sha256:2113c664a486b5da8d7a2cdab479e0d4e30639c80fd2c000540f645c1dbc1e55"
+  },
+  "checks": [
+    {
+      "command": "bun install --frozen-lockfile",
+      "status": "passed"
+    },
+    {
+      "command": "bun run phase0:toolchain",
+      "status": "passed",
+      "exactDependencyPins": 50,
+      "cliEntryPoints": 7
+    },
+    {
+      "command": "bun run phase0:typecheck",
+      "status": "passed"
+    },
+    {
+      "command": "bun run phase0:test:integration",
+      "status": "passed",
+      "tests": 116,
+      "passed": 116,
+      "failed": 0,
+      "skipped": 0,
+      "testFiles": [
+        {
+          "path": "spikes/phase0/adapters/providers.test.ts",
+          "status": "passed",
+          "tests": 6
+        },
+        {
+          "path": "spikes/phase0/adapters/storage.test.ts",
+          "status": "passed",
+          "tests": 9
+        },
+        {
+          "path": "spikes/phase0/api-next/api.test.ts",
+          "status": "passed",
+          "tests": 9
+        },
+        {
+          "path": "spikes/phase0/authz/integration.test.ts",
+          "status": "passed",
+          "tests": 8
+        },
+        {
+          "path": "spikes/phase0/authz/protocol.test.ts",
+          "status": "passed",
+          "tests": 10
+        },
+        {
+          "path": "spikes/phase0/database/drizzle.test.ts",
+          "status": "passed",
+          "tests": 1
+        },
+        {
+          "path": "spikes/phase0/database/rls.test.ts",
+          "status": "passed",
+          "tests": 8
+        },
+        {
+          "path": "spikes/phase0/identity/assurance.test.ts",
+          "status": "passed",
+          "tests": 19
+        },
+        {
+          "path": "spikes/phase0/identity/lifecycle.test.ts",
+          "status": "passed",
+          "tests": 22
+        },
+        {
+          "path": "spikes/phase0/identity/provider.test.ts",
+          "status": "passed",
+          "tests": 15
+        },
+        {
+          "path": "spikes/phase0/identity/scim.test.ts",
+          "status": "passed",
+          "tests": 5
+        },
+        {
+          "path": "spikes/phase0/stack/compatibility.test.tsx",
+          "status": "passed",
+          "tests": 4
+        }
+      ]
+    },
+    {
+      "command": "bun run phase0:build",
+      "status": "passed",
+      "framework": "Next.js16.3.5 / React19.3.0",
+      "workspaces": [
+        "@common-sass/phase0-api",
+        "@common-sass/phase0-contracts"
+      ]
+    },
+    {
+      "command": "bun run phase0:storybook",
+      "status": "passed",
+      "warnings": [
+        "Vite client-directive/chunk-size warnings; static build completed"
+      ]
+    },
+    {
+      "command": "bun run phase0:browser",
+      "status": "passed",
+      "tests": 1,
+      "browser": "Playwright1.63.0 Chromium153.0.8010.12 revision1243",
+      "environment": {
+        "PLAYWRIGHT_BROWSERS_PATH": "temporary directory containing the pinned Playwright installation"
+      }
+    },
+    {
+      "command": "bun run phase0:api:smoke",
+      "status": "passed",
+      "result": {
+        "status": "passed",
+        "runtime": "v24.19.0",
+        "checks": [
+          "compiled Next.js RPC and REST parity",
+          "cross-transport idempotency and conflict",
+          "tenant denial",
+          "Zod input rejection",
+          "DTO allowlist",
+          "OpenAPI generation"
+        ]
+      }
+    }
+  ],
+  "authorizationReports": [
+    "../../../spikes/phase0/authz/evidence/final-smoke-2026-09-22.json",
+    "../../../spikes/phase0/authz/evidence/full-2026-09-22.json",
+    "../../../spikes/phase0/authz/evidence/fault-timings-2026-09-22.json",
+    "../../../spikes/phase0/authz/evidence/storage-cap-2026-09-22.json"
+  ],
+  "remainingExitGates": [
+    "Replacement authorization protocol and complete passing reference workload",
+    "Named deployment/recovery ownership and actual environment/provider confirmation",
+    "Agreed and feasible end-to-end recovery commitment including independent human revalidation"
+  ],
+  "limitations": [
+    "Synthetic spikes are not production application/module acceptance.",
+    "Lifecycle, storage and analytics race models do not prove production SQL/provider semantics.",
+    "Reference-size authorization run was interrupted after storage exhaustion; no full30minute pass or final percentile is claimed.",
+    "No cloud deployment, live billing or provider certification was performed."
+  ],
+  "cleanCopyVerification": {
+    "checkedAt": "2026-09-22T13:05:22.861202+00:00",
+    "source": "git ls-files --cached --others --exclude-standard -z;85 unique files copied",
+    "copyDirectory": "/private/tmp/common-saas-phase0-clean",
+    "copiedIgnoredDirectories": false,
+    "environment": {
+      "node": "v24.19.0",
+      "platform": "darwin",
+      "arch": "arm64"
+    },
+    "bun": "1.4.2 (744846f84)",
+    "bunLockSha256": "d487f3c8601eedb77a08977807d1739cfc352828088a60af510f7fba7ccdbf61",
+    "lockfileUnchanged": true,
+    "trustedLifecyclePackages": [
+      "esbuild",
+      "sharp"
+    ],
+    "commands": [
+      {
+        "command": "/private/tmp/common-saas-phase0-tools/node_modules/.bin/bun install --frozen-lockfile",
+        "exitCode": 0,
+        "result": "802 packages installed;893ms;existing download cache allowed;empty node_modules before install"
+      },
+      {
+        "command": "PATH=/private/tmp/common-saas-phase0-tools/node_modules/.bin:$PATH bun run phase0:typecheck",
+        "exitCode": 0,
+        "result": "strict TypeScript7.0.2 succeeded"
+      },
+      {
+        "command": "PATH=/private/tmp/common-saas-phase0-tools/node_modules/.bin:$PATH NEXT_TELEMETRY_DISABLED=1 bun run phase0:build",
+        "exitCode": 0,
+        "result": "Turborepo2.11.2;Next16.3.5 webpack production build;1 successful task;0 cached;8.803s;both API and contracts workspaces in scope"
+      }
+    ],
+    "databaseTestsRun": false,
+    "cleanup": "Temporary source/dependency/build copy removed after this evidence was recorded."
+  }
+}

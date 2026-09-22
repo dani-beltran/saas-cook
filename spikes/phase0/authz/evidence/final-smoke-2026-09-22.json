@@ -1,0 +1,175 @@
+{
+	"schemaVersion": 1,
+	"protocol": "immutable full graph per attempt",
+	"backend": "real PostgreSQL and OpenFGA",
+	"smoke": true,
+	"startedAt": "2026-09-22T13:00:26.948Z",
+	"warmupAt": "2026-09-22T13:00:24.948Z",
+	"warmupActualSeconds": 1.999775125,
+	"elapsedSeconds": 10.000055208,
+	"qualifiedWorkload": false,
+	"environment": {
+		"node": "v24.19.0",
+		"platform": "darwin",
+		"arch": "arm64",
+		"cpu": "Apple M4 Pro",
+		"logicalCpus": 14,
+		"hostMemoryBytes": 51539607552,
+		"serviceVersions": {
+			"postgres": "18.6 (Debian 18.6-1.pgdg13+2)",
+			"openFga": "1.21.0"
+		},
+		"dockerLimits": "14cpu-8318976000bytes"
+	},
+	"workload": {
+		"tenants": 10,
+		"memberships": 100,
+		"resources": 1000,
+		"hotTenantResources": 500,
+		"clients": 50,
+		"mix": {
+			"read": 5439,
+			"update": 1825,
+			"createDelete": 888,
+			"sharing": 923
+		},
+		"sparseLists": 130,
+		"hotTrafficFraction": 0.804297520661157,
+		"seed": 1729,
+		"listScanLimit": 100,
+		"listBatch": 20,
+		"listTimeBudgetMs": 250
+	},
+	"limits": {
+		"pool": 60,
+		"projectorPool": 4,
+		"lockTimeoutMs": 1000,
+		"statementTimeoutMs": 5000,
+		"remoteTimeoutMs": 1000,
+		"attemptLeaseMs": 120000,
+		"maxPendingPool": 100,
+		"storageBudgetBytes": 2147483648,
+		"retainedTupleBudget": 1000000
+	},
+	"storage": {
+		"databaseBytes": 405533115,
+		"walBytes": 436207616,
+		"retainedTupleCount": 50430,
+		"sampledAt": "2026-09-22T13:00:34.968Z"
+	},
+	"retries": {
+		"commandAttempts": 2,
+		"delayMs": 25,
+		"remoteWriteRetries": 0,
+		"createReadBudgetMs": 2000,
+		"createReadDelayMs": 25
+	},
+	"graph": {
+		"baseTuples": 2174,
+		"baseWriteCalls": 29,
+		"tuplesWrittenIncludingWarmup": 54671,
+		"writeCallsIncludingWarmup": 693,
+		"tuplesWrittenDuringMeasurementAndDrain": 40777,
+		"writeCallsDuringMeasurementAndDrain": 511,
+		"cleanedTuples": 5680,
+		"cleanupErrors": 0,
+		"writeAmplificationPerCommittedChange": 237.07558139534885,
+		"attemptStates": {
+			"active": 10,
+			"retired": 167
+		},
+		"attemptsStarted": 177,
+		"abandonedBuildRate": 0,
+		"published": 180,
+		"abandoned": 0,
+		"projectionFailures": 0,
+		"pendingRevisions": 0
+	},
+	"requests": 9075,
+	"requestRate": 907.4949899016598,
+	"firstSuccesses": 774,
+	"eventualSuccesses": 902,
+	"firstFailures": {
+		"projection_pending": 8301
+	},
+	"deliberateDenials": 0,
+	"firstSuccessFraction": 0.08528925619834711,
+	"eventualSuccessFraction": 0.0993939393939394,
+	"latencyMs": {
+		"reads": {
+			"samples": 488,
+			"p95": 31.17316699999992,
+			"p99": 38.899083000000246,
+			"max": 67.68791699999929
+		},
+		"writes": {
+			"samples": 286,
+			"p95": 21.81116699999984,
+			"p99": 32.14841699999988,
+			"max": 71.31437500000175
+		},
+		"eventual": {
+			"samples": 902,
+			"p95": 46.69383299999936,
+			"p99": 85.31124999999975,
+			"max": 121.36183299999902
+		},
+		"fenceWaits": {
+			"samples": 18855,
+			"p95": 25.932458000001134,
+			"p99": 40.20512500000041,
+			"max": 71.44979100000091
+		},
+		"failedFenceWaits": {
+			"samples": 0,
+			"p95": null,
+			"p99": null,
+			"max": null
+		},
+		"poolWaits": {
+			"samples": 18841,
+			"p95": 0.005417000000306871,
+			"p99": 0.013167000000066764,
+			"max": 9.176250000000437
+		},
+		"projection": {
+			"samples": 172,
+			"p95": 1107.586,
+			"p99": 2974.23,
+			"max": 3425.686
+		},
+		"revocationCommit": {
+			"samples": 29,
+			"p95": 44.79354200000125,
+			"p99": 73.01570900000024,
+			"max": 73.01570900000024
+		},
+		"build": {
+			"samples": 180,
+			"p95": 549.6731669999999,
+			"p99": 715.0636250000007,
+			"max": 777.6534169999995
+		},
+		"cleanup": {
+			"samples": 23,
+			"p95": 990.2510000000011,
+			"p99": 1078.7771250000005,
+			"max": 1078.7771250000005
+		},
+		"createToReadable": {
+			"samples": 66,
+			"p95": 894.3244999999997,
+			"p99": 1262.1639999999998,
+			"max": 1262.1639999999998
+		}
+	},
+	"createReadableTimeouts": 6,
+	"errors": [],
+	"gateStatus": "INCOMPLETE",
+	"candidateDecision": "REJECT",
+	"failures": [
+		"eligible first-attempt success below 99.9%",
+		"create-to-readable exceeded bounded 2s window"
+	],
+	"note": "A passing healthy run does not replace the separate fault suite, real feature rerun, or monthly availability measurement. Outbox projection latency also bounds graph-ready revocation; authoritative revocation is effective at DB commit."
+}

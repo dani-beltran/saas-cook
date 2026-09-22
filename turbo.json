@@ -1,0 +1,8 @@
+{
+	"tasks": {
+		"build": {
+			"outputs": [".next/**", "!.next/cache/**"],
+			"env": ["PHASE0_API_FIXTURES"]
+		}
+	}
+}

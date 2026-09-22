@@ -1,0 +1,297 @@
+{
+  "status": "passed",
+  "checkedAt": "2026-09-22T13:00:01.192Z",
+  "node": "v24.19.0",
+  "bun": "1.4.2",
+  "platform": "darwin",
+  "arch": "arm64",
+  "packages": [
+    {
+      "name": "next",
+      "version": "16.3.5",
+      "license": "MIT"
+    },
+    {
+      "name": "react",
+      "version": "19.3.0",
+      "license": "MIT"
+    },
+    {
+      "name": "react-dom",
+      "version": "19.3.0",
+      "license": "MIT"
+    },
+    {
+      "name": "better-auth",
+      "version": "1.7.5",
+      "license": "MIT"
+    },
+    {
+      "name": "@better-auth/passkey",
+      "version": "1.7.5",
+      "license": "MIT"
+    },
+    {
+      "name": "shadcn",
+      "version": "4.21.0",
+      "license": "MIT"
+    },
+    {
+      "name": "typescript",
+      "version": "7.0.2",
+      "license": "Apache-2.0"
+    },
+    {
+      "name": "drizzle-orm",
+      "version": "0.45.3",
+      "license": "Apache-2.0"
+    },
+    {
+      "name": "drizzle-kit",
+      "version": "0.31.11",
+      "license": "MIT"
+    },
+    {
+      "name": "@orpc/server",
+      "version": "1.15.3",
+      "license": "MIT"
+    },
+    {
+      "name": "@orpc/client",
+      "version": "1.15.3",
+      "license": "MIT"
+    },
+    {
+      "name": "@orpc/openapi",
+      "version": "1.15.3",
+      "license": "MIT"
+    },
+    {
+      "name": "@orpc/zod",
+      "version": "1.15.3",
+      "license": "MIT"
+    },
+    {
+      "name": "stripe",
+      "version": "22.6.2",
+      "license": "MIT"
+    },
+    {
+      "name": "tailwindcss",
+      "version": "4.3.3",
+      "license": "MIT"
+    },
+    {
+      "name": "@tailwindcss/postcss",
+      "version": "4.3.3",
+      "license": "MIT"
+    },
+    {
+      "name": "next-intl",
+      "version": "4.14.6",
+      "license": "MIT"
+    },
+    {
+      "name": "@react-email/components",
+      "version": "1.0.12",
+      "license": "MIT"
+    },
+    {
+      "name": "@react-email/render",
+      "version": "2.1.0",
+      "license": "MIT"
+    },
+    {
+      "name": "react-email",
+      "version": "6.9.5",
+      "license": "MIT"
+    },
+    {
+      "name": "zod",
+      "version": "4.6.5",
+      "license": "MIT"
+    },
+    {
+      "name": "react-hook-form",
+      "version": "7.88.0",
+      "license": "MIT"
+    },
+    {
+      "name": "@hookform/resolvers",
+      "version": "5.9.1",
+      "license": "MIT"
+    },
+    {
+      "name": "vitest",
+      "version": "5.0.1",
+      "license": "MIT"
+    },
+    {
+      "name": "@playwright/test",
+      "version": "1.63.0",
+      "license": "Apache-2.0"
+    },
+    {
+      "name": "storybook",
+      "version": "10.6.0",
+      "license": "MIT"
+    },
+    {
+      "name": "@storybook/nextjs-vite",
+      "version": "10.6.0",
+      "license": "MIT"
+    },
+    {
+      "name": "@biomejs/biome",
+      "version": "2.5.14",
+      "license": "MIT OR Apache-2.0"
+    },
+    {
+      "name": "@commitlint/cli",
+      "version": "21.2.3",
+      "license": "MIT"
+    },
+    {
+      "name": "@commitlint/config-conventional",
+      "version": "21.2.3",
+      "license": "MIT"
+    },
+    {
+      "name": "lefthook",
+      "version": "2.1.14",
+      "license": "MIT"
+    },
+    {
+      "name": "knip",
+      "version": "6.37.0",
+      "license": "ISC"
+    },
+    {
+      "name": "@t3-oss/env-nextjs",
+      "version": "0.13.11",
+      "license": "MIT"
+    },
+    {
+      "name": "@t3-oss/env-core",
+      "version": "0.13.11",
+      "license": "MIT"
+    },
+    {
+      "name": "@logtape/logtape",
+      "version": "2.3.7",
+      "license": "MIT"
+    },
+    {
+      "name": "turbo",
+      "version": "2.11.2",
+      "license": "MIT"
+    },
+    {
+      "name": "pg",
+      "version": "8.23.0",
+      "license": "MIT"
+    },
+    {
+      "name": "pg-boss",
+      "version": "12.33.4",
+      "license": "MIT"
+    },
+    {
+      "name": "@openfga/sdk",
+      "version": "0.9.7",
+      "license": "Apache-2.0"
+    },
+    {
+      "name": "posthog-node",
+      "version": "5.52.5",
+      "license": "MIT"
+    },
+    {
+      "name": "@aws-sdk/client-s3",
+      "version": "3.1137.0",
+      "license": "Apache-2.0"
+    },
+    {
+      "name": "@aws-sdk/s3-request-presigner",
+      "version": "3.1137.0",
+      "license": "Apache-2.0"
+    },
+    {
+      "name": "@types/node",
+      "version": "24.10.1",
+      "license": "MIT"
+    },
+    {
+      "name": "@types/pg",
+      "version": "8.23.1",
+      "license": "MIT"
+    },
+    {
+      "name": "@types/react",
+      "version": "19.3.0",
+      "license": "MIT"
+    },
+    {
+      "name": "@types/react-dom",
+      "version": "19.3.0",
+      "license": "MIT"
+    },
+    {
+      "name": "tsx",
+      "version": "4.23.15",
+      "license": "MIT"
+    },
+    {
+      "name": "@orpc/contract",
+      "version": "1.15.3",
+      "license": "MIT"
+    },
+    {
+      "name": "@better-auth/scim",
+      "version": "1.7.5",
+      "license": "MIT"
+    },
+    {
+      "name": "@better-auth/sso",
+      "version": "1.7.5",
+      "license": "MIT"
+    }
+  ],
+  "commands": [
+    {
+      "name": "next",
+      "output": "Next.js v16.3.5",
+      "exitCode": 0
+    },
+    {
+      "name": "@biomejs/biome",
+      "output": "Version: 2.5.14",
+      "exitCode": 0
+    },
+    {
+      "name": "@commitlint/cli",
+      "output": "@commitlint/cli@21.2.3",
+      "exitCode": 0
+    },
+    {
+      "name": "lefthook",
+      "output": "lefthook version 2.1.14 1e23553eec2392753c5420d348e63a63f517cd45",
+      "exitCode": 0
+    },
+    {
+      "name": "knip",
+      "output": "6.37.0",
+      "exitCode": 0
+    },
+    {
+      "name": "shadcn",
+      "output": "4.21.0",
+      "exitCode": 0
+    },
+    {
+      "name": "drizzle-kit",
+      "output": "drizzle-kit: v0.31.11\ndrizzle-orm: v0.45.3",
+      "exitCode": 0
+    }
+  ]
+}

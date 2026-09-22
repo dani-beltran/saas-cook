@@ -333,6 +333,10 @@ Define oRPC contracts with explicit Zod input/output schemas in `packages/api-co
 - External effects do not occur inside database transactions. Write outbox entries with the domain change and audit event.
 - Verify typed-client inference and runtime schema rejection, and run the same tenant, authorization, idempotency and error-contract cases through both oRPC transports.
 
+### Phase 0 validation outcome (2026-09-22)
+
+The [generation-isolated prototype](phase0/authorization.md) demonstrates the tested safety cases but its full-copy candidate is **rejected** for availability/storage. The protocol above remains the candidate specification, not an approved production selection. Its functional tests must be preserved while a replacement is designed and measured; dependent implementation cannot treat the Phase 0 gate as passed. The [stack, identity, API/database and operational decisions](phase0/README.md) record their own evidence and limitations.
+
 ## 2.8 Decision register
 
 | Decision | Default | Revisit trigger |

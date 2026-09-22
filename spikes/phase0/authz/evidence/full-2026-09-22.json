@@ -1,0 +1,88 @@
+{
+	"schemaVersion": 1,
+	"recordedAt": "2026-09-22T12:54:16.238Z",
+	"backend": "real PostgreSQL18.6 and OpenFGA1.21.0",
+	"runCommand": "OPENFGA_VERSION=1.21.0 AUTHZ_DOCKER_LIMITS=14cpu-8318976000bytes AUTHZ_REPORT=artifacts/phase0/authz-full.json node node_modules/tsx/dist/cli.mjs spikes/phase0/authz/benchmark.ts",
+	"runnerSha256": "54aed9b304f49290d551d3f6822d965b88a261314d91b9ded7e076d9921f8602",
+	"gateStatus": "INCOMPLETE",
+	"candidateDecision": "REJECT",
+	"reason": "First-attempt availability failed early; database tmpfs filled before the prescribed1800 seconds could finish. No successful full-duration result is claimed.",
+	"workload": {
+		"tenants": 100,
+		"memberships": 1000,
+		"resources": 100000,
+		"hotTenantResources": 50000,
+		"clients": 50,
+		"hotTrafficTarget": 0.8,
+		"requestMix": {
+			"readsAndLists": 0.6,
+			"ordinaryUpdates": 0.2,
+			"createsDeletes": 0.1,
+			"sharingRevocationParentChanges": 0.1
+		},
+		"durationRequiredSeconds": 1800,
+		"warmupSeconds": 60
+	},
+	"measurementStartedAt": "2026-09-22T12:51:50.172Z",
+	"openFga": {
+		"store": "01M34JMN7DSNSW4WWW6SVX7CZF",
+		"model": "01M34JMN7MY6B47STSYFMQCB4P"
+	},
+	"progress": [
+		{
+			"seconds": 30.00015270800001,
+			"requests": 2559,
+			"firstSuccesses": 63,
+			"firstFailures": {
+				"53100": 1,
+				"projection_pending": 2465,
+				"dependency_error": 3
+			},
+			"published": 0,
+			"abandoned": 0
+		},
+		{
+			"seconds": 60.06355029099999,
+			"requests": 5217,
+			"firstSuccesses": 85,
+			"firstFailures": {
+				"53100": 1,
+				"projection_pending": 5108,
+				"dependency_error": 7
+			},
+			"published": 0,
+			"abandoned": 0
+		}
+	],
+	"progressCaveat": "Live snapshots include in-flight requests; counts need not sum. Final percentiles/eventual outcomes were not emitted before the process was interrupted.",
+	"failure": {
+		"postgresCode": "53100",
+		"message": "could not write init file: No space left on device",
+		"mount": "/var/lib/postgresql",
+		"filesystem": "tmpfs",
+		"size": "3.9G",
+		"used": "3.9G",
+		"available": "0",
+		"usePercent": 100,
+		"termination": "SIGINT sent to benchmark PIDs13732 and13733 after confirming storage exhaustion; services left intact for investigation."
+	},
+	"hardware": {
+		"host": "Apple M4 Pro",
+		"hostLogicalCpus": 14,
+		"hostMemoryBytes": 51539607552,
+		"dockerCpus": 14,
+		"dockerMemoryBytes": 8318976000
+	},
+	"unavailableMetrics": [
+		"Final p95/p99/max",
+		"Final first-attempt and eventual outcomes",
+		"Full1800-second availability",
+		"Final graph storage and write amplification",
+		"Recovery after disk exhaustion"
+	],
+	"limitations": [
+		"Smoke is below reference scale and duration.",
+		"Failed full run is diagnostic rejection evidence, not a completed30-minute benchmark.",
+		"The tmpfs capacity is a local fixture limitation; independent readiness failures were already present in the clean smoke run."
+	]
+}
