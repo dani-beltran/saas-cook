@@ -14,6 +14,8 @@ The template will build one Docker image containing the web app and background w
 
 ## Local development
 
+Phase 4 adds six [repository-local AI skills](docs/development/agent-skills.md), [feature briefs](feature-briefs/phase4-project-task.md), deterministic migration/RLS/API checks, and an isolated behavior evaluation runner. Start with the [Phase 4 guide](docs/phase4/README.md); its [acceptance record](docs/phase4/acceptance.md) distinguishes executed evidence from pending gates. The missing Phase 3 benchmark is excluded from this implementation request.
+
 With Node.js 24.19.0, Bun 1.4.2 and Docker installed:
 
 ```sh

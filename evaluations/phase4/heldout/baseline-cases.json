@@ -1,0 +1,829 @@
+{
+	"version": 1,
+	"groups": {
+		"unit": [
+			{
+				"file": "apps/web/src/proxy.test.ts",
+				"name": "local canonical authentication origin does not redirect canonical, foreign, different-port or mutation requests"
+			},
+			{
+				"file": "apps/web/src/proxy.test.ts",
+				"name": "local canonical authentication origin redirects loopback page aliases while preserving path and confirmation query"
+			},
+			{
+				"file": "apps/worker/src/diagnostics.test.ts",
+				"name": "never passes through unknown codes, error messages or thrown payloads"
+			},
+			{
+				"file": "apps/worker/src/diagnostics.test.ts",
+				"name": "reports database setup failures without copying sensitive driver details"
+			},
+			{
+				"file": "packages/api/src/api.test.ts",
+				"name": "creates a browser-safe inferred client"
+			},
+			{
+				"file": "packages/api/src/api.test.ts",
+				"name": "generates public OpenAPI from the same schemas"
+			},
+			{
+				"file": "packages/api/src/api.test.ts",
+				"name": "rest public diagnostic contract rejects invalid/unknown fields with the same safe error shape"
+			},
+			{
+				"file": "packages/api/src/api.test.ts",
+				"name": "rest public diagnostic contract rejects invalid/unknown fields with the same safe error shape"
+			},
+			{
+				"file": "packages/api/src/api.test.ts",
+				"name": "rest public diagnostic contract rejects invalid/unknown fields with the same safe error shape"
+			},
+			{
+				"file": "packages/api/src/api.test.ts",
+				"name": "rest public diagnostic contract rejects invalid/unknown fields with the same safe error shape"
+			},
+			{
+				"file": "packages/api/src/api.test.ts",
+				"name": "rest public diagnostic contract returns an explicit DTO from the shared service"
+			},
+			{
+				"file": "packages/api/src/api.test.ts",
+				"name": "rest refuses spoofed fixture identity and tenant headers"
+			},
+			{
+				"file": "packages/api/src/api.test.ts",
+				"name": "returns safe uncached request correlation and rejects invalid resource identifiers"
+			},
+			{
+				"file": "packages/api/src/api.test.ts",
+				"name": "rpc public diagnostic contract rejects invalid/unknown fields with the same safe error shape"
+			},
+			{
+				"file": "packages/api/src/api.test.ts",
+				"name": "rpc public diagnostic contract rejects invalid/unknown fields with the same safe error shape"
+			},
+			{
+				"file": "packages/api/src/api.test.ts",
+				"name": "rpc public diagnostic contract rejects invalid/unknown fields with the same safe error shape"
+			},
+			{
+				"file": "packages/api/src/api.test.ts",
+				"name": "rpc public diagnostic contract rejects invalid/unknown fields with the same safe error shape"
+			},
+			{
+				"file": "packages/api/src/api.test.ts",
+				"name": "rpc public diagnostic contract returns an explicit DTO from the shared service"
+			},
+			{
+				"file": "packages/api/src/api.test.ts",
+				"name": "rpc refuses spoofed fixture identity and tenant headers"
+			},
+			{
+				"file": "packages/api/src/resources.test.ts",
+				"name": "documents both resource mutations and safe errors in public OpenAPI"
+			},
+			{
+				"file": "packages/api/src/resources.test.ts",
+				"name": "rest resource boundary authenticates a key for the path organization and passes its live credential for fenced revalidation"
+			},
+			{
+				"file": "packages/api/src/resources.test.ts",
+				"name": "rest resource boundary denies absent identity and browser mutation without the configured origin"
+			},
+			{
+				"file": "packages/api/src/resources.test.ts",
+				"name": "rest resource boundary does not fall back to a cookie for a rejected bearer credential"
+			},
+			{
+				"file": "packages/api/src/resources.test.ts",
+				"name": "rest resource boundary rejects bodies over the streaming limit before authentication"
+			},
+			{
+				"file": "packages/api/src/resources.test.ts",
+				"name": "rest resource boundary rejects forged ownership and caller policy fields before the service"
+			},
+			{
+				"file": "packages/api/src/resources.test.ts",
+				"name": "rest resource boundary rejects service principals for sharing and key provisioning"
+			},
+			{
+				"file": "packages/api/src/resources.test.ts",
+				"name": "rest resource boundary requires an account version and exposes the next version or a conflict"
+			},
+			{
+				"file": "packages/api/src/resources.test.ts",
+				"name": "rest resource boundary returns concurrency and quota failures with correlation"
+			},
+			{
+				"file": "packages/api/src/resources.test.ts",
+				"name": "rest resource boundary uses the current verified actor and shared transactional service"
+			},
+			{
+				"file": "packages/api/src/resources.test.ts",
+				"name": "rpc resource boundary authenticates a key for the path organization and passes its live credential for fenced revalidation"
+			},
+			{
+				"file": "packages/api/src/resources.test.ts",
+				"name": "rpc resource boundary denies absent identity and browser mutation without the configured origin"
+			},
+			{
+				"file": "packages/api/src/resources.test.ts",
+				"name": "rpc resource boundary does not fall back to a cookie for a rejected bearer credential"
+			},
+			{
+				"file": "packages/api/src/resources.test.ts",
+				"name": "rpc resource boundary rejects bodies over the streaming limit before authentication"
+			},
+			{
+				"file": "packages/api/src/resources.test.ts",
+				"name": "rpc resource boundary rejects forged ownership and caller policy fields before the service"
+			},
+			{
+				"file": "packages/api/src/resources.test.ts",
+				"name": "rpc resource boundary rejects service principals for sharing and key provisioning"
+			},
+			{
+				"file": "packages/api/src/resources.test.ts",
+				"name": "rpc resource boundary requires an account version and exposes the next version or a conflict"
+			},
+			{
+				"file": "packages/api/src/resources.test.ts",
+				"name": "rpc resource boundary returns concurrency and quota failures with correlation"
+			},
+			{
+				"file": "packages/api/src/resources.test.ts",
+				"name": "rpc resource boundary uses the current verified actor and shared transactional service"
+			},
+			{
+				"file": "packages/auth/src/assurance.test.ts",
+				"name": "identity assurance boundary rejects external destinations and parser differentials"
+			},
+			{
+				"file": "packages/auth/src/assurance.test.ts",
+				"name": "identity assurance boundary requires recent verified server evidence, not email possession"
+			},
+			{
+				"file": "packages/auth/src/auth.test.ts",
+				"name": "isolated identity adapter setup rejects missing secrets and noncanonical/untrusted origins before connecting"
+			},
+			{
+				"file": "packages/auth/src/ingress.test.ts",
+				"name": "authenticated ingress source accepts only fresh canonical IP claims bound to the request method and route"
+			},
+			{
+				"file": "packages/auth/src/ingress.test.ts",
+				"name": "authenticated ingress source ignores spoofed forwarding headers and fails closed on missing or forged attestations"
+			},
+			{
+				"file": "packages/authz/src/operator.test.ts",
+				"name": "bounds production contexts and never reuses request namespaces or unqualified team references"
+			},
+			{
+				"file": "packages/authz/src/operator.test.ts",
+				"name": "independent operator approvals rejects cross-tenant installation/epoch/scope claims and stale/future or absent assurance"
+			},
+			{
+				"file": "packages/authz/src/operator.test.ts",
+				"name": "independent operator approvals rejects forged payloads/signatures and a different authority key"
+			},
+			{
+				"file": "packages/authz/src/operator.test.ts",
+				"name": "independent operator approvals requires a signed exact membership target for security deactivation"
+			},
+			{
+				"file": "packages/authz/src/operator.test.ts",
+				"name": "independent operator approvals verifies a real Ed25519 signature with exact scope, epoch and fresh subject assurance"
+			},
+			{
+				"file": "packages/config/src/config.test.ts",
+				"name": "runtime configuration only exposes allowlisted public configuration"
+			},
+			{
+				"file": "packages/config/src/config.test.ts",
+				"name": "runtime configuration rejects invalid public configuration before web startup"
+			},
+			{
+				"file": "packages/config/src/config.test.ts",
+				"name": "runtime configuration rejects invalid public configuration before web startup"
+			},
+			{
+				"file": "packages/config/src/config.test.ts",
+				"name": "runtime configuration rejects invalid public configuration before web startup"
+			},
+			{
+				"file": "packages/config/src/config.test.ts",
+				"name": "runtime configuration rejects malformed configuration without leaking values"
+			},
+			{
+				"file": "packages/config/src/config.test.ts",
+				"name": "runtime configuration rejects privileged AUTHZ_PUBLISH_TOKEN in combined serve mode"
+			},
+			{
+				"file": "packages/config/src/config.test.ts",
+				"name": "runtime configuration rejects privileged CONTROL_ADMIN_DATABASE_URL in combined serve mode"
+			},
+			{
+				"file": "packages/config/src/config.test.ts",
+				"name": "runtime configuration rejects privileged MIGRATION_DATABASE_URL in combined serve mode"
+			},
+			{
+				"file": "packages/config/src/config.test.ts",
+				"name": "runtime configuration rejects privileged OWNER_RECOVERY_SECRET in combined serve mode"
+			},
+			{
+				"file": "packages/config/src/config.test.ts",
+				"name": "runtime configuration rejects privileged TEST_DATABASE_ADMIN_URL in combined serve mode"
+			},
+			{
+				"file": "packages/config/src/config.test.ts",
+				"name": "runtime configuration validates an independent web-only ingress signing key"
+			},
+			{
+				"file": "packages/config/src/config.test.ts",
+				"name": "runtime configuration validates each process without requiring unrelated credentials"
+			},
+			{
+				"file": "packages/config/src/config.test.ts",
+				"name": "validates the server-only resource module and explicit capacity preset"
+			},
+			{
+				"file": "packages/email/src/email.test.ts",
+				"name": "distinguishes password reset from passwordless recovery and preserves the MFA requirement"
+			},
+			{
+				"file": "packages/email/src/email.test.ts",
+				"name": "renders localized, credential-free React Email HTML and plaintext"
+			},
+			{
+				"file": "packages/email/src/email.test.ts",
+				"name": "renders the Spanish invite identity journey in HTML and plaintext"
+			},
+			{
+				"file": "packages/email/src/email.test.ts",
+				"name": "renders the Spanish magic-link identity journey in HTML and plaintext"
+			},
+			{
+				"file": "packages/email/src/email.test.ts",
+				"name": "renders the Spanish password-reset identity journey in HTML and plaintext"
+			},
+			{
+				"file": "packages/email/src/email.test.ts",
+				"name": "renders the Spanish recovery identity journey in HTML and plaintext"
+			},
+			{
+				"file": "packages/email/src/email.test.ts",
+				"name": "renders the Spanish reset identity journey in HTML and plaintext"
+			},
+			{
+				"file": "packages/email/src/email.test.ts",
+				"name": "renders the Spanish transfer identity journey in HTML and plaintext"
+			},
+			{
+				"file": "packages/email/src/email.test.ts",
+				"name": "renders the Spanish transfer-completed identity journey in HTML and plaintext"
+			},
+			{
+				"file": "packages/email/src/email.test.ts",
+				"name": "renders the Spanish verification identity journey in HTML and plaintext"
+			},
+			{
+				"file": "packages/observability/src/observability.test.ts",
+				"name": "exposes only trusted operation correlation with async isolation and no context leakage"
+			},
+			{
+				"file": "packages/observability/src/observability.test.ts",
+				"name": "propagates a real OpenTelemetry trace from request to job"
+			},
+			{
+				"file": "packages/observability/src/observability.test.ts",
+				"name": "redacts credentials, authentication URLs, nested payloads and interpolated messages"
+			},
+			{
+				"file": "packages/testing/src/fixtures.test.ts",
+				"name": "provides distinct organizations and one synthetic user with both memberships"
+			},
+			{
+				"file": "scripts/phase1/scan-policy.test.ts",
+				"name": "vulnerability policy blocks CRITICAL findings even without an available fix"
+			},
+			{
+				"file": "scripts/phase1/scan-policy.test.ts",
+				"name": "vulnerability policy blocks HIGH findings even without an available fix"
+			},
+			{
+				"file": "scripts/phase1/scan-policy.test.ts",
+				"name": "vulnerability policy blocks high findings without an exact scoped exception"
+			},
+			{
+				"file": "scripts/phase1/scan-policy.test.ts",
+				"name": "vulnerability policy fails closed on missing scan results and malformed policy"
+			},
+			{
+				"file": "scripts/phase1/scan-policy.test.ts",
+				"name": "vulnerability policy rejects expired and excessively long exceptions"
+			},
+			{
+				"file": "scripts/phase3/parent-moves.test.ts",
+				"name": "benchmark parent changes carries warm-up parents into measurement without counting warm-up moves"
+			},
+			{
+				"file": "scripts/phase3/parent-moves.test.ts",
+				"name": "benchmark parent changes changes parents on repeated moves with the 50-client operation schedule"
+			},
+			{
+				"file": "scripts/phase3/parent-moves.test.ts",
+				"name": "benchmark parent changes does not accept an empty workload or initial assignments alone"
+			},
+			{
+				"file": "scripts/phase3/parent-moves.test.ts",
+				"name": "benchmark parent changes does not advance or count a failed API operation"
+			},
+			{
+				"file": "scripts/phase3/parent-moves.test.ts",
+				"name": "benchmark parent changes invalidates a run after a bad warm-up response: {\"id\":\"project\",\"workspaceId\":\"first\"}"
+			},
+			{
+				"file": "scripts/phase3/parent-moves.test.ts",
+				"name": "benchmark parent changes invalidates a run after a bad warm-up response: {\"id\":\"wrong-project\",\"workspaceId\":\"second\"}"
+			},
+			{
+				"file": "scripts/phase3/parent-moves.test.ts",
+				"name": "benchmark parent changes rejects identical workspace fixtures before calling the API"
+			}
+		],
+		"project": [
+			{
+				"file": "packages/api/src/resources.integration.test.ts",
+				"name": "rest real Project policy and concurrency creates immediately readable resources, rechecks idempotency, isolates private lists and conflicts on stale writes"
+			},
+			{
+				"file": "packages/api/src/resources.integration.test.ts",
+				"name": "rest real Project policy and concurrency enforces real key scope, tenant binding, rotation, expiry and revocation in both transports"
+			},
+			{
+				"file": "packages/api/src/resources.integration.test.ts",
+				"name": "rest real Project policy and concurrency rejects missing and stale account versions without lifecycle, credential or audit changes"
+			},
+			{
+				"file": "packages/api/src/resources.integration.test.ts",
+				"name": "rest real Project policy and concurrency uses workspace inheritance and rejects archived destinations"
+			},
+			{
+				"file": "packages/api/src/resources.integration.test.ts",
+				"name": "rpc real Project policy and concurrency creates immediately readable resources, rechecks idempotency, isolates private lists and conflicts on stale writes"
+			},
+			{
+				"file": "packages/api/src/resources.integration.test.ts",
+				"name": "rpc real Project policy and concurrency enforces real key scope, tenant binding, rotation, expiry and revocation in both transports"
+			},
+			{
+				"file": "packages/api/src/resources.integration.test.ts",
+				"name": "rpc real Project policy and concurrency rejects missing and stale account versions without lifecycle, credential or audit changes"
+			},
+			{
+				"file": "packages/api/src/resources.integration.test.ts",
+				"name": "rpc real Project policy and concurrency uses workspace inheritance and rejects archived destinations"
+			},
+			{
+				"file": "packages/db/src/migrations.integration.test.ts",
+				"name": "real PostgreSQL migration and runtime role boundary denies runtime DDL, web writes and cross-schema identity access using actual roles"
+			},
+			{
+				"file": "packages/db/src/migrations.integration.test.ts",
+				"name": "real PostgreSQL migration and runtime role boundary migrates fresh, safely replays and processes durable two-organization synthetic probes"
+			},
+			{
+				"file": "packages/db/src/migrations.integration.test.ts",
+				"name": "real PostgreSQL migration and runtime role boundary upgrades Phase 2 to resource tables while preserving tenant and identity history"
+			},
+			{
+				"file": "packages/db/src/migrations.integration.test.ts",
+				"name": "real PostgreSQL migration and runtime role boundary upgrades the complete Phase 1 schema without treating retained identities as a ready installation"
+			},
+			{
+				"file": "packages/db/src/migrations.integration.test.ts",
+				"name": "real PostgreSQL migration and runtime role boundary upgrades the previous synthetic baseline and preserves existing rows"
+			}
+		],
+		"authz": [
+			{
+				"file": "packages/authz/src/authorization.integration.test.ts",
+				"name": "independently signed owner recovery command deactivates a sole owner during FGA outage, refuses reopening on outage, then admits a verified replacement and retries without duplicate seats/mail"
+			},
+			{
+				"file": "packages/authz/src/authorization.integration.test.ts",
+				"name": "production contextual authorization against real PostgreSQL and OpenFGA bootstraps model/independent readiness, uses restricted read role, and refuses existing/restored fresh initialization"
+			},
+			{
+				"file": "packages/authz/src/authorization.integration.test.ts",
+				"name": "production contextual authorization against real PostgreSQL and OpenFGA checks role/team policy and tenant isolation using authoritative membership"
+			},
+			{
+				"file": "packages/authz/src/authorization.integration.test.ts",
+				"name": "production contextual authorization against real PostgreSQL and OpenFGA commits revocation with its revision and ignores a persistent late grant in an old request namespace"
+			},
+			{
+				"file": "packages/authz/src/authorization.integration.test.ts",
+				"name": "production contextual authorization against real PostgreSQL and OpenFGA does not accept a late allowed HTTP response after the lock-bearing connection is lost"
+			},
+			{
+				"file": "packages/authz/src/authorization.integration.test.ts",
+				"name": "production contextual authorization against real PostgreSQL and OpenFGA drains shared authorization fences before revocation and rejects every later request"
+			},
+			{
+				"file": "packages/authz/src/authorization.integration.test.ts",
+				"name": "production contextual authorization against real PostgreSQL and OpenFGA fails closed on endpoint outage, malformed response and actual HTTP timeout, and recovers within 30 seconds"
+			},
+			{
+				"file": "packages/authz/src/authorization.integration.test.ts",
+				"name": "production contextual authorization against real PostgreSQL and OpenFGA keeps security revocation source commits available while control and FGA readiness are closed"
+			},
+			{
+				"file": "packages/authz/src/authorization.integration.test.ts",
+				"name": "production contextual authorization against real PostgreSQL and OpenFGA recognizes populated completed installations without changing receipts or contacting OpenFGA"
+			},
+			{
+				"file": "packages/authz/src/authorization.integration.test.ts",
+				"name": "production contextual authorization against real PostgreSQL and OpenFGA rejects completed installation with mismatched binding_id"
+			},
+			{
+				"file": "packages/authz/src/authorization.integration.test.ts",
+				"name": "production contextual authorization against real PostgreSQL and OpenFGA rejects completed installation with mismatched installation_id"
+			},
+			{
+				"file": "packages/authz/src/authorization.integration.test.ts",
+				"name": "production contextual authorization against real PostgreSQL and OpenFGA rejects completed installation with mismatched recovery_epoch"
+			},
+			{
+				"file": "packages/authz/src/authorization.integration.test.ts",
+				"name": "production contextual authorization against real PostgreSQL and OpenFGA rejects expired/inactive principals, mismatched model and independent epoch even when revisions match"
+			},
+			{
+				"file": "packages/authz/src/authorization.integration.test.ts",
+				"name": "production contextual authorization against real PostgreSQL and OpenFGA rejects membership that expires while an actual allowed OpenFGA response is pending"
+			},
+			{
+				"file": "packages/authz/src/authorization.integration.test.ts",
+				"name": "production contextual authorization against real PostgreSQL and OpenFGA rejects populated source data with no independent initialization record"
+			},
+			{
+				"file": "packages/authz/src/authorization.integration.test.ts",
+				"name": "production contextual authorization against real PostgreSQL and OpenFGA rejects recovery-required state and a changed model after completion"
+			},
+			{
+				"file": "packages/authz/src/authorization.integration.test.ts",
+				"name": "production contextual authorization against real PostgreSQL and OpenFGA resumes an interrupted bootstrap from independent pending receipts without resetting its epoch"
+			},
+			{
+				"file": "packages/authz/src/key-expiry.integration.test.ts",
+				"name": "Key-management authorization deadlines rolls back issue and its side effects when administrator fresh authentication expires during SQL"
+			},
+			{
+				"file": "packages/authz/src/key-expiry.integration.test.ts",
+				"name": "Key-management authorization deadlines rolls back issue and its side effects when administrator membership expires during SQL"
+			},
+			{
+				"file": "packages/authz/src/key-expiry.integration.test.ts",
+				"name": "Key-management authorization deadlines rolls back issue and its side effects when administrator session expires during SQL"
+			},
+			{
+				"file": "packages/authz/src/key-expiry.integration.test.ts",
+				"name": "Key-management authorization deadlines rolls back rotate and its side effects when administrator membership expires during SQL"
+			},
+			{
+				"file": "packages/authz/src/keys.integration.test.ts",
+				"name": "Phase 3 service accounts and scoped credentials admits one status transition at the expected version under concurrent commands"
+			},
+			{
+				"file": "packages/authz/src/keys.integration.test.ts",
+				"name": "Phase 3 service accounts and scoped credentials enforces current human administration, recent authentication, policy and nonsecret audit"
+			},
+			{
+				"file": "packages/authz/src/keys.integration.test.ts",
+				"name": "Phase 3 service accounts and scoped credentials rejects fabricated scopes, missing create capabilities, inactive accounts and obsolete epochs"
+			},
+			{
+				"file": "packages/authz/src/keys.integration.test.ts",
+				"name": "Phase 3 service accounts and scoped credentials rejects wrong tenant, expiry, revocation and rotation even for already-authenticated actors"
+			},
+			{
+				"file": "packages/authz/src/keys.integration.test.ts",
+				"name": "Phase 3 service accounts and scoped credentials replays account creation exactly and never replays an issued secret"
+			},
+			{
+				"file": "packages/authz/src/keys.integration.test.ts",
+				"name": "Phase 3 service accounts and scoped credentials requires current read scope to return a current DTO on a create retry"
+			},
+			{
+				"file": "packages/authz/src/keys.integration.test.ts",
+				"name": "Phase 3 service accounts and scoped credentials stores only a hash, declares capabilities, and intersects resource grants with key scopes"
+			},
+			{
+				"file": "packages/authz/src/parity.integration.test.ts",
+				"name": "Phase 3 stored policy parity matches an independently materialized complete graph for direct, team, inherited, denied and service paths"
+			},
+			{
+				"file": "packages/authz/src/resources.integration.test.ts",
+				"name": "Phase 3 resource fault and model boundaries denies malformed/unavailable FGA without turning errors into empty authorized lists"
+			},
+			{
+				"file": "packages/authz/src/resources.integration.test.ts",
+				"name": "Phase 3 resource fault and model boundaries explicitly upgrades the reviewed ready predecessor without changing epoch and safely resumes"
+			},
+			{
+				"file": "packages/authz/src/resources.integration.test.ts",
+				"name": "Phase 3 resource fault and model boundaries rechecks expiry after a real delayed OpenFGA allow on the protected resource"
+			},
+			{
+				"file": "packages/authz/src/resources.integration.test.ts",
+				"name": "Phase 3 resource fault and model boundaries rejects a late remote allow after the fence connection is terminated and leaves no domain write"
+			},
+			{
+				"file": "packages/authz/src/resources.integration.test.ts",
+				"name": "Phase 3 resource fault and model boundaries uses fresh qualified resource/team/parent namespaces and rejects oversized contexts"
+			},
+			{
+				"file": "packages/authz/src/session-expiry.integration.test.ts",
+				"name": "session expiry across protected resource transactions rejects a get whose real OpenFGA allow arrives after the validated session expires"
+			},
+			{
+				"file": "packages/authz/src/session-expiry.integration.test.ts",
+				"name": "session expiry across protected resource transactions rejects a list whose real OpenFGA allow arrives after the validated session expires"
+			},
+			{
+				"file": "packages/authz/src/session-expiry.integration.test.ts",
+				"name": "session expiry across protected resource transactions rolls back domain state, capacity, revision, audit and outbox after session expiry during later SQL"
+			}
+		],
+		"historical": [
+			{
+				"file": "spikes/phase0/authz/contextual.test.ts",
+				"name": "authoritative request-local contexts with real PostgreSQL/OpenFGA a late allowed response after lock-bearing connection loss cannot commit a protected write"
+			},
+			{
+				"file": "spikes/phase0/authz/contextual.test.ts",
+				"name": "authoritative request-local contexts with real PostgreSQL/OpenFGA a real HTTP timeout cannot authorize a mutation and a restored endpoint recovers"
+			},
+			{
+				"file": "spikes/phase0/authz/contextual.test.ts",
+				"name": "authoritative request-local contexts with real PostgreSQL/OpenFGA denies graph outages, inactive/expired memberships and unrevalidated recovery or model changes"
+			},
+			{
+				"file": "spikes/phase0/authz/contextual.test.ts",
+				"name": "authoritative request-local contexts with real PostgreSQL/OpenFGA fails closed on oversized contexts and rolls back failed source changes"
+			},
+			{
+				"file": "spikes/phase0/authz/contextual.test.ts",
+				"name": "authoritative request-local contexts with real PostgreSQL/OpenFGA ignores delayed persistent writes into a previous request namespace"
+			},
+			{
+				"file": "spikes/phase0/authz/contextual.test.ts",
+				"name": "authoritative request-local contexts with real PostgreSQL/OpenFGA matches stored-model decisions for admins, sparse grants, teams, inheritance and conditions"
+			},
+			{
+				"file": "spikes/phase0/authz/contextual.test.ts",
+				"name": "authoritative request-local contexts with real PostgreSQL/OpenFGA publishes source changes at commit, with immediate create-read and no projection artifacts"
+			},
+			{
+				"file": "spikes/phase0/authz/contextual.test.ts",
+				"name": "authoritative request-local contexts with real PostgreSQL/OpenFGA revalidates a preflight decision before mutation: epoch"
+			},
+			{
+				"file": "spikes/phase0/authz/contextual.test.ts",
+				"name": "authoritative request-local contexts with real PostgreSQL/OpenFGA revalidates a preflight decision before mutation: expiry"
+			},
+			{
+				"file": "spikes/phase0/authz/contextual.test.ts",
+				"name": "authoritative request-local contexts with real PostgreSQL/OpenFGA revalidates a preflight decision before mutation: membership"
+			},
+			{
+				"file": "spikes/phase0/authz/contextual.test.ts",
+				"name": "authoritative request-local contexts with real PostgreSQL/OpenFGA revalidates a preflight decision before mutation: revocation"
+			},
+			{
+				"file": "spikes/phase0/authz/contextual.test.ts",
+				"name": "authoritative request-local contexts with real PostgreSQL/OpenFGA revalidates a preflight decision before mutation: unrelated"
+			},
+			{
+				"file": "spikes/phase0/authz/integration.test.ts",
+				"name": "PostgreSQL/OpenFGA generation fault suite abandons ambiguous HTTP timeout and refuses its publication after late completion"
+			},
+			{
+				"file": "spikes/phase0/authz/integration.test.ts",
+				"name": "PostgreSQL/OpenFGA generation fault suite expires crashed builders and preserves live building and verified snapshots"
+			},
+			{
+				"file": "spikes/phase0/authz/integration.test.ts",
+				"name": "PostgreSQL/OpenFGA generation fault suite local deactivation succeeds while the graph endpoint is unavailable"
+			},
+			{
+				"file": "spikes/phase0/authz/integration.test.ts",
+				"name": "PostgreSQL/OpenFGA generation fault suite old remote request completes after lost PostgreSQL connection, N replay and N+1 revocation"
+			},
+			{
+				"file": "spikes/phase0/authz/integration.test.ts",
+				"name": "PostgreSQL/OpenFGA generation fault suite paginated cleanup resumes after ambiguous deletion and isolates literal organization scopes"
+			},
+			{
+				"file": "spikes/phase0/authz/integration.test.ts",
+				"name": "PostgreSQL/OpenFGA generation fault suite real policy enforces team inheritance, same-tenant membership and expiry"
+			},
+			{
+				"file": "spikes/phase0/authz/integration.test.ts",
+				"name": "PostgreSQL/OpenFGA generation fault suite recovery epoch refuses old attempts and revision equality cannot release readiness"
+			},
+			{
+				"file": "spikes/phase0/authz/integration.test.ts",
+				"name": "PostgreSQL/OpenFGA generation fault suite refuses publication under a changed real OpenFGA model ID"
+			},
+			{
+				"file": "spikes/phase0/authz/integration.test.ts",
+				"name": "PostgreSQL/OpenFGA generation fault suite retirement keeps only current snapshots and tombstones prevent namespace reuse"
+			},
+			{
+				"file": "spikes/phase0/authz/integration.test.ts",
+				"name": "PostgreSQL/OpenFGA generation fault suite shared readers drain before revocation and later readers cannot overtake it"
+			},
+			{
+				"file": "spikes/phase0/authz/integration.test.ts",
+				"name": "PostgreSQL/OpenFGA generation fault suite writes duplicate identical tuples safely and supersedes concurrent attempt owners"
+			}
+		],
+		"capacity": [
+			{
+				"file": "packages/db/src/resources.integration.test.ts",
+				"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA applies direct and inherited denials and restores only the remaining current grant paths"
+			},
+			{
+				"file": "packages/db/src/resources.integration.test.ts",
+				"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA checks viewer/editor/manager grants, revocation, and expired membership"
+			},
+			{
+				"file": "packages/db/src/resources.integration.test.ts",
+				"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA creates a private project with immediately readable manager access, audit, and outbox"
+			},
+			{
+				"file": "packages/db/src/resources.integration.test.ts",
+				"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA denies an earlier authorized row that expires during a later batch check"
+			},
+			{
+				"file": "packages/db/src/resources.integration.test.ts",
+				"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA denies an earlier authorized row that expires during a later single check"
+			},
+			{
+				"file": "packages/db/src/resources.integration.test.ts",
+				"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA disables positive Project writes while preserving reads and security cleanup"
+			},
+			{
+				"file": "packages/db/src/resources.integration.test.ts",
+				"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA enforces disabled, zero and unlimited local policy independently of permissions"
+			},
+			{
+				"file": "packages/db/src/resources.integration.test.ts",
+				"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA fails closed when a populated workspace module is disabled"
+			},
+			{
+				"file": "packages/db/src/resources.integration.test.ts",
+				"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA inherits workspace access, rejects archived assignments, and permits managed moves out"
+			},
+			{
+				"file": "packages/db/src/resources.integration.test.ts",
+				"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA isolates tenant rows with RLS, missing context, and cross-tenant parents"
+			},
+			{
+				"file": "packages/db/src/resources.integration.test.ts",
+				"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA keeps cursor precision and binds opaque cursors to their actor and query"
+			},
+			{
+				"file": "packages/db/src/resources.integration.test.ts",
+				"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA propagates team revocation and team removal without retaining resource access"
+			},
+			{
+				"file": "packages/db/src/resources.integration.test.ts",
+				"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA rechecks capacity during restore and does not double-spend on idempotent retry"
+			},
+			{
+				"file": "packages/db/src/resources.integration.test.ts",
+				"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA rechecks current resource access before returning a stored create result"
+			},
+			{
+				"file": "packages/db/src/resources.integration.test.ts",
+				"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA rejects stale edits and atomically admits only one winner at the final capacity slot"
+			},
+			{
+				"file": "packages/db/src/resources.integration.test.ts",
+				"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA renames and paginates only authorized workspaces with optimistic versions"
+			},
+			{
+				"file": "packages/db/src/resources.integration.test.ts",
+				"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA requires source and destination authority for a parent move"
+			},
+			{
+				"file": "packages/db/src/resources.integration.test.ts",
+				"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA reserves, releases and expires generic capacity exactly once using the same database boundary"
+			},
+			{
+				"file": "packages/db/src/resources.integration.test.ts",
+				"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA returns only authorized search fields and continues sparse keyset pages without totals"
+			},
+			{
+				"file": "packages/db/src/resources.integration.test.ts",
+				"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA serializes create against restore at the final quota slot and rolls back the losing command"
+			}
+		],
+		"browser": [
+			{
+				"file": "tests/e2e/foundation.spec.ts",
+				"name": "localized validation, keyboard focus and synthetic organization state"
+			},
+			{
+				"file": "tests/e2e/foundation.spec.ts",
+				"name": "mobile shell, static asset and unsupported locale"
+			},
+			{
+				"file": "tests/e2e/foundation.spec.ts",
+				"name": "public diagnostic validates explicit DTOs and generates OpenAPI"
+			},
+			{
+				"file": "tests/e2e/identity.spec.ts",
+				"name": "invitation, team management and inactive ownership transfer change RPC and REST permissions"
+			},
+			{
+				"file": "tests/e2e/identity.spec.ts",
+				"name": "invitation, team management and member ownership transfer change RPC and REST permissions"
+			},
+			{
+				"file": "tests/e2e/identity.spec.ts",
+				"name": "password registration, sign-in, localized reset, and preserved MFA recovery"
+			},
+			{
+				"file": "tests/e2e/identity.spec.ts",
+				"name": "Project dashboard validates, edits, detects conflicts, moves and restores localized resources"
+			},
+			{
+				"file": "tests/e2e/identity.spec.ts",
+				"name": "real browser WebAuthn enrollment and passwordless sign-in"
+			},
+			{
+				"file": "tests/e2e/identity.spec.ts",
+				"name": "real registration, scanner confirmation, two memberships, per-tab isolation and last-owner guard"
+			},
+			{
+				"file": "tests/e2e/identity.spec.ts",
+				"name": "redirects the local alias before registration without relaxing auth origins"
+			},
+			{
+				"file": "tests/e2e/identity.spec.ts",
+				"name": "signup explains service outages and keeps the form available for retry"
+			}
+		],
+		"directory": [
+			{
+				"file": "directory.spec.ts",
+				"name": "task-09 directory uses current tenant services, navigation, keyboard and both locales"
+			}
+		],
+		"heldout": [
+			{
+				"file": "tasks.integration.test.ts",
+				"name": "task-02 child CRUD, current parent inheritance and SQL tenant constraints"
+			},
+			{
+				"file": "tasks.integration.test.ts",
+				"name": "task-03 scoped service variant revalidates key and parent grants"
+			},
+			{
+				"file": "tasks.integration.test.ts",
+				"name": "task-05 bounded pagination, DTOs, filters and audit allowlists"
+			},
+			{
+				"file": "tasks.integration.test.ts",
+				"name": "task-06 racing replay has one resource, one event and honors disabled Projects"
+			},
+			{
+				"file": "tasks.integration.test.ts",
+				"name": "task-04 final transaction expiry rolls back child writes and semantic events"
+			},
+			{
+				"file": "tasks.integration.test.ts",
+				"name": "task-03 both transports reject hidden fields and undeclared service endpoints"
+			},
+			{
+				"file": "tasks.integration.test.ts",
+				"name": "task-07 evolution preserves customized behavior and changes completion permission only"
+			},
+			{
+				"file": "tasks.integration.test.ts",
+				"name": "task-07 predecessor migration retains real rows through rename and required-field backfill"
+			},
+			{
+				"file": "tasks.integration.test.ts",
+				"name": "task-09 new security email is localized, post-commit, retried and redacted"
+			}
+		]
+	},
+	"historicalSourceHashes": {
+		"spikes/phase0/authz/contextual.test.ts": "39ac70d16bdf9911eade0d80a976fa82b6cd2f762caf9221ffe6c69516e52394",
+		"spikes/phase0/authz/integration.test.ts": "07c6ccdbee8e2d3f92580af1a894cbb82c8ccf9febf91dcb6521dfef4efe3612"
+	}
+}

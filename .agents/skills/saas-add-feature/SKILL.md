@@ -1,0 +1,18 @@
+---
+name: saas-add-feature
+description: Implement a persisted SaaS domain feature across schema, services, authorization, API and dashboard using this repository's Foundation boundaries. Use for new domain behavior, not a view-only page.
+---
+
+# Add a complete feature
+
+Read [AGENTS.md](../../../AGENTS.md), the [feature workflow](../../../docs/development/feature-workflow.md), and the requested brief. Inspect actual source and working-tree changes first. Use [module availability](../../../docs/development/module-availability.md) to distinguish a dependency from an implemented service. For data/access changes, capture actors, fields, separate input/output/search/audit allowlists, lifecycle, capacity, principal support and acceptance examples in Markdown. Use [Project and child Task](../../../feature-briefs/phase4-project-task.md) as an example, not a generator schema.
+
+Implement ordinary developer-owned source through existing contracts/router, domain service, tenant transaction, authorization compiler and audit/outbox. The actual map is in the workflow reference; the planning document's `packages/modules/projects` tree is illustrative. Do not introduce a generator, regeneration markers, a `.saas/generation` manifest or generated/custom ownership scheme.
+
+Read the canonical [authorization protocol](../../../docs/02-architecture-and-security.md#26-relationship-based-authorization), [lifecycle lock order](../../../docs/03-data-model.md#canonical-lifecycle-lock-order), and [recovery protocol](../../../docs/04-billing-usage-operations.md#recovery-readiness-protocol) when those boundaries change. Reuse production services, independent readiness and the transaction-wide expiry guard. A child whose access is exactly its immutable Project parent's read/update permission can authorize that parent with the current pinned model. Document this inheritance; do not fabricate child grants. Independently shared children or new graphs require explicit source-loader/model/compiler, publication/upgrade, SQL and parity-test changes. Never alias an independently authorized child to a Project or allow access through a stub.
+
+Add reviewed SQL and matching Drizzle declarations/snapshots for new tenant data. Prove fresh and predecessor upgrade behavior, restricted-role RLS and same-tenant foreign keys. Keep applied history immutable. Mutation services own current authorization, capacity, scoped idempotency, expected versions, allowlisted events and atomic writes. Lists require validated filters, bounded authorization-aware pagination and actor/tenant/query-bound opaque cursors. Parent pickers need authorized lookup; avoid unrestricted totals.
+
+Declare service-account support per endpoint. State the exact governing resource permission and key scope: a pure Project-inherited child may use `project:read` / `project:update` if the brief explicitly chooses that contract. A new independently authorized resource requires new scopes/capabilities/grants and tests. Unsupported endpoints reject bearer principals without cookie fallback. Foundation local policy works without billing or analytics credentials. An unavailable required module must be implemented within scope or reported incomplete, never replaced with a permissive adapter.
+
+Apply dashboard/email workflows when those surfaces are requested. Finish with [verification](../../../docs/development/verification.md): meaningful allow/deny, isolation, race, replay, fault and UI evidence. Report source/access/SQL changes, migration needs and actual outcomes. Inspect existing registrations and receipts on repeat/resume; avoid duplicate artifacts and preserve customizations. Live external actions require authorization from the task, not this skill.

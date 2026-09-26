@@ -29,6 +29,15 @@ jobs:
       - run: bun run check
       - run: bun run typecheck
       - run: bun run knip
+      - name: Skill contracts and immutable migration history
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          if [[ -n "$BASE_SHA" && ! "$BASE_SHA" =~ ^0+$ ]]; then
+            bun run skills:check --static --base "$BASE_SHA"
+          else
+            bun run skills:check --static
+          fi
       - name: Commit range and proposed squash title
         env:
           EVENT_NAME: ${{ github.event_name }}
@@ -50,7 +59,9 @@ jobs:
         if: always()
         with:
           name: dependency-scan-${{ github.sha }}
-          path: artifacts/security/
+          path: |
+            artifacts/security/
+            artifacts/phase4/checks/
           retention-days: 30
   unit:
     runs-on: ubuntu-24.04

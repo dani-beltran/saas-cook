@@ -14,6 +14,7 @@ export default defineConfig({
 						"{apps,packages}/**/*.test.{ts,tsx}",
 						"scripts/phase1/**/*.test.ts",
 						"scripts/phase3/**/*.test.ts",
+						"scripts/phase4/**/*.test.ts",
 					],
 					exclude: ["**/*.integration.test.{ts,tsx}", "**/node_modules/**"],
 				},

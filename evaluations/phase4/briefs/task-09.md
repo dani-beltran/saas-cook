@@ -1,0 +1,3 @@
+# Add dashboard and email
+
+Use saas-add-dashboard-page to add an accessible localized organization member directory over existing services at /[locale]/organizations/[organizationId]/directory with navigation, loading/empty/denied/failure states. Use saas-add-email to add a typed localized `password-changed` security email to the existing encrypted identity delivery pipeline, enqueued in the successful password reset transaction. Preserve MFA/session revocation and generic reset responses; no credentials in content/logs, no SMTP before commit. Verify rendering, keyboard navigation, post-commit delivery, rollback, retry, redaction. Keep existing services as authority.

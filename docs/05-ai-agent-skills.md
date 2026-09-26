@@ -4,13 +4,13 @@
 
 Ship repository-local skills that help an AI coding agent bootstrap a product and implement or evolve complete SaaS features in ordinary application source. Skills use the existing codebase, an agreed feature brief, and proven platform services. This replaces the custom CRUD/entity generator, its declarative DSL, rendering pipeline, and generated/custom ownership system.
 
-**Status: planning only.** The skill packages, application, fixtures, and commands described below are proposed deliverables. No runnable skills or application are shipped by this planning repository.
+**Status: implemented authoring packages and evaluation tooling.** The six repository-local skills, shared references, briefs and deterministic checks are available. The [Phase 4 guide](phase4/README.md) documents invocation and the [acceptance record](phase4/acceptance.md) records actual behavior evaluation results. Phase 3's corrected sustained benchmark is excluded by the Phase 4 execution request and remains a separate pending gate.
 
 Agents write and edit code; deterministic tools and behavioral tests establish whether the result is correct. Different runs may produce different implementations. There is no byte-for-byte generation promise, and updating a skill never automatically rewrites an application's code.
 
 A complete domain feature includes the applicable database schema/migration/RLS, validation and DTOs, repository/service, authorization mapping, API, dashboard, navigation/translations, audit/outbox, quota hooks, fixtures, tests, and documentation. The agent reuses shared policy boundaries; it must not invent a second authorization projector, billing ledger, or identity lifecycle.
 
-## 5.2 Planned skill catalogue and packaging
+## 5.2 Skill catalogue and packaging
 
 | Skill | When to use | Expected result |
 | --- | --- | --- |
@@ -21,7 +21,7 @@ A complete domain feature includes the applicable database schema/migration/RLS,
 | `saas-add-email` | Add a transactional email and its delivery trigger | React Email template, typed payload, localized content, correct post-commit trigger and retry/redaction checks |
 | `saas-verify-feature` | Review/validate a feature change or investigate incomplete integration | Findings and executable evidence for applicable behavior, security, migrations and UI; no claim of completion from screenshots alone |
 
-Planned structure in an implemented template:
+Implemented authoring structure:
 
 ```text
 AGENTS.md                                  # Stack, boundaries, Bun commands and workflow links
@@ -73,7 +73,7 @@ Adapt the amount of planning and verification to the change:
 5. Run applicable deterministic checks and real behavior tests. Investigate failures and preserve their intent rather than weakening tests to fit the change.
 6. Deliver a reviewable source/SQL/access diff, verification evidence, migration/backfill requirements, assumptions, and any remaining work. Code creation alone does not establish feature acceptance.
 
-Illustrative source responsibilities for Project:
+The actual Project slice lives in `packages/db/src/resources.ts`, `packages/db/src/resource-schema.ts`, `packages/api-contracts/src/resources.ts`, `packages/api/src/router.ts` and `apps/web/src/components/projects.tsx`; translations live in `packages/ui/src/messages.ts`. Follow the [maintained source map](development/feature-workflow.md). The following illustrates a possible future module split, not paths the skills should create automatically:
 
 ```text
 packages/db/src/schema/projects.ts
@@ -106,9 +106,7 @@ These are conventions, not mandatory rendered templates. All feature source is d
 Existing deterministic lifecycle commands remain separate from skill invocation:
 
 ```sh
-bun run db:generate
 bun run db:migrate
-bun run db:seed
 bun run authz:validate
 bun run authz:publish
 bun run check
@@ -118,7 +116,10 @@ bun run test:unit
 bun run test:integration
 bun run test:e2e
 bun run storybook:build
+bun run skills:check
 ```
+
+Use the pinned Drizzle command in [migration instructions](../packages/db/migrations/README.md) for generation; `db:generate` and `db:seed` are not shipped root scripts. The [evaluation runner](phase4/evaluation.md) orchestrates held-out checks separately from application CI.
 
 `check` runs Biome, `test:unit` and `test:integration` run Vitest, and `test:e2e` runs Playwright. `bun run storybook` starts component development. Maintain Knip entry points as feature/tool registrations change and follow the Commitlint policy enforced through Lefthook and CI.
 

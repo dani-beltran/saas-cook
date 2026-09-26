@@ -81,6 +81,7 @@ export const resourcesContract = {
 					includeDeleted: z
 						.union([z.boolean(), z.enum(["true", "false"])])
 						.transform((value) => value === true || value === "true")
+						.pipe(z.boolean())
 						.optional(),
 				}),
 			)

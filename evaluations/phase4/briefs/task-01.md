@@ -1,0 +1,3 @@
+# Bootstrap a renamed Foundation product
+
+Use saas-bootstrap. Rename the disposable product to Northstar Tasks, package name northstar-tasks and scope @northstar (preserve applied migrations, SQL role/database identifiers and historical Phase 0 evidence). Add an ordinary product manifest documenting the Foundation modules; keep commercial modules disabled. Use the existing Project vertical slice, complete any missing integration, and verify Project dashboard and both APIs for create/read/edit/delete/restore/sharing. Do not generate a duplicate Project module. No credentials beyond disposable synthetic local services. Preserve internal compatible identities where rename would imply destructive history edits; explain them.

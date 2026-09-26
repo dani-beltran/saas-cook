@@ -1,0 +1,11 @@
+# Renamed Foundation product evaluation brief
+
+Use `saas-bootstrap` in a disposable candidate checkout to adopt this template as **Northstar Work**, package namespace `@northstar-work`, root package `northstar-work`. This is synthetic evaluation branding, not a requested rename of the Common SaaS repository. Record a Markdown product manifest with Foundation enabled, English/Spanish supported, Projects enabled and workspaces available, local capacity enforced, and billing/analytics/Commercial/Enterprise modules disabled or unavailable.
+
+Inventory active manifests/imports, runtime branding defaults, app metadata, UI/email examples, developer-facing examples and build/image references. Update the active product consistently. Preserve historical Phase 0 material, applied SQL/model history, database role names and existing installation identifiers. Document any retained infrastructure identifier instead of changing credentials/schema implicitly. Preserve custom source edits and the Bun lockfile format.
+
+Use synthetic fixture users in two organizations and only disposable PostgreSQL/control/OpenFGA/mail services. Do not add billing or analytics credentials, weaken identity/assurance, or substitute permissive policy. Keep configuration server-validated and public values allowlisted. A product manifest is a human-readable decision record, not a new generator DSL or runtime feature-flag engine.
+
+Acceptance: pinned install and checks succeed; migrations/bootstrap establish readiness in a fresh isolated installation; application/worker start; renamed branding appears in localized shell and relevant email/example copy; synthetic sign-in and organization/Project CRUD work. Inspect already configured data before repeating setup. A second identical adoption request should not duplicate fixture data, migration history, manifests or navigation. Record actual commands and whether startup/browser/email paths were verified. Do not claim a previous-product upgrade path based only on a fresh initialization.
+
+Requirement IDs: `R-SKILLS`, `R-TENANCY`, `R-LIFECYCLE`, `R-AUTHZ`, `R-POLICY`, relevant identity and `R-EMAIL` regressions. Image acceptance is separate when applicable. No deployment or live mail is authorized by this fixture. The Phase 3 benchmark is excluded and stays unpassed.

@@ -1,0 +1,642 @@
+{
+	"schemaVersion": 1,
+	"accepted": true,
+	"capturedAt": "2026-09-26T22:51:15.145Z",
+	"scope": "R-SKILLS Foundation; supervised repaired repeat set, not universal or first-attempt reliability",
+	"templateCommit": "3f8b7f1ba24fce6f03f6a608719a8b2e8d47781f",
+	"manifest": "artifacts/phase4/release-verified/manifest.json",
+	"manifestSha256": "e6251d6c356a5897a219481ffdd684950a53d19ef0889210fc7a52d352cc2280",
+	"templateSourceHashesSha256": "1fc36f0036e27b2cfc8bdea39c0d45e27f52270496d38f73a2b0dc5322e41b6d",
+	"skillHashes": {
+		".agents/skills/saas-add-dashboard-page/SKILL.md": "a3438b7546328a3c533269ff2840d86401fcfe229ec662e655f3a9fdf522c09d",
+		".agents/skills/saas-add-email/SKILL.md": "5a6f40cc284be759a5a10d96d403a33c74a387f611a9a3d3b3596f90a0929cc9",
+		".agents/skills/saas-add-feature/SKILL.md": "bc024fa1e39539041406b3f5d21c6c31f2d0c30df0a023d5ee7169c19961df16",
+		".agents/skills/saas-bootstrap/SKILL.md": "57f6308a29a29b1c21f264f4266dd2299f95f8d70cac02e091c322ec5bc73460",
+		".agents/skills/saas-evolve-feature/SKILL.md": "e751fca5c992a8eb5816ad69a6569853ff4991472f7103679269786861f10301",
+		".agents/skills/saas-verify-feature/SKILL.md": "b04e4f07b2a155c895ba16a82dba04c93e45c087e15658b1a0e38e190d223d62"
+	},
+	"referenceHashesSha256": "6e13690779b9418abcc74b9bbeaa34f9fc3a3123e050a02bb84efd2cadfb0cb4",
+	"controlHashesSha256": "624e6414e818bc2648fe49a28df13a214bfe8bed4c6994c4403b256c80343a69",
+	"requiredTasks": [
+		"task-01",
+		"task-02",
+		"task-03",
+		"task-04",
+		"task-05",
+		"task-06",
+		"task-07",
+		"task-08",
+		"task-09",
+		"task-10"
+	],
+	"requirements": {
+		"task-01": ["R-SKILLS", "R-TENANCY", "R-AUTHZ", "R-POLICY", "R-WORKSPACES"],
+		"task-02": ["R-SKILLS", "R-TENANCY", "R-AUTHZ", "R-LIFECYCLE"],
+		"task-03": ["R-SKILLS", "R-TENANCY", "R-AUTHZ", "R-KEYS"],
+		"task-04": ["R-SKILLS", "R-AUTHZ", "R-LIFECYCLE"],
+		"task-05": ["R-SKILLS", "R-TENANCY", "R-AUTHZ", "R-KEYS"],
+		"task-06": ["R-SKILLS", "R-POLICY", "R-LIFECYCLE"],
+		"task-07": ["R-SKILLS", "R-TENANCY", "R-AUTHZ"],
+		"task-08": ["R-SKILLS"],
+		"task-09": ["R-SKILLS", "R-EMAIL", "R-AUTHZ"],
+		"task-10": ["R-SKILLS", "R-TENANCY", "R-AUTHZ"]
+	},
+	"runs": [
+		{
+			"repeat": 1,
+			"provider": "OpenAI Codex desktop collaboration host",
+			"model": "gpt-6-astra",
+			"configuration": {
+				"runtimeVersion": "0.158.0-alpha.2.1",
+				"reasoningEffort": "ultra",
+				"skillDiscovery": "Explicit .agents/skills SKILL.md invocation and shared references in independent candidate copies",
+				"sessions": [
+					{
+						"agentPath": "/root",
+						"sessionId": "01a0df99-170d-7823-8b69-9b509adbeadf",
+						"runtimeVersion": "0.158.0-alpha.2.1",
+						"provider": "openai",
+						"model": "gpt-6-astra",
+						"effort": "ultra"
+					},
+					{
+						"agentPath": "/root/behavior_run_one",
+						"sessionId": "01a0dfa2-7f8f-7710-8e91-25aabd5295f3",
+						"runtimeVersion": "0.158.0-alpha.2.1",
+						"provider": "openai",
+						"model": "gpt-6-astra",
+						"effort": "ultra"
+					},
+					{
+						"agentPath": "/root/email_dashboard_one",
+						"sessionId": "01a0dfaf-b7d0-7fe3-ab86-24976f74f1c1",
+						"runtimeVersion": "0.158.0-alpha.2.1",
+						"provider": "openai",
+						"model": "gpt-6-astra",
+						"effort": "ultra"
+					},
+					{
+						"agentPath": "/root/verify_run_one",
+						"sessionId": "01a0dfbb-3fc3-7bb1-a4ab-a8c11eff4798",
+						"runtimeVersion": "0.158.0-alpha.2.1",
+						"provider": "openai",
+						"model": "gpt-6-astra",
+						"effort": "ultra"
+					}
+				],
+				"isolation": "Separate source copies/dependency installs and author instructions; shared host sandbox, no per-agent filesystem enforcement",
+				"mode": "Supervised independent trials with retained repair feedback and source no-op repeats"
+			},
+			"sourceFiles": 368,
+			"sourceHashesSha256": "eddaf349f6904dd947a9c33dd4f4887cc0e39f42e8dc509b2befc89baaf1515c",
+			"sourceDiff": "artifacts/phase4/release-verified/run-1/source.diff",
+			"sourceDiffSha256": "40178195eac47d0f50571ada6db07ead5d43285d331067bf1dab14f988cdb15b",
+			"transcript": "artifacts/phase4/release-verified/run-1/agent-transcript.md",
+			"transcriptSha256": "8da0d6ab7672cdd7b13aba6b9edae7d02749748e7b0ddb5041ddb700e72ad167",
+			"repeatedSourceFiles": 367,
+			"repeatBeforeSha256": "b8cecde9e26d2c289d0cc1d42b0e0d7458fc569b5118c3ab986f4563503006ba",
+			"structuredReports": "artifacts/phase4/release-verified/run-1/structured-reports.json",
+			"structuredReportsSha256": "3e46c368217aca33969da106de0d03ef2a80896b206191d1d18f70ac4c625caf",
+			"customFiles": {
+				"CUSTOM-NOTES.md": "3c9b72850bdf4faf512a1a54e013c002e729714672c695e3cb52dbea919f9a02",
+				"packages/db/src/task-customization.ts": "3711a5f6b95ff8848c1539f12dc6c84e9a5c9c59b0ea673290fbea20ef14c33b"
+			},
+			"tasks": {
+				"task-01": [
+					{
+						"passed": true,
+						"exitCode": 0,
+						"timedOut": false,
+						"log": "artifacts/phase4/release-verified/run-1/logs/1790462793222-2c0d2cdd-acf0-40ab-9afe-03fc11b63d29-task-01-behavior-01.log",
+						"sha256": "b711160cdd029b7b087c0c6da63dc74fe62b4079c0d98b2d4832845dbd5983ce",
+						"observedCounts": [
+							"Test Files  2 passed (2)",
+							"Tests  22 passed (22)"
+						]
+					}
+				],
+				"task-02": [
+					{
+						"passed": true,
+						"exitCode": 0,
+						"timedOut": false,
+						"log": "artifacts/phase4/release-verified/run-1/logs/1790462793222-2c0d2cdd-acf0-40ab-9afe-03fc11b63d29-task-02-behavior-02.log",
+						"sha256": "6a1900189e68fd91cba9754b90f32f4d21886a9417870e217a35e77ec962500c",
+						"observedCounts": [
+							"Test Files  1 passed (1)",
+							"Tests  1 passed | 8 skipped (9)"
+						]
+					}
+				],
+				"task-03": [
+					{
+						"passed": true,
+						"exitCode": 0,
+						"timedOut": false,
+						"log": "artifacts/phase4/release-verified/run-1/logs/1790462793222-2c0d2cdd-acf0-40ab-9afe-03fc11b63d29-task-03-behavior-03.log",
+						"sha256": "68f6343b8be24f542115d0ed73eb803ebfbae53b3554bcc192922793703a27a6",
+						"observedCounts": [
+							"Test Files  1 passed (1)",
+							"Tests  2 passed | 7 skipped (9)"
+						]
+					}
+				],
+				"task-04": [
+					{
+						"passed": true,
+						"exitCode": 0,
+						"timedOut": false,
+						"log": "artifacts/phase4/release-verified/run-1/logs/1790462793222-2c0d2cdd-acf0-40ab-9afe-03fc11b63d29-task-04-behavior-04.log",
+						"sha256": "e8c2cbfe6a483dda5671d86a16b5dd2baa0fa26bbd56df3637804eb732ea3a34",
+						"observedCounts": [
+							"Test Files  1 passed (1)",
+							"Tests  1 passed | 8 skipped (9)",
+							"Test Files  6 passed (6)",
+							"Tests  37 passed (37)",
+							"Test Files  2 passed (2)",
+							"Tests  23 passed (23)"
+						]
+					}
+				],
+				"task-05": [
+					{
+						"passed": true,
+						"exitCode": 0,
+						"timedOut": false,
+						"log": "artifacts/phase4/release-verified/run-1/logs/1790462793222-2c0d2cdd-acf0-40ab-9afe-03fc11b63d29-task-05-behavior-05.log",
+						"sha256": "8d0df170c5f8732bd3a26e555e5bde0ad9e36abe7da176b69119bdead97294d2",
+						"observedCounts": [
+							"Test Files  1 passed (1)",
+							"Tests  1 passed | 8 skipped (9)"
+						]
+					}
+				],
+				"task-06": [
+					{
+						"passed": true,
+						"exitCode": 0,
+						"timedOut": false,
+						"log": "artifacts/phase4/release-verified/run-1/logs/1790462793222-2c0d2cdd-acf0-40ab-9afe-03fc11b63d29-task-06-behavior-06.log",
+						"sha256": "07cf8a09eff4e9a03ad60475f47dc9db42f6a85e5c6597795d8aefb754d1a3b2",
+						"observedCounts": [
+							"Test Files  1 passed (1)",
+							"Tests  1 passed | 8 skipped (9)",
+							"Test Files  1 passed (1)",
+							"Tests  20 passed (20)"
+						]
+					}
+				],
+				"task-07": [
+					{
+						"passed": true,
+						"exitCode": 0,
+						"timedOut": false,
+						"log": "artifacts/phase4/release-verified/run-1/logs/1790462793222-2c0d2cdd-acf0-40ab-9afe-03fc11b63d29-task-07-behavior-07.log",
+						"sha256": "20fae1f4eeeb8cdd748c99741710f2800718ed871d782350fade9714b565348f",
+						"observedCounts": [
+							"Test Files  1 passed (1)",
+							"Tests  2 passed | 7 skipped (9)"
+						]
+					}
+				],
+				"task-08": [
+					{
+						"passed": true,
+						"exitCode": 0,
+						"timedOut": false,
+						"log": "artifacts/phase4/release-verified/run-1/logs/1790462793222-2c0d2cdd-acf0-40ab-9afe-03fc11b63d29-task-08-behavior-08.log",
+						"sha256": "7a4e580fd7f978c5b0dcbebe236816589143ebcfe01474cc58e3d6eababe559f",
+						"observedCounts": []
+					}
+				],
+				"task-09": [
+					{
+						"passed": true,
+						"exitCode": 0,
+						"timedOut": false,
+						"log": "artifacts/phase4/release-verified/run-1/logs/1790462793222-2c0d2cdd-acf0-40ab-9afe-03fc11b63d29-task-09-behavior-09.log",
+						"sha256": "ae2c8f29e76b3da9160e51bc1484403795417e4dd27ce180ee56766530412cc7",
+						"observedCounts": [
+							"Test Files  1 passed (1)",
+							"Tests  1 passed | 8 skipped (9)",
+							"14 passed (7.7s)",
+							"1 passed (2.3s)"
+						]
+					}
+				],
+				"task-10": [
+					{
+						"passed": true,
+						"exitCode": 0,
+						"timedOut": false,
+						"log": "artifacts/phase4/release-verified/run-1/logs/1790462793222-2c0d2cdd-acf0-40ab-9afe-03fc11b63d29-task-10-behavior-10.log",
+						"sha256": "207c135d793134cba26b0713313d412ce5445de3b0794aa86720d5db93a6b392",
+						"observedCounts": []
+					}
+				]
+			},
+			"applicationChecks": [
+				{
+					"passed": true,
+					"exitCode": 0,
+					"timedOut": false,
+					"log": "artifacts/phase4/release-verified/run-1/logs/1790462793222-2c0d2cdd-acf0-40ab-9afe-03fc11b63d29-application-typecheck.log",
+					"sha256": "283777e737ed818c3ac2afe263a43436879ee916ad1bf9f2078ee3f16a913ca9",
+					"observedCounts": []
+				},
+				{
+					"passed": true,
+					"exitCode": 0,
+					"timedOut": false,
+					"log": "artifacts/phase4/release-verified/run-1/logs/1790462793222-2c0d2cdd-acf0-40ab-9afe-03fc11b63d29-application-unit.log",
+					"sha256": "d64ea5605313cbb0d7c22e860cd28914acf88ee6f85dbfaffed5ac2ec7b70120",
+					"observedCounts": [
+						"Test Files  15 passed (15)",
+						"Tests  95 passed (95)"
+					]
+				},
+				{
+					"passed": true,
+					"exitCode": 0,
+					"timedOut": false,
+					"log": "artifacts/phase4/release-verified/run-1/logs/1790462793222-2c0d2cdd-acf0-40ab-9afe-03fc11b63d29-application-build.log",
+					"sha256": "1a9609f269a46825576b1fd7b49978c707c44a7eede4103dc0c93489b67ad69d",
+					"observedCounts": ["Tasks:    1 successful, 1 total"]
+				}
+			],
+			"seededReview": {
+				"evaluator": "independent-controller",
+				"recordedAt": "2026-09-26T22:17:28.046Z",
+				"transcript": "review-transcript.jsonl",
+				"transcriptSha256": "8da0d6ab7672cdd7b13aba6b9edae7d02749748e7b0ddb5041ddb700e72ad167",
+				"seededSource": "review-source.json",
+				"seededSourceSha256": "fc95f3cee1006836ff2d45b4c89ad36343484fc67801aa086155f3736c7b2be6",
+				"agentReport": "review-agent-report.md",
+				"agentReportSha256": "e1b16048da1e78db8ebe8b4e0fe287f9e53f1a79d040b4086ed151bec75c1ced",
+				"findings": [
+					{
+						"case": "missing-rls",
+						"detected": true,
+						"sourceFile": "candidate/artifacts/phase4-review/schema.sql",
+						"behaviorEvidence": "review-missing-rls.log",
+						"behaviorEvidenceSha256": "284abbd4a77382fd295aea913b524eb13e0e9f338d6d0df5d2dc271faeb79fe4",
+						"agentFinding": "Reviewer reproduced tenant rows visible to restricted web SQL without tenant context.",
+						"testExitCode": 1
+					},
+					{
+						"case": "dto-leak",
+						"detected": true,
+						"sourceFile": "candidate/artifacts/phase4-review/contracts.mjs",
+						"behaviorEvidence": "review-dto-leak.log",
+						"behaviorEvidenceSha256": "b6d348d0cc1be74bab7dff6ff0386bffa8471b893827eda6409c5a7bce0b57c7",
+						"agentFinding": "Reviewer reproduced public serialization retaining internal_note and organization_id.",
+						"testExitCode": 1
+					},
+					{
+						"case": "missing-permission",
+						"detected": true,
+						"sourceFile": "candidate/artifacts/phase4-review/service.mjs",
+						"behaviorEvidence": "review-missing-permission.log",
+						"behaviorEvidenceSha256": "dff1ad7e8ad7b7bffe549054b9f737a4160286c5292d459724e26ccc210c82cf",
+						"agentFinding": "Reviewer reproduced a member denied the private parent Project receiving its Widget.",
+						"testExitCode": 1
+					}
+				]
+			}
+		},
+		{
+			"repeat": 2,
+			"provider": "OpenAI Codex desktop collaboration host",
+			"model": "gpt-6-astra",
+			"configuration": {
+				"runtimeVersion": "0.158.0-alpha.2.1",
+				"reasoningEffort": "ultra",
+				"skillDiscovery": "Explicit .agents/skills SKILL.md invocation and shared references in independent candidate copies",
+				"sessions": [
+					{
+						"agentPath": "/root/verify_run_two",
+						"sessionId": "01a0dfc1-7be0-7690-8371-a50f35e103ca",
+						"runtimeVersion": "0.158.0-alpha.2.1",
+						"provider": "openai",
+						"model": "gpt-6-astra",
+						"effort": "ultra"
+					},
+					{
+						"agentPath": "/root/behavior_run_two",
+						"sessionId": "01a0dfa5-9b67-7b32-82e7-e5dfb710d7ee",
+						"runtimeVersion": "0.158.0-alpha.2.1",
+						"provider": "openai",
+						"model": "gpt-6-astra",
+						"effort": "ultra"
+					},
+					{
+						"agentPath": "/root",
+						"sessionId": "01a0df99-170d-7823-8b69-9b509adbeadf",
+						"runtimeVersion": "0.158.0-alpha.2.1",
+						"provider": "openai",
+						"model": "gpt-6-astra",
+						"effort": "ultra"
+					}
+				],
+				"isolation": "Separate source copies/dependency installs and author instructions; shared host sandbox, no per-agent filesystem enforcement",
+				"mode": "Supervised independent trials with retained repair feedback and source no-op repeats"
+			},
+			"sourceFiles": 366,
+			"sourceHashesSha256": "bc326df2fc704881b7a4794dff28b06ede96ae8cd0778c7b89083cb8040969b3",
+			"sourceDiff": "artifacts/phase4/release-verified/run-2/source.diff",
+			"sourceDiffSha256": "ade794fd0a6bee8e7ddbfd28cc6248b3e0add7695aa3bc0e73a7e77327aa5e2b",
+			"transcript": "artifacts/phase4/release-verified/run-2/agent-transcript.md",
+			"transcriptSha256": "dd393f8ffaecf7d6e8a8a3bd644342b2434b4a4cc59de4834992745407936a0b",
+			"repeatedSourceFiles": 366,
+			"repeatBeforeSha256": "491f6d244fee69e8976a00ecaa6fb18d81ce1078ba702e30774d8396dc7a028a",
+			"structuredReports": "artifacts/phase4/release-verified/run-2/structured-reports.json",
+			"structuredReportsSha256": "086c4058b5c4be72fc9a5d2dcf7df82480aa5cba0ff9a779a07041747594a3f7",
+			"customFiles": {
+				"CUSTOM-NOTES.md": "3c9b72850bdf4faf512a1a54e013c002e729714672c695e3cb52dbea919f9a02",
+				"packages/db/src/task-customization.ts": "3711a5f6b95ff8848c1539f12dc6c84e9a5c9c59b0ea673290fbea20ef14c33b"
+			},
+			"tasks": {
+				"task-01": [
+					{
+						"passed": true,
+						"exitCode": 0,
+						"timedOut": false,
+						"log": "artifacts/phase4/release-verified/run-2/logs/1790462928953-f2363761-def0-471d-9d34-408882ca9db7-task-01-behavior-01.log",
+						"sha256": "740ce020647f73023eed85390a14bac9346e51293ee80c62cceafca29c99cbfa",
+						"observedCounts": [
+							"Test Files  2 passed (2)",
+							"Tests  16 passed (16)"
+						]
+					}
+				],
+				"task-02": [
+					{
+						"passed": true,
+						"exitCode": 0,
+						"timedOut": false,
+						"log": "artifacts/phase4/release-verified/run-2/logs/1790462928953-f2363761-def0-471d-9d34-408882ca9db7-task-02-behavior-02.log",
+						"sha256": "dd9b2a009089ede3c6309cfcc5f2fce74327436a34481970f7f82be8be1ffac1",
+						"observedCounts": [
+							"Test Files  1 passed (1)",
+							"Tests  1 passed | 8 skipped (9)"
+						]
+					}
+				],
+				"task-03": [
+					{
+						"passed": true,
+						"exitCode": 0,
+						"timedOut": false,
+						"log": "artifacts/phase4/release-verified/run-2/logs/1790462928953-f2363761-def0-471d-9d34-408882ca9db7-task-03-behavior-03.log",
+						"sha256": "8df1e74d4ae72137cabcff10e3b55736f0f97e57c8400d04ebe378f19fbdd0ab",
+						"observedCounts": [
+							"Test Files  1 passed (1)",
+							"Tests  2 passed | 7 skipped (9)"
+						]
+					}
+				],
+				"task-04": [
+					{
+						"passed": true,
+						"exitCode": 0,
+						"timedOut": false,
+						"log": "artifacts/phase4/release-verified/run-2/logs/1790462928953-f2363761-def0-471d-9d34-408882ca9db7-task-04-behavior-04.log",
+						"sha256": "49c48769048fa26314e7066be28036e4fabd1b38763d8941581ff1a2493841fe",
+						"observedCounts": [
+							"Test Files  1 passed (1)",
+							"Tests  1 passed | 8 skipped (9)",
+							"Test Files  6 passed (6)",
+							"Tests  37 passed (37)",
+							"Test Files  2 passed (2)",
+							"Tests  23 passed (23)"
+						]
+					}
+				],
+				"task-05": [
+					{
+						"passed": true,
+						"exitCode": 0,
+						"timedOut": false,
+						"log": "artifacts/phase4/release-verified/run-2/logs/1790462928953-f2363761-def0-471d-9d34-408882ca9db7-task-05-behavior-05.log",
+						"sha256": "c23c2ab08e3982dda672259225516ba8bd4b86c6c0818b239aa8ca766c6b1690",
+						"observedCounts": [
+							"Test Files  1 passed (1)",
+							"Tests  1 passed | 8 skipped (9)"
+						]
+					}
+				],
+				"task-06": [
+					{
+						"passed": true,
+						"exitCode": 0,
+						"timedOut": false,
+						"log": "artifacts/phase4/release-verified/run-2/logs/1790462928953-f2363761-def0-471d-9d34-408882ca9db7-task-06-behavior-06.log",
+						"sha256": "d02fb64d402e281da0a6865dfdb2766e160fad15683a5806585dab66a5b89a55",
+						"observedCounts": [
+							"Test Files  1 passed (1)",
+							"Tests  1 passed | 8 skipped (9)",
+							"Test Files  1 passed (1)",
+							"Tests  20 passed (20)"
+						]
+					}
+				],
+				"task-07": [
+					{
+						"passed": true,
+						"exitCode": 0,
+						"timedOut": false,
+						"log": "artifacts/phase4/release-verified/run-2/logs/1790462928953-f2363761-def0-471d-9d34-408882ca9db7-task-07-behavior-07.log",
+						"sha256": "6040ea93ed5807defd7113e61510db9f8e7686db3d6016c4535c15715b71a723",
+						"observedCounts": [
+							"Test Files  1 passed (1)",
+							"Tests  2 passed | 7 skipped (9)"
+						]
+					}
+				],
+				"task-08": [
+					{
+						"passed": true,
+						"exitCode": 0,
+						"timedOut": false,
+						"log": "artifacts/phase4/release-verified/run-2/logs/1790462928953-f2363761-def0-471d-9d34-408882ca9db7-task-08-behavior-08.log",
+						"sha256": "7a4e580fd7f978c5b0dcbebe236816589143ebcfe01474cc58e3d6eababe559f",
+						"observedCounts": []
+					}
+				],
+				"task-09": [
+					{
+						"passed": true,
+						"exitCode": 0,
+						"timedOut": false,
+						"log": "artifacts/phase4/release-verified/run-2/logs/1790462928953-f2363761-def0-471d-9d34-408882ca9db7-task-09-behavior-09.log",
+						"sha256": "69dc65de77d9fa4ef687426d5c08e3b0134e4f3b202cd9919a1f5d8e88658473",
+						"observedCounts": [
+							"Test Files  1 passed (1)",
+							"Tests  1 passed | 8 skipped (9)",
+							"13 passed (6.6s)",
+							"1 passed (2.4s)"
+						]
+					}
+				],
+				"task-10": [
+					{
+						"passed": true,
+						"exitCode": 0,
+						"timedOut": false,
+						"log": "artifacts/phase4/release-verified/run-2/logs/1790462928953-f2363761-def0-471d-9d34-408882ca9db7-task-10-behavior-10.log",
+						"sha256": "207c135d793134cba26b0713313d412ce5445de3b0794aa86720d5db93a6b392",
+						"observedCounts": []
+					}
+				]
+			},
+			"applicationChecks": [
+				{
+					"passed": true,
+					"exitCode": 0,
+					"timedOut": false,
+					"log": "artifacts/phase4/release-verified/run-2/logs/1790462928953-f2363761-def0-471d-9d34-408882ca9db7-application-typecheck.log",
+					"sha256": "283777e737ed818c3ac2afe263a43436879ee916ad1bf9f2078ee3f16a913ca9",
+					"observedCounts": []
+				},
+				{
+					"passed": true,
+					"exitCode": 0,
+					"timedOut": false,
+					"log": "artifacts/phase4/release-verified/run-2/logs/1790462928953-f2363761-def0-471d-9d34-408882ca9db7-application-unit.log",
+					"sha256": "10bc18dea9df1b26751e704893825fc5f2c1a07f1ef338d4b230fc64cb20bcd6",
+					"observedCounts": [
+						"Test Files  14 passed (14)",
+						"Tests  89 passed (89)"
+					]
+				},
+				{
+					"passed": true,
+					"exitCode": 0,
+					"timedOut": false,
+					"log": "artifacts/phase4/release-verified/run-2/logs/1790462928953-f2363761-def0-471d-9d34-408882ca9db7-application-build.log",
+					"sha256": "3807c1e9590d7717af6eea43b8ab295129873bc7269cb2653a171362820c19e8",
+					"observedCounts": ["Tasks:    1 successful, 1 total"]
+				}
+			],
+			"seededReview": {
+				"evaluator": "independent-controller",
+				"recordedAt": "2026-09-26T22:36:46.675Z",
+				"transcript": "review-transcript.jsonl",
+				"transcriptSha256": "dd393f8ffaecf7d6e8a8a3bd644342b2434b4a4cc59de4834992745407936a0b",
+				"seededSource": "review-source.json",
+				"seededSourceSha256": "fc95f3cee1006836ff2d45b4c89ad36343484fc67801aa086155f3736c7b2be6",
+				"agentReport": "review-agent-report.md",
+				"agentReportSha256": "1c6cb18cd428df31df0e77c572f83ab64f0520cb181bac239ae650b30dbe85d4",
+				"findings": [
+					{
+						"case": "missing-rls",
+						"detected": true,
+						"sourceFile": "candidate/artifacts/phase4-review/schema.sql",
+						"behaviorEvidence": "review-missing-rls.log",
+						"behaviorEvidenceSha256": "60902100b55d40a4928b2147913d67ada8fc9a78f4008eac93b53d5cd3e0003d",
+						"agentFinding": "Reviewer reproduced tenant rows visible to restricted web SQL without tenant context.",
+						"testExitCode": 1
+					},
+					{
+						"case": "dto-leak",
+						"detected": true,
+						"sourceFile": "candidate/artifacts/phase4-review/contracts.mjs",
+						"behaviorEvidence": "review-dto-leak.log",
+						"behaviorEvidenceSha256": "d4925515bdd80afcecf865b8a12dd7833d74a513e2d7c2e3be6c6511f08e6536",
+						"agentFinding": "Reviewer reproduced public serialization retaining internal_note and organization_id.",
+						"testExitCode": 1
+					},
+					{
+						"case": "missing-permission",
+						"detected": true,
+						"sourceFile": "candidate/artifacts/phase4-review/service.mjs",
+						"behaviorEvidence": "review-missing-permission.log",
+						"behaviorEvidenceSha256": "b5f0ed842345181ff9769dcdc0a059c623141b6e7b5a211ee52f898c08471f2b",
+						"agentFinding": "Reviewer reproduced a member denied the private parent Project receiving its Widget.",
+						"testExitCode": 1
+					}
+				]
+			}
+		}
+	],
+	"rootChecks": {
+		"unitCases": 105,
+		"focusedUnitCases": 37,
+		"realServiceCases": 92,
+		"report": {
+			"schemaVersion": 1,
+			"startedAt": "2026-09-26T22:44:40.393Z",
+			"base": "HEAD",
+			"mode": "static-and-behavioral",
+			"artifactDirectory": "artifacts/phase4/checks/1790462680393-ca98ca47-3f72-45a2-b612-b00709c77079",
+			"failures": [],
+			"checks": [
+				{
+					"name": "skill-discovery-and-references",
+					"status": "passed"
+				},
+				{
+					"name": "migration-history",
+					"status": "passed"
+				},
+				{
+					"name": "dto-input-allowlists",
+					"status": "passed"
+				},
+				{
+					"name": "endpoint-principal-declarations",
+					"status": "passed"
+				},
+				{
+					"name": "guard-negative-controls",
+					"status": "passed",
+					"log": "artifacts/phase4/checks/1790462680393-ca98ca47-3f72-45a2-b612-b00709c77079/guard-negative-controls.log"
+				},
+				{
+					"name": "real-service-boundaries",
+					"status": "passed",
+					"log": "artifacts/phase4/checks/1790462680393-ca98ca47-3f72-45a2-b612-b00709c77079/real-service-boundaries.log"
+				}
+			]
+		},
+		"logs": {
+			"check-final.log": {
+				"file": "artifacts/phase4/check-final.log",
+				"sha256": "907c41d8aa3614367cbde928d4faf5ed5754f8205a06176678a0492b9a3e9e9a"
+			},
+			"typecheck-final.log": {
+				"file": "artifacts/phase4/typecheck-final.log",
+				"sha256": "283777e737ed818c3ac2afe263a43436879ee916ad1bf9f2078ee3f16a913ca9"
+			},
+			"knip-final.log": {
+				"file": "artifacts/phase4/knip-final.log",
+				"sha256": "cdfc5fca5678e62e6a4571f5e55652910a0307746679c20ec62332598c3cc4dc"
+			},
+			"unit-final.log": {
+				"file": "artifacts/phase4/unit-final.log",
+				"sha256": "491bcf9c2b102bbdf1695cabc1b9f54405cc5a700d616faf1c45cad6ed4d03b4"
+			},
+			"build-no-env-forced.log": {
+				"file": "artifacts/phase4/build-no-env-forced.log",
+				"sha256": "ae77eb8ed164da0590da1863271d245fffe6cb6de8d5132fecf99998721780fe"
+			}
+		},
+		"sourceLog": "artifacts/phase4/check-final.log",
+		"typecheckLog": "artifacts/phase4/typecheck-final.log",
+		"knipLog": "artifacts/phase4/knip-final.log",
+		"unitLog": "artifacts/phase4/unit-final.log",
+		"buildLog": "artifacts/phase4/build-no-env-forced.log"
+	},
+	"unrun": [
+		"Phase 3 benchmark and performance smoke (explicit user exclusion)",
+		"image acceptance",
+		"vulnerability scans",
+		"remote GitHub CI"
+	],
+	"prerequisiteException": {
+		"requirement": "R-AUTHZ-PERF",
+		"status": "pending",
+		"reason": "Explicit user instruction to skip missing Phase 3 benchmark; the full Foundation milestone remains open"
+	},
+	"artifactPolicy": "Full local source, public transcripts, control snapshots and logs remain under ignored artifacts/phase4/release-verified. This index is versioned evidence metadata, not a remote artifact upload."
+}

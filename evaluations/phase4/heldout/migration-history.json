@@ -1,0 +1,16 @@
+{
+	"packages/db/migrations/0005_tenant_event_integrity.sql": "7a870afdf0315a2e92af4174b94b9b2f4a5240268c613a2541a5fd1ffaf83d0e",
+	"packages/db/migrations/0000_foundation.sql": "ee613dc9182874023e4ad91fc0e7115d875bea42c18d71f5f29c4997fcca69a8",
+	"packages/db/migrations/0003_authorization.sql": "19737cde33709eb4be0d02cfcea5e3cc1d5bb50f891326f9379193f1e873deba",
+	"packages/db/migrations/0004_identity.sql": "22122bdfeeace635d752bd4e693a4eb8925fd6710127de497c9babd9ab84c008",
+	"packages/db/migrations/0001_durable_probes.sql": "fa9d608178e0b9123be85a682b7d619179436a18f92d1b6f01e97ed525adcfcb",
+	"packages/db/migrations/0002_tenancy.sql": "696eed214e46327652540c681c4e174259058d9e4b52995cc60159ec18405ec0",
+	"packages/db/migrations/0006_resources.sql": "eb2988232453457b859db4318dc07b4ce6dfa2bd123d93fe19a53d1a0b413c49",
+	"packages/db/migrations/meta/0003_snapshot.json": "58c8d581674d662728890face899175fa1ade44784c79caa419ed30ae15927f4",
+	"packages/db/migrations/meta/0004_snapshot.json": "02c4c669c79d8274e3b44825f5e139305e2f4d3a3296a4258506b1959e550d54",
+	"packages/db/migrations/meta/0000_snapshot.json": "cbcddba533b5d5b430acc9ce543f634c5b67884859d483ca32367bf36ae17a75",
+	"packages/db/migrations/meta/0001_snapshot.json": "64c766026901553e96057aa9641811185577b6b15e1e8c3cae9920969123c004",
+	"packages/db/migrations/meta/0005_snapshot.json": "32883518ee0347d1f5bc1550c88f7593b06efdfbee8a049aee3a4f0e566a4089",
+	"packages/db/migrations/meta/0002_snapshot.json": "66effc21f8d8e64d22a95c17c7cf93cfc80ac8a7beaca93f04de7714b1a183e9",
+	"packages/db/migrations/meta/0006_snapshot.json": "a433bbd5b998fab8f35d9e76848cd778252f7be39e91988c2de5094dd58cffcc"
+}

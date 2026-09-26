@@ -12,6 +12,8 @@ Phase 1 repository/runtime implementation and its verification record are docume
 
 Phase 3's Foundation exit gate remains pending. The 2026-09-26 run met its measured thresholds, but a later audit found that repeated move calls kept the same parent, so it does not satisfy the required sustained parent-change workload. The harness now alternates each Project's confirmed parent and validates/counts real changes; the corrected full 30-minute run has not been executed. The linked acceptance record separates current correctness verification from historical image/performance evidence. Later commercial modules and image performance hardening remain scheduled below.
 
+Phase 4's [authoring skills and deterministic checks](phase4/README.md) pass the local `R-SKILLS` gate: all ten required behavior tasks pass in both independently authored candidates, with source preservation, real-service checks and application validation. Its [acceptance record](phase4/acceptance.md) links the repeat evidence and limitations. Execution uses an explicit user exception to the missing Phase 3 benchmark prerequisite; neither the benchmark nor a smoke substitute is run, and `R-AUTHZ-PERF` and the complete Foundation milestone remain pending.
+
 ## 6.2 Phases and acceptance gates
 
 | Phase | Deliverables | Depends on | Exit gate | Effort estimate |

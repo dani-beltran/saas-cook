@@ -9,6 +9,7 @@ const config: KnipConfig = {
 				"scripts/phase0/{api-smoke,toolchain}.ts",
 				"scripts/phase1/{authz-validate,build-runtime,command,dev,image-test,security-scan}.ts",
 				"scripts/phase1/**/*.test.ts",
+				"scripts/phase4/**/*.test.ts",
 				"spikes/phase0/**/*.test.{ts,tsx}",
 				"infra/docker/{entrypoint.mjs,healthcheck.cjs,supervisor.ts}",
 			],

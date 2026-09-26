@@ -1,6 +1,6 @@
 # Working in this repository
 
-This is the Phase 3 Common SaaS foundation. `docs/06-delivery-roadmap.md` is the acceptance register. Read the relevant architecture and data-model contracts before changing a boundary. Phase 0 evidence is retained in `spikes/phase0` and `docs/phase0`; its benchmark and fixtures are not production application code.
+This is the Common SaaS foundation with Phase 4 repository-local authoring skills. `docs/06-delivery-roadmap.md` is the acceptance register. Read the relevant architecture and data-model contracts before changing a boundary. Phase 0 evidence is retained in `spikes/phase0` and `docs/phase0`; its benchmark and fixtures are not production application code.
 
 ## Stack and layout
 
@@ -36,6 +36,8 @@ Run commands from the repository root. Copy `.env.example` for the documented lo
 | Browser | `bun run build`, then `bun run test:e2e` |
 | Stories | `bun run storybook` / `bun run storybook:build` |
 | Selected model compatibility | `bun run authz:validate` |
+| Skill contracts / migration and real-service boundaries | `bun run skills:check` (`--static` for source-only checks) |
+| Isolated skill behavior evaluation | `bun run skills:evaluate` (see `docs/phase4/evaluation.md`) |
 | Production build | `bun run build` |
 | Image acceptance | `bun run image:build`, then `bun run test:image` |
 | Vulnerability checks | `bun run security:scan dependencies` / `bun run security:scan image common-sass:phase2` |
@@ -60,3 +62,9 @@ Do not modify applied migration history. Add a reviewed migration, test a fresh 
 Knip discovers framework routes, stories, test suites, package exports and command entries. Keep exceptions exact, explained and limited to retained Phase 0 compatibility fixtures or framework-required dependencies; do not ignore entire new packages. Biome excludes the frozen Phase 0 sources and evidence to avoid rewriting historical artifacts; all new application and tooling code is checked. Preserve Phase 0 behavior and run its own Vitest config for changes affecting it.
 
 CI runs source, unit, integration, browser, Storybook, production build and image jobs on PRs and actual `main` commits, with a final `required` gate. Do not describe unrun jobs or deferred capabilities as passed. High/critical dependency and image findings block under `security/README.md`; exceptions require exact scope, review, owner and expiry. Retain diagnostic artifacts when a check fails.
+
+## Feature authoring skills
+
+Canonical skills live in `.agents/skills`: `saas-bootstrap`, `saas-add-feature`, `saas-evolve-feature`, `saas-add-dashboard-page`, `saas-add-email` and `saas-verify-feature`. Read the relevant skill when starting that workflow. [Discovery and manual adapters](docs/development/agent-skills.md) keep one source; [feature workflow](docs/development/feature-workflow.md) maps the actual implementation. Record material product decisions in `feature-briefs/` without introducing an entity DSL or source regeneration.
+
+Feature code stays developer-owned. Inspect actual source, customizations and migration state on resume; satisfied repeated requests add no duplicate migrations or registrations. [Module availability](docs/development/module-availability.md) distinguishes local Foundation services from unimplemented commercial modules. Unknown dependencies fail closed. [Verification](docs/development/verification.md) separates deterministic application checks from live-agent behavior evaluations; neither replaces the other. Evaluator expectations and initial migration/source hashes stay outside candidate edits.

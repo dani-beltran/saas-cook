@@ -1,0 +1,145 @@
+{
+	"version": 1,
+	"tasks": [
+		{
+			"id": "task-01",
+			"brief": "task-01.md",
+			"checks": [
+				{
+					"id": "behavior-01",
+					"argv": ["node", "{evaluators}/check.mjs", "task-01"],
+					"caseIds": ["task-01"],
+					"timeoutMs": 900000
+				}
+			]
+		},
+		{
+			"id": "task-02",
+			"brief": "task-02.md",
+			"checks": [
+				{
+					"id": "behavior-02",
+					"argv": ["node", "{evaluators}/check.mjs", "task-02"],
+					"caseIds": ["task-02"],
+					"timeoutMs": 900000
+				}
+			]
+		},
+		{
+			"id": "task-03",
+			"brief": "task-03.md",
+			"checks": [
+				{
+					"id": "behavior-03",
+					"argv": ["node", "{evaluators}/check.mjs", "task-03"],
+					"caseIds": ["task-03"],
+					"timeoutMs": 900000
+				}
+			]
+		},
+		{
+			"id": "task-04",
+			"brief": "task-04.md",
+			"checks": [
+				{
+					"id": "behavior-04",
+					"argv": ["node", "{evaluators}/check.mjs", "task-04"],
+					"caseIds": ["task-04"],
+					"timeoutMs": 900000
+				}
+			]
+		},
+		{
+			"id": "task-05",
+			"brief": "task-05.md",
+			"checks": [
+				{
+					"id": "behavior-05",
+					"argv": ["node", "{evaluators}/check.mjs", "task-05"],
+					"caseIds": ["task-05"],
+					"timeoutMs": 900000
+				}
+			]
+		},
+		{
+			"id": "task-06",
+			"brief": "task-06.md",
+			"checks": [
+				{
+					"id": "behavior-06",
+					"argv": ["node", "{evaluators}/check.mjs", "task-06"],
+					"caseIds": ["task-06"],
+					"timeoutMs": 900000
+				}
+			]
+		},
+		{
+			"id": "task-07",
+			"brief": "task-07.md",
+			"checks": [
+				{
+					"id": "behavior-07",
+					"argv": ["node", "{evaluators}/check.mjs", "task-07"],
+					"caseIds": ["task-07"],
+					"timeoutMs": 900000
+				}
+			]
+		},
+		{
+			"id": "task-08",
+			"brief": "task-08.md",
+			"checks": [
+				{
+					"id": "behavior-08",
+					"argv": ["node", "{evaluators}/check.mjs", "task-08"],
+					"caseIds": ["task-08"],
+					"timeoutMs": 900000
+				}
+			]
+		},
+		{
+			"id": "task-09",
+			"brief": "task-09.md",
+			"checks": [
+				{
+					"id": "behavior-09",
+					"argv": ["node", "{evaluators}/check.mjs", "task-09"],
+					"caseIds": ["task-09"],
+					"timeoutMs": 900000
+				}
+			]
+		},
+		{
+			"id": "task-10",
+			"brief": "task-10.md",
+			"checks": [
+				{
+					"id": "behavior-10",
+					"argv": ["node", "{evaluators}/check.mjs", "task-10"],
+					"caseIds": ["task-10"],
+					"timeoutMs": 900000
+				}
+			]
+		}
+	],
+	"applicationChecks": [
+		{
+			"id": "typecheck",
+			"argv": ["bun", "run", "typecheck"],
+			"successPattern": "typescript/bin/tsc",
+			"timeoutMs": 900000
+		},
+		{
+			"id": "unit",
+			"argv": ["node", "{evaluators}/application-check.mjs"],
+			"successPattern": "^APPLICATION_UNIT_PASSED=[1-9][0-9]*$",
+			"timeoutMs": 900000
+		},
+		{
+			"id": "build",
+			"argv": ["bun", "run", "build"],
+			"successPattern": "Tasks:[^\\n]*successful",
+			"timeoutMs": 900000
+		}
+	]
+}
