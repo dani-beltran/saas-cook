@@ -147,15 +147,9 @@ export const router = api.router({
 			),
 		),
 		setStatus: api.serviceAccounts.setStatus.handler(({ context, input }) =>
-			humanOperation(context, input.organizationId, async (runtime, actor) => {
-				await runtime.keys.setAccountStatus(
-					actor,
-					input.organizationId,
-					input.id,
-					input.status,
-				);
-				return { ok: true as const };
-			}),
+			humanOperation(context, input.organizationId, (runtime, actor) =>
+				runtime.keys.setAccountStatus(actor, input.organizationId, input),
+			),
 		),
 		issue: api.serviceAccounts.issue.handler(({ context, input }) =>
 			humanOperation(context, input.organizationId, async (runtime, actor) => {

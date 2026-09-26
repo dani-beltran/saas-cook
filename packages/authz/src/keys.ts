@@ -32,6 +32,9 @@ export function createApiKeyService(options: {
 		const client = await options.pool.connect();
 		try {
 			await client.query("BEGIN");
+			await client.query(
+				"SELECT set_config('app.authorization_expires_at','',true)",
+			);
 			await client.query("SET LOCAL statement_timeout='8s'");
 			await client.query("SET LOCAL lock_timeout='5s'");
 			await client.query("SELECT set_config('app.request_id',$1,true)", [
@@ -52,36 +55,36 @@ export function createApiKeyService(options: {
 				org,
 			]);
 			if (actor) {
-				await actor.assertCurrent?.();
 				if (
 					!Number.isFinite(actor.authenticatedAt.getTime()) ||
 					actor.authenticatedAt.getTime() > Date.now() ||
 					Date.now() - actor.authenticatedAt.getTime() > 300_000
 				)
 					throw new ApiKeyError("DENIED");
-				const policy = (
-					await client.query(
-						"SELECT require_mfa,accept_passkey_mfa,required_auth_method FROM tenancy.organizations WHERE id=$1 AND status='active'",
-						[org],
-					)
-				).rows[0];
-				if (
-					!policy ||
-					(policy.require_mfa &&
-						(!actor.mfa ||
-							(actor.method === "passkey" && !policy.accept_passkey_mfa))) ||
-					(policy.required_auth_method &&
-						policy.required_auth_method !== actor.method)
-				)
-					throw new ApiKeyError("DENIED");
-				await options.authorization.authorize(
+				await options.authorization.authorizeResource(
 					client,
-					actor.userId,
+					actor,
 					org,
+					{ type: "organization", id: org },
 					"manage",
 				);
+				// Retain session/membership deadlines and bound fresh authentication too.
+				const eligibility = await client.query<{ eligible: boolean }>(
+					`WITH deadline AS MATERIALIZED (SELECT least(nullif(current_setting('app.authorization_expires_at',true),'')::timestamptz,$1::timestamptz+interval '5 minutes') AS expires_at)
+					SELECT set_config('app.authorization_expires_at',expires_at::text,true),$1::timestamptz<=clock_timestamp() AND expires_at>clock_timestamp() AS eligible FROM deadline`,
+					[actor.authenticatedAt],
+				);
+				if (eligibility.rows[0]?.eligible !== true)
+					throw new ApiKeyError("DENIED");
 			}
 			const result = await work(client);
+			if (actor) {
+				// Natural expiry can occur during domain SQL even while lifecycle fences hold.
+				const validity = await client.query<{ valid: boolean }>(
+					"SELECT nullif(current_setting('app.authorization_expires_at',true),'')::timestamptz>clock_timestamp() AS valid",
+				);
+				if (validity.rows[0]?.valid !== true) throw new ApiKeyError("DENIED");
+			}
 			await client.query("COMMIT");
 			return result;
 		} catch (error) {
@@ -251,8 +254,9 @@ export function createApiKeyService(options: {
 						name: string;
 						status: "active" | "inactive";
 						capabilities: string[];
+						version: number;
 					}>(
-						"SELECT id,name,status,capabilities FROM tenancy.service_accounts WHERE organization_id=$1 AND id=$2",
+						"SELECT id,name,status,capabilities,version FROM tenancy.service_accounts WHERE organization_id=$1 AND id=$2",
 						[org, id],
 					)
 				).rows[0];
@@ -275,6 +279,7 @@ export function createApiKeyService(options: {
 					name: input.name.trim(),
 					status: "active" as const,
 					capabilities: input.capabilities,
+					version: 1,
 				};
 			});
 		},
@@ -343,23 +348,41 @@ export function createApiKeyService(options: {
 		async setAccountStatus(
 			actor: HumanResourceActor,
 			org: string,
-			id: string,
-			status: "active" | "inactive",
+			input: { id: string; status: "active" | "inactive"; version: number },
 		) {
-			if (!["active", "inactive"].includes(status))
+			if (
+				!["active", "inactive"].includes(input.status) ||
+				!Number.isSafeInteger(input.version) ||
+				input.version < 1
+			)
 				throw new ApiKeyError("INVALID");
 			return transaction(org, actor, true, async (client) => {
-				const changed = await client.query(
-					"UPDATE tenancy.service_accounts SET status=$3,version=version+1 WHERE organization_id=$1 AND id=$2 RETURNING id",
-					[org, id, status],
-				);
-				if (!changed.rowCount) throw new ApiKeyError("NOT_FOUND");
-				if (status === "inactive")
+				const account = (
+					await client.query<{
+						id: string;
+						name: string;
+						status: "active" | "inactive";
+						capabilities: string[];
+						version: number;
+					}>(
+						"UPDATE tenancy.service_accounts SET status=$3,version=version+1,updated_at=clock_timestamp() WHERE organization_id=$1 AND id=$2 AND version=$4 RETURNING id,name,status,capabilities,version",
+						[org, input.id, input.status, input.version],
+					)
+				).rows[0];
+				if (!account) throw new ApiKeyError("CONFLICT");
+				if (input.status === "inactive")
 					await client.query(
 						"UPDATE tenancy.api_keys SET revoked_at=coalesce(revoked_at,clock_timestamp()) WHERE organization_id=$1 AND service_account_id=$2",
-						[org, id],
+						[org, input.id],
 					);
-				await audit(client, org, actor.userId, `service_account.${status}`, id);
+				await audit(
+					client,
+					org,
+					actor.userId,
+					`service_account.${input.status}`,
+					input.id,
+				);
+				return account;
 			});
 		},
 	};

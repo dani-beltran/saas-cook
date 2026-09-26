@@ -245,6 +245,7 @@ const accountDto = z.object({
 	name: z.string(),
 	status: z.enum(["active", "inactive"]),
 	capabilities: z.array(z.string()),
+	version,
 });
 const issuedKeyDto = z.object({
 	id: z.uuid(),
@@ -289,9 +290,10 @@ export const serviceAccountContract = {
 				organizationId,
 				id: z.uuid(),
 				status: z.enum(["active", "inactive"]),
+				version,
 			}),
 		)
-		.output(z.object({ ok: z.literal(true) })),
+		.output(accountDto),
 	issue: protectedOperation
 		.route({
 			method: "POST",

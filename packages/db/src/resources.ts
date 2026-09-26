@@ -16,7 +16,7 @@ export type ResourceActor =
 			apiKeyId: string;
 			scopes: readonly string[];
 			token: string;
-			assertCurrent?: () => Promise<void>;
+			assertCurrent?: () => Promise<Date | undefined> | Promise<void>;
 	  };
 export type ResourcePermission =
 	| "read"

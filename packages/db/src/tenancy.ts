@@ -10,7 +10,7 @@ export interface TenantActor {
 	authenticatedAt: Date;
 	mfa: boolean;
 	method: string;
-	assertCurrent?: () => Promise<void>;
+	assertCurrent?: () => Promise<Date | undefined> | Promise<void>;
 }
 export interface ControlPrincipal {
 	operatorId: string;

@@ -31,6 +31,8 @@ Runtime settings are server-only:
 
 Sorted user lifecycle fences precede the organization fence. Reads and ordinary edits hold a shared organization fence; create/delete/restore, sharing, workspace moves and other authorization changes acquire the exclusive fence initially. They never upgrade a shared lock. Protected SQL, expiry verification and commit use the same live connection as the fence. Authoritative source revisions advance atomically with mutations. Publication/readiness is checked again after remote authorization; a late allowed response cannot survive loss of the database transaction. A final database-time guard before commit checks the earliest positive-source expiry across every decision in the transaction, including earlier list batches and both sides of a move.
 
+Human identity validation returns the current session expiry under the lifecycle fence. Resource authorization carries that deadline through remote evaluation and the final transaction guard alongside membership and grant expiry. A session expiring during authorization or later SQL denies the operation and rolls back its changes.
+
 Owners and admins manage tenant content. Ordinary members can create Projects and receive an initial manager grant; membership alone does not reveal another member's private Project. Viewer/editor/manager grants may target a same-tenant membership or non-nested team. Explicit denial prevents an otherwise inherited grant from authorizing that principal. An administrator remains the documented content administrator. Expiring grants use database time, with a second check after remote evaluation. Unsupported graphs and oversized contexts fail closed.
 
 Workspace grants inherit to attached Projects. Moving a Project requires management of the Project and update permission on its source/destination workspace; workspace editors therefore qualify when they also manage the Project. An archived workspace accepts no new assignments. Existing attached resources remain accessible under current grants and may be moved out. Workspace names and lifecycle state use version checks. Parent and owner references use tenant-composite foreign keys.
@@ -44,6 +46,8 @@ Lists search allowlisted Project fields, scan indexed tenant candidates in stabl
 ## Service principals
 
 Human administrators with fresh authentication provision accounts, issue keys, rotate/revoke keys, and deactivate accounts through declared API procedures. Secrets are generated with cryptographic randomness and returned once; only their SHA-256 hashes and display prefixes are stored. Idempotent secret-issuance retries cannot retrieve a previously issued secret. Rotation revokes the old key in the same transaction that creates its replacement.
+
+Key-management transactions use the same current human authorization boundary and retain session, membership and five-minute authentication deadlines through commit. Expiry during later SQL rolls back issuance or rotation and all associated audit/outbox changes. Account creation and retries return the current `version`; status edits through RPC or REST require that expected `version` and return the updated account with its next version. A stale edit returns `409 CONFLICT` without changing account status or revoking credentials.
 
 Organization create/list capabilities are explicit on the service account. Key scopes intersect current account capabilities and explicit resource grants; keys cannot inherit human organization-administrator roles. Every protected operation reloads the current key/account, tenant, expiry and independent recovery epoch under the organization fence. Existing identity, tenancy and human/team-sharing procedures reject service principals unless the procedure explicitly declares support. The key-management API is available in Foundation; customer key-management UI remains Phase 6.
 
@@ -69,8 +73,24 @@ bun run authz:benchmark
 
 The smoke command uses the full 100-tenant/1,000-membership/100,000-Project dataset and 50 concurrent clients but only a short measurement. It cannot satisfy `R-AUTHZ-PERF`. The full benchmark adds a one-minute warm-up and at least 30 measured minutes with no command retries. Half the resources belong to the hot tenant, which receives approximately 80% of traffic; the 60/20/10/10 workload includes sparse cursor traversal, ordinary edits, create/delete, sharing/revocation and parent moves.
 
+Each Project's confirmed parent is tracked independently across warm-up and measurement. Moves alternate between its tenant's two workspaces and validate the returned Project and destination. Reports include `parentMoves` counts for initial assignments, changes between workspaces and each destination. `parentMoves.valid` requires a change for every successful move, both destinations, changes beyond initial assignments and zero invalid moves (including warm-up). The earlier same-parent workload cannot satisfy this gate.
+
 Twenty-five clients use RPC and twenty-five use REST through the actual in-process handlers, with real signed Better Auth sessions, Zod validation, DTO serialization and the normal runtime's restricted database pools. Request timings include pool queueing and all authorization work. They exclude external TCP and the Next.js route wrapper, which the separate browser suite exercises. Reports retain source fingerprints, versions, container limits, database/WAL growth, graph tuple counts, first-attempt outcomes, latency, fence waits, source readiness and create-to-readable timing under `artifacts/phase3/`. A run interrupted by a signal leaves a partial report and cannot pass the gate.
 
 Workload counts and throughput use client operations: create includes its first authorized read, and revoke includes a subsequent denied read. The write latency therefore includes those extra calls, and deliberate revocation denials are counted separately. The dedicated create-to-readable and revocation metrics cover the complete corresponding workflow. There are no retries or permission caches in the measured path.
 
 Prevent host sleep during the full run (on macOS, use `caffeinate -i bun run authz:benchmark`). The harness rejects a long event-loop pause instead of treating suspended wall time as sustained load. A client starts a fresh list query when its saved cursor has been idle for five minutes, before the server's 15-minute cursor expiry; active sparse scans continue normally. This is planned cursor lifecycle handling, not a retry of a failed operation.
+
+### Run the full performance gate
+
+From the repository root, use Node **24.19.0**, Bun **1.4.2** and a running Docker daemon. Create `.env` from `.env.example` if it does not already exist, then run:
+
+```sh
+bun install --frozen-lockfile
+bun run services:up
+caffeinate -i bun run authz:benchmark
+```
+
+On systems without macOS `caffeinate`, run `bun run authz:benchmark` with host sleep disabled. Allow for fixture setup, a 60-second warm-up and at least 30 measured minutes. Keep the source unchanged and do not run competing builds, tests or benchmarks during measurement. No development server or application build is required. The fixture creates, migrates and bootstraps isolated application/control databases and cleans them up afterward; it does not initialize or reset the ordinary development application. Database administrator overrides (`TEST_DATABASE_ADMIN_URL`, `TEST_CONTROL_ADMIN_URL`) and `OPENFGA_API_URL` must refer to disposable local services.
+
+Inspect `artifacts/phase3/authorization-benchmark-<run-id>.json` for the retained run and `artifacts/phase3/authorization-benchmark.json` for the latest finalized report. Acceptance requires exit code zero, `status: "passed"`, `parentMoves.valid: true`, at least 1,800 measured seconds and `source.sourceStable: true`. Interruptions retain timestamped diagnostics and cannot pass; use the run ID and timestamp to avoid mistaking an older report for the current attempt. A smoke result is never full performance acceptance. Update the acceptance record with the new report and fingerprint only after the corrected full run passes.

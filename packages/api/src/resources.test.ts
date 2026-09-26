@@ -1,4 +1,4 @@
-import { ResourceAuthorizationDenied } from "@common-saas/authz";
+import { ApiKeyError, ResourceAuthorizationDenied } from "@common-saas/authz";
 import { ResourceError } from "@common-saas/db/resources";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { handleApi, specification } from "./handlers";
@@ -48,7 +48,11 @@ const fixture = vi.hoisted(() => {
 			listProjects: vi.fn(async () => ({ items: [project], nextCursor: null })),
 			grant: vi.fn(async () => ({ id })),
 		},
-		keys: { authenticate: vi.fn(async () => service), createAccount: vi.fn() },
+		keys: {
+			authenticate: vi.fn(async () => service),
+			createAccount: vi.fn(),
+			setAccountStatus: vi.fn(),
+		},
 	};
 	return { organizationId, id, project, human, service, runtime };
 });
@@ -238,6 +242,62 @@ for (const transport of ["rpc", "rest"] as const) {
 			});
 			expect(result.response.status).toBe(413);
 			expect(fixture.runtime.identity.session).not.toHaveBeenCalled();
+		});
+		it("requires an account version and exposes the next version or a conflict", async () => {
+			const account = {
+				id: fixture.service.serviceAccountId,
+				name: "Automation",
+				status: "inactive",
+				capabilities: ["project:read"],
+				version: 2,
+			};
+			async function status(input: Record<string, unknown>) {
+				const response = await handleApi(
+					new Request(
+						transport === "rpc"
+							? "http://localhost/api/rpc/serviceAccounts/setStatus"
+							: `http://localhost/api/v1/organizations/${fixture.organizationId}/service-accounts/${account.id}`,
+						{
+							method: transport === "rpc" ? "POST" : "PATCH",
+							headers: {
+								"content-type": "application/json",
+								cookie: "synthetic",
+								origin: "http://localhost",
+							},
+							body: JSON.stringify(
+								transport === "rpc" ? { json: input } : input,
+							),
+						},
+					),
+					transport,
+				);
+				const body = await response.json();
+				return {
+					status: response.status,
+					body: transport === "rpc" ? body.json : body,
+				};
+			}
+			const input = {
+				organizationId: fixture.organizationId,
+				id: account.id,
+				status: "inactive",
+			};
+			expect((await status(input)).status).toBe(422);
+			expect(fixture.runtime.keys.setAccountStatus).not.toHaveBeenCalled();
+			fixture.runtime.keys.setAccountStatus.mockResolvedValueOnce(account);
+			expect(await status({ ...input, version: 1 })).toEqual({
+				status: 200,
+				body: account,
+			});
+			expect(fixture.runtime.keys.setAccountStatus).toHaveBeenCalledWith(
+				expect.objectContaining({ userId: fixture.human.userId }),
+				fixture.organizationId,
+				{ ...input, version: 1 },
+			);
+			fixture.runtime.keys.setAccountStatus.mockRejectedValueOnce(
+				new ApiKeyError("CONFLICT"),
+			);
+			expect((await status({ ...input, version: 1 })).status).toBe(409);
 		});
 	});
 }

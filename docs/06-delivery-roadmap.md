@@ -10,7 +10,7 @@ The [September 23 authorization rerun](phase0/authorization.md#rerun-with-increa
 
 Phase 1 repository/runtime implementation and its verification record are documented in [the Phase 1 guide](phase1/README.md). Phase 2 adds production identity, tenancy, contextual authorization and initialization; its [acceptance record](phase2/acceptance.md) maps the implemented services and executed checks to the Phase 2 gates. The [Phase 3 implementation and acceptance record](phase3/acceptance.md) tracks resource authorization, Projects, workspaces, service keys, capacity and the required real-feature performance gate.
 
-Phase 3's Foundation exit gate passed on 2026-09-26, including both API transports and the full 30-minute real-feature workload. The linked acceptance record preserves the implementation fingerprint, measured results, executed checks and earlier failed/interrupted diagnostics. Later commercial modules and image performance hardening remain scheduled below.
+Phase 3's Foundation exit gate remains pending. The 2026-09-26 run met its measured thresholds, but a later audit found that repeated move calls kept the same parent, so it does not satisfy the required sustained parent-change workload. The harness now alternates each Project's confirmed parent and validates/counts real changes; the corrected full 30-minute run has not been executed. The linked acceptance record separates current correctness verification from historical image/performance evidence. Later commercial modules and image performance hardening remain scheduled below.
 
 ## 6.2 Phases and acceptance gates
 

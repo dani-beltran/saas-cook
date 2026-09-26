@@ -652,13 +652,13 @@ CASE WHEN pg_input_is_valid(value,'jsonb') THEN value::jsonb->>'userId'=$1 OR va
 			twoFactorEnabled: row.two_factor_enabled,
 		});
 	}
-	/** Called while the caller holds the canonical shared user fence. Never refreshes cookies or acquires another lock. */
-	async function assertCurrent(actor: SessionIdentity) {
+	/** Under the caller's shared user fence, return the current session deadline for the protected transaction. */
+	async function assertCurrent(actor: SessionIdentity): Promise<Date> {
 		const epoch = await ready();
 		if (epoch !== actor.recoveryEpoch)
 			throw new Error("Identity recovery unavailable");
-		const current = await pool.query(
-			`SELECT 1 FROM identity.session s JOIN identity."user" u ON u.id=s.user_id
+		const current = await pool.query<{ expires_at: Date }>(
+			`SELECT s.expires_at FROM identity.session s JOIN identity."user" u ON u.id=s.user_id
    WHERE s.id=$1 AND s.user_id=$2 AND s.credential_epoch=$3 AND s.credential_epoch=u.credential_epoch
    AND date_trunc('milliseconds',s.authenticated_at)=$4 AND s.authentication_method=$5 AND s.mfa=$6
    AND s.recovery_epoch=$7 AND s.expires_at>now() AND u.lifecycle_status='active' AND u.email_verified
@@ -673,7 +673,10 @@ CASE WHEN pg_input_is_valid(value,'jsonb') THEN value::jsonb->>'userId'=$1 OR va
 				epoch,
 			],
 		);
-		if (current.rowCount !== 1) throw new Error("Session no longer active");
+		const deadline = current.rows[0]?.expires_at;
+		if (current.rowCount !== 1 || !deadline)
+			throw new Error("Session no longer active");
+		return deadline;
 	}
 
 	async function throttle(key: string, max = 8) {

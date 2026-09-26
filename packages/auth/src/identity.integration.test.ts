@@ -894,6 +894,31 @@ SELECT gen_random_uuid()::text,'Synthetic unattributed user','untrusted-'||index
 			assuranceBefore?.authenticatedAt.getTime(),
 		);
 	});
+	it("returns the current authoritative session expiry under the lifecycle fence", async () => {
+		const actor = await runtime.session(
+			new Headers({ cookie: signedInCookie }),
+		);
+		if (!actor) throw new Error("Missing test session");
+		const expected = (
+			await pool.query<{ expires_at: Date }>(
+				"UPDATE identity.session SET expires_at=clock_timestamp()+interval '1 hour' WHERE id=$1 RETURNING expires_at",
+				[actor.sessionId],
+			)
+		).rows[0]?.expires_at;
+		const transaction = await pool.connect();
+		try {
+			await transaction.query("BEGIN");
+			await transaction.query(
+				"SELECT pg_advisory_xact_lock_shared(hashtextextended('user:'||$1,0))",
+				[actor.userId],
+			);
+			expect(await runtime.assertCurrent(actor)).toEqual(expected);
+			await transaction.query("COMMIT");
+		} finally {
+			await transaction.query("ROLLBACK");
+			transaction.release();
+		}
+	});
 	it("drains a fenced in-flight request before session revocation and rejects the original immutable actor afterwards", async () => {
 		const actor = await runtime.session(
 			new Headers({ cookie: signedInCookie }),

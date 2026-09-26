@@ -104,6 +104,11 @@ const routes = {
 		path: (input: Record<string, unknown>) =>
 			`/organizations/${input.organizationId}/api-keys`,
 	},
+	"serviceAccounts.setStatus": {
+		method: "PATCH",
+		path: (input: Record<string, unknown>) =>
+			`/organizations/${input.organizationId}/service-accounts/${input.id}`,
+	},
 	"serviceAccounts.rotate": {
 		method: "POST",
 		path: (input: Record<string, unknown>) =>
@@ -367,6 +372,117 @@ for (const transport of ["rpc", "rest"] as const) {
 						"projects.get",
 						{ organizationId, id: project.body.id },
 						{ cookie: "synthetic-member" },
+					)
+				).status,
+			).toBe(403);
+		});
+		it("rejects missing and stale account versions without lifecycle, credential or audit changes", async () => {
+			const command = {
+				organizationId,
+				name: `Versioned ${transport}`,
+				operationKey: randomUUID(),
+				capabilities: ["project:read"],
+			};
+			const created = await call("serviceAccounts.create", command);
+			expect(created.status, JSON.stringify(created.body)).toBe(200);
+			expect(created.body.version).toBe(1);
+			expect((await call("serviceAccounts.create", command)).body).toEqual(
+				created.body,
+			);
+			const id = created.body.id;
+			const issued = await call("serviceAccounts.issue", {
+				organizationId,
+				serviceAccountId: id,
+				operationKey: randomUUID(),
+				scopes: ["project:read"],
+				expiresAt: new Date(Date.now() + 60_000).toISOString(),
+			});
+			expect(issued.status).toBe(200);
+			async function snapshot() {
+				return (
+					await fixture.app.query(
+						`SELECT s.status,s.version,k.revoked_at,
+				 (SELECT count(*)::integer FROM tenancy.audit_events WHERE organization_id=$1 AND target_id=$2 AND action LIKE 'service_account.%') AS audits,
+				 (SELECT count(*)::integer FROM tenancy.outbox_events WHERE organization_id=$1 AND payload->>'targetId'=$2 AND type LIKE 'service_account.%') AS outbox,
+				 r.desired_revision FROM tenancy.service_accounts s JOIN tenancy.api_keys k ON k.organization_id=s.organization_id AND k.service_account_id=s.id JOIN tenancy.authorization_revisions r ON r.organization_id=s.organization_id WHERE s.organization_id=$1 AND s.id=$2::uuid AND k.id=$3`,
+						[organizationId, id, issued.body.id],
+					)
+				).rows[0];
+			}
+			const initial = await snapshot();
+			expect(
+				(
+					await call("serviceAccounts.setStatus", {
+						organizationId,
+						id,
+						status: "inactive",
+					})
+				).status,
+			).toBe(422);
+			expect(await snapshot()).toEqual(initial);
+			const current = await call("serviceAccounts.setStatus", {
+				organizationId,
+				id,
+				status: "active",
+				version: 1,
+			});
+			expect(current.status).toBe(200);
+			expect(current.body).toEqual({ ...created.body, version: 2 });
+			const live = await snapshot();
+			expect(
+				(
+					await call("serviceAccounts.setStatus", {
+						organizationId,
+						id,
+						status: "inactive",
+						version: 1,
+					})
+				).status,
+			).toBe(409);
+			expect(await snapshot()).toEqual(live);
+			expect(
+				(
+					await call(
+						"projects.list",
+						{ organizationId },
+						{ authorization: `Bearer ${issued.body.secret}` },
+					)
+				).status,
+			).toBe(200);
+			const inactive = await call("serviceAccounts.setStatus", {
+				organizationId,
+				id,
+				status: "inactive",
+				version: 2,
+			});
+			expect(inactive.status).toBe(200);
+			expect(inactive.body).toEqual({
+				...created.body,
+				status: "inactive",
+				version: 3,
+			});
+			const revoked = await snapshot();
+			expect(revoked.revoked_at).not.toBeNull();
+			expect(
+				(
+					await call("serviceAccounts.setStatus", {
+						organizationId,
+						id,
+						status: "active",
+						version: 2,
+					})
+				).status,
+			).toBe(409);
+			expect(await snapshot()).toEqual(revoked);
+			expect((await call("serviceAccounts.create", command)).body).toEqual(
+				inactive.body,
+			);
+			expect(
+				(
+					await call(
+						"projects.list",
+						{ organizationId },
+						{ authorization: `Bearer ${issued.body.secret}` },
 					)
 				).status,
 			).toBe(403);

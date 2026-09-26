@@ -17,6 +17,7 @@ import type { ProjectDto } from "../../packages/api-contracts/src/index";
 import type { TenantActor } from "../../packages/db/src/tenancy";
 import { sourceFingerprint } from "../phase1/source-fingerprint";
 import { resourceFixture } from "./fixture";
+import { ParentMoveWorkload } from "./parent-moves";
 
 const executeFile = promisify(execFile);
 const runId = new Date().toISOString().replace(/[:.]/g, "-");
@@ -25,6 +26,7 @@ let stage = "initialization";
 let measureStartedAt: number | undefined;
 const operationCounts: Record<string, number> = {};
 const failuresByOperation: Record<string, number> = {};
+const parentMoves = new ParentMoveWorkload();
 const revocationFence = new AsyncLocalStorage<boolean>();
 const revocationFenceWait: number[] = [];
 for (const signal of ["SIGINT", "SIGTERM"] as const)
@@ -433,6 +435,9 @@ function partialEvidence(status = "running") {
 		measuredFgaChecks,
 		measuredFgaWrites,
 		mix: operationCounts,
+		parentMoves: parentMoves.evidence(
+			(operationCounts.move ?? 0) - (failuresByOperation.move ?? 0),
+		),
 		firstAttemptSuccessRate: attempts ? successes / attempts : null,
 		durationSeconds: seconds,
 		requestedDurationMs: durationMs,
@@ -506,7 +511,9 @@ const users = organizations.map(() =>
 const memberships = organizations.map(() =>
 	Array.from({ length: 10 }, () => randomUUID()),
 );
-const workspaceIds = organizations.map(() => [randomUUID(), randomUUID()]);
+const workspaceIds = organizations.map(
+	() => [randomUUID(), randomUUID()] as const,
+);
 const projectIds: string[][] = [];
 const actors: TenantActor[][] = users.map((group) =>
 	group.map((userId) => ({
@@ -762,11 +769,17 @@ try {
 							}
 						} else if (sequence % 3 === 0) {
 							operation = "move";
-							const result = await resources.moveProject(actor, org, {
+							const result = await parentMoves.move(
 								id,
-								version: versions.get(tenant) ?? 1,
-								workspaceId: workspaceIds[tenant][sequence % 2],
-							});
+								workspaceIds[tenant],
+								measured,
+								(workspaceId) =>
+									resources.moveProject(actor, org, {
+										id,
+										version: versions.get(tenant) ?? 1,
+										workspaceId,
+									}),
+							);
 							versions.set(tenant, result.version);
 							if (measured) readiness.push(performance.now() - begin);
 						} else {
@@ -856,6 +869,9 @@ try {
 	const successRate = attempts ? successes / attempts : 0;
 	const passed =
 		!interrupted &&
+		parentMoves.evidence(
+			(operationCounts.move ?? 0) - (failuresByOperation.move ?? 0),
+		).valid &&
 		graphAfter.verifiedEmpty &&
 		measuredFgaWrites === 0 &&
 		contextualTupleCounts.length === measuredFgaChecks &&

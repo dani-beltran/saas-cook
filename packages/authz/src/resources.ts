@@ -17,7 +17,7 @@ export interface HumanResourceActor {
 	authenticatedAt: Date;
 	mfa: boolean;
 	method: string;
-	assertCurrent?: () => Promise<void>;
+	assertCurrent?: () => Promise<Date | undefined> | Promise<void>;
 }
 export interface ServiceResourceActor {
 	kind: "service";
@@ -112,7 +112,9 @@ export function createResourceAuthorization(options: {
 			options.installationId,
 		);
 		const isService = "kind" in actor && actor.kind === "service";
-		if (!isService) await actor.assertCurrent?.();
+		const sessionDeadline = isService
+			? undefined
+			: await actor.assertCurrent?.();
 		if (
 			isService &&
 			(actor.organizationId !== organizationId ||
@@ -176,7 +178,7 @@ export function createResourceAuthorization(options: {
 			)
 		).rows[0];
 		if (!source) throw new ResourceAuthorizationDenied();
-		const expirations: Date[] = [];
+		const expirations: Date[] = sessionDeadline ? [sessionDeadline] : [];
 		let actorId: string;
 		let membershipId: string | null = null;
 		let role: Role | undefined;

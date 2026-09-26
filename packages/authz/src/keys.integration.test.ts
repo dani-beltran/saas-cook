@@ -34,6 +34,54 @@ async function fixture() {
 	return { ...f, owner, org, keys, account, issue };
 }
 describe("Phase 3 service accounts and scoped credentials", () => {
+	it("admits one status transition at the expected version under concurrent commands", async () => {
+		const f = await fixture();
+		const key = await f.issue();
+		const results = await Promise.allSettled(
+			(["active", "inactive"] as const).map((status) =>
+				f.keys.setAccountStatus(f.owner, f.org, {
+					id: f.account.id,
+					status,
+					version: f.account.version,
+				}),
+			),
+		);
+		const winner = results.find((result) => result.status === "fulfilled");
+		expect(
+			results.filter((result) => result.status === "fulfilled"),
+		).toHaveLength(1);
+		if (winner?.status !== "fulfilled")
+			throw new Error("Missing status transition");
+		const rejected = results.find((result) => result.status === "rejected");
+		if (rejected?.status !== "rejected")
+			throw new Error("Missing stale rejection");
+		expect(rejected.reason).toMatchObject({ code: "CONFLICT" });
+		expect(winner.value.version).toBe(f.account.version + 1);
+		const row = (
+			await f.app.query(
+				"SELECT status,version FROM tenancy.service_accounts WHERE organization_id=$1 AND id=$2",
+				[f.org, f.account.id],
+			)
+		).rows[0];
+		expect(row).toEqual({
+			status: winner.value.status,
+			version: winner.value.version,
+		});
+		const audit = (
+			await f.app.query(
+				"SELECT count(*)::integer AS count FROM tenancy.audit_events WHERE organization_id=$1 AND target_id=$2 AND action IN ('service_account.active','service_account.inactive')",
+				[f.org, f.account.id],
+			)
+		).rows[0];
+		expect(audit.count).toBe(1);
+		const revoked = (
+			await f.app.query(
+				"SELECT revoked_at IS NOT NULL AS revoked FROM tenancy.api_keys WHERE id=$1",
+				[key.id],
+			)
+		).rows[0].revoked;
+		expect(revoked).toBe(winner.value.status === "inactive");
+	});
 	it("requires current read scope to return a current DTO on a create retry", async () => {
 		const f = await fixture();
 		const key = await f.issue(["project:create"]);
@@ -225,11 +273,19 @@ describe("Phase 3 service accounts and scoped credentials", () => {
 		await expect(f.keys.authenticate(f.org, key.secret)).rejects.toThrow();
 		const active = await f.issue();
 		const authenticated = await f.keys.authenticate(f.org, active.secret);
-		await f.keys.setAccountStatus(f.owner, f.org, f.account.id, "inactive");
+		const inactive = await f.keys.setAccountStatus(f.owner, f.org, {
+			id: f.account.id,
+			status: "inactive",
+			version: f.account.version,
+		});
 		await expect(
 			f.resources.listProjects(authenticated, f.org),
 		).rejects.toThrow();
-		await f.keys.setAccountStatus(f.owner, f.org, f.account.id, "active");
+		await f.keys.setAccountStatus(f.owner, f.org, {
+			id: f.account.id,
+			status: "active",
+			version: inactive.version,
+		});
 		await expect(f.keys.authenticate(f.org, active.secret)).rejects.toThrow();
 	});
 	it("enforces current human administration, recent authentication, policy and nonsecret audit", async () => {
