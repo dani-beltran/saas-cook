@@ -16,6 +16,19 @@ and optional request/trace correlation without rewriting the earlier migration.
 New service events always capture a trusted request ID; historical rows remain NULL. Initialization uses
 a separately provisioned control database; migrating does not establish readiness.
 
+`0006_resources` adds the Project/workspace registry, tenant-constrained grants,
+service accounts and hashed API-key records, scoped command receipts, and generic
+capacity buckets/reservations. It is additive: no prior data is rewritten. The
+Phase 2 upgrade fixture preserves memberships and audit history before applying
+it; a fresh installation applies the full journal. Every new tenant table enables
+and forces RLS and has an explicit migrator policy. Web/worker can mutate domain
+rows but only grants can be physically deleted; Project deletion is a versioned
+soft-delete command. Team removal cascades only its grants. Slugs remain reserved
+after Project soft deletion, so restoring a Project cannot collide with slug reuse.
+API-key plaintext never enters the database. Capacity defaults are materialized
+on the first authorized create or explicit policy command, independently of billing
+provider availability.
+
 Drizzle declarations and cumulative snapshots mirror the reviewed SQL. Runtime
 privileges, `FORCE ROW LEVEL SECURITY`, immutable membership identity and identity
 adapter triggers/functions are explicit SQL contracts, and must be preserved by

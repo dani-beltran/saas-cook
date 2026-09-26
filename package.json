@@ -41,6 +41,8 @@
 		"storybook": "node node_modules/storybook/dist/bin/dispatcher.js dev --port 6006 --config-dir apps/web/.storybook",
 		"storybook:build": "node node_modules/storybook/dist/bin/dispatcher.js build --config-dir apps/web/.storybook --output-dir artifacts/storybook --disable-telemetry",
 		"authz:validate": "node --env-file-if-exists=.env --import tsx scripts/phase1/authz-validate.ts",
+		"authz:benchmark": "node --env-file-if-exists=.env --import tsx scripts/phase3/benchmark.ts",
+		"authz:smoke": "node --env-file-if-exists=.env --import tsx scripts/phase3/benchmark.ts --smoke",
 		"security:scan": "node --import tsx scripts/phase1/security-scan.ts",
 		"services:up": "docker compose -f infra/compose.yaml up -d --wait && node --env-file-if-exists=.env --import tsx scripts/phase1/services-ready.ts",
 		"services:down": "docker compose -f infra/compose.yaml down",
@@ -50,6 +52,7 @@
 		"worker": "node --env-file-if-exists=.env --import tsx apps/worker/src/index.ts",
 		"image:build": "node --import tsx scripts/phase1/image-build.ts",
 		"bootstrap": "node --env-file-if-exists=.env --import tsx scripts/phase1/command.ts bootstrap",
+		"authz:upgrade": "node --env-file-if-exists=.env --import tsx scripts/phase1/command.ts authz-upgrade",
 		"authz:publish": "node --env-file-if-exists=.env --import tsx scripts/phase1/command.ts authz-publish",
 		"owner:recover": "node --env-file-if-exists=.env --import tsx scripts/phase1/command.ts owner-recovery",
 		"security:deactivate": "node --env-file-if-exists=.env --import tsx scripts/phase1/command.ts security-deactivate"

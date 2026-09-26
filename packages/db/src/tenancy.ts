@@ -1,5 +1,8 @@
 import { createHash, randomBytes, randomUUID } from "node:crypto";
+import { channel } from "node:diagnostics_channel";
 import type { Pool, PoolClient } from "pg";
+
+const authorizationFenceWait = channel("common-saas.authorization.fence-wait");
 
 export type MembershipRole = "owner" | "admin" | "member" | "billing";
 export interface TenantActor {
@@ -136,31 +139,37 @@ export async function withTenantTransaction<T>(
 	userIds: readonly string[],
 	exclusive: boolean,
 	work: (client: PoolClient) => Promise<T>,
+	onFenceWait?: (milliseconds: number) => void,
+	lockTenantRows = true,
 ): Promise<T> {
 	const client = await pool.connect();
 	try {
 		await client.query("BEGIN");
-		await client.query("SELECT set_config('app.request_id',$1,true)", [
-			randomUUID(),
-		]);
-		await client.query("SET LOCAL statement_timeout = '8s'");
-		await client.query("SET LOCAL lock_timeout = '5s'");
+		await client.query(
+			"SELECT set_config('app.request_id',$1,true),set_config('app.organization_id',$2,true),set_config('app.authorization_expires_at','',true),set_config('statement_timeout','8s',true),set_config('lock_timeout','5s',true)",
+			[randomUUID(), organizationId],
+		);
 		for (const userId of [...new Set(userIds)].sort()) {
 			await client.query(
 				"SELECT pg_advisory_xact_lock_shared(hashtextextended($1,0))",
 				[`user:${userId}`],
 			);
 		}
+		const fenceStarted = performance.now();
 		await client.query(
 			exclusive
 				? "SELECT pg_advisory_xact_lock(hashtextextended($1,0))"
 				: "SELECT pg_advisory_xact_lock_shared(hashtextextended($1,0))",
 			[`organization:${organizationId}`],
 		);
-		await client.query("SELECT set_config('app.organization_id',$1,true)", [
-			organizationId,
-		]);
-		if (exclusive) {
+		const fenceWaitMilliseconds = performance.now() - fenceStarted;
+		onFenceWait?.(fenceWaitMilliseconds);
+		if (authorizationFenceWait.hasSubscribers) {
+			authorizationFenceWait.publish({ milliseconds: fenceWaitMilliseconds });
+		}
+		// Resource commands use the same organization advisory fence and lock their own rows.
+		// Membership transitions also lock the organization and seat rows in the canonical order.
+		if (exclusive && lockTenantRows) {
 			await client.query(
 				"SELECT id FROM tenancy.organizations WHERE id=$1 FOR UPDATE",
 				[organizationId],

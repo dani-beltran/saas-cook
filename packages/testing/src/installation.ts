@@ -132,7 +132,7 @@ export async function createTestInstallation() {
 				["--import", "tsx", "scripts/phase1/command.ts", mode],
 				{ env: commandEnv, timeout: 30_000 },
 			);
-		return { env, cleanup };
+		return { env, cleanup, migrationUrl, controlUrl };
 	} catch (error) {
 		await cleanup();
 		throw error;

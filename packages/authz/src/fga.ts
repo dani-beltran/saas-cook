@@ -1,4 +1,11 @@
-import { authorizationModel, compileContext } from "./model";
+import {
+	authorizationModel,
+	type ContextGrant,
+	compileContext,
+	compileResourceContext,
+	type ResourcePermission,
+	type Role,
+} from "./model";
 
 export async function fgaRequest<T>(
 	base: string,
@@ -102,5 +109,132 @@ export async function validateModel(
 			(await checkContext(base, storeId, modelId, context, "read")) !== member
 		)
 			throw new Error("Team policy validation failed");
+	}
+	const resourceCases: Array<{
+		role?: Role;
+		actorType?: "user" | "service_account";
+		grants: ContextGrant[];
+		permission: ResourcePermission;
+		allowed: boolean;
+		workspaceId?: string;
+	}> = [
+		{ role: "owner", grants: [], permission: "read", allowed: true },
+		{
+			role: "owner",
+			grants: [{ resourceId: "project", relation: "denied" }],
+			permission: "read",
+			allowed: true,
+		},
+		{
+			role: "admin",
+			grants: [{ resourceId: "project", relation: "denied" }],
+			permission: "share",
+			allowed: true,
+		},
+		{ role: "admin", grants: [], permission: "share", allowed: true },
+		{ role: "member", grants: [], permission: "read", allowed: false },
+		{ role: "billing", grants: [], permission: "read", allowed: false },
+		{
+			role: "member",
+			grants: [{ resourceId: "project", relation: "viewer" }],
+			permission: "read",
+			allowed: true,
+		},
+		{
+			role: "member",
+			grants: [{ resourceId: "project", relation: "viewer" }],
+			permission: "update",
+			allowed: false,
+		},
+		{
+			role: "member",
+			grants: [{ resourceId: "project", relation: "editor" }],
+			permission: "update",
+			allowed: true,
+		},
+		{
+			role: "member",
+			grants: [{ resourceId: "project", relation: "editor" }],
+			permission: "delete",
+			allowed: false,
+		},
+		{
+			role: "member",
+			grants: [{ resourceId: "project", relation: "manager" }],
+			permission: "share",
+			allowed: true,
+		},
+		{
+			role: "member",
+			grants: [{ resourceId: "project", relation: "viewer", teamId: "team" }],
+			permission: "read",
+			allowed: true,
+		},
+		{
+			role: "member",
+			grants: [{ resourceId: "workspace", relation: "editor", teamId: "team" }],
+			permission: "update",
+			workspaceId: "workspace",
+			allowed: true,
+		},
+		{
+			role: "member",
+			grants: [{ resourceId: "workspace", relation: "viewer" }],
+			permission: "delete",
+			workspaceId: "workspace",
+			allowed: false,
+		},
+		{
+			role: "member",
+			grants: [{ resourceId: "workspace", relation: "manager" }],
+			permission: "move",
+			workspaceId: "workspace",
+			allowed: true,
+		},
+		{
+			role: "member",
+			grants: [
+				{ resourceId: "workspace", relation: "manager" },
+				{ resourceId: "project", relation: "denied" },
+			],
+			permission: "read",
+			workspaceId: "workspace",
+			allowed: false,
+		},
+		{
+			actorType: "service_account",
+			grants: [],
+			permission: "read",
+			allowed: false,
+		},
+		{
+			actorType: "service_account",
+			grants: [{ resourceId: "project", relation: "editor" }],
+			permission: "update",
+			allowed: true,
+		},
+	];
+	for (const entry of resourceCases) {
+		const context = compileResourceContext({
+			organizationId: "validation",
+			epoch: "validation",
+			actorId: "validation",
+			actorType: entry.actorType ?? "user",
+			role: entry.role,
+			creator: false,
+			target: { type: "project", id: "project" },
+			workspaceId: entry.workspaceId,
+			grants: entry.grants,
+		});
+		if (
+			(await checkContext(
+				base,
+				storeId,
+				modelId,
+				context,
+				entry.permission,
+			)) !== entry.allowed
+		)
+			throw new Error("Resource policy validation failed");
 	}
 }

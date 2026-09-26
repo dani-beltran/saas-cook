@@ -1,6 +1,11 @@
 import { createIdentityRuntime } from "@common-saas/auth";
-import { createAuthorizationService, getPublication } from "@common-saas/authz";
+import {
+	createApiKeyService,
+	createAuthorizationService,
+	getPublication,
+} from "@common-saas/authz";
 import { readWebEnv } from "@common-saas/config/server";
+import { createResourceService } from "@common-saas/db/resources";
 import { createTenancyService } from "@common-saas/db/tenancy";
 import { enqueueIdentityEmail } from "@common-saas/email";
 import { getOperationContext } from "@common-saas/observability";
@@ -52,10 +57,38 @@ function createRuntime() {
 			});
 		},
 	});
+	const resources = createResourceService(
+		applicationPool,
+		{
+			authorize: authorization.authorizeResource,
+			check: authorization.checkResource,
+			checkBatch: authorization.checkResourceBatch,
+			sourceCommit: authorization.sourceCommit,
+			correlation: getOperationContext,
+		},
+		{
+			cursorSecret: env.AUTH_SECRET,
+			workspacesEnabled: env.WORKSPACES_ENABLED === "true",
+			defaultProjectCapacity:
+				env.DEFAULT_PROJECT_CAPACITY === "unlimited"
+					? null
+					: env.DEFAULT_PROJECT_CAPACITY,
+		},
+	);
+	const keys = createApiKeyService({ pool: applicationPool, authorization });
 	return {
+		resources,
+		keys,
 		identity,
 		tenancy,
 		origin: env.APP_ORIGIN,
+		async close() {
+			await Promise.all([
+				applicationPool.end(),
+				identityPool.end(),
+				controlPool.end(),
+			]);
+		},
 		async ready() {
 			const publication = await readiness();
 			const binding = await applicationPool.query(
@@ -72,4 +105,11 @@ let runtime: ReturnType<typeof createRuntime> | undefined;
 export function applicationRuntime() {
 	runtime ??= createRuntime();
 	return runtime;
+}
+
+/** Internal command/test lifecycle: release pools before removing a disposable installation. */
+export async function shutdownApplicationRuntime() {
+	const current = runtime;
+	runtime = undefined;
+	await current?.close();
 }

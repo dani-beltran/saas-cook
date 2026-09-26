@@ -83,7 +83,7 @@ it("generates public OpenAPI from the same schemas", async () => {
 		document.paths?.["/organizations"]?.post?.responses?.["401"],
 	).toBeDefined();
 });
-it("returns safe uncached request correlation and exposes no Phase 3 resource routes", async () => {
+it("returns safe uncached request correlation and rejects invalid resource identifiers", async () => {
 	const response = await handleApi(
 		new Request("http://localhost/api/v1/organizations/alpha/projects", {
 			headers: {
@@ -93,7 +93,7 @@ it("returns safe uncached request correlation and exposes no Phase 3 resource ro
 		}),
 		"rest",
 	);
-	expect(response.status).toBe(404);
+	expect(response.status).toBe(422);
 	expect(response.headers.get("cache-control")).toBe("no-store");
 	expect(response.headers.get("x-request-id")).toMatch(/^[a-f0-9-]{36}$/);
 });
@@ -150,3 +150,24 @@ for (const transport of ["rpc", "rest"] as const) {
 		expect(response.headers.get("cache-control")).toBe("no-store");
 	});
 }
+
+function projectTypeAssertions(api: ApiClient) {
+	const organizationId = "10000000-0000-4000-8000-000000000001";
+	void api.projects.create({
+		organizationId,
+		name: "Reference",
+		slug: "reference",
+		operationKey: "synthetic-create",
+		// @ts-expect-error Ownership is derived by the service, never asserted by API callers.
+		ownerMembershipId: "20000000-0000-4000-8000-000000000002",
+	});
+	void api.projects.update({
+		organizationId,
+		id: "20000000-0000-4000-8000-000000000002",
+		version: 1,
+		// @ts-expect-error The contract allowlists Project status values.
+		status: "unknown",
+	});
+	return api.projects.list({ organizationId, limit: 20 });
+}
+void projectTypeAssertions;

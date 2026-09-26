@@ -709,3 +709,143 @@ for (const outgoingRole of ["member", "inactive"] as const) {
 		}
 	});
 }
+
+test("Project dashboard validates, edits, detects conflicts, moves and restores localized resources", async ({
+	page,
+	baseURL,
+}, testInfo) => {
+	const id = randomUUID().slice(0, 8);
+	await signUp(page, `browser-project-${id}@example.test`);
+	await page
+		.getByLabel("Organization name", { exact: true })
+		.fill(`Projects ${id}`);
+	await page.getByLabel("URL name", { exact: true }).fill(`projects-${id}`);
+	await page
+		.getByRole("button", { name: "Create organization", exact: true })
+		.click();
+	await expect(
+		page.getByRole("heading", { name: `Projects ${id}`, exact: true }),
+	).toBeVisible();
+	await page.getByRole("link", { name: "Open projects", exact: true }).click();
+	await expect(
+		page.getByRole("heading", { name: "Projects", exact: true }),
+	).toBeVisible();
+	await expect(
+		page.getByText("Loading projects…", { exact: true }),
+	).toHaveCount(0);
+	const workspaces = page.getByRole("region", {
+		name: "Workspaces",
+		exact: true,
+	});
+	await workspaces.getByLabel("Name", { exact: true }).fill("Design studio");
+	await workspaces.getByLabel("Slug", { exact: true }).fill(`design-${id}`);
+	await workspaces
+		.getByRole("button", { name: "Create workspace", exact: true })
+		.click();
+	await expect(
+		workspaces.getByRole("button", { name: "Archive", exact: true }),
+	).toBeVisible();
+	await page.getByRole("button", { name: "New project", exact: true }).click();
+	const editor = page.getByRole("region", { name: "New project", exact: true });
+	await editor
+		.getByRole("button", { name: "Create project", exact: true })
+		.click();
+	await expect(editor.getByRole("alert")).toHaveCount(2);
+	await editor.getByLabel("Name", { exact: true }).fill("Website refresh");
+	await editor.getByLabel("Slug", { exact: true }).fill(`website-${id}`);
+	await editor
+		.getByLabel("Description", { exact: true })
+		.fill("Synthetic browser project");
+	await editor
+		.getByLabel("Workspace", { exact: true })
+		.selectOption({ label: "Design studio" });
+	await editor
+		.getByRole("button", { name: "Create project", exact: true })
+		.click();
+	await expect(
+		page.getByRole("heading", { name: "Website refresh", exact: true }),
+	).toBeVisible();
+	const card = page.getByRole("listitem").filter({
+		has: page.getByRole("heading", { name: "Website refresh", exact: true }),
+	});
+	await card.getByRole("button", { name: "Edit", exact: true }).click();
+	const editing = page.getByRole("region", {
+		name: "Edit project",
+		exact: true,
+	});
+	await editing
+		.getByLabel("Description", { exact: true })
+		.fill("A stale editor must not overwrite another change");
+	const organizationId = new URL(page.url()).pathname.split("/")[3];
+	const list = await page.request.get(
+		`/api/v1/organizations/${organizationId}/projects`,
+	);
+	expect(list.status()).toBe(200);
+	const project = (await list.json()).items[0];
+	const changed = await page.request.patch(
+		`/api/v1/organizations/${organizationId}/projects/${project.id}`,
+		{
+			headers: { origin: baseURL ?? "" },
+			data: {
+				version: project.version,
+				description: "Concurrent server change",
+			},
+		},
+	);
+	expect(changed.status()).toBe(200);
+	await editing
+		.getByRole("button", { name: "Save changes", exact: true })
+		.click();
+	await expect(page.getByRole("status")).toContainText("This item has changed");
+	await editing.getByRole("button", { name: "Cancel", exact: true }).click();
+	await page.getByRole("button", { name: "Refresh", exact: true }).click();
+	await expect(card).toContainText("Concurrent server change");
+	await workspaces
+		.getByRole("button", { name: "Archive", exact: true })
+		.click();
+	await expect(
+		workspaces.getByRole("button", { name: "Unarchive", exact: true }),
+	).toBeVisible();
+	await card
+		.getByLabel("Destination for Website refresh", { exact: true })
+		.selectOption("");
+	await card.getByRole("button", { name: "Move", exact: true }).click();
+	await expect(
+		card.getByLabel("Destination for Website refresh", { exact: true }),
+	).toHaveValue("");
+	await card.getByRole("button", { name: "Delete", exact: true }).click();
+	await expect(
+		page.getByRole("heading", { name: "Website refresh", exact: true }),
+	).toHaveCount(0);
+	await page.getByLabel("Include deleted projects", { exact: true }).check();
+	await expect(
+		card.getByRole("button", { name: "Restore", exact: true }),
+	).toBeVisible();
+	await card.getByRole("button", { name: "Restore", exact: true }).click();
+	await expect(
+		card.getByRole("button", { name: "Edit", exact: true }),
+	).toBeVisible();
+	await page
+		.getByLabel("Search projects", { exact: true })
+		.fill("does not match");
+	await page.getByRole("button", { name: "Search", exact: true }).click();
+	await expect(
+		page.getByText("No accessible projects match your search.", {
+			exact: true,
+		}),
+	).toBeVisible();
+	await page.getByLabel("Search projects", { exact: true }).fill("Website");
+	await page.getByRole("button", { name: "Search", exact: true }).click();
+	await expect(card).toBeVisible();
+	await page.getByLabel("Language", { exact: true }).selectOption("es");
+	await expect(
+		page.getByRole("heading", { name: "Proyectos", exact: true }),
+	).toBeVisible();
+	await expect(
+		page.getByRole("heading", { name: "Website refresh", exact: true }),
+	).toBeVisible();
+	await page.screenshot({
+		path: testInfo.outputPath("projects-spanish.png"),
+		fullPage: true,
+	});
+});

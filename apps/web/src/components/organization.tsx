@@ -11,6 +11,7 @@ import { useCallback, useEffect, useState } from "react";
 export function Organization({ organizationId }: { organizationId: string }) {
 	const locale = useLocale();
 	const t = useTranslations("Account");
+	const projects = useTranslations("Projects");
 	const [snapshot, setSnapshot] = useState<OrganizationSnapshotDto | null>(
 		null,
 	);
@@ -85,6 +86,12 @@ export function Organization({ organizationId }: { organizationId: string }) {
 			<h1 className="text-3xl font-semibold">
 				{summary?.organization.name ?? t("organizations")}
 			</h1>
+			<a
+				className="inline-flex rounded-md bg-primary px-4 py-2 text-primary-foreground"
+				href={`/${locale}/organizations/${organizationId}/projects`}
+			>
+				{projects("openProjects")}
+			</a>
 			<p role="status" aria-live="polite">
 				{message}
 			</p>

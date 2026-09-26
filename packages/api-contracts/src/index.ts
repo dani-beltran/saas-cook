@@ -1,6 +1,9 @@
 import { oc } from "@orpc/contract";
 import { z } from "zod";
+import { resourcesContract, serviceAccountContract } from "./resources";
 import { tenancyContract } from "./tenancy";
+
+export type { ProjectDto, WorkspaceDto } from "./resources";
 
 export type { OrganizationCommand, OrganizationSnapshotDto } from "./tenancy";
 
@@ -17,6 +20,8 @@ export const diagnosticDto = z.object({
 const errorData = z.object({ requestId: z.uuid() });
 export const contract = {
 	organizations: tenancyContract,
+	...resourcesContract,
+	serviceAccounts: serviceAccountContract,
 	diagnostics: {
 		echo: oc
 			.errors({

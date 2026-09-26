@@ -58,6 +58,94 @@ async function fixture() {
 }
 
 describe("real PostgreSQL migration and runtime role boundary", () => {
+	it("upgrades Phase 2 to resource tables while preserving tenant and identity history", async () => {
+		const f = await fixture();
+		const previous = await mkdtemp(path.join(tmpdir(), "common-saas-phase2-"));
+		cleanup.push(() => rm(previous, { recursive: true, force: true }));
+		await mkdir(path.join(previous, "meta"));
+		const journal = JSON.parse(
+			await readFile(path.join(migrationsFolder, "meta/_journal.json"), "utf8"),
+		);
+		journal.entries = journal.entries.slice(0, 6);
+		await writeFile(
+			path.join(previous, "meta/_journal.json"),
+			JSON.stringify(journal),
+		);
+		for (const entry of journal.entries)
+			await copyFile(
+				path.join(migrationsFolder, `${entry.tag}.sql`),
+				path.join(previous, `${entry.tag}.sql`),
+			);
+		await runMigrations({
+			databaseUrl: f.migrator,
+			migrationsFolder: previous,
+		});
+		const migration = new Pool({ connectionString: f.migrator });
+		cleanup.push(() => migration.end());
+		const userId = randomUUID(),
+			orgId = randomUUID(),
+			memberId = randomUUID(),
+			auditId = randomUUID();
+		await f.identity.pool.query(
+			'INSERT INTO identity."user"(id,name,email,email_verified) VALUES($1,$1,$2,true)',
+			[userId, `${userId}@example.test`],
+		);
+		await migration.query(
+			"INSERT INTO tenancy.organizations(id,slug,name) VALUES($1,$2,'Upgrade history')",
+			[orgId, `upgrade-${orgId}`],
+		);
+		await migration.query(
+			"INSERT INTO tenancy.memberships(id,organization_id,user_id,role,status,billable) VALUES($1,$2,$3,'owner','active',true)",
+			[memberId, orgId, userId],
+		);
+		await migration.query(
+			"INSERT INTO tenancy.audit_events(id,organization_id,actor_id,action,target_id,changes,request_id) VALUES($1,$2,$3,'fixture.retained',$4,'{}',$1)",
+			[auditId, orgId, userId, orgId],
+		);
+		await runMigrations({ databaseUrl: f.migrator });
+		expect(
+			(
+				await migration.query(
+					"SELECT id FROM tenancy.memberships WHERE organization_id=$1",
+					[orgId],
+				)
+			).rows,
+		).toEqual([{ id: memberId }]);
+		expect(
+			(
+				await migration.query(
+					"SELECT id FROM tenancy.audit_events WHERE organization_id=$1",
+					[orgId],
+				)
+			).rows,
+		).toEqual([{ id: auditId }]);
+		for (const table of [
+			"projects",
+			"workspaces",
+			"resource_registry",
+			"resource_grants",
+			"service_accounts",
+			"api_keys",
+			"capacity_buckets",
+			"capacity_reservations",
+			"resource_operations",
+		]) {
+			const policy = await migration.query(
+				"SELECT relrowsecurity,relforcerowsecurity FROM pg_class WHERE oid=$1::regclass",
+				[`tenancy.${table}`],
+			);
+			expect(policy.rows[0]).toEqual({
+				relrowsecurity: true,
+				relforcerowsecurity: true,
+			});
+			expect(
+				(await f.web.pool.query(`SELECT * FROM tenancy.${table}`)).rows,
+			).toEqual([]);
+			await expect(
+				f.web.pool.query(`TRUNCATE tenancy.${table}`),
+			).rejects.toMatchObject({ code: "42501" });
+		}
+	});
 	it("migrates fresh, safely replays and processes durable two-organization synthetic probes", async () => {
 		const f = await fixture();
 		await runMigrations({ databaseUrl: f.migrator });

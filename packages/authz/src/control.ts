@@ -37,6 +37,12 @@ export async function initializeControlStore(pool: Pool): Promise<void> {
         state text NOT NULL CHECK (state IN ('pending','completed')),
         result jsonb, created_at timestamptz NOT NULL DEFAULT now(), completed_at timestamptz
       );
+      CREATE TABLE IF NOT EXISTS control.model_upgrades (
+        installation_id uuid PRIMARY KEY REFERENCES control.installations,
+        epoch uuid NOT NULL, from_model_id text NOT NULL, from_model_hash text NOT NULL,
+        to_model_id text NOT NULL, to_model_hash text NOT NULL,
+        completed_at timestamptz
+      );
       GRANT USAGE ON SCHEMA control TO common_saas_control_reader;
       GRANT SELECT ON control.installations TO common_saas_control_reader;`);
 		await client.query("COMMIT");

@@ -1,6 +1,6 @@
 # Working in this repository
 
-This is the Phase 2 Common SaaS foundation. `docs/06-delivery-roadmap.md` is the acceptance register. Read the relevant architecture and data-model contracts before changing a boundary. Phase 0 evidence is retained in `spikes/phase0` and `docs/phase0`; its benchmark and fixtures are not production application code.
+This is the Phase 3 Common SaaS foundation. `docs/06-delivery-roadmap.md` is the acceptance register. Read the relevant architecture and data-model contracts before changing a boundary. Phase 0 evidence is retained in `spikes/phase0` and `docs/phase0`; its benchmark and fixtures are not production application code.
 
 ## Stack and layout
 
@@ -26,6 +26,8 @@ Run commands from the repository root. Copy `.env.example` for the documented lo
 | Local services | `bun run services:up` / `bun run services:down` |
 | Apply reviewed migrations | `bun run db:migrate` |
 | Fresh initialization / validate publication | `bun run bootstrap` / `bun run authz:publish` |
+| Upgrade a ready Phase 2 model | `bun run authz:upgrade` |
+| Resource performance smoke / full gate | `bun run authz:smoke` / `bun run authz:benchmark` |
 | Scoped operator commands | `bun run owner:recover --approval <file>` / `bun run security:deactivate --approval <file>` |
 | Develop | `bun run dev` |
 | Source / formatting | `bun run check` / `bun run format` |
@@ -45,9 +47,11 @@ Use Conventional Commits with a header of at most 100 characters. Validate commi
 
 ## Boundaries and verification
 
-Production identity and tenancy use the Phase 2 services. Derive actors only from verified Better Auth sessions and revalidate them under lifecycle fences. User lifecycle fences precede organization locks; never upgrade a held shared organization fence. Organization routes select context; browser preferences cannot authorize it. Never expose Phase 0 fixture identity headers. All possible positive organization/team decisions use the pinned model and a fresh contextual OpenFGA namespace. Contextual source changes publish revisions atomically; no production permission tuples are persisted.
+Production identity and tenancy use the Phase 2 services. Derive actors only from verified Better Auth sessions and revalidate them under lifecycle fences. User lifecycle fences precede organization locks; never upgrade a held shared organization fence. Organization routes select context; browser preferences cannot authorize it. Never expose Phase 0 fixture identity headers. All possible positive organization/team/Project/workspace decisions use the pinned model and a fresh contextual OpenFGA namespace. Contextual source changes publish revisions atomically; no production permission tuples are persisted.
 
-The separate control store owns installation epochs/readiness and signed operator approvals. Runtime uses its read-only role. `bootstrap` only accepts a fresh installation or its recorded interrupted initialization; existing/restored data must not be treated as fresh. Operator recovery requires a bounded Ed25519-signed independent approval and fresh MFA. The full restore/deletion journal protocol remains Phase 6. See `docs/phase2/authorization.md`.
+The separate control store owns installation epochs/readiness and signed operator approvals. Runtime uses its read-only role. `bootstrap` only accepts a fresh installation or its recorded interrupted initialization; existing/restored data must not be treated as fresh. Operator recovery requires a bounded Ed25519-signed independent approval and fresh MFA. The full restore/deletion journal protocol remains Phase 6. See `docs/phase2/authorization.md` and `docs/phase3/README.md`. Phase 3 uses explicit `authz:upgrade` for the reviewed predecessor model; it never clears recovery state.
+
+Resource mutation services own current principal authorization, capacity, scoped idempotency, versions and audit/outbox atomically. API keys require declared endpoint capabilities and current same-tenant key/account/grant checks. Project lists use encrypted actor/tenant/query-bound cursors after the last scanned candidate; empty pages may continue and never expose unrestricted totals. Preserve the final transaction-wide expiry guard across every authorization batch. Disabled Projects allow reads and cleanup, but reject new positive mutations.
 
 Keep public/client configuration allowlisted and validate server configuration before work starts. Do not use `NEXT_PUBLIC_*` to bake environment-specific settings into the image. Never log credential values, authentication URLs, raw payloads or caller-controlled request IDs. Use the shared logging boundary and correlation fields. Build without application services or credentials.
 

@@ -10,7 +10,7 @@ The template is intended to be source code you own and customize. You supply you
 
 The template will build one Docker image containing the web app and background worker, with external data services configured at runtime.
 
-**Status:** Phase 2 identity and tenancy primitives are implemented: email/passkey/MFA sign-in, organizations, memberships, invitations, teams, tenant RLS, local seats, contextual OpenFGA authorization, ownership transfer and signed owner-recovery commands. See the [current setup and acceptance guide](docs/phase2/README.md). Resource authorization and the Project feature remain Phase 3 work.
+**Status:** Phase 2 identity and tenancy primitives are implemented: email/passkey/MFA sign-in, organizations, memberships, invitations, teams, tenant RLS, local seats, contextual OpenFGA authorization, ownership transfer and signed owner-recovery commands. See the [identity and tenancy setup guide](docs/phase2/README.md). Phase 3 adds Projects, optional workspaces, resource grants, service accounts/API keys and local capacity. Its functional and sustained performance gates passed; see the [Phase 3 setup and upgrade guide](docs/phase3/README.md) and [acceptance record](docs/phase3/acceptance.md).
 
 ## Local development
 

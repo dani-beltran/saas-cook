@@ -162,6 +162,7 @@ try {
 		"migrate",
 		"bootstrap",
 		"authz-publish",
+		"authz-upgrade",
 		"owner-recovery",
 		"security-deactivate",
 	]) {

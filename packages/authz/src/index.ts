@@ -2,8 +2,15 @@ import type { Pool, PoolClient } from "pg";
 import { assertBinding, getPublication } from "./control";
 import { checkContext } from "./fga";
 import { compileContext, modelHash, type Permission, type Role } from "./model";
+import { createResourceAuthorization } from "./resources";
 
 export { getPublication } from "./control";
+export { ApiKeyError, createApiKeyService } from "./keys";
+export {
+	type AuthzResourceActor,
+	ResourceAuthorizationDenied,
+	type ServiceResourceActor,
+} from "./resources";
 export function createAuthorizationService(options: {
 	controlPool: Pool;
 	installationId: string;
@@ -125,5 +132,11 @@ export function createAuthorizationService(options: {
 		if (!stillEligible.rows[0]?.eligible)
 			throw new Error("Authorization expired");
 	}
-	return { initialize, sourceCommit, authorize };
+	return {
+		initialize,
+		sourceCommit,
+		authorize,
+		publication,
+		...createResourceAuthorization(options),
+	};
 }

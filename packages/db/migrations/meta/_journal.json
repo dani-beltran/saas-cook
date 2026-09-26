@@ -43,6 +43,13 @@
 			"when": 1790433000000,
 			"tag": "0005_tenant_event_integrity",
 			"breakpoints": true
+		},
+		{
+			"idx": 6,
+			"version": "7",
+			"when": 1790439479357,
+			"tag": "0006_resources",
+			"breakpoints": true
 		}
 	]
 }

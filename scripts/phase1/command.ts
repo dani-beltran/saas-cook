@@ -1,4 +1,8 @@
-import { bootstrap, publishAuthorization } from "@common-saas/authz/commands";
+import {
+	bootstrap,
+	publishAuthorization,
+	upgradeAuthorization,
+} from "@common-saas/authz/commands";
 import {
 	readAuthorizationCommandEnv,
 	readMigrationEnv,
@@ -16,12 +20,13 @@ const modes = [
 	"migrate",
 	"bootstrap",
 	"authz-publish",
+	"authz-upgrade",
 	"owner-recovery",
 	"security-deactivate",
 ];
 if (!mode || !modes.includes(mode)) {
 	process.stderr.write(
-		"Usage: command <migrate|bootstrap|authz-publish|owner-recovery|security-deactivate> [--approval path] [--help]\n",
+		"Usage: command <migrate|bootstrap|authz-publish|authz-upgrade|owner-recovery|security-deactivate> [--approval path] [--help]\n",
 	);
 	process.exitCode = 2;
 } else if (process.argv.includes("--help")) {
@@ -92,7 +97,12 @@ if (!mode || !modes.includes(mode)) {
 			max: 2,
 			connectionTimeoutMillis: 5000,
 		});
-		const command = mode === "bootstrap" ? bootstrap : publishAuthorization;
+		const command =
+			mode === "bootstrap"
+				? bootstrap
+				: mode === "authz-upgrade"
+					? upgradeAuthorization
+					: publishAuthorization;
 		const result = await command({
 			applicationPool,
 			controlPool,

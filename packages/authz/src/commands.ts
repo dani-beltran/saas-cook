@@ -6,7 +6,7 @@ import {
 	initializeControlStore,
 } from "./control";
 import { fgaRequest, publishModel, validateModel } from "./fga";
-import { modelHash, safeIdentifier } from "./model";
+import { modelHash, phase2ModelHash, safeIdentifier } from "./model";
 
 type CommandOptions = {
 	applicationPool: Pool;
@@ -181,5 +181,176 @@ export async function publishAuthorization(
 		throw error;
 	} finally {
 		client.release();
+	}
+}
+
+/** Explicit compiler migration of a ready Phase 2 installation, never a recovery operation.
+ * Quiesce older application versions before running; interrupted upgrades fail closed and resume.
+ */
+export async function upgradeAuthorization(
+	options: CommandOptions,
+): Promise<void> {
+	await initializeControlStore(options.controlPool);
+	const control = await options.controlPool.connect();
+	const app = await options.applicationPool.connect();
+	try {
+		await control.query("SET lock_timeout='5s'");
+		await app.query("SET lock_timeout='5s'");
+		await control.query("SELECT pg_advisory_lock(hashtextextended($1,0))", [
+			`installation:${options.installationId}`,
+		]);
+		await app.query("SELECT pg_advisory_lock(1849202603)");
+		if (
+			(await app.query("SELECT current_user")).rows[0].current_user !==
+			"common_saas_migrator"
+		)
+			throw new Error("Model upgrade requires dedicated application migrator");
+		const state = (
+			await control.query(
+				"SELECT * FROM control.installations WHERE installation_id=$1 AND state='ready'",
+				[options.installationId],
+			)
+		).rows[0];
+		if (!state || ![phase2ModelHash, modelHash].includes(state.model_hash))
+			throw new Error("Only the reviewed ready predecessor can upgrade");
+		await assertBinding(app, {
+			installationId: state.installation_id,
+			bindingId: state.binding_id,
+			epoch: state.epoch,
+			storeId: state.store_id,
+			modelId: state.model_id,
+			modelHash: state.model_hash,
+		});
+		let receipt = (
+			await control.query(
+				"SELECT * FROM control.model_upgrades WHERE installation_id=$1",
+				[options.installationId],
+			)
+		).rows[0];
+		if (
+			receipt &&
+			(receipt.epoch !== state.epoch ||
+				receipt.to_model_hash !== modelHash ||
+				receipt.from_model_hash !== phase2ModelHash ||
+				![receipt.from_model_id, receipt.to_model_id].includes(state.model_id))
+		)
+			throw new Error(
+				"Model upgrade receipt differs from independent publication",
+			);
+		if (state.model_hash === modelHash && (!receipt || receipt.completed_at)) {
+			const invalid = await app.query(
+				`SELECT 1 FROM tenancy.authorization_revisions WHERE NOT ready OR desired_revision<>applied_revision OR evaluation_mode<>'contextual-v1' OR recovery_epoch<>$1 OR store_id<>$2 OR model_id<>$3 OR model_hash<>$4 LIMIT 1`,
+				[state.epoch, state.store_id, state.model_id, modelHash],
+			);
+			if (invalid.rowCount)
+				throw new Error(
+					"Source recovery revalidation required before model upgrade",
+				);
+			await validateModel(options.openfgaUrl, state.store_id, state.model_id);
+			const current = await getPublication(control, options.installationId);
+			if (
+				current.epoch !== state.epoch ||
+				current.modelId !== state.model_id ||
+				current.storeId !== state.store_id ||
+				current.bindingId !== state.binding_id
+			)
+				throw new Error(
+					"Independent publication changed during model validation",
+				);
+			return;
+		}
+		if (!receipt) {
+			const next = await publishModel(options.openfgaUrl, state.store_id);
+			await validateModel(options.openfgaUrl, state.store_id, next);
+			receipt = (
+				await control.query(
+					"INSERT INTO control.model_upgrades(installation_id,epoch,from_model_id,from_model_hash,to_model_id,to_model_hash) VALUES($1,$2,$3,$4,$5,$6) RETURNING *",
+					[
+						options.installationId,
+						state.epoch,
+						state.model_id,
+						phase2ModelHash,
+						next,
+						modelHash,
+					],
+				)
+			).rows[0];
+		}
+		await validateModel(
+			options.openfgaUrl,
+			state.store_id,
+			receipt.to_model_id,
+		);
+		await app.query("BEGIN");
+		const organizations = await app.query<{ organization_id: string }>(
+			"SELECT organization_id FROM tenancy.authorization_revisions ORDER BY organization_id",
+		);
+		for (const row of organizations.rows)
+			await app.query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))", [
+				`organization:${row.organization_id}`,
+			]);
+		const invalid = await app.query(
+			`SELECT 1 FROM tenancy.authorization_revisions WHERE NOT ready OR desired_revision<>applied_revision OR evaluation_mode<>'contextual-v1' OR recovery_epoch<>$1 OR store_id<>$2 OR NOT ((model_id=$3 AND model_hash=$4) OR (model_id=$5 AND model_hash=$6)) LIMIT 1`,
+			[
+				state.epoch,
+				state.store_id,
+				receipt.from_model_id,
+				phase2ModelHash,
+				receipt.to_model_id,
+				modelHash,
+			],
+		);
+		if (invalid.rowCount)
+			throw new Error(
+				"Source recovery revalidation required before model upgrade",
+			);
+		await app.query(
+			"UPDATE tenancy.authorization_revisions SET model_id=$1,model_hash=$2,desired_revision=desired_revision+1,applied_revision=desired_revision+1,updated_at=clock_timestamp() WHERE model_id=$3 AND model_hash=$4",
+			[receipt.to_model_id, modelHash, receipt.from_model_id, phase2ModelHash],
+		);
+		await app.query("COMMIT");
+		await control.query("BEGIN");
+		const published = await control.query(
+			"UPDATE control.installations SET model_id=$2,model_hash=$3 WHERE installation_id=$1 AND state='ready' AND epoch=$4 AND model_id=$5 AND model_hash=$6 AND binding_id=$7 RETURNING installation_id",
+			[
+				options.installationId,
+				receipt.to_model_id,
+				modelHash,
+				state.epoch,
+				state.model_id,
+				state.model_hash,
+				state.binding_id,
+			],
+		);
+		if (published.rowCount !== 1)
+			throw new Error("Independent publication changed during model upgrade");
+		const completed = await control.query(
+			"UPDATE control.model_upgrades SET completed_at=clock_timestamp() WHERE installation_id=$1 AND completed_at IS NULL RETURNING installation_id",
+			[options.installationId],
+		);
+		if (completed.rowCount)
+			await control.query(
+				"INSERT INTO control.security_events(id,installation_id,epoch,action,evidence_reference) VALUES($1,$2,$3,'authorization.model_upgraded',$4)",
+				[
+					randomUUID(),
+					options.installationId,
+					state.epoch,
+					`model-sha256:${modelHash}`,
+				],
+			);
+		await control.query("COMMIT");
+	} catch (error) {
+		await app.query("ROLLBACK").catch(() => {});
+		await control.query("ROLLBACK").catch(() => {});
+		throw error;
+	} finally {
+		await app.query("SELECT pg_advisory_unlock(1849202603)").catch(() => {});
+		await control
+			.query("SELECT pg_advisory_unlock(hashtextextended($1,0))", [
+				`installation:${options.installationId}`,
+			])
+			.catch(() => {});
+		app.release();
+		control.release();
 	}
 }

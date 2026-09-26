@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
 import { authorizationModel, compileContext } from "@common-saas/authz/model";
+import { validateModel } from "../../packages/authz/src/fga";
 
 // Validate the production compiler and pinned model without modifying application readiness.
 const base = process.env.OPENFGA_API_URL ?? "http://127.0.0.1:18081";
@@ -20,7 +21,7 @@ async function request<T>(
 }
 
 const store = await request<{ id: string }>("/stores", "POST", {
-	name: `phase2-model-validation-${Date.now()}`,
+	name: `phase3-model-validation-${Date.now()}`,
 });
 try {
 	const model = await request<{ authorization_model_id: string }>(
@@ -34,6 +35,7 @@ try {
 		actorId: "alpha-owner",
 		role: "owner",
 	});
+	await validateModel(base, store.id, model.authorization_model_id);
 	const tuples = context.tuples;
 	const assertions = [
 		{ user: "user:alpha-owner", relation: "can_manage", allowed: true },
@@ -66,14 +68,16 @@ try {
 				status: "passed",
 				modelId: model.authorization_model_id,
 				assertions,
-				scope: "Phase 2 production contextual authorization model and compiler",
+				scope:
+					"Phase 3 production organization, team, workspace, Project and service-principal model",
+				policyCases: { organization: 8, team: 2, resource: 18 },
 			},
 			null,
 			2,
 		)}\n`,
 	);
 	console.log(
-		`OpenFGA accepted the model and passed ${assertions.length} contextual assertions`,
+		`OpenFGA accepted the model and passed 28 policy cases plus ${assertions.length} contextual assertions`,
 	);
 } finally {
 	await request(`/stores/${store.id}`, "DELETE");

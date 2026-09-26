@@ -8,7 +8,9 @@
 		"./schema": "./src/schema.ts",
 		"./migrate": "./src/migrate.ts",
 		"./tenancy": "./src/tenancy.ts",
-		"./tenancy-schema": "./src/tenancy-schema.ts"
+		"./tenancy-schema": "./src/tenancy-schema.ts",
+		"./resources": "./src/resources.ts",
+		"./resource-schema": "./src/resource-schema.ts"
 	},
 	"scripts": {
 		"typecheck": "tsc --noEmit"

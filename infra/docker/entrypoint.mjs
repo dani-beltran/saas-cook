@@ -6,6 +6,7 @@ try {
 			"migrate",
 			"bootstrap",
 			"authz-publish",
+			"authz-upgrade",
 			"owner-recovery",
 			"security-deactivate",
 		].includes(mode)
@@ -13,7 +14,7 @@ try {
 		await import("/app/dist/command.mjs");
 	else {
 		process.stderr.write(
-			"Unknown mode. Use serve, migrate, bootstrap, authz-publish, owner-recovery or security-deactivate.\n",
+			"Unknown mode. Use serve, migrate, bootstrap, authz-publish, authz-upgrade, owner-recovery or security-deactivate.\n",
 		);
 		process.exitCode = 2;
 	}

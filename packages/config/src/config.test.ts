@@ -98,3 +98,30 @@ describe("runtime configuration", () => {
 		).toThrow("Privileged command credentials must not be provided to serve");
 	});
 });
+
+it("validates the server-only resource module and explicit capacity preset", () => {
+	expect(readWebEnv(valid).WORKSPACES_ENABLED).toBe("true");
+	expect(readWebEnv(valid).DEFAULT_PROJECT_CAPACITY).toBe(100);
+	expect(
+		readWebEnv({
+			...valid,
+			WORKSPACES_ENABLED: "false",
+			DEFAULT_PROJECT_CAPACITY: "unlimited",
+		}),
+	).toMatchObject({
+		WORKSPACES_ENABLED: "false",
+		DEFAULT_PROJECT_CAPACITY: "unlimited",
+	});
+	for (const value of ["-1", "1.5", "unbounded", "1000001"])
+		expect(() =>
+			readWebEnv({ ...valid, DEFAULT_PROJECT_CAPACITY: value }),
+		).toThrow();
+	expect(() => readWebEnv({ ...valid, WORKSPACES_ENABLED: "yes" })).toThrow();
+	expect(
+		publicConfig({
+			...valid,
+			WORKSPACES_ENABLED: "false",
+			DEFAULT_PROJECT_CAPACITY: "100",
+		}),
+	).not.toHaveProperty("DEFAULT_PROJECT_CAPACITY");
+});

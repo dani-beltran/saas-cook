@@ -20,6 +20,9 @@ async function execute<T>(
 	) => Promise<T>,
 ) {
 	if (!context.request) throw new ORPCError("UNAUTHORIZED");
+	// Organization lifecycle has no declared service-account capability.
+	if (context.request.headers.has("authorization"))
+		throw new ORPCError("UNAUTHORIZED");
 	// Reject invented fixture headers and absent sessions before initializing services.
 	if (!context.request.headers.get("cookie"))
 		throw new ORPCError("UNAUTHORIZED");

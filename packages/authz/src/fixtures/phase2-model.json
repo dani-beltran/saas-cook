@@ -1,0 +1,208 @@
+{
+	"schema_version": "1.1",
+	"type_definitions": [
+		{
+			"type": "user"
+		},
+		{
+			"type": "organization",
+			"relations": {
+				"member": {
+					"this": {}
+				},
+				"owner": {
+					"this": {}
+				},
+				"admin": {
+					"this": {}
+				},
+				"billing": {
+					"this": {}
+				},
+				"can_read": {
+					"computedUserset": {
+						"relation": "member"
+					}
+				},
+				"can_manage": {
+					"intersection": {
+						"child": [
+							{
+								"computedUserset": {
+									"relation": "member"
+								}
+							},
+							{
+								"union": {
+									"child": [
+										{
+											"computedUserset": {
+												"relation": "owner"
+											}
+										},
+										{
+											"computedUserset": {
+												"relation": "admin"
+											}
+										}
+									]
+								}
+							}
+						]
+					}
+				},
+				"can_transfer": {
+					"intersection": {
+						"child": [
+							{
+								"computedUserset": {
+									"relation": "member"
+								}
+							},
+							{
+								"computedUserset": {
+									"relation": "owner"
+								}
+							}
+						]
+					}
+				},
+				"can_billing": {
+					"intersection": {
+						"child": [
+							{
+								"computedUserset": {
+									"relation": "member"
+								}
+							},
+							{
+								"union": {
+									"child": [
+										{
+											"computedUserset": {
+												"relation": "owner"
+											}
+										},
+										{
+											"computedUserset": {
+												"relation": "billing"
+											}
+										}
+									]
+								}
+							}
+						]
+					}
+				}
+			},
+			"metadata": {
+				"relations": {
+					"member": {
+						"directly_related_user_types": [
+							{
+								"type": "user"
+							}
+						]
+					},
+					"owner": {
+						"directly_related_user_types": [
+							{
+								"type": "user"
+							}
+						]
+					},
+					"admin": {
+						"directly_related_user_types": [
+							{
+								"type": "user"
+							}
+						]
+					},
+					"billing": {
+						"directly_related_user_types": [
+							{
+								"type": "user"
+							}
+						]
+					}
+				}
+			}
+		},
+		{
+			"type": "team",
+			"relations": {
+				"organization": {
+					"this": {}
+				},
+				"member": {
+					"this": {}
+				},
+				"can_read": {
+					"intersection": {
+						"child": [
+							{
+								"tupleToUserset": {
+									"tupleset": {
+										"relation": "organization"
+									},
+									"computedUserset": {
+										"relation": "can_read"
+									}
+								}
+							},
+							{
+								"union": {
+									"child": [
+										{
+											"tupleToUserset": {
+												"tupleset": {
+													"relation": "organization"
+												},
+												"computedUserset": {
+													"relation": "can_manage"
+												}
+											}
+										},
+										{
+											"computedUserset": {
+												"relation": "member"
+											}
+										}
+									]
+								}
+							}
+						]
+					}
+				},
+				"can_manage": {
+					"tupleToUserset": {
+						"tupleset": {
+							"relation": "organization"
+						},
+						"computedUserset": {
+							"relation": "can_manage"
+						}
+					}
+				}
+			},
+			"metadata": {
+				"relations": {
+					"organization": {
+						"directly_related_user_types": [
+							{
+								"type": "organization"
+							}
+						]
+					},
+					"member": {
+						"directly_related_user_types": [
+							{
+								"type": "user"
+							}
+						]
+					}
+				}
+			}
+		}
+	]
+}
