@@ -17,7 +17,19 @@
 		"spikes/**/*.ts",
 		"spikes/**/*.tsx",
 		"scripts/**/*.ts",
-		"vitest.config.ts"
+		"vitest.config.ts",
+		"apps/worker/**/*.ts",
+		"infra/docker/**/*.ts",
+		"packages/**/*.ts",
+		"packages/**/*.tsx",
+		"scripts/**/*.ts",
+		"*.config.ts"
 	],
-	"exclude": ["node_modules", "**/.next/**"]
+	"exclude": [
+		"node_modules",
+		"**/.next/**",
+		"packages/ui/.storybook/**",
+		"**/dist/**",
+		"apps/web/**"
+	]
 }

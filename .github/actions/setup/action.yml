@@ -1,0 +1,32 @@
+name: Pinned toolchain
+description: Install the reviewed Node and Bun versions with frozen dependencies
+inputs:
+  scanner:
+    description: Install the checksum-pinned Trivy scanner
+    default: 'false'
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      with:
+        node-version: '24.19.0'
+    - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+      with:
+        bun-version: '1.4.2'
+    - uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+      with:
+        path: ~/.bun/install/cache
+        key: bun-${{ runner.os }}-${{ runner.arch }}-1.4.2-node24.19.0-${{ hashFiles('bun.lock') }}
+    - run: bun install --frozen-lockfile
+      shell: bash
+    - if: inputs.scanner == 'true'
+      shell: bash
+      run: |
+        set -euo pipefail
+        mkdir -p "$RUNNER_TEMP/trivy"
+        curl --fail --silent --show-error --location --retry 3 \
+          https://github.com/aquasecurity/trivy/releases/download/v0.69.3/trivy_0.69.3_Linux-64bit.tar.gz \
+          --output "$RUNNER_TEMP/trivy/archive.tar.gz"
+        echo "1816b632dfe529869c740c0913e36bd1629cb7688bd5634f4a858c1d57c88b75  $RUNNER_TEMP/trivy/archive.tar.gz" | sha256sum --check
+        tar -xzf "$RUNNER_TEMP/trivy/archive.tar.gz" -C "$RUNNER_TEMP/trivy" trivy
+        echo "$RUNNER_TEMP/trivy" >> "$GITHUB_PATH"

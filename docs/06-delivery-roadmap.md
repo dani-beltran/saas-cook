@@ -8,6 +8,8 @@ Build a working vertical slice before expanding the catalogue. Prove identity, t
 
 The [September 23 authorization rerun](phase0/authorization.md#rerun-with-increased-memory-and-tmpfs-capacity) stopped at the retained-generation tuple guard despite an 8 GiB tmpfs. The subsequent [snapshot-retention fix](phase0/authorization.md#snapshot-retention-fix) passed 21 authorization tests and kept terminal snapshot payloads at zero under reference load. Its run instead stopped at the unchanged 6 GiB storage guard after 51 measured seconds, dominated by OpenFGA storage. The subsequent [contextual replacement](phase0/contextual-authorization.md) passed 33 tests and completed 1,821.6 measured seconds with 99.950% first-attempt success, all original latency/deadline thresholds satisfied, zero persisted graph writes and about 658 MiB of database-plus-WAL storage. Authorization is no longer the open Phase 0 blocker.
 
+Phase 1 repository/runtime implementation and its verification record are documented in [the Phase 1 guide](phase1/README.md). The application provides synthetic diagnostics and shared patterns; Phase 2 identity, authorization and initialization gates remain pending.
+
 ## 6.2 Phases and acceptance gates
 
 | Phase | Deliverables | Depends on | Exit gate | Effort estimate |

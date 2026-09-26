@@ -10,3 +10,8 @@ test-results/
 artifacts/
 .DS_Store
 .DS_STORE
+
+.env.*
+!.env.example
+dist/
+storybook-static/

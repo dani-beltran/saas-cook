@@ -1,0 +1,16 @@
+{
+	"name": "@common-saas/worker",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"build": "node --import tsx ../../scripts/phase1/build-runtime.ts"
+	},
+	"dependencies": {
+		"@common-saas/config": "workspace:*",
+		"@common-saas/db": "workspace:*",
+		"@common-saas/observability": "workspace:*",
+		"pg": "8.23.0",
+		"pg-boss": "12.33.4",
+		"zod": "4.6.5"
+	}
+}

@@ -10,7 +10,21 @@ The template is intended to be source code you own and customize. You supply you
 
 The template will build one Docker image containing the web app and background worker, with external data services configured at runtime.
 
-**Status:** Phase 0 validation is complete for the template scope: the contextual authorization prototype passed its reference gate. The production application and Docker image remain planned.
+**Status:** Phase 1 repository and runtime are implemented: a localized Next.js shell, oRPC API skeleton, worker, local services, quality/CI toolchain and combined application image. See the [Phase 1 setup and acceptance guide](docs/phase1/README.md). Identity, tenant access and production authorization remain Phase 2 work.
+
+## Local development
+
+With Node.js 24.19.0, Bun 1.4.2 and Docker installed:
+
+```sh
+bun install --frozen-lockfile
+cp .env.example .env
+bun run services:up
+bun run db:migrate
+bun run dev
+```
+
+Open `http://localhost:3000`. Local services and organization choices use disposable synthetic data. See the [runtime guide](docs/phase1/README.md) for tests, stories, image commands and implementation boundaries.
 
 ## Planning and design
 

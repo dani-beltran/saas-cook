@@ -1,0 +1,198 @@
+name: CI
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  CI: 'true'
+  NEXT_TELEMETRY_DISABLED: '1'
+  DO_NOT_TRACK: '1'
+jobs:
+  source:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+        with:
+          scanner: 'true'
+      - run: bun run check
+      - run: bun run typecheck
+      - run: bun run knip
+      - name: Commit range and proposed squash title
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          set -euo pipefail
+          if [[ "$EVENT_NAME" == pull_request ]]; then
+            printf '%s\n' "$PR_TITLE" | bun run commitlint
+          fi
+          if [[ -n "$BASE_SHA" && ! "$BASE_SHA" =~ ^0+$ ]]; then
+            bun run commitlint --from "$BASE_SHA" --to "$HEAD_SHA"
+          else
+            git show -s --format=%B "$HEAD_SHA" | bun run commitlint
+          fi
+      - run: bun run security:scan dependencies
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: dependency-scan-${{ github.sha }}
+          path: artifacts/security/
+          retention-days: 30
+  unit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - run: bun run test:unit
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: unit-${{ github.sha }}
+          path: artifacts/vitest/
+  integration:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      TEST_DATABASE_ADMIN_URL: postgresql://postgres:local_phase1@127.0.0.1:55433/postgres
+      OPENFGA_API_URL: http://127.0.0.1:18081
+      VITEST_REPORT: artifacts/vitest/integration.xml
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - run: bun run services:up
+      - run: bun run db:migrate
+        env:
+          MIGRATION_DATABASE_URL: postgresql://common_saas_migrator:local_phase1@127.0.0.1:55433/common_saas
+      # The migration integration suite exercises empty, 0000 previous-schema,
+      # replay and restricted-role cases; there is no released product yet.
+      - run: bun run test:integration
+      - run: bun run authz:validate
+      - name: Collect service diagnostics
+        if: always()
+        run: |
+          mkdir -p artifacts/services
+          docker compose -f infra/compose.yaml logs --no-color > artifacts/services/integration.log
+      - run: docker compose -f infra/compose.yaml down --volumes
+        if: always()
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: integration-${{ github.sha }}
+          path: |
+            artifacts/vitest/
+            artifacts/migrations/
+            artifacts/authz/
+            artifacts/services/
+  browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      DATABASE_URL: postgresql://common_saas_web:local_phase1@127.0.0.1:55433/common_saas
+      APP_ORIGIN: http://127.0.0.1:3000
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - run: node node_modules/@playwright/test/cli.js install --with-deps chromium
+      - run: bun run services:up
+      - run: bun run db:migrate
+        env:
+          MIGRATION_DATABASE_URL: postgresql://common_saas_migrator:local_phase1@127.0.0.1:55433/common_saas
+      - run: bun run build
+      - run: bun run test:e2e
+      - run: docker compose -f infra/compose.yaml down --volumes
+        if: always()
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: browser-${{ github.sha }}
+          path: |
+            artifacts/playwright/
+            artifacts/playwright-results/
+            playwright-report/
+            test-results/
+  storybook:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - run: bun run storybook:build
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: storybook-${{ github.sha }}
+          path: artifacts/storybook/
+          if-no-files-found: error
+  production:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      # No database, provider or secret environment is available during builds.
+      - run: bun run build
+  image:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+        with:
+          scanner: 'true'
+      - name: Build the combined application image
+        run: bun run image:build
+      - run: bun run services:up
+      - run: bun run test:image
+      - run: bun run security:scan image common-sass:phase1
+      - name: Record image identity
+        if: always()
+        run: |
+          mkdir -p artifacts/image
+          docker image inspect common-sass:phase1 > artifacts/image/inspect.json
+          docker compose -f infra/compose.yaml logs --no-color > artifacts/image/services.log
+      - run: docker compose -f infra/compose.yaml down --volumes
+        if: always()
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: image-${{ github.sha }}
+          path: |
+            artifacts/image/
+            artifacts/security/
+          retention-days: 30
+  required:
+    if: always()
+    needs: [source, unit, integration, browser, storybook, production, image]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Require every applicable gate
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          node -e 'const jobs = JSON.parse(process.env.RESULTS); if (Object.values(jobs).some(job => job.result !== "success")) process.exit(1)'

@@ -1,8 +1,39 @@
 {
+	"$schema": "https://turbo.build/schema.json",
+	"globalDependencies": ["tsconfig.json", "tsconfig.base.json"],
+	"globalPassThroughEnv": [
+		"APP_ORIGIN",
+		"DATABASE_URL",
+		"WORKER_DATABASE_URL",
+		"MIGRATION_DATABASE_URL",
+		"MIGRATIONS_DIR",
+		"WORKER_HEARTBEAT_PATH",
+		"PORT",
+		"HOSTNAME",
+		"OPENFGA_URL",
+		"OPENFGA_API_URL",
+		"S3_ENDPOINT",
+		"S3_ACCESS_KEY_ID",
+		"S3_SECRET_ACCESS_KEY",
+		"MAILPIT_HTTP_URL",
+		"AUTHZ_PUBLISH_TOKEN",
+		"TEST_DATABASE_ADMIN_URL",
+		"TEST_IMAGE",
+		"PLAYWRIGHT_BASE_URL",
+		"CI",
+		"VITEST_REPORT",
+		"TRIVY_BIN",
+		"NEXT_RUNTIME",
+		"NEXT_PHASE"
+	],
 	"tasks": {
 		"build": {
-			"outputs": [".next/**", "!.next/cache/**"],
-			"env": ["PHASE0_API_FIXTURES"]
-		}
+			"dependsOn": ["^build"],
+			"outputs": ["dist/**", ".next/**", "!.next/cache/**"],
+			"env": ["PHASE0_API_FIXTURES", "NODE_ENV", "NEXT_TELEMETRY_DISABLED"]
+		},
+		"typecheck": { "dependsOn": ["^typecheck"], "outputs": [] },
+		"dev": { "cache": false, "persistent": true },
+		"storybook:build": { "cache": false }
 	}
 }

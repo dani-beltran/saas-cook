@@ -1,0 +1,8 @@
+pre-commit:
+  commands:
+    source-policy:
+      run: bun run check
+commit-msg:
+  commands:
+    conventional-commit:
+      run: bun run commitlint --edit "{1}"

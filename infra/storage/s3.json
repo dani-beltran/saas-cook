@@ -1,0 +1,11 @@
+{
+	"identities": [
+		{
+			"name": "local-development",
+			"credentials": [
+				{ "accessKey": "local_phase1", "secretKey": "local_phase1_storage" }
+			],
+			"actions": ["Admin", "Read", "Write", "List", "Tagging"]
+		}
+	]
+}

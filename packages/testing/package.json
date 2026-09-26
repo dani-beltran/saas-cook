@@ -1,0 +1,17 @@
+{
+	"name": "@common-saas/testing",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"scripts": {
+		"typecheck": "tsc --noEmit"
+	},
+	"dependencies": {},
+	"devDependencies": {
+		"typescript": "7.0.2",
+		"@aws-sdk/client-s3": "3.1137.0"
+	}
+}

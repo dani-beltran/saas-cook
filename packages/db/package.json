@@ -1,0 +1,24 @@
+{
+	"name": "@common-saas/db",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts",
+		"./schema": "./src/schema.ts",
+		"./migrate": "./src/migrate.ts"
+	},
+	"scripts": {
+		"typecheck": "tsc --noEmit"
+	},
+	"dependencies": {
+		"drizzle-orm": "0.45.3",
+		"pg": "8.23.0"
+	},
+	"devDependencies": {
+		"typescript": "7.0.2",
+		"@types/pg": "8.23.1",
+		"drizzle-kit": "0.31.11",
+		"@common-saas/testing": "workspace:*"
+	}
+}

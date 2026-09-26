@@ -4,19 +4,19 @@
 
 The template produces one Docker application image containing the Next.js web server and Node.js background worker. Infrastructure and operation are outside the template scope. PostgreSQL, OpenFGA, object storage and enabled providers are external dependencies configured at runtime.
 
-**Status: planned.** Phase 1 implements the Dockerfile, entrypoint and CI image checks. The existing Phase 0 Next.js app is a synthetic fixture, not the template application.
+**Status: Phase 1 implemented.** The Dockerfile, Node entrypoint and CI/image checks are in the repository. See [Phase 1 setup and evidence](phase1/README.md). Phase 2 implements the real initialization/model-publication protocols; their packaged modes currently fail explicitly. The Phase 0 Next.js app remains a separate historical fixture.
 
 | Path | Responsibility |
 | --- | --- |
 | `.github/workflows/ci.yml` | Source checks, application build and Docker image verification |
 | `infra/docker/Dockerfile`, `.dockerignore` | Multi-stage build with one final `app` target |
-| `infra/docker/entrypoint.sh`, `infra/docker/healthcheck.js` | Supervise web/worker, forward signals, expose packaged command modes and check combined health |
+| `infra/docker/entrypoint.mjs`, `infra/docker/healthcheck.cjs` | Supervise web/worker, forward signals, expose packaged command modes and check combined health |
 | `package.json`, `bun.lock`, `turbo.json` | Pinned package manager, dependencies and workspace build tasks |
 | `packages/config/` | Separate build inputs and validated runtime configuration |
 
 ## 7.2 Continuous integration
 
-Run required checks for pull requests and the exact merged commit on the protected default branch. Use Bun for package management and workspace script invocation, with Node.js LTS as the application/tool runtime where required. The planned command contracts are:
+Run required checks for pull requests and the exact merged commit on the protected default branch. Use Bun for package management and workspace script invocation, with Node.js LTS as the application/tool runtime where required. The implemented command contracts are:
 
 | Command | Implementation and purpose |
 | --- | --- |
@@ -53,7 +53,7 @@ Run as a non-root user. The `serve` entrypoint supervises both children, forward
 
 Exclude `.git`, local dependencies, `.env*`, credentials and generated test output from the build context. Supply application credentials at runtime; private package credentials use BuildKit secret mounts. Build inputs must not require access to live application services. Validate server/client configuration separately and keep secrets out of browser assets. Environment-specific browser settings use allowlisted runtime configuration instead of values frozen into `NEXT_PUBLIC_*` during compilation.
 
-Planned build command from the repository root:
+Direct build command from the repository root (use `bun run image:build` to also attach the implementation fingerprint required by the acceptance suite):
 
 ```sh
 docker build --file infra/docker/Dockerfile --target app --tag common-sass:local .

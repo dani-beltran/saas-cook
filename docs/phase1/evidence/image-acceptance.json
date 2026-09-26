@@ -1,0 +1,28 @@
+{
+	"requirement": "R-IMAGE / Phase 1",
+	"suiteVersion": 1,
+	"checks": [
+		"non-root",
+		"command-packaging-and-phase2-refusal",
+		"invalid-config-rejected-before-children",
+		"packaged-migration-and-replay",
+		"pinned-runtime-and-native-image-library",
+		"startup-static-public-assets-and-combined-health",
+		"child-credential-separation",
+		"stale-heartbeat-is-unhealthy",
+		"graceful-shutdown-and-redacted-logs",
+		"web-failure-stops-container",
+		"worker-failure-stops-container"
+	],
+	"sourceCommit": "0caf2ca38bcdbf6b574333e964ac2dd194709e29",
+	"sourceDirty": true,
+	"implementationSha256": "91d309a86c78bf173121d19cab5935cd1d468b8fe18510616ab894a26d45280e",
+	"image": "sha256:83a4bcde9642a2ffcdf7e0663a1219d00b2e59f3d68a00404b58fc0f6f7f2fcc",
+	"architecture": "arm64",
+	"os": "linux",
+	"buildNode": "24.19.0",
+	"runtimeNode": "24.21.0",
+	"bun": "1.4.2",
+	"baseImage": "gcr.io/distroless/nodejs24-debian13:nonroot@sha256:bb6b03d81066993293a10feda7250e8e1cc034035fe9b61cfceededa7c8bf04d",
+	"phase2Commands": "packaged help and explicit refusal only; real bootstrap/authz publication deferred"
+}

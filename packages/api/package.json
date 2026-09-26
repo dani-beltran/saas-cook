@@ -1,0 +1,25 @@
+{
+	"name": "@common-saas/api",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts",
+		"./client": "./src/client.ts"
+	},
+	"scripts": {
+		"typecheck": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@common-saas/api-contracts": "workspace:*",
+		"@orpc/client": "1.15.3",
+		"@orpc/server": "1.15.3",
+		"@orpc/openapi": "1.15.3",
+		"@orpc/zod": "1.15.3",
+		"@orpc/contract": "1.15.3",
+		"@common-saas/observability": "workspace:*"
+	},
+	"devDependencies": {
+		"typescript": "7.0.2"
+	}
+}

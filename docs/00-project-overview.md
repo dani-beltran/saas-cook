@@ -2,7 +2,7 @@
 
 An implementation plan for a reusable enterprise SaaS template built with **Next.js, React 19, TypeScript, shadcn/ui, Tailwind CSS, Better Auth, Drizzle ORM, PostgreSQL, and oRPC**, using **Bun** for package management and **Stripe** for payments and billing.
 
-**Status:** Phase 0 validation is complete for the template scope: the contextual authorization prototype passed its reference gate. The production application and Docker image remain planned.
+**Status:** Phase 0 validation and Phase 1 repository/runtime implementation are complete for their documented scope. The [Phase 1 guide](phase1/README.md) covers the runnable shell, worker, API skeleton, combined image and local acceptance evidence. Identity, tenant access and production authorization are Phase 2 work.
 
 The folder name intentionally follows the requested spelling, `common-sass`. It lives inside the existing `common-saas` workspace.
 
@@ -10,6 +10,7 @@ The folder name intentionally follows the requested spelling, `common-sass`. It 
 
 | Document | Contents |
 | --- | --- |
+| [Phase 1 runtime](phase1/README.md) | Local setup, implemented packages, verification commands and acceptance evidence |
 | [Phase 0 validation](phase0/README.md) | Executable experiments, decision records, measured results and remaining exit gates |
 | [1. Product plan](01-product-plan.md) | Scope, complete capability catalogue, product journeys, dashboard, and optional modules |
 | [2. Architecture and security](02-architecture-and-security.md) | Stack, repository structure, tenant isolation, ReBAC, identity, API boundaries, and architectural decisions |

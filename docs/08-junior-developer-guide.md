@@ -12,7 +12,7 @@ For example, a team building a client project tracker could reuse organization m
 
 ## 2. What exists today?
 
-**This is currently a planning and validation repository, not a production-ready SaaS application.** A *spike* is a small experiment used to test a technical decision before committing to the full implementation.
+**This repository now has a runnable Phase 1 foundation. Identity, tenant access and product features are still under development.** A *spike* is a small experiment used to test a technical decision before committing to the full implementation.
 
 | Area | Current state |
 | --- | --- |
@@ -21,12 +21,12 @@ For example, a team building a client project tracker could reuse organization m
 | Next.js/API example | Demonstrates contracts and request handling with synthetic authentication and in-memory Project data |
 | Database and identity experiments | Exercise specific integration and security assumptions; they do not provide the complete production lifecycle |
 | Authorization design | Contextual replacement passed the Phase 0 gate; production integration remains planned |
-| Production application and reusable packages | Planned for later phases |
+| Application runtime and reusable packages | Phase 1 shell, worker, API skeleton, shared packages, local services and combined image are implemented |
 | Repository-local SaaS agent skills | Planned; the skill catalogue is a design document |
 
 The original authorization experiment copied permission relationships into snapshots and failed its availability/storage gate. Its contextual replacement builds bounded permission inputs from current database state and passed the full reference benchmark. Historical failures remain documented.
 
-The next step is Phase 1 application scaffolding and the Docker image. Phase 0 validation is complete for the template scope; production integration and later feature acceptance remain planned. See the [Phase 0 results](phase0/README.md).
+The next step is Phase 2 identity, tenancy and production authorization. See the [Phase 1 setup and acceptance guide](phase1/README.md) for the runnable application and the [Phase 0 results](phase0/README.md) for earlier design evidence.
 
 ## 3. The concepts you need first
 
@@ -73,7 +73,7 @@ The [product plan](01-product-plan.md) contains the full capability catalogue an
 
 ## 5. How the application will fit together
 
-The planned architecture is a **modular monolith**: one application organized into modules with clear responsibilities. The planned Docker image contains its web server and background worker. PostgreSQL, the authorization service, and object storage run externally. The contextual authorization prototype passed Phase 0; production integration remains planned.
+The architecture is a **modular monolith**: one application organized into modules with clear responsibilities. The Phase 1 Docker image contains its web server and background worker. PostgreSQL, the authorization service, and object storage run externally. The contextual authorization prototype passed Phase 0; production integration remains planned.
 
 | Layer | Main tools | Responsibility |
 | --- | --- | --- |
@@ -141,6 +141,7 @@ For example, if Acme has room for one more Project and two requests arrive toget
 
 | Location | What to inspect |
 | --- | --- |
+| [`docs/phase1/README.md`](phase1/README.md) | Current runtime setup, tests, image and implementation boundaries |
 | [`docs/phase0/README.md`](phase0/README.md) | Current results, blockers, runtime prerequisites, and reproduction commands |
 | [`spikes/phase0/api-next/`](../spikes/phase0/api-next/) | Synthetic Next.js/oRPC example and browser/API tests |
 | [`spikes/phase0/database/`](../spikes/phase0/database/) | Tenant transaction, PostgreSQL RLS, and database integration experiments |
@@ -149,7 +150,7 @@ For example, if Acme has room for one more Project and two requests arrive toget
 | [`scripts/phase0/`](../scripts/phase0/) | Toolchain and compiled API checks |
 | [`package.json`](../package.json) | Commands that actually exist today |
 
-The production `apps/web`, `apps/worker`, and shared `packages/` layout in the architecture document is **planned**. Do not mistake that directory diagram for existing implementation.
+The `apps/web`, `apps/worker`, and initial shared `packages/` layout is implemented. Start with the [Phase 1 local setup](phase1/README.md). The architecture document also lists later domain modules that are not implemented yet.
 
 For initial local exploration, the current documented prerequisites are **Node 24.19.0** and **Bun 1.4.2**. From the repository root:
 
@@ -174,7 +175,7 @@ Useful first contributions include explaining a spike’s behavior, improving re
 
 ## 9. What “done” means for a feature
 
-Reviewers should be able to see working behavior, correct tenant/permission enforcement, safe database changes, handled failure states, and relevant test evidence. Vitest covers unit and integration behavior; Playwright covers browser journeys; Storybook demonstrates component states. Type checks, builds, and the planned CI quality checks support these tests.
+Reviewers should be able to see working behavior, correct tenant/permission enforcement, safe database changes, handled failure states, and relevant test evidence. Vitest covers unit and integration behavior; Playwright covers browser journeys; Storybook demonstrates component states. Type checks, builds, and the CI quality checks support these tests.
 
 Important cases include two different organizations, one user belonging to both, revoked permissions, concurrent changes, and repeated jobs or requests. A happy-path screenshot cannot establish those properties. AI-authored code must meet the same criteria; the planned skills guide implementation and do not replace verification.
 

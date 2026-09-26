@@ -1,0 +1,27 @@
+{
+	"status": "passed",
+	"modelId": "01M3EXNA3YYXMT7H44ST2Y6D07",
+	"assertions": [
+		{
+			"user": "user:alpha-u0",
+			"relation": "can_manage",
+			"allowed": true
+		},
+		{
+			"user": "user:alpha-u1",
+			"relation": "can_read",
+			"allowed": true
+		},
+		{
+			"user": "user:alpha-u1",
+			"relation": "can_manage",
+			"allowed": false
+		},
+		{
+			"user": "user:beta-u0",
+			"relation": "can_read",
+			"allowed": false
+		}
+	],
+	"scope": "Phase 0 selected model compatibility; production authorization remains Phase 2"
+}

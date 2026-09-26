@@ -1,0 +1,42 @@
+name: common-saas-phase1
+services:
+  postgres:
+    image: postgres:18.6@sha256:86c951e05bf56c93d95d397747fb8820ac76cc3bedb78f43abd83eedbe3666ae
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: local_phase1
+    ports: ["127.0.0.1:55433:5432"]
+    volumes: ["./postgres/init.sql:/docker-entrypoint-initdb.d/00-init.sql:ro"]
+    tmpfs: ["/var/lib/postgresql:size=1g"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+  fga-migrate:
+    image: openfga/openfga:v1.21.0@sha256:2113c664a486b5da8d7a2cdab479e0d4e30639c80fd2c000540f645c1dbc1e55
+    depends_on:
+      postgres: {condition: service_healthy}
+    command: ["migrate"]
+    environment: &fga-env
+      OPENFGA_DATASTORE_ENGINE: postgres
+      OPENFGA_DATASTORE_URI: postgres://postgres:local_phase1@postgres:5432/common_saas_fga?sslmode=disable
+  openfga:
+    image: openfga/openfga:v1.21.0@sha256:2113c664a486b5da8d7a2cdab479e0d4e30639c80fd2c000540f645c1dbc1e55
+    depends_on:
+      fga-migrate: {condition: service_completed_successfully}
+    command: ["run"]
+    environment:
+      <<: *fga-env
+      OPENFGA_PLAYGROUND_ENABLED: "false"
+      OPENFGA_LOG_LEVEL: error
+    ports: ["127.0.0.1:18081:8080"]
+  mailpit:
+    image: axllent/mailpit:v1.29.4@sha256:0530ab1c658a0f225f148e617522db84053bd1e4879e664c23de5fee44ad6819
+    ports: ["127.0.0.1:1026:1025", "127.0.0.1:8026:8025"]
+  storage:
+    image: chrislusf/seaweedfs:4.17@sha256:186de7ef977a20343ee9a5544073f081976a29e2d29ecf8379891e7bf177fbe9
+    command: ["server", "-s3", "-dir=/data", "-s3.config=/etc/seaweedfs/s3.json", "-ip=storage", "-volume.max=8", "-master.volumeSizeLimitMB=8"]
+    volumes: ["./storage/s3.json:/etc/seaweedfs/s3.json:ro"]
+    tmpfs: ["/data:size=256m"]
+    ports: ["127.0.0.1:19000:8333"]

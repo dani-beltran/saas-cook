@@ -1,0 +1,97 @@
+{
+	"date": "2026-09-26",
+	"suiteVersion": 1,
+	"preset": "Foundation / Phase 1",
+	"implementationSha256": "91d309a86c78bf173121d19cab5935cd1d468b8fe18510616ab894a26d45280e",
+	"checks": {
+		"frozenCleanSnapshotInstall": {
+			"status": "passed",
+			"bun": "1.4.2",
+			"lockfileUnchanged": true,
+			"lockfileSha256": "1471dc88b9430cdc40a6cec43132464742252f803865d9db651809684e687708",
+			"sourceOnlyTypecheck": "passed without generated .next directories"
+		},
+		"biome": "passed",
+		"typescript": "passed",
+		"knip": "passed",
+		"unit": {
+			"passed": 33,
+			"failed": 0
+		},
+		"integration": {
+			"passed": 6,
+			"failed": 0,
+			"services": [
+				"PostgreSQL",
+				"pg-boss",
+				"OpenFGA",
+				"S3-compatible storage",
+				"Mailpit"
+			]
+		},
+		"browser": {
+			"passed": 3,
+			"failed": 0,
+			"browser": "Chromium",
+			"responsiveScreenshotsReviewed": true
+		},
+		"productionBuild": "passed; no application credentials or services in Docker build",
+		"storybook": {
+			"status": "passed",
+			"stories": 6
+		},
+		"sourceModel": {
+			"assertions": 4,
+			"scope": "Selected Phase 0 model only; no production authorization claim"
+		},
+		"hooks": {
+			"status": "passed",
+			"cases": [
+				{
+					"name": "temporary repository",
+					"exitCode": 0
+				},
+				{
+					"name": "Lefthook installation",
+					"exitCode": 0
+				},
+				{
+					"name": "valid commit-msg",
+					"exitCode": 0
+				},
+				{
+					"name": "invalid commit-msg rejected",
+					"exitCode": 1
+				},
+				{
+					"name": "stage valid source",
+					"exitCode": 0
+				},
+				{
+					"name": "pre-commit executes Biome for staged source",
+					"exitCode": 0
+				},
+				{
+					"name": "stage malformed synthetic source",
+					"exitCode": 0
+				},
+				{
+					"name": "pre-commit rejects malformed source",
+					"exitCode": 1
+				}
+			]
+		},
+		"localServiceReadiness": "passed with real S3 write after service restart",
+		"historicalPhase0Unit": {
+			"passed": 79,
+			"skipped": 52,
+			"scope": "Historical integration suites intentionally disabled; not Phase 1 skipped tests"
+		}
+	},
+	"hostedCi": "Configured; not executed until repository push",
+	"deferred": [
+		"Phase 2 identity/tenancy/authorization",
+		"Real bootstrap and authz-publish commands",
+		"Phase 3 domain feature"
+	]
+}

@@ -1,0 +1,30 @@
+{
+	"scanner": "Trivy 0.69.3",
+	"exceptions": [],
+	"image": "sha256:83a4bcde9642a2ffcdf7e0663a1219d00b2e59f3d68a00404b58fc0f6f7f2fcc",
+	"reports": {
+		"dependencies": {
+			"scope": "dependencies",
+			"target": ".",
+			"status": "passed",
+			"blocked": [],
+			"checkedAt": "2026-09-26T13:16:02.659Z",
+			"includeDevDependencies": true,
+			"reportedSeverities": {},
+			"reportSha256": "5a9628cdfa52692aa28de204f750814c458cb004e29ed08610db6f25c64f4c21"
+		},
+		"image": {
+			"scope": "image",
+			"target": "sha256:83a4bcde9642a2ffcdf7e0663a1219d00b2e59f3d68a00404b58fc0f6f7f2fcc",
+			"status": "passed",
+			"blocked": [],
+			"checkedAt": "2026-09-26T13:16:05.011Z",
+			"includeDevDependencies": false,
+			"reportedSeverities": {
+				"MEDIUM": 15,
+				"LOW": 7
+			},
+			"reportSha256": "40b5914dbabc227c7ea16ac1e12513ab9b0f6b03f4a64708e4cc38362867c9d0"
+		}
+	}
+}
