@@ -5,7 +5,8 @@
 	"type": "module",
 	"exports": {
 		".": "./src/index.ts",
-		"./client": "./src/client.ts"
+		"./client": "./src/client.ts",
+		"./runtime": "./src/runtime.ts"
 	},
 	"scripts": {
 		"typecheck": "tsc --noEmit"
@@ -17,7 +18,13 @@
 		"@orpc/openapi": "1.15.3",
 		"@orpc/zod": "1.15.3",
 		"@orpc/contract": "1.15.3",
-		"@common-saas/observability": "workspace:*"
+		"@common-saas/observability": "workspace:*",
+		"@common-saas/auth": "workspace:*",
+		"@common-saas/authz": "workspace:*",
+		"@common-saas/db": "workspace:*",
+		"@common-saas/email": "workspace:*",
+		"@common-saas/config": "workspace:*",
+		"pg": "8.23.0"
 	},
 	"devDependencies": {
 		"typescript": "7.0.2"

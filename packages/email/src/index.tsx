@@ -56,3 +56,11 @@ export async function renderRuntimeEmail(locale: EmailLocale) {
 		text: await render(element, { plainText: true }),
 	};
 }
+
+export {
+	deliverIdentityEmails,
+	type EmailTransport,
+	enqueueIdentityEmail,
+} from "./delivery";
+export { renderIdentityEmail } from "./identity";
+export { createSmtpTransport } from "./smtp";

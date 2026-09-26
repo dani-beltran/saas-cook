@@ -1,5 +1,7 @@
 import { oc } from "@orpc/contract";
 import { z } from "zod";
+import { tenancyContract } from "./tenancy";
+export type { OrganizationCommand, OrganizationSnapshotDto } from "./tenancy";
 
 export const diagnosticInput = z.strictObject({
 	message: z.string().trim().min(1).max(120),
@@ -13,6 +15,7 @@ export const diagnosticDto = z.object({
 });
 const errorData = z.object({ requestId: z.uuid() });
 export const contract = {
+	organizations: tenancyContract,
 	diagnostics: {
 		echo: oc
 			.errors({

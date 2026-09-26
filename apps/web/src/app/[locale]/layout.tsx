@@ -5,10 +5,11 @@ import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import type { ReactNode } from "react";
+import { accountMessages } from "../../i18n/account";
 
 export const metadata: Metadata = {
 	title: "Common SaaS · Foundation",
-	description: "A synthetic preview of the common SaaS application foundation.",
+	description: "Manage your account, organizations, members and security.",
 };
 
 export default async function LocaleLayout({
@@ -26,7 +27,7 @@ export default async function LocaleLayout({
 			<body>
 				<NextIntlClientProvider
 					locale={locale}
-					messages={messages[locale]}
+					messages={{ ...messages[locale], Account: accountMessages[locale] }}
 					timeZone="UTC"
 				>
 					{children}

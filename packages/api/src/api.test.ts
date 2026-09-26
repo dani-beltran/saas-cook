@@ -76,10 +76,10 @@ it("generates public OpenAPI from the same schemas", async () => {
 	const operation = document.paths?.["/diagnostics/echo"]?.post;
 	expect(operation?.responses?.["200"]).toBeDefined();
 	expect(operation?.responses?.["422"]).toBeDefined();
-	expect(Object.keys(document.paths ?? {})).toEqual(["/diagnostics/echo"]);
-	expect(JSON.stringify(document)).not.toContain("organizationId");
+	expect(Object.keys(document.paths ?? {})).toContain("/organizations/{organizationId}");
+	expect(document.paths?.["/organizations"]?.post?.responses?.["401"]).toBeDefined();
 });
-it("returns safe uncached request correlation and exposes no tenant routes", async () => {
+it("returns safe uncached request correlation and exposes no Phase 3 resource routes", async () => {
 	const response = await handleApi(
 		new Request("http://localhost/api/v1/organizations/alpha/projects", {
 			headers: {
@@ -119,3 +119,12 @@ function typeAssertions(api: ApiClient): Promise<DiagnosticDto> {
 	return api.diagnostics.echo({ message: "hello", locale: "en" });
 }
 void typeAssertions;
+
+for (const transport of ["rpc", "rest"] as const) {
+ it(`${transport} refuses spoofed fixture identity and tenant headers`, async () => {
+  const headers = {"x-user-id":"owner", "x-organization-id":"alpha", authorization:"Bearer phase0-owner"};
+  const response = await handleApi(new Request(transport === "rest" ? "http://localhost/api/v1/organizations" : "http://localhost/api/rpc/organizations/list", transport === "rest" ? {headers} : {method:"POST",headers:{...headers,"content-type":"application/json"},body:JSON.stringify({json:{}})}),transport);
+  expect(response.status).toBe(401);
+  expect(response.headers.get("cache-control")).toBe("no-store");
+ });
+}

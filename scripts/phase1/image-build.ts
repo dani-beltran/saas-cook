@@ -18,7 +18,7 @@ const child = spawn(
 		"--build-arg",
 		`SOURCE_FINGERPRINT=${fingerprint}`,
 		"--tag",
-		process.env.TEST_IMAGE ?? "common-sass:phase1",
+		process.env.TEST_IMAGE ?? "common-sass:phase2",
 		".",
 	],
 	{ stdio: "inherit" },

@@ -6,7 +6,9 @@
 	"exports": {
 		".": "./src/index.ts",
 		"./schema": "./src/schema.ts",
-		"./migrate": "./src/migrate.ts"
+		"./migrate": "./src/migrate.ts",
+		"./tenancy": "./src/tenancy.ts",
+		"./tenancy-schema": "./src/tenancy-schema.ts"
 	},
 	"scripts": {
 		"typecheck": "tsc --noEmit"

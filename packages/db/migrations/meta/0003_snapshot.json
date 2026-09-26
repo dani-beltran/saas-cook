@@ -1,0 +1,1749 @@
+{
+	"id": "31269bfd-55e9-45d7-a37f-7887d8025c9d",
+	"prevId": "d4698a14-821d-41a6-805a-02a92fa4c496",
+	"version": "7",
+	"dialect": "postgresql",
+	"tables": {
+		"identity.account": {
+			"name": "account",
+			"schema": "identity",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"user_id": {
+					"name": "user_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"account_id": {
+					"name": "account_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"provider_id": {
+					"name": "provider_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"access_token": {
+					"name": "access_token",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"refresh_token": {
+					"name": "refresh_token",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"id_token": {
+					"name": "id_token",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"access_token_expires_at": {
+					"name": "access_token_expires_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"refresh_token_expires_at": {
+					"name": "refresh_token_expires_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"scope": {
+					"name": "scope",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"password": {
+					"name": "password",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"account_user_id_user_id_fk": {
+					"name": "account_user_id_user_id_fk",
+					"tableFrom": "account",
+					"tableTo": "user",
+					"schemaTo": "identity",
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"foundation.runtime_heartbeats": {
+			"name": "runtime_heartbeats",
+			"schema": "foundation",
+			"columns": {
+				"process": {
+					"name": "process",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"observed_at": {
+					"name": "observed_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"foundation.runtime_probes": {
+			"name": "runtime_probes",
+			"schema": "foundation",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "uuid",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"processed_at": {
+					"name": "processed_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"identity.session": {
+			"name": "session",
+			"schema": "identity",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"user_id": {
+					"name": "user_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"token": {
+					"name": "token",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"expires_at": {
+					"name": "expires_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"ip_address": {
+					"name": "ip_address",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"user_agent": {
+					"name": "user_agent",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"session_user_id_user_id_fk": {
+					"name": "session_user_id_user_id_fk",
+					"tableFrom": "session",
+					"tableTo": "user",
+					"schemaTo": "identity",
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"session_token_unique": {
+					"name": "session_token_unique",
+					"nullsNotDistinct": false,
+					"columns": ["token"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"identity.user": {
+			"name": "user",
+			"schema": "identity",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"name": {
+					"name": "name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"email": {
+					"name": "email",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"email_verified": {
+					"name": "email_verified",
+					"type": "boolean",
+					"primaryKey": false,
+					"notNull": true,
+					"default": false
+				},
+				"image": {
+					"name": "image",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"user_email_unique": {
+					"name": "user_email_unique",
+					"nullsNotDistinct": false,
+					"columns": ["email"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"identity.verification": {
+			"name": "verification",
+			"schema": "identity",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"identifier": {
+					"name": "identifier",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"value": {
+					"name": "value",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"expires_at": {
+					"name": "expires_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"tenancy.audit_events": {
+			"name": "audit_events",
+			"schema": "tenancy",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "uuid",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"organization_id": {
+					"name": "organization_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"actor_id": {
+					"name": "actor_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"action": {
+					"name": "action",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"target_id": {
+					"name": "target_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"changes": {
+					"name": "changes",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"occurred_at": {
+					"name": "occurred_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {
+				"audit_timeline": {
+					"name": "audit_timeline",
+					"columns": [
+						{
+							"expression": "organization_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "occurred_at",
+							"isExpression": false,
+							"asc": false,
+							"nulls": "first"
+						},
+						{
+							"expression": "id",
+							"isExpression": false,
+							"asc": false,
+							"nulls": "first"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"audit_events_organization_id_fkey": {
+					"name": "audit_events_organization_id_fkey",
+					"tableFrom": "audit_events",
+					"tableTo": "organizations",
+					"schemaTo": "tenancy",
+					"columnsFrom": ["organization_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {
+				"migration_control": {
+					"name": "migration_control",
+					"as": "PERMISSIVE",
+					"for": "ALL",
+					"to": ["common_saas_migrator"],
+					"using": "true",
+					"withCheck": "true"
+				},
+				"tenant_isolation": {
+					"name": "tenant_isolation",
+					"as": "PERMISSIVE",
+					"for": "ALL",
+					"to": ["public"],
+					"using": "\"tenancy\".\"audit_events\".\"organization_id\" = nullif(current_setting('app.organization_id',true),'')::uuid",
+					"withCheck": "\"tenancy\".\"audit_events\".\"organization_id\" = nullif(current_setting('app.organization_id',true),'')::uuid"
+				}
+			},
+			"checkConstraints": {},
+			"isRLSEnabled": true
+		},
+		"tenancy.invitations": {
+			"name": "invitations",
+			"schema": "tenancy",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "uuid",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"organization_id": {
+					"name": "organization_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"email": {
+					"name": "email",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"operation_key": {
+					"name": "operation_key",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"token_hash": {
+					"name": "token_hash",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"role": {
+					"name": "role",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"inviter_membership_id": {
+					"name": "inviter_membership_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"expires_at": {
+					"name": "expires_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"status": {
+					"name": "status",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'pending'"
+				},
+				"accepted_by": {
+					"name": "accepted_by",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"invitations_organization_id_fkey": {
+					"name": "invitations_organization_id_fkey",
+					"tableFrom": "invitations",
+					"tableTo": "organizations",
+					"schemaTo": "tenancy",
+					"columnsFrom": ["organization_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"invitations_accepted_by_fkey": {
+					"name": "invitations_accepted_by_fkey",
+					"tableFrom": "invitations",
+					"tableTo": "user",
+					"schemaTo": "identity",
+					"columnsFrom": ["accepted_by"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"invitations_organization_id_inviter_membership_id_fkey": {
+					"name": "invitations_organization_id_inviter_membership_id_fkey",
+					"tableFrom": "invitations",
+					"tableTo": "memberships",
+					"schemaTo": "tenancy",
+					"columnsFrom": ["organization_id", "inviter_membership_id"],
+					"columnsTo": ["organization_id", "id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"invitations_organization_id_operation_key_key": {
+					"name": "invitations_organization_id_operation_key_key",
+					"nullsNotDistinct": false,
+					"columns": ["organization_id", "operation_key"]
+				},
+				"invitations_token_hash_key": {
+					"name": "invitations_token_hash_key",
+					"nullsNotDistinct": false,
+					"columns": ["token_hash"]
+				},
+				"invitations_organization_id_id_key": {
+					"name": "invitations_organization_id_id_key",
+					"nullsNotDistinct": false,
+					"columns": ["organization_id", "id"]
+				}
+			},
+			"policies": {
+				"migration_control": {
+					"name": "migration_control",
+					"as": "PERMISSIVE",
+					"for": "ALL",
+					"to": ["common_saas_migrator"],
+					"using": "true",
+					"withCheck": "true"
+				},
+				"tenant_isolation": {
+					"name": "tenant_isolation",
+					"as": "PERMISSIVE",
+					"for": "ALL",
+					"to": ["public"],
+					"using": "\"tenancy\".\"invitations\".\"organization_id\" = nullif(current_setting('app.organization_id',true),'')::uuid",
+					"withCheck": "\"tenancy\".\"invitations\".\"organization_id\" = nullif(current_setting('app.organization_id',true),'')::uuid"
+				}
+			},
+			"checkConstraints": {
+				"invitations_email_check": {
+					"name": "invitations_email_check",
+					"value": "email = lower(email)"
+				},
+				"invitations_role_check": {
+					"name": "invitations_role_check",
+					"value": "role = ANY (ARRAY['admin'::text, 'member'::text, 'billing'::text])"
+				},
+				"invitations_status_check": {
+					"name": "invitations_status_check",
+					"value": "status = ANY (ARRAY['pending'::text, 'accepted'::text, 'canceled'::text])"
+				}
+			},
+			"isRLSEnabled": true
+		},
+		"tenancy.membership_transitions": {
+			"name": "membership_transitions",
+			"schema": "tenancy",
+			"columns": {
+				"organization_id": {
+					"name": "organization_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"operation_key": {
+					"name": "operation_key",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"input_hash": {
+					"name": "input_hash",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"membership_id": {
+					"name": "membership_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"delta": {
+					"name": "delta",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"membership_transitions_organization_id_fkey": {
+					"name": "membership_transitions_organization_id_fkey",
+					"tableFrom": "membership_transitions",
+					"tableTo": "organizations",
+					"schemaTo": "tenancy",
+					"columnsFrom": ["organization_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"membership_transitions_organization_id_membership_id_fkey": {
+					"name": "membership_transitions_organization_id_membership_id_fkey",
+					"tableFrom": "membership_transitions",
+					"tableTo": "memberships",
+					"schemaTo": "tenancy",
+					"columnsFrom": ["organization_id", "membership_id"],
+					"columnsTo": ["organization_id", "id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {
+				"membership_transitions_pkey": {
+					"name": "membership_transitions_pkey",
+					"columns": ["organization_id", "operation_key"]
+				}
+			},
+			"uniqueConstraints": {},
+			"policies": {
+				"migration_control": {
+					"name": "migration_control",
+					"as": "PERMISSIVE",
+					"for": "ALL",
+					"to": ["common_saas_migrator"],
+					"using": "true",
+					"withCheck": "true"
+				},
+				"tenant_isolation": {
+					"name": "tenant_isolation",
+					"as": "PERMISSIVE",
+					"for": "ALL",
+					"to": ["public"],
+					"using": "\"tenancy\".\"membership_transitions\".\"organization_id\" = nullif(current_setting('app.organization_id',true),'')::uuid",
+					"withCheck": "\"tenancy\".\"membership_transitions\".\"organization_id\" = nullif(current_setting('app.organization_id',true),'')::uuid"
+				}
+			},
+			"checkConstraints": {},
+			"isRLSEnabled": true
+		},
+		"tenancy.memberships": {
+			"name": "memberships",
+			"schema": "tenancy",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "uuid",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"organization_id": {
+					"name": "organization_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"user_id": {
+					"name": "user_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"role": {
+					"name": "role",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"status": {
+					"name": "status",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"billable": {
+					"name": "billable",
+					"type": "boolean",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"expires_at": {
+					"name": "expires_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {
+				"memberships_user_status": {
+					"name": "memberships_user_status",
+					"columns": [
+						{
+							"expression": "user_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "status",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"memberships_organization_id_fkey": {
+					"name": "memberships_organization_id_fkey",
+					"tableFrom": "memberships",
+					"tableTo": "organizations",
+					"schemaTo": "tenancy",
+					"columnsFrom": ["organization_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"memberships_user_id_fkey": {
+					"name": "memberships_user_id_fkey",
+					"tableFrom": "memberships",
+					"tableTo": "user",
+					"schemaTo": "identity",
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"memberships_organization_id_id_key": {
+					"name": "memberships_organization_id_id_key",
+					"nullsNotDistinct": false,
+					"columns": ["organization_id", "id"]
+				},
+				"memberships_organization_id_user_id_key": {
+					"name": "memberships_organization_id_user_id_key",
+					"nullsNotDistinct": false,
+					"columns": ["organization_id", "user_id"]
+				}
+			},
+			"policies": {
+				"migration_control": {
+					"name": "migration_control",
+					"as": "PERMISSIVE",
+					"for": "ALL",
+					"to": ["common_saas_migrator"],
+					"using": "true",
+					"withCheck": "true"
+				},
+				"tenant_isolation": {
+					"name": "tenant_isolation",
+					"as": "PERMISSIVE",
+					"for": "ALL",
+					"to": ["public"],
+					"using": "\"tenancy\".\"memberships\".\"organization_id\" = nullif(current_setting('app.organization_id',true),'')::uuid",
+					"withCheck": "\"tenancy\".\"memberships\".\"organization_id\" = nullif(current_setting('app.organization_id',true),'')::uuid"
+				}
+			},
+			"checkConstraints": {
+				"memberships_role_check": {
+					"name": "memberships_role_check",
+					"value": "role = ANY (ARRAY['owner'::text, 'admin'::text, 'member'::text, 'billing'::text])"
+				},
+				"memberships_status_check": {
+					"name": "memberships_status_check",
+					"value": "status = ANY (ARRAY['active'::text, 'inactive'::text])"
+				},
+				"memberships_check": {
+					"name": "memberships_check",
+					"value": "billable = (role <> 'billing'::text)"
+				}
+			},
+			"isRLSEnabled": true
+		},
+		"tenancy.organizations": {
+			"name": "organizations",
+			"schema": "tenancy",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "uuid",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"slug": {
+					"name": "slug",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"name": {
+					"name": "name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"status": {
+					"name": "status",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'active'"
+				},
+				"ownership_version": {
+					"name": "ownership_version",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 1
+				},
+				"require_mfa": {
+					"name": "require_mfa",
+					"type": "boolean",
+					"primaryKey": false,
+					"notNull": true,
+					"default": false
+				},
+				"accept_passkey_mfa": {
+					"name": "accept_passkey_mfa",
+					"type": "boolean",
+					"primaryKey": false,
+					"notNull": true,
+					"default": false
+				},
+				"required_auth_method": {
+					"name": "required_auth_method",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"organizations_slug_key": {
+					"name": "organizations_slug_key",
+					"nullsNotDistinct": false,
+					"columns": ["slug"]
+				}
+			},
+			"policies": {
+				"migration_control": {
+					"name": "migration_control",
+					"as": "PERMISSIVE",
+					"for": "ALL",
+					"to": ["common_saas_migrator"],
+					"using": "true",
+					"withCheck": "true"
+				},
+				"tenant_isolation": {
+					"name": "tenant_isolation",
+					"as": "PERMISSIVE",
+					"for": "ALL",
+					"to": ["public"],
+					"using": "\"tenancy\".\"organizations\".\"id\" = nullif(current_setting('app.organization_id',true),'')::uuid",
+					"withCheck": "\"tenancy\".\"organizations\".\"id\" = nullif(current_setting('app.organization_id',true),'')::uuid"
+				}
+			},
+			"checkConstraints": {
+				"organizations_slug_check": {
+					"name": "organizations_slug_check",
+					"value": "slug ~ '^[a-z0-9][a-z0-9-]{1,62}$'::text"
+				},
+				"organizations_name_check": {
+					"name": "organizations_name_check",
+					"value": "(length(name) >= 1) AND (length(name) <= 120)"
+				},
+				"organizations_status_check": {
+					"name": "organizations_status_check",
+					"value": "status = ANY (ARRAY['active'::text, 'owner_recovery_required'::text, 'suspended'::text])"
+				},
+				"organizations_required_auth_method_check": {
+					"name": "organizations_required_auth_method_check",
+					"value": "required_auth_method = ANY (ARRAY['passkey'::text, 'sso'::text])"
+				}
+			},
+			"isRLSEnabled": true
+		},
+		"tenancy.outbox_events": {
+			"name": "outbox_events",
+			"schema": "tenancy",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "uuid",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"organization_id": {
+					"name": "organization_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"type": {
+					"name": "type",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"schema_version": {
+					"name": "schema_version",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 1
+				},
+				"payload": {
+					"name": "payload",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"outbox_events_id_fkey": {
+					"name": "outbox_events_id_fkey",
+					"tableFrom": "outbox_events",
+					"tableTo": "audit_events",
+					"schemaTo": "tenancy",
+					"columnsFrom": ["id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"outbox_events_organization_id_fkey": {
+					"name": "outbox_events_organization_id_fkey",
+					"tableFrom": "outbox_events",
+					"tableTo": "organizations",
+					"schemaTo": "tenancy",
+					"columnsFrom": ["organization_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {
+				"migration_control": {
+					"name": "migration_control",
+					"as": "PERMISSIVE",
+					"for": "ALL",
+					"to": ["common_saas_migrator"],
+					"using": "true",
+					"withCheck": "true"
+				},
+				"tenant_isolation": {
+					"name": "tenant_isolation",
+					"as": "PERMISSIVE",
+					"for": "ALL",
+					"to": ["public"],
+					"using": "\"tenancy\".\"outbox_events\".\"organization_id\" = nullif(current_setting('app.organization_id',true),'')::uuid",
+					"withCheck": "\"tenancy\".\"outbox_events\".\"organization_id\" = nullif(current_setting('app.organization_id',true),'')::uuid"
+				}
+			},
+			"checkConstraints": {},
+			"isRLSEnabled": true
+		},
+		"tenancy.owner_recovery_cases": {
+			"name": "owner_recovery_cases",
+			"schema": "tenancy",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "uuid",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"organization_id": {
+					"name": "organization_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"operator_id": {
+					"name": "operator_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"evidence_reference": {
+					"name": "evidence_reference",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"replacement_user_id": {
+					"name": "replacement_user_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"outcome": {
+					"name": "outcome",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"owner_recovery_cases_organization_id_fkey": {
+					"name": "owner_recovery_cases_organization_id_fkey",
+					"tableFrom": "owner_recovery_cases",
+					"tableTo": "organizations",
+					"schemaTo": "tenancy",
+					"columnsFrom": ["organization_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"owner_recovery_cases_replacement_user_id_fkey": {
+					"name": "owner_recovery_cases_replacement_user_id_fkey",
+					"tableFrom": "owner_recovery_cases",
+					"tableTo": "user",
+					"schemaTo": "identity",
+					"columnsFrom": ["replacement_user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {
+				"migration_control": {
+					"name": "migration_control",
+					"as": "PERMISSIVE",
+					"for": "ALL",
+					"to": ["common_saas_migrator"],
+					"using": "true",
+					"withCheck": "true"
+				},
+				"tenant_isolation": {
+					"name": "tenant_isolation",
+					"as": "PERMISSIVE",
+					"for": "ALL",
+					"to": ["public"],
+					"using": "\"tenancy\".\"owner_recovery_cases\".\"organization_id\" = nullif(current_setting('app.organization_id',true),'')::uuid",
+					"withCheck": "\"tenancy\".\"owner_recovery_cases\".\"organization_id\" = nullif(current_setting('app.organization_id',true),'')::uuid"
+				}
+			},
+			"checkConstraints": {
+				"owner_recovery_cases_outcome_check": {
+					"name": "owner_recovery_cases_outcome_check",
+					"value": "outcome = 'completed'::text"
+				}
+			},
+			"isRLSEnabled": true
+		},
+		"tenancy.ownership_transfers": {
+			"name": "ownership_transfers",
+			"schema": "tenancy",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "uuid",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"organization_id": {
+					"name": "organization_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"initiator_membership_id": {
+					"name": "initiator_membership_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"recipient_membership_id": {
+					"name": "recipient_membership_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"ownership_version": {
+					"name": "ownership_version",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"outgoing_role": {
+					"name": "outgoing_role",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"expires_at": {
+					"name": "expires_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"status": {
+					"name": "status",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'pending'"
+				},
+				"accepted_at": {
+					"name": "accepted_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				}
+			},
+			"indexes": {
+				"transfers_one_pending": {
+					"name": "transfers_one_pending",
+					"columns": [
+						{
+							"expression": "organization_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "initiator_membership_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": true,
+					"where": "(status = 'pending'::text)",
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"ownership_transfers_organization_id_fkey": {
+					"name": "ownership_transfers_organization_id_fkey",
+					"tableFrom": "ownership_transfers",
+					"tableTo": "organizations",
+					"schemaTo": "tenancy",
+					"columnsFrom": ["organization_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"ownership_transfers_organization_id_initiator_membership_i_fkey": {
+					"name": "ownership_transfers_organization_id_initiator_membership_i_fkey",
+					"tableFrom": "ownership_transfers",
+					"tableTo": "memberships",
+					"schemaTo": "tenancy",
+					"columnsFrom": ["organization_id", "initiator_membership_id"],
+					"columnsTo": ["organization_id", "id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"ownership_transfers_organization_id_recipient_membership_i_fkey": {
+					"name": "ownership_transfers_organization_id_recipient_membership_i_fkey",
+					"tableFrom": "ownership_transfers",
+					"tableTo": "memberships",
+					"schemaTo": "tenancy",
+					"columnsFrom": ["organization_id", "recipient_membership_id"],
+					"columnsTo": ["organization_id", "id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"ownership_transfers_organization_id_id_key": {
+					"name": "ownership_transfers_organization_id_id_key",
+					"nullsNotDistinct": false,
+					"columns": ["organization_id", "id"]
+				}
+			},
+			"policies": {
+				"migration_control": {
+					"name": "migration_control",
+					"as": "PERMISSIVE",
+					"for": "ALL",
+					"to": ["common_saas_migrator"],
+					"using": "true",
+					"withCheck": "true"
+				},
+				"tenant_isolation": {
+					"name": "tenant_isolation",
+					"as": "PERMISSIVE",
+					"for": "ALL",
+					"to": ["public"],
+					"using": "\"tenancy\".\"ownership_transfers\".\"organization_id\" = nullif(current_setting('app.organization_id',true),'')::uuid",
+					"withCheck": "\"tenancy\".\"ownership_transfers\".\"organization_id\" = nullif(current_setting('app.organization_id',true),'')::uuid"
+				}
+			},
+			"checkConstraints": {
+				"ownership_transfers_outgoing_role_check": {
+					"name": "ownership_transfers_outgoing_role_check",
+					"value": "outgoing_role = ANY (ARRAY['admin'::text, 'member'::text, 'billing'::text, 'inactive'::text])"
+				},
+				"ownership_transfers_status_check": {
+					"name": "ownership_transfers_status_check",
+					"value": "status = ANY (ARRAY['pending'::text, 'accepted'::text, 'canceled'::text, 'expired'::text])"
+				},
+				"ownership_transfers_check": {
+					"name": "ownership_transfers_check",
+					"value": "initiator_membership_id <> recipient_membership_id"
+				}
+			},
+			"isRLSEnabled": true
+		},
+		"tenancy.seat_capacities": {
+			"name": "seat_capacities",
+			"schema": "tenancy",
+			"columns": {
+				"organization_id": {
+					"name": "organization_id",
+					"type": "uuid",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"capacity": {
+					"name": "capacity",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"occupied": {
+					"name": "occupied",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 0
+				},
+				"policy_version": {
+					"name": "policy_version",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 1
+				},
+				"reconciliation_required": {
+					"name": "reconciliation_required",
+					"type": "boolean",
+					"primaryKey": false,
+					"notNull": true,
+					"default": false
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"seat_capacities_organization_id_fkey": {
+					"name": "seat_capacities_organization_id_fkey",
+					"tableFrom": "seat_capacities",
+					"tableTo": "organizations",
+					"schemaTo": "tenancy",
+					"columnsFrom": ["organization_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {
+				"migration_control": {
+					"name": "migration_control",
+					"as": "PERMISSIVE",
+					"for": "ALL",
+					"to": ["common_saas_migrator"],
+					"using": "true",
+					"withCheck": "true"
+				},
+				"tenant_isolation": {
+					"name": "tenant_isolation",
+					"as": "PERMISSIVE",
+					"for": "ALL",
+					"to": ["public"],
+					"using": "\"tenancy\".\"seat_capacities\".\"organization_id\" = nullif(current_setting('app.organization_id',true),'')::uuid",
+					"withCheck": "\"tenancy\".\"seat_capacities\".\"organization_id\" = nullif(current_setting('app.organization_id',true),'')::uuid"
+				}
+			},
+			"checkConstraints": {
+				"seat_capacities_capacity_check": {
+					"name": "seat_capacities_capacity_check",
+					"value": "capacity >= 0"
+				},
+				"seat_capacities_occupied_check": {
+					"name": "seat_capacities_occupied_check",
+					"value": "occupied >= 0"
+				}
+			},
+			"isRLSEnabled": true
+		},
+		"tenancy.team_members": {
+			"name": "team_members",
+			"schema": "tenancy",
+			"columns": {
+				"organization_id": {
+					"name": "organization_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"team_id": {
+					"name": "team_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"membership_id": {
+					"name": "membership_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"team_members_organization_id_team_id_fkey": {
+					"name": "team_members_organization_id_team_id_fkey",
+					"tableFrom": "team_members",
+					"tableTo": "teams",
+					"schemaTo": "tenancy",
+					"columnsFrom": ["organization_id", "team_id"],
+					"columnsTo": ["organization_id", "id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"team_members_organization_id_membership_id_fkey": {
+					"name": "team_members_organization_id_membership_id_fkey",
+					"tableFrom": "team_members",
+					"tableTo": "memberships",
+					"schemaTo": "tenancy",
+					"columnsFrom": ["organization_id", "membership_id"],
+					"columnsTo": ["organization_id", "id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {
+				"team_members_pkey": {
+					"name": "team_members_pkey",
+					"columns": ["organization_id", "team_id", "membership_id"]
+				}
+			},
+			"uniqueConstraints": {},
+			"policies": {
+				"migration_control": {
+					"name": "migration_control",
+					"as": "PERMISSIVE",
+					"for": "ALL",
+					"to": ["common_saas_migrator"],
+					"using": "true",
+					"withCheck": "true"
+				},
+				"tenant_isolation": {
+					"name": "tenant_isolation",
+					"as": "PERMISSIVE",
+					"for": "ALL",
+					"to": ["public"],
+					"using": "\"tenancy\".\"team_members\".\"organization_id\" = nullif(current_setting('app.organization_id',true),'')::uuid",
+					"withCheck": "\"tenancy\".\"team_members\".\"organization_id\" = nullif(current_setting('app.organization_id',true),'')::uuid"
+				}
+			},
+			"checkConstraints": {},
+			"isRLSEnabled": true
+		},
+		"tenancy.teams": {
+			"name": "teams",
+			"schema": "tenancy",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "uuid",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"organization_id": {
+					"name": "organization_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"slug": {
+					"name": "slug",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"name": {
+					"name": "name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"teams_organization_id_fkey": {
+					"name": "teams_organization_id_fkey",
+					"tableFrom": "teams",
+					"tableTo": "organizations",
+					"schemaTo": "tenancy",
+					"columnsFrom": ["organization_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"teams_organization_id_id_key": {
+					"name": "teams_organization_id_id_key",
+					"nullsNotDistinct": false,
+					"columns": ["organization_id", "id"]
+				},
+				"teams_organization_id_slug_key": {
+					"name": "teams_organization_id_slug_key",
+					"nullsNotDistinct": false,
+					"columns": ["organization_id", "slug"]
+				}
+			},
+			"policies": {
+				"migration_control": {
+					"name": "migration_control",
+					"as": "PERMISSIVE",
+					"for": "ALL",
+					"to": ["common_saas_migrator"],
+					"using": "true",
+					"withCheck": "true"
+				},
+				"tenant_isolation": {
+					"name": "tenant_isolation",
+					"as": "PERMISSIVE",
+					"for": "ALL",
+					"to": ["public"],
+					"using": "\"tenancy\".\"teams\".\"organization_id\" = nullif(current_setting('app.organization_id',true),'')::uuid",
+					"withCheck": "\"tenancy\".\"teams\".\"organization_id\" = nullif(current_setting('app.organization_id',true),'')::uuid"
+				}
+			},
+			"checkConstraints": {},
+			"isRLSEnabled": true
+		},
+		"foundation.installation": {
+			"name": "installation",
+			"schema": "foundation",
+			"columns": {
+				"singleton": {
+					"name": "singleton",
+					"type": "boolean",
+					"primaryKey": true,
+					"notNull": true,
+					"default": true
+				},
+				"installation_id": {
+					"name": "installation_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"binding_id": {
+					"name": "binding_id",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"recovery_epoch": {
+					"name": "recovery_epoch",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"installation_installation_id_key": {
+					"name": "installation_installation_id_key",
+					"nullsNotDistinct": false,
+					"columns": ["installation_id"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {
+				"installation_singleton_check": {
+					"name": "installation_singleton_check",
+					"value": "singleton"
+				}
+			},
+			"isRLSEnabled": false
+		},
+		"tenancy.authorization_revisions": {
+			"name": "authorization_revisions",
+			"schema": "tenancy",
+			"columns": {
+				"organization_id": {
+					"name": "organization_id",
+					"type": "uuid",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"desired_revision": {
+					"name": "desired_revision",
+					"type": "bigint",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 1
+				},
+				"applied_revision": {
+					"name": "applied_revision",
+					"type": "bigint",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 1
+				},
+				"evaluation_mode": {
+					"name": "evaluation_mode",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'contextual-v1'"
+				},
+				"store_id": {
+					"name": "store_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"model_id": {
+					"name": "model_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"model_hash": {
+					"name": "model_hash",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"recovery_epoch": {
+					"name": "recovery_epoch",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"ready": {
+					"name": "ready",
+					"type": "boolean",
+					"primaryKey": false,
+					"notNull": true,
+					"default": true
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"authorization_revisions_organization_id_fkey": {
+					"name": "authorization_revisions_organization_id_fkey",
+					"tableFrom": "authorization_revisions",
+					"tableTo": "organizations",
+					"schemaTo": "tenancy",
+					"columnsFrom": ["organization_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {
+				"migration_control": {
+					"name": "migration_control",
+					"as": "PERMISSIVE",
+					"for": "ALL",
+					"to": ["common_saas_migrator"],
+					"using": "true",
+					"withCheck": "true"
+				},
+				"tenant_isolation": {
+					"name": "tenant_isolation",
+					"as": "PERMISSIVE",
+					"for": "ALL",
+					"to": ["public"],
+					"using": "\"tenancy\".\"authorization_revisions\".\"organization_id\" = nullif(current_setting('app.organization_id',true),'')::uuid",
+					"withCheck": "\"tenancy\".\"authorization_revisions\".\"organization_id\" = nullif(current_setting('app.organization_id',true),'')::uuid"
+				}
+			},
+			"checkConstraints": {
+				"authorization_revisions_desired_revision_check": {
+					"name": "authorization_revisions_desired_revision_check",
+					"value": "desired_revision > 0"
+				},
+				"authorization_revisions_applied_revision_check": {
+					"name": "authorization_revisions_applied_revision_check",
+					"value": "applied_revision > 0"
+				},
+				"authorization_revisions_evaluation_mode_check": {
+					"name": "authorization_revisions_evaluation_mode_check",
+					"value": "evaluation_mode = 'contextual-v1'::text"
+				}
+			},
+			"isRLSEnabled": true
+		}
+	},
+	"enums": {},
+	"schemas": {
+		"foundation": "foundation",
+		"identity": "identity",
+		"tenancy": "tenancy"
+	},
+	"sequences": {},
+	"roles": {},
+	"policies": {},
+	"views": {},
+	"_meta": {
+		"columns": {},
+		"schemas": {},
+		"tables": {}
+	}
+}

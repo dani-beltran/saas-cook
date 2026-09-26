@@ -1,6 +1,9 @@
 {
 	"$schema": "https://turbo.build/schema.json",
-	"globalDependencies": ["tsconfig.json", "tsconfig.base.json"],
+	"globalDependencies": [
+		"tsconfig.json",
+		"tsconfig.base.json"
+	],
 	"globalPassThroughEnv": [
 		"APP_ORIGIN",
 		"DATABASE_URL",
@@ -24,16 +27,49 @@
 		"VITEST_REPORT",
 		"TRIVY_BIN",
 		"NEXT_RUNTIME",
-		"NEXT_PHASE"
+		"NEXT_PHASE",
+		"IDENTITY_DATABASE_URL",
+		"CONTROL_DATABASE_URL",
+		"CONTROL_ADMIN_DATABASE_URL",
+		"INSTALLATION_ID",
+		"AUTH_SECRET",
+		"SMTP_HOST",
+		"SMTP_PORT",
+		"SMTP_FROM",
+		"OWNER_RECOVERY_PUBLIC_KEY",
+		"TEST_CONTROL_ADMIN_URL",
+		"SMTP_PASSWORD",
+		"SMTP_SECURE",
+		"SMTP_USERNAME"
 	],
 	"tasks": {
 		"build": {
-			"dependsOn": ["^build"],
-			"outputs": ["dist/**", ".next/**", "!.next/cache/**"],
-			"env": ["PHASE0_API_FIXTURES", "NODE_ENV", "NEXT_TELEMETRY_DISABLED"]
+			"dependsOn": [
+				"^build"
+			],
+			"outputs": [
+				"dist/**",
+				".next/**",
+				"!.next/cache/**"
+			],
+			"env": [
+				"PHASE0_API_FIXTURES",
+				"NODE_ENV",
+				"NEXT_TELEMETRY_DISABLED"
+			]
 		},
-		"typecheck": { "dependsOn": ["^typecheck"], "outputs": [] },
-		"dev": { "cache": false, "persistent": true },
-		"storybook:build": { "cache": false }
+		"typecheck": {
+			"dependsOn": [
+				"^typecheck"
+			],
+			"outputs": []
+		},
+		"dev": {
+			"cache": false,
+			"persistent": true
+		},
+		"storybook:build": {
+			"cache": false
+		}
 	}
 }

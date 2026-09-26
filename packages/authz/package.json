@@ -1,0 +1,23 @@
+{
+	"name": "@common-saas/authz",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts",
+		"./commands": "./src/commands.ts",
+		"./model": "./src/model.ts",
+		"./operator": "./src/operator.ts",
+		"./control": "./src/control.ts"
+	},
+	"scripts": {
+		"typecheck": "tsc --noEmit"
+	},
+	"dependencies": {
+		"pg": "8.23.0"
+	},
+	"devDependencies": {
+		"@types/pg": "8.23.1",
+		"typescript": "7.0.2"
+	}
+}

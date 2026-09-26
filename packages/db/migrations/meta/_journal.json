@@ -15,6 +15,34 @@
 			"when": 1790427394857,
 			"tag": "0001_durable_probes",
 			"breakpoints": true
+		},
+		{
+			"idx": 2,
+			"version": "7",
+			"when": 1790430000000,
+			"tag": "0002_tenancy",
+			"breakpoints": true
+		},
+		{
+			"idx": 3,
+			"version": "7",
+			"when": 1790431000000,
+			"tag": "0003_authorization",
+			"breakpoints": true
+		},
+		{
+			"idx": 4,
+			"version": "7",
+			"when": 1790432000000,
+			"tag": "0004_identity",
+			"breakpoints": true
+		},
+		{
+			"idx": 5,
+			"version": "7",
+			"when": 1790433000000,
+			"tag": "0005_tenant_event_integrity",
+			"breakpoints": true
 		}
 	]
 }

@@ -10,7 +10,7 @@ The template is intended to be source code you own and customize. You supply you
 
 The template will build one Docker image containing the web app and background worker, with external data services configured at runtime.
 
-**Status:** Phase 1 repository and runtime are implemented: a localized Next.js shell, oRPC API skeleton, worker, local services, quality/CI toolchain and combined application image. See the [Phase 1 setup and acceptance guide](docs/phase1/README.md). Identity, tenant access and production authorization remain Phase 2 work.
+**Status:** Phase 2 identity and tenancy primitives are implemented: email/passkey/MFA sign-in, organizations, memberships, invitations, teams, tenant RLS, local seats, contextual OpenFGA authorization, ownership transfer and signed owner-recovery commands. See the [current setup and acceptance guide](docs/phase2/README.md). Resource authorization and the Project feature remain Phase 3 work.
 
 ## Local development
 
@@ -21,10 +21,11 @@ bun install --frozen-lockfile
 cp .env.example .env
 bun run services:up
 bun run db:migrate
+bun run bootstrap
 bun run dev
 ```
 
-Open `http://localhost:3000`. Local services and organization choices use disposable synthetic data. See the [runtime guide](docs/phase1/README.md) for tests, stories, image commands and implementation boundaries.
+Open `http://localhost:3000`. Local services use disposable synthetic credentials. Register a test account and confirm its email in Mailpit. See the [runtime guide](docs/phase2/README.md) for tests, stories, image commands and implementation boundaries.
 
 ## Planning and design
 

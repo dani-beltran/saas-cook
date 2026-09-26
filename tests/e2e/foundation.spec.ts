@@ -5,7 +5,7 @@ test("localized validation, keyboard focus and synthetic organization state", as
 }, testInfo) => {
 	const errors: string[] = [];
 	page.on("pageerror", (error) => errors.push(error.message));
-	await page.goto("/en");
+	await page.goto("/en/patterns");
 	await expect(page.getByRole("heading", { level: 1 })).toHaveText(
 		"A place to start.",
 	);
@@ -51,7 +51,7 @@ test("localized validation, keyboard focus and synthetic organization state", as
 		"1px",
 	);
 	await page.getByLabel("Language").selectOption("es");
-	await expect(page).toHaveURL(/\/es$/);
+	await expect(page).toHaveURL(/\/es\/patterns$/);
 	await expect(page.locator("html")).toHaveAttribute("lang", "es");
 	await page.getByRole("button", { name: "Validar borrador" }).click();
 	await expect(page.locator("form").getByRole("alert")).toHaveText(
@@ -65,8 +65,8 @@ test("mobile shell, static asset and unsupported locale", async ({
 	request,
 }, testInfo) => {
 	await page.setViewportSize({ width: 375, height: 812 });
-	await page.goto("/");
-	await expect(page).toHaveURL(/\/en$/);
+	await page.goto("/en/patterns");
+	await expect(page).toHaveURL(/\/en\/patterns$/);
 	await expect(page.getByRole("main")).toBeVisible();
 	await page.screenshot({
 		path: testInfo.outputPath("foundation-mobile.png"),

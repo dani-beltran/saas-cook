@@ -82,6 +82,12 @@ jobs:
       - run: bun run db:migrate
         env:
           MIGRATION_DATABASE_URL: postgresql://common_saas_migrator:local_phase1@127.0.0.1:55433/common_saas
+      - run: bun run bootstrap
+        env:
+          MIGRATION_DATABASE_URL: postgresql://common_saas_migrator:local_phase1@127.0.0.1:55433/common_saas
+          CONTROL_ADMIN_DATABASE_URL: postgresql://common_saas_control_admin:local_phase2_control@127.0.0.1:55434/common_saas_control
+          INSTALLATION_ID: 10000000-0000-4000-8000-000000000001
+          OPENFGA_API_URL: http://127.0.0.1:18081
       # The migration integration suite exercises empty, 0000 previous-schema,
       # replay and restricted-role cases; there is no released product yet.
       - run: bun run test:integration
@@ -118,6 +124,12 @@ jobs:
       - run: bun run db:migrate
         env:
           MIGRATION_DATABASE_URL: postgresql://common_saas_migrator:local_phase1@127.0.0.1:55433/common_saas
+      - run: bun run bootstrap
+        env:
+          MIGRATION_DATABASE_URL: postgresql://common_saas_migrator:local_phase1@127.0.0.1:55433/common_saas
+          CONTROL_ADMIN_DATABASE_URL: postgresql://common_saas_control_admin:local_phase2_control@127.0.0.1:55434/common_saas_control
+          INSTALLATION_ID: 10000000-0000-4000-8000-000000000001
+          OPENFGA_API_URL: http://127.0.0.1:18081
       - run: bun run build
       - run: bun run test:e2e
       - run: docker compose -f infra/compose.yaml down --volumes
@@ -169,12 +181,12 @@ jobs:
         run: bun run image:build
       - run: bun run services:up
       - run: bun run test:image
-      - run: bun run security:scan image common-sass:phase1
+      - run: bun run security:scan image common-sass:phase2
       - name: Record image identity
         if: always()
         run: |
           mkdir -p artifacts/image
-          docker image inspect common-sass:phase1 > artifacts/image/inspect.json
+          docker image inspect common-sass:phase2 > artifacts/image/inspect.json
           docker compose -f infra/compose.yaml logs --no-color > artifacts/image/services.log
       - run: docker compose -f infra/compose.yaml down --volumes
         if: always()

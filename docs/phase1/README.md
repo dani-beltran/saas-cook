@@ -1,5 +1,7 @@
 # Phase 1: repository and runtime
 
+This is the retained Phase 1 implementation record. For current setup, commands and identity/tenancy behavior, use the [Phase 2 guide](../phase2/README.md).
+
 Phase 1 implements `DEV-01` through `DEV-05`, the `UI-01` patterns, the `API-01` skeleton, and the image portion of `R-IMAGE`. The application is a runnable foundation with synthetic diagnostics. Authentication, tenant access, production authorization, initialization and recovery remain Phase 2 work; the shell does not claim to provide those controls.
 
 ## Run locally

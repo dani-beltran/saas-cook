@@ -11,6 +11,8 @@
 		"@common-saas/observability": "workspace:*",
 		"pg": "8.23.0",
 		"pg-boss": "12.33.4",
-		"zod": "4.6.5"
+		"zod": "4.6.5",
+		"@common-saas/authz": "workspace:*",
+		"@common-saas/email": "workspace:*"
 	}
 }

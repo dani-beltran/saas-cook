@@ -1,9 +1,5 @@
-import { publicConfig } from "@common-saas/config/client";
-import { Shell } from "../../components/shell";
-
-export const dynamic = "force-dynamic";
-
-export default function HomePage() {
-	const config = publicConfig(process.env);
-	return <Shell appName={config.appName} />;
+import { redirect } from "next/navigation";
+export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
+	const { locale } = await params;
+	redirect(`/${locale}/account`);
 }

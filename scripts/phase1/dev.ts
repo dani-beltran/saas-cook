@@ -4,11 +4,16 @@ import { readServeEnv } from "@common-saas/config/server";
 const env = { ...process.env };
 delete env.MIGRATION_DATABASE_URL;
 delete env.TEST_DATABASE_ADMIN_URL;
+delete env.CONTROL_ADMIN_DATABASE_URL;
+delete env.OWNER_RECOVERY_SECRET;
 readServeEnv(env);
 const webEnv = { ...env };
 delete webEnv.WORKER_DATABASE_URL;
+delete webEnv.SMTP_USERNAME;
+delete webEnv.SMTP_PASSWORD;
 const workerEnv = { ...env };
 delete workerEnv.DATABASE_URL;
+delete workerEnv.IDENTITY_DATABASE_URL;
 const children = [
 	spawn(
 		process.execPath,

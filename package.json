@@ -48,7 +48,11 @@
 		"db:test:upgrade": "node --env-file-if-exists=.env node_modules/vitest/vitest.mjs run --project integration packages/db",
 		"test:image": "node --import tsx scripts/phase1/image-test.ts",
 		"worker": "node --env-file-if-exists=.env --import tsx apps/worker/src/index.ts",
-		"image:build": "node --import tsx scripts/phase1/image-build.ts"
+		"image:build": "node --import tsx scripts/phase1/image-build.ts",
+		"bootstrap": "node --env-file-if-exists=.env --import tsx scripts/phase1/command.ts bootstrap",
+		"authz:publish": "node --env-file-if-exists=.env --import tsx scripts/phase1/command.ts authz-publish",
+		"owner:recover": "node --env-file-if-exists=.env --import tsx scripts/phase1/command.ts owner-recovery",
+		"security:deactivate": "node --env-file-if-exists=.env --import tsx scripts/phase1/command.ts security-deactivate"
 	},
 	"devDependencies": {
 		"next": "16.3.5",
@@ -99,7 +103,9 @@
 		"esbuild": "0.28.2",
 		"@common-saas/config": "workspace:*",
 		"@common-saas/db": "workspace:*",
-		"@common-saas/observability": "workspace:*"
+		"@common-saas/observability": "workspace:*",
+		"@common-saas/authz": "workspace:*",
+		"@common-saas/email": "workspace:*"
 	},
 	"trustedDependencies": [
 		"esbuild",

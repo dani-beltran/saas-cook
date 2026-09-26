@@ -42,7 +42,7 @@ export async function handleApi(
 	transport: "rpc" | "rest",
 ): Promise<Response> {
 	// Never trust a caller-supplied request ID: it can contain secrets or log injection.
-	const context: RequestContext = { requestId: randomUUID() };
+	const context: RequestContext = { requestId: randomUUID(), request };
 	return withOperation(
 		`api.${transport}`,
 		context,
@@ -69,7 +69,7 @@ export function specification() {
 			title: "Common SaaS API",
 			version: "0.1.0",
 			description:
-				"Public runtime diagnostics. Identity and tenant capabilities are not implemented in Phase 1.",
+				"Identity-backed organization lifecycle and public runtime diagnostics.",
 		},
 		servers: [{ url: "/api/v1" }],
 	});

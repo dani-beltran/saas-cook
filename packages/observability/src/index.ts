@@ -65,6 +65,28 @@ export function initializeObservability(service: "web" | "worker" | "command") {
 	}
 	logEvent("runtime.started", { service });
 }
+/** Server-operation correlation only. Never reads request headers, arbitrary log fields or payloads. */
+export function getOperationContext():
+	| Readonly<{ requestId: string; traceId?: string }>
+	| undefined {
+	const requestId = correlations.getStore()?.requestId;
+	if (
+		!requestId ||
+		!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+			requestId,
+		)
+	)
+		return undefined;
+	const traceId = trace.getActiveSpan()?.spanContext().traceId;
+	return Object.freeze({
+		requestId,
+		...(traceId &&
+		/^[0-9a-f]{32}$/.test(traceId) &&
+		traceId !== "00000000000000000000000000000000"
+			? { traceId }
+			: {}),
+	});
+}
 export function logEvent(
 	event: string,
 	properties: Record<string, unknown> = {},

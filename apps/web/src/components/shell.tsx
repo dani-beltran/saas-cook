@@ -93,7 +93,7 @@ export function Shell({ appName }: { appName: string }) {
 									id="locale"
 									value={locale}
 									onChange={(event) => {
-										window.location.assign(`/${event.target.value}`);
+										window.location.assign(`/${event.target.value}/patterns`);
 									}}
 								>
 									<option value="en" lang="en">

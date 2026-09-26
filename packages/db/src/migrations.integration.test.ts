@@ -148,4 +148,59 @@ describe("real PostgreSQL migration and runtime role boundary", () => {
 			runMigrations({ databaseUrl: runtimeUrl.toString() }),
 		).rejects.toThrow("dedicated common_saas_migrator");
 	});
+	it("upgrades the complete Phase 1 schema without treating retained identities as a ready installation", async () => {
+		const f = await fixture();
+		const previous = await mkdtemp(path.join(tmpdir(), "common-saas-phase1-"));
+		cleanup.push(() => rm(previous, { recursive: true, force: true }));
+		await mkdir(path.join(previous, "meta"));
+		const journal = JSON.parse(
+			await readFile(path.join(migrationsFolder, "meta/_journal.json"), "utf8"),
+		);
+		journal.entries = journal.entries.slice(0, 2);
+		await writeFile(
+			path.join(previous, "meta/_journal.json"),
+			JSON.stringify(journal),
+		);
+		for (const migration of ["0000_foundation.sql", "0001_durable_probes.sql"])
+			await copyFile(
+				path.join(migrationsFolder, migration),
+				path.join(previous, migration),
+			);
+		await runMigrations({
+			databaseUrl: f.migrator,
+			migrationsFolder: previous,
+		});
+		const userId = randomUUID();
+		await f.identity.pool.query(
+			'INSERT INTO identity."user"(id,name,email,email_verified) VALUES($1,$1,$2,true)',
+			[userId, `${userId}@example.test`],
+		);
+		await recordProbe(f.worker.pool, organizations[0].id);
+		await runMigrations({ databaseUrl: f.migrator });
+		await runMigrations({ databaseUrl: f.migrator });
+		expect(await hasProbe(f.web.pool, organizations[0].id)).toBe(true);
+		expect(
+			(
+				await f.web.pool.query(
+					"SELECT id,lifecycle_status,credential_epoch FROM identity.lookup_user($1)",
+					[userId],
+				)
+			).rows,
+		).toEqual([
+			{ id: userId, lifecycle_status: "active", credential_epoch: "1" },
+		]);
+		expect(
+			(
+				await f.web.pool.query(
+					"SELECT installation_id FROM foundation.installation",
+				)
+			).rows,
+		).toEqual([]);
+		expect(
+			(await f.web.pool.query("SELECT id FROM tenancy.organizations")).rows,
+		).toEqual([]);
+		await expect(
+			f.web.pool.query('SELECT * FROM identity."user"'),
+		).rejects.toMatchObject({ code: "42501" });
+	});
 });

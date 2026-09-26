@@ -11,6 +11,13 @@ const valid = {
 	DATABASE_URL: "postgres://web:secret@localhost/app",
 	WORKER_DATABASE_URL: "postgres://worker:secret@localhost/app",
 	APP_ORIGIN: "https://example.test",
+	IDENTITY_DATABASE_URL: "postgres://identity:secret@localhost/app",
+	CONTROL_DATABASE_URL: "postgres://reader:secret@localhost/control",
+	INSTALLATION_ID: "10000000-0000-4000-8000-000000000001",
+	OPENFGA_API_URL: "http://localhost:8080",
+	AUTH_SECRET: "synthetic_configuration_test_secret_0000",
+	SMTP_HOST: "localhost",
+	SMTP_PORT: "1026",
 };
 describe("runtime configuration", () => {
 	it("validates each process without requiring unrelated credentials", () => {
@@ -66,7 +73,8 @@ describe("runtime configuration", () => {
 		"MIGRATION_DATABASE_URL",
 		"AUTHZ_PUBLISH_TOKEN",
 		"TEST_DATABASE_ADMIN_URL",
-		"IDENTITY_DATABASE_URL",
+		"CONTROL_ADMIN_DATABASE_URL",
+		"OWNER_RECOVERY_SECRET",
 	])("rejects privileged %s in combined serve mode", (key) => {
 		expect(() =>
 			readServeEnv({ ...valid, [key]: "sensitive-credential" }),

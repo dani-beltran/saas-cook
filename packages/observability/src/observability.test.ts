@@ -1,7 +1,9 @@
+import { randomUUID } from "node:crypto";
 import type { LogRecord } from "@logtape/logtape";
 import { trace } from "@opentelemetry/api";
 import { expect, it } from "vitest";
 import {
+	getOperationContext,
 	initializeObservability,
 	serializeLog,
 	traceCarrier,
@@ -45,4 +47,35 @@ it("propagates a real OpenTelemetry trace from request to job", async () => {
 			carrier,
 		);
 	});
+});
+
+it("exposes only trusted operation correlation with async isolation and no context leakage", async () => {
+	initializeObservability("web");
+	expect(getOperationContext()).toBeUndefined();
+	const requestIds = [randomUUID(), randomUUID()];
+	await Promise.all(
+		requestIds.map((requestId) =>
+			withOperation("audit", { requestId, jobId: "internal-job" }, async () => {
+				await Promise.resolve();
+				const correlation = getOperationContext();
+				expect(correlation).toEqual({
+					requestId,
+					traceId: trace.getActiveSpan()?.spanContext().traceId,
+				});
+				expect(Object.isFrozen(correlation)).toBe(true);
+				expect(Object.keys(correlation ?? {})).toEqual([
+					"requestId",
+					"traceId",
+				]);
+			}),
+		),
+	);
+	expect(getOperationContext()).toBeUndefined();
+	await withOperation(
+		"invalid.correlation",
+		{ requestId: "caller-secret-not-a-server-uuid" },
+		async () => {
+			expect(getOperationContext()).toBeUndefined();
+		},
+	);
 });

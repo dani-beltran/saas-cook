@@ -2,13 +2,10 @@ import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
 import {
 	authorizationModel,
-	fixtureTuples,
-	qualifyObject,
-	qualifyTuples,
-} from "../../spikes/phase0/authz/model.js";
+	compileContext,
+} from "@common-saas/authz/model";
 
-// This checks the selected Phase 0 model against real OpenFGA. It deliberately
-// creates no application readiness state; publication belongs to Phase 2.
+// Validate the production compiler and pinned model without modifying application readiness.
 const base = process.env.OPENFGA_API_URL ?? "http://127.0.0.1:18081";
 async function request<T>(
 	path: string,
@@ -26,7 +23,7 @@ async function request<T>(
 }
 
 const store = await request<{ id: string }>("/stores", "POST", {
-	name: `phase1-model-validation-${Date.now()}`,
+	name: `phase2-model-validation-${Date.now()}`,
 });
 try {
 	const model = await request<{ authorization_model_id: string }>(
@@ -34,17 +31,13 @@ try {
 		"POST",
 		authorizationModel,
 	);
-	const namespace = {
-		organization: "alpha",
-		epoch: "epoch",
-		generation: "request",
-	};
-	const tuples = qualifyTuples(fixtureTuples("alpha", 1), namespace);
+	const context = compileContext({ organizationId: "alpha", epoch: "epoch", actorId: "alpha-owner", role: "owner" });
+	const tuples = context.tuples;
 	const assertions = [
-		{ user: "user:alpha-u0", relation: "can_manage", allowed: true },
-		{ user: "user:alpha-u1", relation: "can_read", allowed: true },
-		{ user: "user:alpha-u1", relation: "can_manage", allowed: false },
-		{ user: "user:beta-u0", relation: "can_read", allowed: false },
+		{ user: "user:alpha-owner", relation: "can_manage", allowed: true },
+		{ user: "user:alpha-owner", relation: "can_transfer", allowed: true },
+		{ user: "user:alpha-member", relation: "can_manage", allowed: false },
+		{ user: "user:beta-owner", relation: "can_read", allowed: false },
 	];
 	for (const assertion of assertions) {
 		const result = await request<{ allowed: boolean }>(
@@ -55,7 +48,7 @@ try {
 				tuple_key: {
 					user: assertion.user,
 					relation: assertion.relation,
-					object: qualifyObject("project:r000000", namespace),
+					object: context.object,
 				},
 				contextual_tuples: { tuple_keys: tuples },
 				consistency: "HIGHER_CONSISTENCY",
@@ -72,7 +65,7 @@ try {
 				modelId: model.authorization_model_id,
 				assertions,
 				scope:
-					"Phase 0 selected model compatibility; production authorization remains Phase 2",
+					"Phase 2 production contextual authorization model and compiler",
 			},
 			null,
 			2,

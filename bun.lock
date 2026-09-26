@@ -13,8 +13,10 @@
         "@biomejs/biome": "2.5.14",
         "@commitlint/cli": "21.2.3",
         "@commitlint/config-conventional": "21.2.3",
+        "@common-saas/authz": "workspace:*",
         "@common-saas/config": "workspace:*",
         "@common-saas/db": "workspace:*",
+        "@common-saas/email": "workspace:*",
         "@common-saas/observability": "workspace:*",
         "@hookform/resolvers": "5.9.1",
         "@openfga/sdk": "0.9.7",
@@ -59,11 +61,14 @@
     "apps/web": {
       "name": "@common-saas/web",
       "dependencies": {
+        "@better-auth/passkey": "1.7.5",
         "@common-saas/api": "workspace:*",
+        "@common-saas/api-contracts": "workspace:*",
         "@common-saas/config": "workspace:*",
         "@common-saas/db": "workspace:*",
         "@common-saas/observability": "workspace:*",
         "@common-saas/ui": "workspace:*",
+        "better-auth": "1.7.5",
         "next": "16.3.5",
         "next-intl": "4.14.6",
         "react": "19.3.0",
@@ -82,8 +87,10 @@
     "apps/worker": {
       "name": "@common-saas/worker",
       "dependencies": {
+        "@common-saas/authz": "workspace:*",
         "@common-saas/config": "workspace:*",
         "@common-saas/db": "workspace:*",
+        "@common-saas/email": "workspace:*",
         "@common-saas/observability": "workspace:*",
         "pg": "8.23.0",
         "pg-boss": "12.33.4",
@@ -95,12 +102,18 @@
       "version": "0.1.0",
       "dependencies": {
         "@common-saas/api-contracts": "workspace:*",
+        "@common-saas/auth": "workspace:*",
+        "@common-saas/authz": "workspace:*",
+        "@common-saas/config": "workspace:*",
+        "@common-saas/db": "workspace:*",
+        "@common-saas/email": "workspace:*",
         "@common-saas/observability": "workspace:*",
         "@orpc/client": "1.15.3",
         "@orpc/contract": "1.15.3",
         "@orpc/openapi": "1.15.3",
         "@orpc/server": "1.15.3",
         "@orpc/zod": "1.15.3",
+        "pg": "8.23.0",
       },
       "devDependencies": {
         "typescript": "7.0.2",
@@ -121,11 +134,24 @@
       "name": "@common-saas/auth",
       "version": "0.1.0",
       "dependencies": {
+        "@better-auth/passkey": "1.7.5",
         "@common-saas/db": "workspace:*",
+        "@common-saas/email": "workspace:*",
         "better-auth": "1.7.5",
         "drizzle-orm": "0.45.3",
         "pg": "8.23.0",
         "zod": "4.6.5",
+      },
+      "devDependencies": {
+        "@types/pg": "8.23.1",
+        "typescript": "7.0.2",
+      },
+    },
+    "packages/authz": {
+      "name": "@common-saas/authz",
+      "version": "0.1.0",
+      "dependencies": {
+        "pg": "8.23.0",
       },
       "devDependencies": {
         "@types/pg": "8.23.1",
@@ -159,8 +185,10 @@
       "dependencies": {
         "@react-email/components": "1.0.12",
         "@react-email/render": "2.1.0",
+        "pg": "8.23.0",
         "react": "19.3.0",
         "react-dom": "19.3.0",
+        "zod": "4.6.5",
       },
       "devDependencies": {
         "@types/react": "19.3.0",
@@ -419,6 +447,8 @@
     "@common-saas/api-contracts": ["@common-saas/api-contracts@workspace:packages/api-contracts"],
 
     "@common-saas/auth": ["@common-saas/auth@workspace:packages/auth"],
+
+    "@common-saas/authz": ["@common-saas/authz@workspace:packages/authz"],
 
     "@common-saas/config": ["@common-saas/config@workspace:packages/config"],
 

@@ -23,8 +23,11 @@ function stop(code: number) {
 }
 const webEnv = { ...process.env };
 delete webEnv.WORKER_DATABASE_URL;
+delete webEnv.SMTP_USERNAME;
+delete webEnv.SMTP_PASSWORD;
 const workerEnv = { ...process.env };
 delete workerEnv.DATABASE_URL;
+delete workerEnv.IDENTITY_DATABASE_URL;
 for (const [name, script, env] of [
 	["web", "/app/apps/web/server.js", webEnv],
 	["worker", "/app/dist/worker.mjs", workerEnv],

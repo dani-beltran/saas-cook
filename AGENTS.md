@@ -1,6 +1,6 @@
 # Working in this repository
 
-This is the Phase 1 Common SaaS foundation. `docs/06-delivery-roadmap.md` is the acceptance register. Read the relevant architecture and data-model contracts before changing a boundary. Phase 0 evidence is retained in `spikes/phase0` and `docs/phase0`; its benchmark and fixtures are not production application code.
+This is the Phase 2 Common SaaS foundation. `docs/06-delivery-roadmap.md` is the acceptance register. Read the relevant architecture and data-model contracts before changing a boundary. Phase 0 evidence is retained in `spikes/phase0` and `docs/phase0`; its benchmark and fixtures are not production application code.
 
 ## Stack and layout
 
@@ -11,7 +11,8 @@ Use Bun 1.4.2 for the frozen workspace install and root scripts. Node.js 24.19.0
 - `packages/ui`: shared shadcn/ui and Tailwind primitives, React Hook Form/Zod example and stories.
 - `packages/api-contracts`, `packages/api`: shared Zod/oRPC DTOs, typed client, RPC and OpenAPI handlers.
 - `packages/config`, `packages/observability`: separate runtime/client validation, LogTape redaction and OpenTelemetry correlation.
-- `packages/db`, `packages/auth`, `packages/email`, `packages/testing`: reviewed Drizzle migrations, identity adapter setup, localized React Email and synthetic fixtures.
+- `packages/db`, `packages/auth`, `packages/email`, `packages/testing`: reviewed Drizzle migrations, tenant lifecycle/RLS/seat services, Better Auth identity and assurance, encrypted identity emails and synthetic fixtures.
+- `packages/authz`: bounded contextual OpenFGA compiler, independent epoch/readiness and signed operator approval verification.
 - `infra/compose.yaml`: disposable development services. `infra/docker`: the combined non-root application image and command packaging.
 
 ## Commands
@@ -24,6 +25,8 @@ Run commands from the repository root. Copy `.env.example` for the documented lo
 | Explicit local hooks | `bun run hooks:install` |
 | Local services | `bun run services:up` / `bun run services:down` |
 | Apply reviewed migrations | `bun run db:migrate` |
+| Fresh initialization / validate publication | `bun run bootstrap` / `bun run authz:publish` |
+| Scoped operator commands | `bun run owner:recover --approval <file>` / `bun run security:deactivate --approval <file>` |
 | Develop | `bun run dev` |
 | Source / formatting | `bun run check` / `bun run format` |
 | Strict types / unused code | `bun run typecheck` / `bun run knip` |
@@ -33,7 +36,7 @@ Run commands from the repository root. Copy `.env.example` for the documented lo
 | Selected model compatibility | `bun run authz:validate` |
 | Production build | `bun run build` |
 | Image acceptance | `bun run image:build`, then `bun run test:image` |
-| Vulnerability checks | `bun run security:scan dependencies` / `bun run security:scan image common-sass:phase1` |
+| Vulnerability checks | `bun run security:scan dependencies` / `bun run security:scan image common-sass:phase2` |
 | Historical Phase 0 tests | `bun run phase0:test` / `bun run phase0:test:integration` |
 
 Vitest uses separate `unit` and `integration` projects. Integration tests require running local services and fail rather than silently skipping missing services. `TEST_DATABASE_ADMIN_URL` is only for creating isolated test databases. Production runtime processes must use distinct restricted web/worker roles; migration credentials belong only to the migration command. Test reports and build/scan evidence go under ignored `artifacts/`.
@@ -42,7 +45,9 @@ Use Conventional Commits with a header of at most 100 characters. Validate commi
 
 ## Boundaries and verification
 
-Phase 1 diagnostics and form examples do not grant tenant access. Better Auth setup is not an enabled authentication flow. Production identity, membership, RLS, authorization publication/readiness and lifecycle/recovery behavior belong to Phase 2 and later roadmap gates. Never expose Phase 0 fixture identity headers as trusted application authentication. `bootstrap` and `authz-publish` packaging must report unsupported work until their actual Phase 2 protocols exist.
+Production identity and tenancy use the Phase 2 services. Derive actors only from verified Better Auth sessions and revalidate them under lifecycle fences. User lifecycle fences precede organization locks; never upgrade a held shared organization fence. Organization routes select context; browser preferences cannot authorize it. Never expose Phase 0 fixture identity headers. All possible positive organization/team decisions use the pinned model and a fresh contextual OpenFGA namespace. Contextual source changes publish revisions atomically; no production permission tuples are persisted.
+
+The separate control store owns installation epochs/readiness and signed operator approvals. Runtime uses its read-only role. `bootstrap` only accepts a fresh installation or its recorded interrupted initialization; existing/restored data must not be treated as fresh. Operator recovery requires a bounded Ed25519-signed independent approval and fresh MFA. The full restore/deletion journal protocol remains Phase 6. See `docs/phase2/authorization.md`.
 
 Keep public/client configuration allowlisted and validate server configuration before work starts. Do not use `NEXT_PUBLIC_*` to bake environment-specific settings into the image. Never log credential values, authentication URLs, raw payloads or caller-controlled request IDs. Use the shared logging boundary and correlation fields. Build without application services or credentials.
 
