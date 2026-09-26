@@ -1,6 +1,6 @@
+import { applicationRuntime } from "@common-saas/api/runtime";
 import { readWebEnv } from "@common-saas/config/server";
 import { checkDatabase } from "@common-saas/db";
-import { applicationRuntime } from "@common-saas/api/runtime";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export async function GET() {

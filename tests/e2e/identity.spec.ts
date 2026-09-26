@@ -127,9 +127,20 @@ test("real registration, scanner confirmation, two memberships, per-tab isolatio
 		.getByRole("button", { name: "Create team", exact: true })
 		.click();
 	await expect(northTab.getByRole("status")).toContainText("Saved");
+	await expect(
+		northTab.getByRole("heading", {
+			name: `North team ${id}`,
+			level: 3,
+			exact: true,
+		}),
+	).toBeVisible();
 	await page.reload();
 	await expect(
-		page.getByRole("option", { name: `North team ${id}`, exact: true }),
+		page.getByRole("heading", {
+			name: `North team ${id}`,
+			level: 3,
+			exact: true,
+		}),
 	).toHaveCount(0);
 	await northTab.screenshot({
 		path: testInfo.outputPath("organization-desktop.png"),
@@ -139,7 +150,9 @@ test("real registration, scanner confirmation, two memberships, per-tab isolatio
 	await page
 		.getByRole("button", { name: /^(Confirm|Confirmar)$/, exact: true })
 		.click();
-	await expect(page.getByRole("alert")).toContainText("invalid or expired");
+	await expect(page.getByRole("main").getByRole("alert")).toContainText(
+		"invalid or expired",
+	);
 });
 
 test("real browser WebAuthn enrollment and passwordless sign-in", async ({
@@ -194,126 +207,268 @@ test("real browser WebAuthn enrollment and passwordless sign-in", async ({
 	).toBe(true);
 });
 
-test("invitation acceptance and ownership transfer immediately change RPC and REST permissions", async ({
-	page,
-	browser,
-}, testInfo) => {
-	const id = randomUUID().slice(0, 8);
-	const ownerEmail = `browser-transfer-owner-${id}@example.test`;
-	const recipientEmail = `browser-transfer-recipient-${id}@example.test`;
-	const recipientContext = await browser.newContext();
-	const recipient = await recipientContext.newPage();
-	try {
-		await signUp(page, ownerEmail);
-		await signUp(recipient, recipientEmail);
-		await page
-			.getByLabel("Organization name", { exact: true })
-			.fill(`Transfer ${id}`);
-		await page.getByLabel("URL name", { exact: true }).fill(`transfer-${id}`);
-		await page
-			.getByRole("button", { name: "Create organization", exact: true })
-			.click();
-		await expect(
-			page.getByRole("heading", { name: `Transfer ${id}`, exact: true }),
-		).toBeVisible();
-		const organizationPath = new URL(page.url()).pathname;
-		const organizationId = organizationPath.split("/").at(-1);
-		const origin = new URL(page.url()).origin;
-		const endpoint = `${origin}/api/v1/organizations/${organizationId}`;
-		expect((await page.request.get(endpoint)).status()).toBe(200);
-		expect((await recipient.request.get(`${endpoint}/summary`)).status()).toBe(
-			403,
-		);
-		const deniedOrigin = await page.request.post(`${endpoint}/commands`, {
-			headers: { Origin: "https://untrusted.example.test" },
-			data: {
-				command: {
-					action: "createTeam",
-					name: "Untrusted origin",
-					operationKey: randomUUID(),
-				},
-			},
-		});
-		expect(deniedOrigin.status()).toBe(403);
-		await page.getByLabel("Email", { exact: true }).fill(recipientEmail);
-		await page
-			.getByRole("button", { name: "Invite member", exact: true })
-			.click();
-		await expect(page.getByRole("status")).toContainText("Saved");
-		const invitation = await emailLink(
-			recipientEmail,
-			/https?:\/\/[^\s<]+\/en\/organizations\/[a-f0-9-]+\?invite=[A-Za-z0-9_-]+/,
-		);
-		await recipient.goto(invitation);
-		await recipient
-			.getByRole("button", { name: "Accept", exact: true })
-			.click();
-		await expect(
-			recipient.getByRole("heading", { name: `Transfer ${id}`, exact: true }),
-		).toBeVisible();
-		expect((await recipient.request.get(`${endpoint}/summary`)).status()).toBe(
-			200,
-		);
-		expect((await recipient.request.get(endpoint)).status()).toBe(403);
-		await page.reload();
-		await page
-			.getByLabel("Recipient member", { exact: true })
-			.selectOption({ label: recipientEmail });
-		await page
-			.getByRole("button", { name: "Nominate recipient", exact: true })
-			.click();
-		await expect(page.getByRole("status")).toContainText("Saved");
-		const transfer = await emailLink(
-			recipientEmail,
-			/https?:\/\/[^\s<]+\/en\/organizations\/[a-f0-9-]+\?transfer=[a-f0-9-]+/,
-		);
-		await recipient.goto(transfer);
-		await recipient
-			.getByRole("button", { name: "Accept", exact: true })
-			.click();
-		await expect(
-			recipient.getByRole("heading", {
-				name: "Transfer ownership",
-				exact: true,
-			}),
-		).toBeVisible();
-		// The old owner's existing tab retains stale controls; the RPC command must still recheck authoritative ownership.
-		await page
-			.getByLabel("Team name", { exact: true })
-			.fill("Rejected old-owner team");
-		await page
-			.getByRole("button", { name: "Create team", exact: true })
-			.click();
-		await expect(page.getByRole("status")).toContainText("Access denied");
-		expect((await page.request.get(endpoint)).status()).toBe(403);
-		expect((await page.request.get(`${endpoint}/summary`)).status()).toBe(200);
-		expect(
-			(
-				await recipient.request.post(`${endpoint}/commands`, {
-					headers: { Origin: origin },
-					data: {
-						command: {
-							action: "createTeam",
-							name: `New owner team ${id}`,
-							operationKey: randomUUID(),
-						},
+for (const outgoingRole of ["member", "inactive"] as const) {
+	test(`invitation, team management and ${outgoingRole} ownership transfer change RPC and REST permissions`, async ({
+		page,
+		browser,
+	}, testInfo) => {
+		const id = randomUUID().slice(0, 8);
+		const ownerEmail = `browser-transfer-owner-${id}@example.test`;
+		const recipientEmail = `browser-transfer-recipient-${id}@example.test`;
+		const recipientContext = await browser.newContext();
+		const recipient = await recipientContext.newPage();
+		try {
+			await signUp(page, ownerEmail);
+			await signUp(recipient, recipientEmail);
+			await page
+				.getByLabel("Organization name", { exact: true })
+				.fill(`Transfer ${id}`);
+			await page.getByLabel("URL name", { exact: true }).fill(`transfer-${id}`);
+			await page
+				.getByRole("button", { name: "Create organization", exact: true })
+				.click();
+			await expect(
+				page.getByRole("heading", { name: `Transfer ${id}`, exact: true }),
+			).toBeVisible();
+			const organizationPath = new URL(page.url()).pathname;
+			const organizationId = organizationPath.split("/").at(-1);
+			const origin = new URL(page.url()).origin;
+			const endpoint = `${origin}/api/v1/organizations/${organizationId}`;
+			expect((await page.request.get(endpoint)).status()).toBe(200);
+			expect(
+				(await recipient.request.get(`${endpoint}/summary`)).status(),
+			).toBe(403);
+			const deniedOrigin = await page.request.post(`${endpoint}/commands`, {
+				headers: { Origin: "https://untrusted.example.test" },
+				data: {
+					command: {
+						action: "createTeam",
+						name: "Untrusted origin",
+						operationKey: randomUUID(),
 					},
+				},
+			});
+			expect(deniedOrigin.status()).toBe(403);
+			await page.getByLabel("Email", { exact: true }).fill(recipientEmail);
+			await page
+				.getByRole("button", { name: "Invite member", exact: true })
+				.click();
+			await expect(page.getByRole("status")).toContainText("Saved");
+			const invitation = await emailLink(
+				recipientEmail,
+				/https?:\/\/[^\s<]+\/en\/organizations\/[a-f0-9-]+\?invite=[A-Za-z0-9_-]+/,
+			);
+			await recipient.goto(invitation);
+			await recipient
+				.getByRole("button", { name: "Accept", exact: true })
+				.click();
+			await expect(
+				recipient.getByRole("heading", { name: `Transfer ${id}`, exact: true }),
+			).toBeVisible();
+			expect(
+				(await recipient.request.get(`${endpoint}/summary`)).status(),
+			).toBe(200);
+			expect((await recipient.request.get(endpoint)).status()).toBe(403);
+			await page.reload();
+			await page
+				.getByLabel("Recipient member", { exact: true })
+				.selectOption({ label: recipientEmail });
+			if (outgoingRole === "member") {
+				// Existing clients may omit outgoingRole and retain the member default.
+				const before = await (await page.request.get(endpoint)).json();
+				expect(
+					(
+						await page.request.post(`${endpoint}/commands`, {
+							headers: { Origin: origin },
+							data: {
+								command: {
+									action: "startTransfer",
+									recipientMembershipId: before.members.find(
+										(member: { email: string }) =>
+											member.email === recipientEmail,
+									).id,
+									operationKey: randomUUID(),
+								},
+							},
+						})
+					).status(),
+				).toBe(200);
+				await page.reload();
+			} else {
+				await page
+					.getByLabel("Outgoing owner's access after transfer", { exact: true })
+					.selectOption(outgoingRole);
+				await page
+					.getByRole("button", { name: "Nominate recipient", exact: true })
+					.click();
+				await expect(page.getByRole("status")).toContainText("Saved");
+			}
+			const pending = await (await page.request.get(endpoint)).json();
+			expect(
+				pending.transfers.find(
+					(item: { status: string }) => item.status === "pending",
+				).outgoingRole,
+			).toBe(outgoingRole);
+			await expect(
+				page
+					.getByRole("listitem")
+					.filter({ hasText: "Outgoing owner's access after transfer" }),
+			).toContainText(
+				outgoingRole === "inactive" ? "Leave organization" : "Member",
+			);
+			const transfer = await emailLink(
+				recipientEmail,
+				/https?:\/\/[^\s<]+\/en\/organizations\/[a-f0-9-]+\?transfer=[a-f0-9-]+/,
+			);
+			await recipient.goto(transfer);
+			await recipient
+				.getByRole("button", { name: "Accept", exact: true })
+				.click();
+			await expect(
+				recipient.getByRole("heading", {
+					name: "Transfer ownership",
+					exact: true,
+				}),
+			).toBeVisible();
+			// The old owner's existing tab retains stale controls; the RPC command must still recheck authoritative ownership.
+			await page
+				.getByLabel("Team name", { exact: true })
+				.fill("Rejected old-owner team");
+			await page
+				.getByRole("button", { name: "Create team", exact: true })
+				.click();
+			await expect(page.getByRole("status")).toContainText(
+				"Organization settings require administrator access.",
+			);
+			expect((await page.request.get(endpoint)).status()).toBe(403);
+			expect((await page.request.get(`${endpoint}/summary`)).status()).toBe(
+				outgoingRole === "inactive" ? 403 : 200,
+			);
+			expect(
+				(
+					await recipient.request.post(`${endpoint}/commands`, {
+						headers: { Origin: origin },
+						data: {
+							command: {
+								action: "createTeam",
+								name: `New owner team ${id}`,
+								operationKey: randomUUID(),
+							},
+						},
+					})
+				).status(),
+			).toBe(200);
+			const current = await recipient.request.get(endpoint);
+			expect(current.status()).toBe(200);
+			const snapshot = await current.json();
+			expect(snapshot.membership.role).toBe("owner");
+			expect(snapshot.seats.occupied).toBe(outgoingRole === "inactive" ? 1 : 2);
+			expect(
+				snapshot.members.find(
+					(member: { email: string }) => member.email === ownerEmail,
+				),
+			).toMatchObject({
+				role: "member",
+				status: outgoingRole === "inactive" ? "inactive" : "active",
+			});
+			expect(snapshot.teams.map((team: { name: string }) => team.name)).toEqual(
+				[`New owner team ${id}`],
+			);
+			const teamId = snapshot.teams[0].id;
+			const teamName = snapshot.teams[0].name;
+			expect(snapshot.teams[0].membershipIds).toEqual([]);
+			await recipient.reload();
+			const team = recipient.getByRole("article", {
+				name: `Team ${teamName}`,
+				exact: true,
+			});
+			await expect(team).toContainText("This team has no members.");
+			await team
+				.getByLabel("Member", { exact: true })
+				.selectOption({ label: recipientEmail });
+			await team
+				.getByRole("button", { name: "Add member to team", exact: true })
+				.click();
+			await expect(team.getByRole("listitem")).toContainText(recipientEmail);
+			expect(
+				(await (await recipient.request.get(endpoint)).json()).teams[0]
+					.membershipIds,
+			).toEqual([snapshot.membership.id]);
+			for (const action of ["removeTeam", "removeTeamMember"]) {
+				expect(
+					(
+						await page.request.post(`${endpoint}/commands`, {
+							headers: { Origin: origin },
+							data: {
+								command: {
+									action,
+									teamId,
+									...(action === "removeTeamMember"
+										? { membershipId: snapshot.membership.id }
+										: {}),
+									operationKey: randomUUID(),
+								},
+							},
+						})
+					).status(),
+				).toBe(403);
+			}
+			await team
+				.getByRole("button", {
+					name: `Remove ${recipientEmail} from ${teamName}`,
+					exact: true,
 				})
-			).status(),
-		).toBe(200);
-		const current = await recipient.request.get(endpoint);
-		expect(current.status()).toBe(200);
-		const snapshot = await current.json();
-		expect(snapshot.membership.role).toBe("owner");
-		expect(snapshot.teams.map((team: { name: string }) => team.name)).toEqual([
-			`New owner team ${id}`,
-		]);
-		await recipient.reload();
-		await recipient.screenshot({
-			path: testInfo.outputPath("ownership-transfer-desktop.png"),
-			fullPage: true,
-		});
-	} finally {
-		await recipientContext.close();
-	}
-});
+				.click();
+			await expect(team).toContainText("This team has no members.");
+			expect(
+				(await (await recipient.request.get(endpoint)).json()).teams[0]
+					.membershipIds,
+			).toEqual([]);
+			// The REST command and browser inventory share the same tenant membership boundary.
+			expect(
+				(
+					await recipient.request.post(`${endpoint}/commands`, {
+						headers: { Origin: origin },
+						data: {
+							command: {
+								action: "addTeamMember",
+								teamId,
+								membershipId: snapshot.membership.id,
+								operationKey: randomUUID(),
+							},
+						},
+					})
+				).status(),
+			).toBe(200);
+			await recipient.reload();
+			await expect(team.getByRole("listitem")).toContainText(recipientEmail);
+			await recipient.screenshot({
+				path: testInfo.outputPath(
+					`ownership-transfer-${outgoingRole}-desktop.png`,
+				),
+				fullPage: true,
+			});
+			await recipient.setViewportSize({ width: 390, height: 844 });
+			await recipient.screenshot({
+				path: testInfo.outputPath(
+					`ownership-transfer-${outgoingRole}-mobile.png`,
+				),
+				fullPage: true,
+			});
+			expect(
+				await recipient.evaluate(
+					() => document.documentElement.scrollWidth <= innerWidth,
+				),
+			).toBe(true);
+			await team
+				.getByRole("button", { name: `Delete team ${teamName}`, exact: true })
+				.click();
+			await expect(team).toHaveCount(0);
+			expect(
+				(await (await recipient.request.get(endpoint)).json()).teams,
+			).toEqual([]);
+		} finally {
+			await recipientContext.close();
+		}
+	});
+}

@@ -12,7 +12,7 @@ export async function sourceFingerprint() {
 		.split("\0")
 		.filter(Boolean)
 		.filter((path) =>
-			/^(apps\/|packages\/|infra\/|scripts\/phase[12]\/|tests\/|package\.json$|bun\.lock$|tsconfig.*\.json$|turbo\.json$|\.dockerignore$)/.test(
+			/^(apps\/|packages\/|infra\/|scripts\/phase[12]\/|tests\/|\.github\/|package\.json$|bun\.lock$|tsconfig.*\.json$|turbo\.json$|biome\.json$|(?:playwright|vitest|knip|commitlint)\.config\.ts$|lefthook\.yml$|\.dockerignore$)/.test(
 				path,
 			),
 		)

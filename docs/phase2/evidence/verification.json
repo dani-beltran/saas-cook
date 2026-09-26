@@ -1,0 +1,77 @@
+{
+	"date": "2026-09-26",
+	"suiteVersion": 2,
+	"preset": "Foundation / Phase 2",
+	"sourceCommit": "ba69e9db080ad032d91fd204d62ace03deb09c65",
+	"sourceDirty": true,
+	"implementationSha256": "12846b14b37d313a3bd6836e1f95c9055d89f733d0f9f4af89808348fdd3c61b",
+	"checks": {
+		"frozenWorkspaceInstall": {
+			"status": "passed",
+			"bun": "1.4.2",
+			"lockfileSha256": "71055629c2c2c5cc49e0e1b71fdcc5679e7f9be0469a36824978a9d3fc925c1f"
+		},
+		"biome": "passed",
+		"typescript": "passed",
+		"knip": "passed",
+		"unit": {
+			"passed": 54,
+			"failed": 0,
+			"errors": 0,
+			"skipped": 0,
+			"report": "artifacts/vitest/phase2-unit.xml",
+			"reportSha256": "6d758617e0223ac61ddd91c086677dda46ed3beb986363ed5413ecf8eb9190c2"
+		},
+		"integration": {
+			"passed": 58,
+			"failed": 0,
+			"errors": 0,
+			"skipped": 0,
+			"report": "artifacts/vitest/phase2-integration.xml",
+			"reportSha256": "ff10eed32e3a7d7a4431e37aaf634aa6710a038149a1d74f86b0c45aa8426eea",
+			"services": [
+				"PostgreSQL",
+				"independent control PostgreSQL",
+				"pg-boss",
+				"OpenFGA",
+				"SMTP/Mailpit",
+				"S3-compatible storage"
+			],
+			"s3Endpoint": "http://127.0.0.1:19001",
+			"fixture": "Separate disposable storage with 32-volume capacity; pre-existing local storage preserved"
+		},
+		"browser": {
+			"passed": 7,
+			"failed": 0,
+			"skipped": 0,
+			"flaky": 0,
+			"browser": "Chromium",
+			"startedAt": "2026-09-26T14:43:29.884Z",
+			"report": "artifacts/playwright-results/results.json",
+			"reportSha256": "c343b44aac0aad1fd9ac921107d2e6e7bf052be986739ee065199943dd74c5fb",
+			"responsiveScreenshotsReviewed": true,
+			"webAuthn": "Real Chromium virtual authenticator with user verification"
+		},
+		"productionBuild": "passed",
+		"storybook": "passed",
+		"productionModel": {
+			"assertions": 4,
+			"status": "passed",
+			"report": "authorization-model.json"
+		},
+		"image": {
+			"status": "passed",
+			"checks": 14,
+			"report": "image-acceptance.json",
+			"image": "sha256:cbab47e0d69dc927a79165a9d54b0276fc8e65b366d0613c1ee0e4a69e99bedf",
+			"architecture": "arm64"
+		},
+		"security": {
+			"status": "passed",
+			"report": "security.json"
+		}
+	},
+	"hostedCi": "Not executed; repository push and hosted required gate remain unverified",
+	"linuxAmd64": "Not executed locally",
+	"scope": "Phase 2 identity, tenancy and organization/team authorization; later roadmap phases excluded"
+}

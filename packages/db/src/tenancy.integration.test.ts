@@ -471,65 +471,98 @@ describe("production tenancy, lifecycle fences and local seats with PostgreSQL/O
 			}),
 		).rejects.toMatchObject({ code: "LAST_OWNER" });
 	});
-	it("completes transfer with recipient acceptance, source publication, receipts and replay", async () => {
-		const f = await fixture(2),
-			recipient = await f.user(),
-			recipientId = await f.admit(recipient, "billing");
-		const transfer = await f.service.startTransfer(f.owner, f.org.id, {
-			recipientMembershipId: recipientId,
-			outgoingRole: "inactive",
-		});
-		await expect(
-			f.service.acceptTransfer(f.owner, f.org.id, {
+	it.each(["admin", "member", "billing", "inactive"] as const)(
+		"completes transfer with outgoing %s access, seats, source publication and replay",
+		async (outgoingRole) => {
+			const f = await fixture(2),
+				recipient = await f.user(),
+				recipientId = await f.admit(recipient, "billing");
+			const transfer = await f.service.startTransfer(f.owner, f.org.id, {
+				recipientMembershipId: recipientId,
+				outgoingRole,
+			});
+			await expect(
+				f.service.acceptTransfer(f.owner, f.org.id, {
+					transferId: transfer.id,
+					operationKey: "transfer",
+				}),
+			).rejects.toMatchObject({ code: "DENIED" });
+			await f.service.acceptTransfer(recipient, f.org.id, {
 				transferId: transfer.id,
 				operationKey: "transfer",
-			}),
-		).rejects.toMatchObject({ code: "DENIED" });
-		await f.service.acceptTransfer(recipient, f.org.id, {
-			transferId: transfer.id,
-			operationKey: "transfer",
-		});
-		await expect(
-			f.service.acceptTransfer(recipient, f.org.id, {
-				transferId: transfer.id,
-				operationKey: "transfer",
-			}),
-		).resolves.toEqual({ id: transfer.id });
-		const result = await f.service.readOrganization(recipient, f.org.id);
-		expect(result.membership.role).toBe("owner");
-		expect(result.seats.occupied).toBe(1);
-		expect(
-			result.members.find((row) => row.userId === f.owner.userId)?.status,
-		).toBe("inactive");
-		expect(
-			(
-				await f.app.query(
-					"SELECT desired_revision=applied_revision AS ready FROM tenancy.authorization_revisions WHERE organization_id=$1",
-					[f.org.id],
-				)
-			).rows[0].ready,
-		).toBe(true);
-		const audit = await f.app.query(
-			"SELECT action FROM tenancy.audit_events WHERE organization_id=$1 AND action='ownership.transferred'",
-			[f.org.id],
-		);
-		expect(audit.rowCount).toBe(1);
-		const completed = f.notices.filter(
-			(notice) => notice.kind === "transfer-completed",
-		);
-		expect(completed.map((notice) => notice.email).sort()).toEqual(
-			[
-				`${f.owner.userId}@example.test`,
-				`${recipient.userId}@example.test`,
-			].sort(),
-		);
-		expect(completed.map((notice) => notice.transfer)).toEqual(
-			Array(2).fill({
-				fromEmail: `${f.owner.userId}@example.test`,
-				toEmail: `${recipient.userId}@example.test`,
-			}),
-		);
-	});
+			});
+			await expect(
+				f.service.acceptTransfer(recipient, f.org.id, {
+					transferId: transfer.id,
+					operationKey: "transfer",
+				}),
+			).resolves.toEqual({ id: transfer.id });
+			const result = await f.service.readOrganization(recipient, f.org.id);
+			expect(result.membership.role).toBe("owner");
+			expect(result.seats.occupied).toBe(
+				outgoingRole === "inactive" || outgoingRole === "billing" ? 1 : 2,
+			);
+			expect(
+				result.members.find((row) => row.userId === f.owner.userId),
+			).toMatchObject({
+				role: outgoingRole === "inactive" ? "member" : outgoingRole,
+				status: outgoingRole === "inactive" ? "inactive" : "active",
+			});
+			expect(
+				result.transfers.find((item) => item.id === transfer.id),
+			).toMatchObject({ outgoingRole, status: "accepted" });
+			if (outgoingRole === "inactive")
+				await expect(
+					f.service.readSummary(f.owner, f.org.id),
+				).rejects.toThrow();
+			else
+				await expect(
+					f.service.readSummary(f.owner, f.org.id),
+				).resolves.toMatchObject({ membership: { role: outgoingRole } });
+			if (outgoingRole === "admin")
+				await expect(
+					f.service.readOrganization(f.owner, f.org.id),
+				).resolves.toMatchObject({ membership: { role: "admin" } });
+			else
+				await expect(
+					f.service.readOrganization(f.owner, f.org.id),
+				).rejects.toThrow();
+			await expect(
+				f.service.startTransfer(f.owner, f.org.id, {
+					recipientMembershipId: recipientId,
+					outgoingRole: "member",
+				}),
+			).rejects.toThrow();
+			expect(
+				(
+					await f.app.query(
+						"SELECT desired_revision=applied_revision AS ready FROM tenancy.authorization_revisions WHERE organization_id=$1",
+						[f.org.id],
+					)
+				).rows[0].ready,
+			).toBe(true);
+			const audit = await f.app.query(
+				"SELECT action FROM tenancy.audit_events WHERE organization_id=$1 AND action='ownership.transferred'",
+				[f.org.id],
+			);
+			expect(audit.rowCount).toBe(1);
+			const completed = f.notices.filter(
+				(notice) => notice.kind === "transfer-completed",
+			);
+			expect(completed.map((notice) => notice.email).sort()).toEqual(
+				[
+					`${f.owner.userId}@example.test`,
+					`${recipient.userId}@example.test`,
+				].sort(),
+			);
+			expect(completed.map((notice) => notice.transfer)).toEqual(
+				Array(2).fill({
+					fromEmail: `${f.owner.userId}@example.test`,
+					toEmail: `${recipient.userId}@example.test`,
+				}),
+			);
+		},
+	);
 	it("refuses stale, expired, canceled and cross-tenant transfer attempts", async () => {
 		const f = await fixture(),
 			recipient = await f.user(),
@@ -784,10 +817,45 @@ describe("production tenancy, lifecycle fences and local seats with PostgreSQL/O
 			membershipId: memberId,
 			present: true,
 		});
+		expect((await f.service.readOrganization(f.owner, f.org.id)).teams).toEqual(
+			[{ id: team.id, name: "Core", membershipIds: [memberId] }],
+		);
+		await expect(
+			f.service.removeTeam(member, f.org.id, team.id),
+		).rejects.toThrow("Authorization denied");
+		await expect(
+			f.service.setTeamMember(member, f.org.id, {
+				teamId: team.id,
+				membershipId: memberId,
+				present: false,
+			}),
+		).rejects.toThrow("Authorization denied");
+		await f.service.setTeamMember(f.owner, f.org.id, {
+			teamId: team.id,
+			membershipId: memberId,
+			present: false,
+		});
+		expect(
+			(await f.service.readOrganization(f.owner, f.org.id)).teams[0]
+				?.membershipIds,
+		).toEqual([]);
+		await f.service.setTeamMember(f.owner, f.org.id, {
+			teamId: team.id,
+			membershipId: memberId,
+			present: true,
+		});
 		await f.service.removeTeam(f.owner, f.org.id, team.id);
 		expect((await f.service.readOrganization(f.owner, f.org.id)).teams).toEqual(
 			[],
 		);
+		expect(
+			(
+				await f.app.query(
+					"SELECT membership_id FROM tenancy.team_members WHERE organization_id=$1 AND team_id=$2",
+					[f.org.id, team.id],
+				)
+			).rows,
+		).toEqual([]);
 		await expect(
 			f.service.setSecurityPolicy(member, f.org.id, {
 				requireMfa: true,

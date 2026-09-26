@@ -1,7 +1,15 @@
 const mode = process.argv[2] ?? "serve";
 try {
 	if (mode === "serve") await import("/app/dist/supervisor.mjs");
-	else if (["migrate", "bootstrap", "authz-publish", "owner-recovery", "security-deactivate"].includes(mode))
+	else if (
+		[
+			"migrate",
+			"bootstrap",
+			"authz-publish",
+			"owner-recovery",
+			"security-deactivate",
+		].includes(mode)
+	)
 		await import("/app/dist/command.mjs");
 	else {
 		process.stderr.write(

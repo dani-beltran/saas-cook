@@ -1,0 +1,33 @@
+{
+	"scanner": "Trivy 0.69.3",
+	"sourceCommit": "ba69e9db080ad032d91fd204d62ace03deb09c65",
+	"sourceDirty": true,
+	"implementationSha256": "12846b14b37d313a3bd6836e1f95c9055d89f733d0f9f4af89808348fdd3c61b",
+	"exceptions": [],
+	"image": "sha256:cbab47e0d69dc927a79165a9d54b0276fc8e65b366d0613c1ee0e4a69e99bedf",
+	"reports": {
+		"dependencies": {
+			"scope": "dependencies",
+			"target": ".",
+			"status": "passed",
+			"blocked": [],
+			"checkedAt": "2026-09-26T14:39:26.519Z",
+			"includeDevDependencies": true,
+			"reportedSeverities": {},
+			"reportSha256": "c063f56cc1a9a784bdf545dce02cd298ad573fa8c39f7b5226240ff330ffd0ac"
+		},
+		"image": {
+			"scope": "image",
+			"target": "sha256:cbab47e0d69dc927a79165a9d54b0276fc8e65b366d0613c1ee0e4a69e99bedf",
+			"status": "passed",
+			"blocked": [],
+			"checkedAt": "2026-09-26T14:44:15.116Z",
+			"includeDevDependencies": false,
+			"reportedSeverities": {
+				"MEDIUM": 15,
+				"LOW": 7
+			},
+			"reportSha256": "1ca8caefd4721ff9555a937de9bfadcdbca67f71b1d5497bb193b50888b56567"
+		}
+	}
+}

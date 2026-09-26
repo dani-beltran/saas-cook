@@ -1,5 +1,9 @@
 import "@common-saas/ui/styles.css";
 import type { ReactNode } from "react";
 export default function AuthLayout({ children }: { children: ReactNode }) {
-	return <html lang="en"><body>{children}</body></html>;
+	return (
+		<html lang="en">
+			<body>{children}</body>
+		</html>
+	);
 }

@@ -603,8 +603,12 @@ export function createTenancyService(
 							)
 						).rows,
 						teams: (
-							await client.query<{ id: string; name: string }>(
-								"SELECT id,name FROM tenancy.teams WHERE organization_id=$1 ORDER BY name LIMIT 100",
+							await client.query<{
+								id: string;
+								name: string;
+								membershipIds: string[];
+							}>(
+								'SELECT t.id,t.name,ARRAY(SELECT tm.membership_id FROM tenancy.team_members tm WHERE tm.organization_id=t.organization_id AND tm.team_id=t.id ORDER BY tm.membership_id) AS "membershipIds" FROM tenancy.teams t WHERE t.organization_id=$1 ORDER BY t.name,t.id LIMIT 100',
 								[organizationId],
 							)
 						).rows,
@@ -613,10 +617,11 @@ export function createTenancyService(
 								id: string;
 								fromMembershipId: string;
 								toMembershipId: string;
+								outgoingRole: "admin" | "member" | "billing" | "inactive";
 								status: string;
 								expiresAt: Date;
 							}>(
-								'SELECT id,initiator_membership_id AS "fromMembershipId",recipient_membership_id AS "toMembershipId",status,expires_at AS "expiresAt" FROM tenancy.ownership_transfers WHERE organization_id=$1 ORDER BY expires_at DESC LIMIT 100',
+								'SELECT id,initiator_membership_id AS "fromMembershipId",recipient_membership_id AS "toMembershipId",outgoing_role AS "outgoingRole",status,expires_at AS "expiresAt" FROM tenancy.ownership_transfers WHERE organization_id=$1 ORDER BY expires_at DESC LIMIT 100',
 								[organizationId],
 							)
 						).rows,

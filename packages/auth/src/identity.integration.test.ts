@@ -6,10 +6,24 @@ import {
 	deliverIdentityEmails,
 	enqueueIdentityEmail,
 } from "@common-saas/email";
+import { logEvent } from "@common-saas/observability";
 import { Pool } from "pg";
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import {
+	afterAll,
+	beforeAll,
+	beforeEach,
+	describe,
+	expect,
+	it,
+	vi,
+} from "vitest";
 import { createIdentityRuntime } from "./index";
 import { testAuthenticator } from "./testing/webauthn";
+
+vi.mock("@common-saas/observability", async (original) => ({
+	...(await original<typeof import("@common-saas/observability")>()),
+	logEvent: vi.fn(),
+}));
 
 const origin = "https://auth.example.test";
 const secret = "synthetic-phase2-identity-secret-32-characters";
@@ -70,8 +84,29 @@ describe("production identity with real PostgreSQL and SMTP", () => {
 		});
 	});
 	afterAll(async () => {
-		await Promise.all([pool?.end(), worker?.end(), migrator?.end()]);
-		await admin.query(`DROP DATABASE IF EXISTS ${dbName} WITH(FORCE)`);
+		// pg-pool's end promise can resolve before idle clients emit their socket
+		// completion. Await removals before dropping the database; FORCE would race
+		// those closing clients and emit uncaught administrative-termination errors.
+		await Promise.all(
+			[pool, worker, migrator].map(async (value) => {
+				if (!value) return;
+				let remaining = value.totalCount;
+				const removed = new Promise<void>((resolve) => {
+					if (!remaining) return resolve();
+					const complete = () => {
+						remaining--;
+						if (!remaining) {
+							value.off("remove", complete);
+							resolve();
+						}
+					};
+					value.on("remove", complete);
+				});
+				await value.end();
+				await removed;
+			}),
+		);
+		await admin.query(`DROP DATABASE IF EXISTS ${dbName}`);
 		await admin.end();
 	});
 	async function issue(
@@ -96,6 +131,7 @@ describe("production identity with real PostgreSQL and SMTP", () => {
 		return { result, token: link?.[1] ?? "", messages };
 	}
 	beforeEach(async () => {
+		vi.clearAllMocks();
 		await pool.query(
 			'DELETE FROM identity.security_audit; DELETE FROM identity.passkey; DELETE FROM identity.two_factor; DELETE FROM identity.session; DELETE FROM identity.verification; DELETE FROM identity.account; DELETE FROM identity."user"; DELETE FROM identity.rate_limit; DELETE FROM identity.ingress_limit; DELETE FROM identity.email_delivery',
 		);
@@ -223,6 +259,60 @@ describe("production identity with real PostgreSQL and SMTP", () => {
 			),
 		).toBe("");
 	});
+	it("serves concurrent first session reads without aborting fenced provider transactions", async () => {
+		await migrator.query(`CREATE FUNCTION identity.test_rate_limit_delay() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN PERFORM pg_sleep(0.05); RETURN NEW; END $$;
+CREATE TRIGGER test_rate_limit_delay BEFORE INSERT ON identity.rate_limit FOR EACH ROW EXECUTE FUNCTION identity.test_rate_limit_delay()`);
+		try {
+			const responses = await Promise.all(
+				Array.from({ length: 8 }, () =>
+					runtime.handler(
+						request("/api/auth/get-session", undefined, signedInCookie),
+					),
+				),
+			);
+			expect(responses.map((response) => response.status)).toEqual(
+				Array(8).fill(200),
+			);
+		} finally {
+			await migrator.query(
+				"DROP TRIGGER test_rate_limit_delay ON identity.rate_limit; DROP FUNCTION identity.test_rate_limit_delay()",
+			);
+		}
+		await pool.query(
+			"UPDATE identity.rate_limit SET count=59,last_request=$1",
+			[Date.now()],
+		);
+		const boundary = await Promise.all(
+			Array.from({ length: 2 }, () =>
+				runtime.handler(
+					request("/api/auth/get-session", undefined, signedInCookie),
+				),
+			),
+		);
+		expect(boundary.map((response) => response.status).sort()).toEqual([
+			200, 429,
+		]);
+		expect(
+			Number(
+				boundary
+					.find((response) => response.status === 429)
+					?.headers.get("x-retry-after"),
+			),
+		).toBeGreaterThan(0);
+		await pool.query("UPDATE identity.rate_limit SET last_request=$1", [
+			Date.now() - 61000,
+		]);
+		expect(
+			(
+				await runtime.handler(
+					request("/api/auth/get-session", undefined, signedInCookie),
+				)
+			).status,
+		).toBe(200);
+		expect(
+			(await pool.query("SELECT count,key FROM identity.rate_limit")).rows,
+		).toEqual([{ count: 1, key: expect.stringMatching(/^[a-f0-9]{64}$/) }]);
+	});
 	it("atomically consumes links across concurrent adapters and expires them", async () => {
 		const issued = await issue();
 		const script = `
@@ -245,6 +335,10 @@ describe("production identity with real PostgreSQL and SMTP", () => {
 				["--import", "tsx", "--input-type=module", "-e", script],
 				{ stdio: ["ignore", "ignore", "ignore", "ipc"] },
 			),
+		);
+		const exits = children.map(
+			(child) =>
+				new Promise<void>((resolve) => child.once("exit", () => resolve())),
 		);
 		try {
 			const prepared = await Promise.all(
@@ -277,7 +371,8 @@ describe("production identity with real PostgreSQL and SMTP", () => {
 			const consumed = await Promise.all(prepared.map((value) => value.result));
 			expect(consumed.filter(Boolean)).toHaveLength(1);
 		} finally {
-			for (const child of children) child.kill();
+			for (const child of children) if (child.exitCode === null) child.kill();
+			await Promise.all(exits);
 		}
 		const expired = await issue();
 		await pool.query(
@@ -460,6 +555,239 @@ describe("production identity with real PostgreSQL and SMTP", () => {
 			).rows[0].count,
 		).toBeLessThanOrEqual(4);
 	});
+	it("separates attested source limits and ignores spoofed forwarding identity", async () => {
+		const trustedIngressSecret =
+			"synthetic-independent-ingress-secret-32-characters";
+		const ingressRuntime = createIdentityRuntime(pool, {
+			secret,
+			origin,
+			trustedIngressSecret,
+			readiness: async () => publication,
+		});
+		await pool.query("DELETE FROM identity.ingress_limit");
+		const signedRequest = (source: string, index: number) => {
+			const value = request("/api/auth/sign-in/magic-link", {
+				email: `source-${index}@example.test`,
+			});
+			const timestamp = String(Math.floor(Date.now() / 1000));
+			value.headers.set("x-common-saas-source", source);
+			value.headers.set("x-common-saas-source-time", timestamp);
+			value.headers.set(
+				"x-common-saas-source-signature",
+				createHmac("sha256", trustedIngressSecret)
+					.update(
+						`common-saas-ingress:v1\n${timestamp}\nPOST\n/api/auth/sign-in/magic-link\n${source}`,
+					)
+					.digest("hex"),
+			);
+			value.headers.set("x-forwarded-for", `192.0.2.${(index % 250) + 1}`);
+			return value;
+		};
+		const count = async () =>
+			Number(
+				(await pool.query("SELECT count(*) FROM identity.verification")).rows[0]
+					.count,
+			);
+		const before = await count();
+		for (let index = 0; index < 105; index++)
+			expect(
+				await (
+					await ingressRuntime.handler(signedRequest("192.0.2.10", index))
+				).json(),
+			).toEqual({ status: true });
+		expect(await count()).toBe(before + 20);
+		expect(
+			await (
+				await ingressRuntime.handler(signedRequest("192.0.2.11", 106))
+			).json(),
+		).toEqual({ status: true });
+		expect(await count()).toBe(before + 21);
+		const forged = signedRequest("192.0.2.10", 107);
+		forged.headers.set("x-common-saas-source", "192.0.2.12");
+		await ingressRuntime.handler(forged);
+		await ingressRuntime.handler(
+			request("/api/auth/register", { email: "unsigned@example.test" }),
+		);
+		expect(await count()).toBe(before + 21);
+		expect(
+			(
+				await pool.query('SELECT 1 FROM identity."user" WHERE email=$1', [
+					"unsigned@example.test",
+				])
+			).rowCount,
+		).toBe(0);
+		const stored = JSON.stringify(
+			(await pool.query("SELECT * FROM identity.ingress_limit")).rows,
+		);
+		expect(stored).not.toContain("192.0.2.");
+		expect(stored).not.toContain("example.test");
+	});
+	it("shares an unattributed source limit when ingress trust is not configured", async () => {
+		await pool.query("DELETE FROM identity.ingress_limit");
+		const before = Number(
+			(await pool.query("SELECT count(*) FROM identity.verification")).rows[0]
+				.count,
+		);
+		for (let index = 0; index < 25; index++) {
+			const value = request("/api/auth/sign-in/magic-link", {
+				email: `untrusted-${index}@example.test`,
+			});
+			value.headers.set("x-forwarded-for", `192.0.2.${index + 1}`);
+			value.headers.set("x-common-saas-source", `192.0.2.${index + 1}`);
+			await runtime.handler(value);
+		}
+		expect(
+			Number(
+				(await pool.query("SELECT count(*) FROM identity.verification")).rows[0]
+					.count,
+			),
+		).toBe(before + 20);
+	});
+	it("ignores spoofed provider source headers, separates verified sources and prunes expired buckets", async () => {
+		const route = "/api/auth/passkey/generate-authenticate-options";
+		const trustedIngressSecret =
+			"synthetic-independent-ingress-secret-32-characters";
+		const ingressRuntime = createIdentityRuntime(pool, {
+			secret,
+			origin,
+			trustedIngressSecret,
+			readiness: async () => publication,
+		});
+		const signed = (source: string) => {
+			const value = request(route);
+			const timestamp = String(Math.floor(Date.now() / 1000));
+			value.headers.set("x-common-saas-source", source);
+			value.headers.set("x-common-saas-source-time", timestamp);
+			value.headers.set(
+				"x-common-saas-source-signature",
+				createHmac("sha256", trustedIngressSecret)
+					.update(
+						`common-saas-ingress:v1\n${timestamp}\nGET\n${route}\n${source}`,
+					)
+					.digest("hex"),
+			);
+			return value;
+		};
+		const staleId = randomUUID();
+		const recentId = randomUUID();
+		await pool.query(
+			"INSERT INTO identity.rate_limit(id,key,count,last_request) VALUES($1,'stale-bucket',1,$2),($3,'recent-bucket',1,$4)",
+			[staleId, Date.now() - 172800000, recentId, Date.now()],
+		);
+		expect((await ingressRuntime.handler(signed("192.0.2.10"))).status).toBe(
+			200,
+		);
+		expect(
+			(
+				await pool.query("SELECT id FROM identity.rate_limit WHERE id=$1", [
+					staleId,
+				])
+			).rowCount,
+		).toBe(0);
+		expect(
+			(
+				await pool.query("SELECT id FROM identity.rate_limit WHERE id=$1", [
+					recentId,
+				])
+			).rowCount,
+		).toBe(1);
+		await pool.query("DELETE FROM identity.rate_limit WHERE id=$1", [recentId]);
+		await pool.query(
+			"UPDATE identity.rate_limit SET count=60,last_request=$1",
+			[Date.now()],
+		);
+		for (const header of [
+			"x-forwarded-for",
+			"forwarded",
+			"x-real-ip",
+			"x-common-saas-verified-source",
+		]) {
+			const value = signed("192.0.2.10");
+			value.headers.set(header, "192.0.2.99");
+			expect((await ingressRuntime.handler(value)).status).toBe(429);
+		}
+		expect((await ingressRuntime.handler(signed("192.0.2.11"))).status).toBe(
+			200,
+		);
+		const unsigned = request(route);
+		unsigned.headers.set("x-forwarded-for", "192.0.2.20");
+		expect((await ingressRuntime.handler(unsigned)).status).toBe(200);
+		await pool.query(
+			"UPDATE identity.rate_limit SET count=60,last_request=$1",
+			[Date.now()],
+		);
+		for (let index = 0; index < 3; index++) {
+			const spoofed = request(route);
+			spoofed.headers.set("x-forwarded-for", `192.0.2.${30 + index}`);
+			spoofed.headers.set("x-common-saas-source", `192.0.2.${30 + index}`);
+			expect((await ingressRuntime.handler(spoofed)).status).toBe(429);
+		}
+		const forged = signed("192.0.2.10");
+		forged.headers.set("x-common-saas-source", "192.0.2.12");
+		expect((await ingressRuntime.handler(forged)).status).toBe(429);
+		const stored = (await pool.query("SELECT key FROM identity.rate_limit"))
+			.rows;
+		expect(stored).toHaveLength(3);
+		expect(stored.every((row) => /^[a-f0-9]{64}$/.test(row.key))).toBe(true);
+	});
+	it("records bounded sanitized failed identity actions and durable verified-actor audit", async () => {
+		await pool.query(
+			"UPDATE identity.session SET authenticated_at=now()-interval '10 minutes'",
+		);
+		const denied = await runtime.handler(
+			request(
+				"/api/auth/passkey/generate-register-options",
+				undefined,
+				signedInCookie,
+			),
+		);
+		expect(denied.ok).toBe(false);
+		expect(
+			(await pool.query("SELECT user_id,action FROM identity.security_audit"))
+				.rows,
+		).toEqual([
+			{
+				user_id: userId,
+				action: "identity.passkey.generate_register_options.denied",
+			},
+		]);
+		const sensitive = "private-token-or-email@example.test";
+		await runtime.handler(
+			request(`/api/auth/${sensitive}`, { token: sensitive }),
+		);
+		expect(vi.mocked(logEvent)).toHaveBeenCalledWith("identity.action_denied", {
+			operation: "identity.unknown",
+			status: "denied",
+		});
+		expect(JSON.stringify(vi.mocked(logEvent).mock.calls)).not.toContain(
+			sensitive,
+		);
+		expect(JSON.stringify(vi.mocked(logEvent).mock.calls)).not.toContain(
+			"owner@example.test",
+		);
+		for (let index = 0; index < 110; index++)
+			await runtime.handler(request("/api/auth/unknown"));
+		expect(
+			vi
+				.mocked(logEvent)
+				.mock.calls.filter(([event]) => event === "identity.action_denied"),
+		).toHaveLength(101);
+		await runtime.handler(
+			request(
+				"/api/auth/passkey/generate-register-options",
+				undefined,
+				signedInCookie,
+			),
+		);
+		expect(
+			(
+				await pool.query(
+					"SELECT action FROM identity.security_audit WHERE user_id=$1",
+					[userId],
+				)
+			).rowCount,
+		).toBe(2);
+	});
 
 	it.each(["origin", "rp", "challenge", "signature", "uv"])(
 		"rejects passkey %s failures",
@@ -627,54 +955,132 @@ describe("production identity with real PostgreSQL and SMTP", () => {
 		);
 	});
 
-	it("encrypts every identity email journey, retries failed deliveries and submits real SMTP", async () => {
-		for (const kind of [
-			"verification",
-			"reset",
-			"magic-link",
-			"invite",
-			"transfer",
-			"transfer-completed",
-			"recovery",
-		] as const)
-			await enqueueIdentityEmail(pool, {
+	it.each(["en", "es"] as const)(
+		"encrypts every %s identity email journey, retries delivery and verifies localized real SMTP",
+		async (locale) => {
+			const recipient = `identity-${locale}-${randomUUID()}@example.test`;
+			const subjects = {
+				en: {
+					verification: "Verify your email address",
+					reset: "Recover your account access",
+					"magic-link": "Confirm your sign-in",
+					invite: "You have an organization invitation",
+					transfer: "Accept organization ownership",
+					"transfer-completed": "Organization ownership transferred",
+					recovery: "Your account recovery",
+				},
+				es: {
+					verification: "Verifica tu dirección de correo",
+					reset: "Recupera el acceso a tu cuenta",
+					"magic-link": "Confirma tu inicio de sesión",
+					invite: "Tienes una invitación a una organización",
+					transfer: "Acepta la propiedad de la organización",
+					"transfer-completed": "Propiedad de la organización transferida",
+					recovery: "Recuperación de tu cuenta",
+				},
+			}[locale];
+			for (const kind of [
+				"verification",
+				"reset",
+				"magic-link",
+				"invite",
+				"transfer",
+				"transfer-completed",
+				"recovery",
+			] as const)
+				await enqueueIdentityEmail(pool, {
+					secret,
+					to: recipient,
+					kind,
+					locale,
+					url: `${origin}/auth/confirm?token=synthetic-private-token-${kind}`,
+					transfer: {
+						fromEmail: "previous@example.test",
+						toEmail: "next@example.test",
+					},
+					expiresAt: new Date(Date.now() + 300000),
+				});
+			const stored = JSON.stringify(
+				(await pool.query("SELECT * FROM identity.email_delivery")).rows,
+			);
+			expect(stored).not.toContain("synthetic-private-token");
+			expect(stored).not.toContain(recipient);
+			expect(stored).not.toContain("previous@example.test");
+			const first = await deliverIdentityEmails(worker, {
 				secret,
-				to: "synthetic@example.test",
-				kind,
-				locale: "en",
-				url: `${origin}/auth/confirm?token=synthetic-private-token`,
-				expiresAt: new Date(Date.now() + 300000),
+				transport: async () => {
+					throw new Error("synthetic provider outage");
+				},
 			});
-		const stored = JSON.stringify(
-			(await pool.query("SELECT * FROM identity.email_delivery")).rows,
-		);
-		expect(stored).not.toContain("synthetic-private-token");
-		expect(stored).not.toContain("synthetic@example.test");
-		const first = await deliverIdentityEmails(worker, {
-			secret,
-			transport: async () => {
-				throw new Error("synthetic provider outage");
-			},
-		});
-		expect(first.failed).toBe(7);
-		await worker.query(
-			"UPDATE identity.email_delivery SET available_at=now() WHERE delivered_at IS NULL",
-		);
-		const delivered = await deliverIdentityEmails(worker, {
-			secret,
-			transport: createSmtpTransport({
-				host: "127.0.0.1",
-				port: 1026,
-				from: "noreply@example.test",
-			}),
-		});
-		expect(delivered.delivered).toBe(7);
-		expect(
-			(
-				await worker.query(
-					"SELECT encrypted_payload FROM identity.email_delivery WHERE delivered_at IS NOT NULL",
+			expect(first.failed).toBe(7);
+			await worker.query(
+				"UPDATE identity.email_delivery SET available_at=now() WHERE delivered_at IS NULL",
+			);
+			const delivered = await deliverIdentityEmails(worker, {
+				secret,
+				transport: createSmtpTransport({
+					host: "127.0.0.1",
+					port: 1026,
+					from: "noreply@example.test",
+				}),
+			});
+			expect(delivered.delivered).toBe(7);
+			expect(
+				(
+					await worker.query(
+						"SELECT encrypted_payload FROM identity.email_delivery WHERE delivered_at IS NOT NULL",
+					)
+				).rows.every((row) => row.encrypted_payload === ""),
+			).toBe(true);
+			const mailpit = process.env.MAILPIT_HTTP_URL ?? "http://127.0.0.1:8026";
+			let received: Array<{ ID: string; Subject: string }> = [];
+			await expect
+				.poll(
+					async () => {
+						const response = await fetch(
+							`${mailpit}/api/v1/search?query=${encodeURIComponent(`to:${recipient}`)}`,
+							{ signal: AbortSignal.timeout(2000) },
+						);
+						expect(response.ok).toBe(true);
+						received = (await response.json()).messages;
+						return received.length;
+					},
+					{ timeout: 5000 },
 				)
-			).rows.every((row) => row.encrypted_payload === ""),
-		).toBe(true);
-	});
+				.toBe(7);
+			expect(received.map((message) => message.Subject).sort()).toEqual(
+				Object.values(subjects).sort(),
+			);
+			for (const [kind, subject] of Object.entries(subjects)) {
+				const message = received.find((message) => message.Subject === subject);
+				expect(message).toBeDefined();
+				const response = await fetch(
+					`${mailpit}/api/v1/message/${message?.ID}`,
+					{ signal: AbortSignal.timeout(2000) },
+				);
+				expect(response.ok).toBe(true);
+				const content = await response.json();
+				expect(content.Subject).toBe(subject);
+				expect(content.Text.toLocaleLowerCase(locale)).toContain(
+					subject.toLocaleLowerCase(locale),
+				);
+				expect(content.HTML).toContain(`lang="${locale}"`);
+				expect(content.Text).toContain(
+					`${origin}/auth/confirm?token=synthetic-private-token-${kind}`,
+				);
+				expect(content.Text).toContain(
+					locale === "es" ? "Continuar de forma segura" : "Continue securely",
+				);
+				expect(content.Text).toContain(
+					kind === "transfer-completed"
+						? locale === "es"
+							? "La propiedad se ha transferido de previous@example.test a next@example.test"
+							: "Ownership has transferred from previous@example.test to next@example.test"
+						: locale === "es"
+							? "Abre el enlace seguro"
+							: "Open the secure link",
+				);
+			}
+		},
+	);
 });

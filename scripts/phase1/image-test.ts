@@ -14,6 +14,7 @@ const restoredDatabase = `${databaseName}_restored`;
 const installationId = randomUUID();
 const restoredInstallationId = randomUUID();
 const authSecret = `synthetic-image-secret-${randomUUID()}`;
+const ingressSecret = `synthetic-image-ingress-${randomUUID()}`;
 const database = (role: string, name = databaseName) =>
 	`postgres://${role}:local_phase1@postgres:5432/${name}`;
 const controlDatabase = (role: string) =>
@@ -101,6 +102,8 @@ async function start() {
 		`IDENTITY_DATABASE_URL=${database("common_saas_identity")}`,
 		"-e",
 		`AUTH_SECRET=${authSecret}`,
+		"-e",
+		`AUTH_INGRESS_SECRET=${ingressSecret}`,
 		"-e",
 		`CONTROL_DATABASE_URL=${controlDatabase("common_saas_control_reader")}`,
 		"-e",
@@ -272,7 +275,8 @@ try {
 		assert(
 			!text.includes("local_phase1") &&
 				!text.includes("local_phase2_control") &&
-				!text.includes(authSecret),
+				!text.includes(authSecret) &&
+				!text.includes(ingressSecret),
 			"Runtime credential in browser asset",
 		);
 	}
@@ -281,7 +285,7 @@ try {
 	checks.push("startup-static-public-assets-and-combined-health");
 	await node(
 		id,
-		"const fs=require('node:fs');const web=fs.readFileSync('/tmp/common-saas-web.pid','utf8');const worker=fs.readFileSync('/tmp/common-saas-worker.pid','utf8');const w=fs.readFileSync('/proc/'+web+'/environ','utf8');const j=fs.readFileSync('/proc/'+worker+'/environ','utf8');if(w.includes('WORKER_DATABASE_URL=')||j.includes('DATABASE_URL=postgres://common_saas_web')||j.includes('IDENTITY_DATABASE_URL=')||w.includes('CONTROL_ADMIN_DATABASE_URL=')||j.includes('CONTROL_ADMIN_DATABASE_URL='))process.exit(1)",
+		"const fs=require('node:fs');const web=fs.readFileSync('/tmp/common-saas-web.pid','utf8');const worker=fs.readFileSync('/tmp/common-saas-worker.pid','utf8');const w=fs.readFileSync('/proc/'+web+'/environ','utf8');const j=fs.readFileSync('/proc/'+worker+'/environ','utf8');if(w.includes('WORKER_DATABASE_URL=')||j.includes('DATABASE_URL=postgres://common_saas_web')||j.includes('IDENTITY_DATABASE_URL=')||j.includes('AUTH_INGRESS_SECRET=')||!w.includes('AUTH_INGRESS_SECRET=')||w.includes('CONTROL_ADMIN_DATABASE_URL=')||j.includes('CONTROL_ADMIN_DATABASE_URL='))process.exit(1)",
 	);
 	checks.push("child-identity-database-and-control-credential-separation");
 	await node(
@@ -306,7 +310,8 @@ try {
 	assert(
 		!logs.includes("local_phase1") &&
 			!logs.includes("local_phase2_control") &&
-			!logs.includes(authSecret),
+			!logs.includes(authSecret) &&
+			!logs.includes(ingressSecret),
 	);
 	checks.push("graceful-shutdown-and-redacted-logs");
 	await writeFile("artifacts/image/serve.log", logs);
@@ -355,6 +360,7 @@ try {
 	const report = {
 		requirement: "R-IMAGE / Phase 2",
 		suiteVersion: 2,
+		checkedAt: new Date().toISOString(),
 		checks,
 		sourceCommit: (await exec("git", ["rev-parse", "HEAD"])).stdout.trim(),
 		sourceDirty: Boolean(

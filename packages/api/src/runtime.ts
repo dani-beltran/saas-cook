@@ -22,6 +22,7 @@ function createRuntime() {
 	const identity = createIdentityRuntime(identityPool, {
 		origin: env.APP_ORIGIN,
 		secret: env.AUTH_SECRET,
+		trustedIngressSecret: env.AUTH_INGRESS_SECRET,
 		readiness,
 	});
 	const authorization = createAuthorizationService({

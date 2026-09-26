@@ -4,7 +4,7 @@
 
 The template produces one Docker application image containing the Next.js web server and Node.js background worker. Infrastructure and operation are outside the template scope. PostgreSQL, OpenFGA, object storage and enabled providers are external dependencies configured at runtime.
 
-**Status: Phase 1 implemented.** The Dockerfile, Node entrypoint and CI/image checks are in the repository. See [Phase 1 setup and evidence](phase1/README.md). Phase 2 implements the real initialization/model-publication protocols; their packaged modes currently fail explicitly. The Phase 0 Next.js app remains a separate historical fixture.
+**Status: Phase 2 command implementation.** The Dockerfile, Node entrypoint and CI/image checks package real migration, resumable bootstrap, authorization publication and signed operator commands. See the [Phase 2 setup](phase2/README.md) and [acceptance record](phase2/acceptance.md) for executed results and image identity. The Phase 0 Next.js app remains a separate historical fixture.
 
 | Path | Responsibility |
 | --- | --- |

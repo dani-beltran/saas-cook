@@ -1,9 +1,6 @@
 {
 	"$schema": "https://turbo.build/schema.json",
-	"globalDependencies": [
-		"tsconfig.json",
-		"tsconfig.base.json"
-	],
+	"globalDependencies": ["tsconfig.json", "tsconfig.base.json"],
 	"globalPassThroughEnv": [
 		"APP_ORIGIN",
 		"DATABASE_URL",
@@ -44,24 +41,12 @@
 	],
 	"tasks": {
 		"build": {
-			"dependsOn": [
-				"^build"
-			],
-			"outputs": [
-				"dist/**",
-				".next/**",
-				"!.next/cache/**"
-			],
-			"env": [
-				"PHASE0_API_FIXTURES",
-				"NODE_ENV",
-				"NEXT_TELEMETRY_DISABLED"
-			]
+			"dependsOn": ["^build"],
+			"outputs": ["dist/**", ".next/**", "!.next/cache/**"],
+			"env": ["PHASE0_API_FIXTURES", "NODE_ENV", "NEXT_TELEMETRY_DISABLED"]
 		},
 		"typecheck": {
-			"dependsOn": [
-				"^typecheck"
-			],
+			"dependsOn": ["^typecheck"],
 			"outputs": []
 		},
 		"dev": {

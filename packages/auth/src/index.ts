@@ -3,13 +3,15 @@ import { createHmac, randomUUID } from "node:crypto";
 import { passkey } from "@better-auth/passkey";
 import { identitySchema } from "@common-saas/db/schema";
 import { enqueueIdentityEmail } from "@common-saas/email";
+import { logEvent } from "@common-saas/observability";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError } from "better-auth/api";
 import { magicLink, twoFactor } from "better-auth/plugins";
 import { drizzle } from "drizzle-orm/node-postgres";
-import type { Pool } from "pg";
+import type { Pool, PoolClient } from "pg";
 import { z } from "zod";
+import { ingressSource } from "./ingress";
 
 const optionsSchema = z.strictObject({
 	secret: z.string().min(32),
@@ -44,6 +46,8 @@ type Ceremony = {
 	mfa: boolean;
 	epoch: string;
 	locale: "en" | "es";
+	source: string | null;
+	route: string;
 	kind?: "verification" | "reset";
 };
 const ceremonies = new AsyncLocalStorage<Ceremony>();
@@ -105,12 +109,69 @@ export function createIdentityRuntime(
 	input: z.input<typeof optionsSchema> & {
 		readiness: () => Promise<Readiness>;
 		rpName?: string;
+		trustedIngressSecret?: string;
 	},
 ) {
 	const options = optionsSchema.parse({
 		secret: input.secret,
 		origin: input.origin,
 	});
+	const ingressSecret = z
+		.string()
+		.min(32)
+		.optional()
+		.parse(input.trustedIngressSecret);
+	if (ingressSecret === options.secret)
+		throw new Error("Ingress and identity signing secrets must differ");
+	let nextProviderCleanup = 0;
+	function providerRateLimit(database: Pool | PoolClient) {
+		return {
+			async consume(_key: string, rule: { window: number; max: number }) {
+				const ceremony = ceremonies.getStore();
+				if (!ceremony) throw new Error("Identity ingress context required");
+				const digest = createHmac("sha256", options.secret)
+					.update(
+						`identity-provider:v1\0${ceremony.source ?? "unattributed"}\0${ceremony.route}`,
+					)
+					.digest("hex");
+				const now = Date.now();
+				// A read/create retry aborts an already-open PostgreSQL transaction on
+				// duplicate keys. One upsert both admits atomically and stays on its fence.
+				const result = await database.query<{
+					count: number;
+					last_request: string;
+				}>(
+					`INSERT INTO identity.rate_limit(id,key,count,last_request) VALUES($1,$2,1,$3)
+ON CONFLICT(key) DO UPDATE SET
+count=CASE WHEN identity.rate_limit.last_request<=$3::bigint-$4::bigint THEN 1 ELSE LEAST(identity.rate_limit.count+1,$5::int+1) END,
+last_request=CASE WHEN identity.rate_limit.last_request<=$3::bigint-$4::bigint OR identity.rate_limit.count<$5::int THEN $3::bigint ELSE identity.rate_limit.last_request END
+RETURNING count,last_request`,
+					[randomUUID(), digest, now, rule.window * 1000, rule.max],
+				);
+				const row = result.rows[0];
+				if (now >= nextProviderCleanup) {
+					nextProviderCleanup = now + 60000;
+					// Bounded cleanup never waits for another request's limiter row.
+					await database.query(
+						`DELETE FROM identity.rate_limit WHERE id IN (
+SELECT id FROM identity.rate_limit WHERE last_request<$1 ORDER BY last_request FOR UPDATE SKIP LOCKED LIMIT 1000)`,
+						[now - Math.max(86400000, rule.window * 1000)],
+					);
+				}
+				return row.count <= rule.max
+					? { allowed: true, retryAfter: null }
+					: {
+							allowed: false,
+							retryAfter: Math.max(
+								1,
+								Math.ceil(
+									(Number(row.last_request) + rule.window * 1000 - now) / 1000,
+								),
+							),
+						};
+			},
+		};
+	}
 	async function ready() {
 		const publication = await input.readiness();
 		const local = (
@@ -139,6 +200,7 @@ export function createIdentityRuntime(
 		}),
 		baseURL: options.origin,
 		trustedOrigins: [options.origin],
+		advanced: { ipAddress: { ipAddressHeaders: [] } },
 		secret: options.secret,
 		emailAndPassword: { enabled: false },
 		user: { deleteUser: { enabled: false } },
@@ -150,7 +212,13 @@ export function createIdentityRuntime(
 			"/delete-user/callback",
 			"/passkey/delete-passkey",
 		],
-		rateLimit: { enabled: true, storage: "database", window: 60, max: 60 },
+		rateLimit: {
+			enabled: true,
+			storage: "database",
+			window: 60,
+			max: 60,
+			customStorage: providerRateLimit(pool),
+		},
 		session: {
 			expiresIn: 86400 * 7,
 			updateAge: 3600,
@@ -414,11 +482,20 @@ export function createIdentityRuntime(
 		"/two-factor/verify-backup-code",
 		"/two-factor/generate-backup-codes",
 	]);
-	async function handler(request: Request): Promise<Response> {
+	type Failure = {
+		userId?: string;
+		reason?: "invalid_input" | "rate_limited" | "untrusted_ingress" | "denied";
+		diagnostic?: string;
+	};
+	async function handleRequest(
+		request: Request,
+		failure: Failure,
+	): Promise<Response> {
 		const url = new URL(request.url);
 		const route = url.pathname.replace(/^\/api\/auth/, "");
 		const json = (value: unknown, status = 200) =>
 			Response.json(value, { status, headers: protectedHeaders });
+		let stage = "request";
 		try {
 			if (
 				request.method !== "GET" &&
@@ -440,7 +517,9 @@ export function createIdentityRuntime(
 				].includes(route)
 			)
 				return json({ error: "Domain command required" }, 405);
+			stage = "readiness";
 			const epoch = await ready();
+			stage = "input";
 			const body =
 				request.method === "POST"
 					? await request
@@ -456,6 +535,8 @@ export function createIdentityRuntime(
 				mfa: false,
 				epoch,
 				locale: body?.locale === "es" ? "es" : "en",
+				source: ingressSource(request, ingressSecret),
+				route,
 			};
 			return await ceremonies.run(context, async () => {
 				if (
@@ -472,15 +553,26 @@ export function createIdentityRuntime(
 							callbackURL: z.string().optional(),
 						})
 						.safeParse(body);
-					if (!parsed.success) return json({ status: true });
+					if (!parsed.success) {
+						failure.reason = "invalid_input";
+						return json({ status: true });
+					}
 					const email = parsed.data.email.trim().toLowerCase();
-					// No forwarded identity/IP header is trusted. The global bucket bounds untrusted ingress;
-					// the keyed bucket prevents attacks on a particular identity across application processes.
+					const source = context.source;
+					if (source === null) {
+						failure.reason = "untrusted_ingress";
+						return json({ status: true });
+					}
+					// Denied sources never spend another source's global capacity. Bucket keys
+					// are HMACs; raw addresses and email identities never enter rate-limit rows.
 					if (
+						!(await throttle(`source:${source}`, 20)) ||
 						!(await throttle("global", 100)) ||
 						!(await throttle(`email:${email}`, 5))
-					)
+					) {
+						failure.reason = "rate_limited";
 						return json({ status: true });
+					}
 					if (parsed.data.callbackURL)
 						safeDestination(parsed.data.callbackURL, options.origin);
 					if (route === "/register") {
@@ -544,10 +636,12 @@ export function createIdentityRuntime(
 					"/two-factor/verify-totp",
 					"/two-factor/verify-backup-code",
 				].includes(route);
+				stage = "session";
 				const actor = anonymous
 					? null
 					: await session(request.headers, { allowPendingMfa: pendingAllowed });
 				if (actor) {
+					failure.userId = actor.userId;
 					context.authenticatedAt = actor.authenticatedAt;
 					context.method = actor.method as Ceremony["method"];
 					context.mfa = actor.mfa;
@@ -555,6 +649,7 @@ export function createIdentityRuntime(
 				}
 				if (!anonymous && !actor)
 					return json({ error: "Authentication required" }, 401);
+				stage = "assurance";
 				if (
 					actor &&
 					[
@@ -590,6 +685,7 @@ export function createIdentityRuntime(
 					context.method = route.endsWith("totp") ? "totp" : "recovery";
 					context.mfa = true;
 				}
+				stage = "credential";
 				const credentialUser =
 					route === "/passkey/verify-authentication" &&
 					typeof body?.response?.id === "string"
@@ -603,6 +699,7 @@ export function createIdentityRuntime(
 				if (route === "/passkey/verify-authentication" && !credentialUser)
 					return json({ error: "Authentication failed" }, 401);
 				const lockedUser = actor?.userId ?? credentialUser;
+				stage = "fence";
 				const guard = lockedUser ? await pool.connect() : undefined;
 				let result: Response;
 				try {
@@ -691,6 +788,10 @@ export function createIdentityRuntime(
 					const provider = guard
 						? betterAuth({
 								...auth.options,
+								rateLimit: {
+									...auth.options.rateLimit,
+									customStorage: providerRateLimit(guard),
+								},
 								database: drizzleAdapter(
 									drizzle(guard, { schema: identitySchema }),
 									{
@@ -701,6 +802,7 @@ export function createIdentityRuntime(
 								),
 							})
 						: auth;
+					stage = "provider";
 					result = await provider.handler(request);
 					if (
 						actor &&
@@ -714,6 +816,7 @@ export function createIdentityRuntime(
 							[actor.sessionId, context.method, actor.credentialEpoch, epoch],
 						);
 					}
+					stage = "commit";
 					if (guard) await guard.query("COMMIT");
 				} catch (error) {
 					if (guard) await guard.query("ROLLBACK");
@@ -726,9 +829,82 @@ export function createIdentityRuntime(
 					headers.set(key, value);
 				return new Response(result.body, { status: result.status, headers });
 			});
-		} catch {
+		} catch (error) {
+			// Fixed stages and a closed code list aid diagnosis without exposing driver
+			// messages, SQL, credential material, or request input.
+			const code =
+				error && typeof error === "object" && "code" in error
+					? error.code
+					: undefined;
+			const cause =
+				typeof code === "string" &&
+				[
+					"40001",
+					"40P01",
+					"55P03",
+					"57014",
+					"25P02",
+					"57P01",
+					"08006",
+					"42P01",
+					"42703",
+					"22P02",
+					"22023",
+				].includes(code)
+					? code
+					: error instanceof TypeError
+						? "type_error"
+						: "internal";
+			failure.diagnostic = `${stage}.${cause}`;
 			return json({ error: "Identity action unavailable" }, 400);
 		}
+	}
+	let nextAuditUnavailableLog = 0;
+	async function handler(request: Request): Promise<Response> {
+		const failure: Failure = {};
+		const response = await handleRequest(request, failure);
+		if (!response.ok) failure.reason ??= "denied";
+		if (!failure.reason) return response;
+		const route = new URL(request.url).pathname.replace(/^\/api\/auth/, "");
+		const operation =
+			allowed.has(route) ||
+			[
+				"/register",
+				"/request-recovery",
+				"/confirm",
+				"/revoke-passkey",
+			].includes(route)
+				? `identity${route.replaceAll("/", ".").replaceAll("-", "_")}`
+				: "identity.unknown";
+		try {
+			// Anonymous floods cannot spend a verified actor's durable audit allowance.
+			// Actor keys come only from the verified session, never from request bodies.
+			if (
+				!(await throttle(
+					failure.userId
+						? `security-events:actor:${failure.userId}`
+						: "security-events:anonymous",
+					failure.userId ? 20 : 100,
+				))
+			)
+				return response;
+			logEvent("identity.action_denied", {
+				operation,
+				status: failure.diagnostic ?? failure.reason,
+			});
+			if (failure.userId)
+				await pool.query(
+					"INSERT INTO identity.security_audit(id,user_id,action) VALUES($1,$2,$3)",
+					[randomUUID(), failure.userId, `${operation}.denied`],
+				);
+		} catch {
+			// A failed action stays denied when the audit store is down. Emit only a bounded fixed code.
+			if (Date.now() >= nextAuditUnavailableLog) {
+				nextAuditUnavailableLog = Date.now() + 60000;
+				logEvent("identity.audit_unavailable", { operation });
+			}
+		}
+		return response;
 	}
 	return { handler, session, assertCurrent, auth };
 }

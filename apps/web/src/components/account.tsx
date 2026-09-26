@@ -304,7 +304,7 @@ export function Account() {
 								<ul className="space-y-2">
 									{keys.map((key) => (
 										<li className="flex items-center gap-4" key={key.id}>
-											{key.name ?? t("unnamedPasskey")}
+											<span>{key.name ?? t("unnamedPasskey")}</span>
 											<Button
 												disabled={busy}
 												onClick={() =>

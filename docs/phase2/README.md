@@ -20,7 +20,7 @@ Open [the account page](http://localhost:3000/en/account). Register a synthetic 
 
 The localized account page supports passkeys, authenticator setup, recovery codes, session inventory/revocation and fresh passkey authentication. An email link never satisfies MFA. When an account has MFA enabled, an email login must complete its authenticator/recovery challenge before tenant access. Passkey MFA requires verified WebAuthn user verification; an organization requiring MFA must explicitly accept that method. Credential enrollment/removal requires recent authentication, and existing passkeys protect further enrollment from email-only takeover. Keep an independent factor before removing the final passkey.
 
-Organization routes contain the authoritative organization UUID. Each tab keeps its own tenant route; there is no ambient current-organization cookie with authorization meaning. Managers see member emails, invitations, teams, seat occupancy and transfers; ordinary members get their own organization summary. Form state remounts on organization navigation. `/en/patterns` and `/es/patterns` retain the synthetic Phase 1 component demonstration.
+Organization routes contain the authoritative organization UUID. Each tab keeps its own tenant route; there is no ambient current-organization cookie with authorization meaning. Managers see member emails, invitations, team membership, seat occupancy and transfers, and can remove team members or delete teams. Ownership transfer records the outgoing owner's selected admin/member/billing role or departure; acceptance applies it together with the replacement owner and seat changes. Ordinary members get their own organization summary. Form state remounts on organization navigation. `/en/patterns` and `/es/patterns` retain the synthetic Phase 1 component demonstration.
 
 Invitation and transfer emails point to the selected organization. The recipient must sign in to the matching verified account and explicitly accept. If the link was opened while signed out, sign in and reopen the invitation message. Security-sensitive routes send `no-store` and `no-referrer`; do not configure upstream access logs to retain authentication/invitation query strings.
 
@@ -32,6 +32,7 @@ Invitation and transfer emails point to the selected organization. The recipient
 | `IDENTITY_DATABASE_URL` | Web-only identity role for Better Auth credentials/sessions |
 | `WORKER_DATABASE_URL` | Worker queue/tenant/mail role; no identity credential access |
 | `AUTH_SECRET` | Server-only Better Auth signing and domain-separated email encryption key; at least 32 characters |
+| `AUTH_INGRESS_SECRET` | Optional, separate web-only ingress signing key; at least 32 characters; enables verified per-source authentication limits as described below |
 | `CONTROL_DATABASE_URL` | Runtime read-only independent publication store |
 | `CONTROL_ADMIN_DATABASE_URL` | One-off initialization/operator commands only |
 | `MIGRATION_DATABASE_URL` | Reviewed migration and fresh initialization commands only |
@@ -49,6 +50,26 @@ The independent control database runs on a separate PostgreSQL instance at port 
 Authorization uses bounded request-local OpenFGA contexts, fresh organization/epoch/request namespaces, `HIGHER_CONSISTENCY`, sorted user lifecycle fences and shared/exclusive organization fences. Revocation commits source changes and revision updates together. Positive decisions require the actual evaluator. Every tenant SQL transaction sets and clears context on the same pooled connection. All tenant tables force RLS, composite foreign keys prevent cross-tenant references, and runtime roles cannot run DDL or truncate tables. See [the authorization and recovery runbook](authorization.md).
 
 Identity and tenant email intents enter an encrypted, short-lived database outbox. The worker claims rows with `SKIP LOCKED`, uses bounded SMTP timeouts/retry, and clears payloads after delivery, expiry or final failure. SMTP is at-least-once with a stable Message-ID; it does not promise recipient-side exactly-once delivery. All verification, reset/recovery-entry, magic-link, invitation, transfer and owner-recovery templates render in English/Spanish. Domain notifications currently use the English default; identity requests carry the selected locale. No token or email body is logged.
+
+## Authentication ingress and security recording
+
+Registration, magic-link and recovery requests use shared PostgreSQL rate limits: five requests per email, twenty per source, and one hundred across the installation per minute. The source bucket is checked first, so one source cannot exhaust the installation allowance by rotating email addresses. Bucket identifiers are keyed hashes. The application never treats `Forwarded`, `X-Forwarded-For` or an unsigned source header as authoritative.
+
+For a production reverse proxy, configure a dedicated `AUTH_INGRESS_SECRET` on the web process and trusted ingress. The ingress must remove caller-supplied `x-common-saas-source`, `x-common-saas-source-time` and `x-common-saas-source-signature` headers before setting its own. Derive the client address from the verified network peer or the ingress provider's authenticated connection metadata. Use canonical IPv4 or lowercase compressed IPv6 without brackets. Set the time to decimal Unix seconds and sign the following UTF-8 string with HMAC-SHA256, returning lowercase hexadecimal in the signature header:
+
+```text
+common-saas-ingress:v1
+<unix seconds>
+<HTTP method>
+<URL pathname without query>
+<canonical client IP>
+```
+
+There is no trailing newline. The source and time go in the corresponding headers. Proofs expire after thirty seconds and allow at most five seconds of future clock skew. With a signing key configured, absent, invalid or expired proofs produce the same generic response without issuing mail, so direct-origin requests cannot bypass the source limit. Keep this key distinct from `AUTH_SECRET`; the supervisor excludes it from the worker and it is never sent to the browser. Without a key, local development uses one shared unattributed source bucket, regardless of spoofed headers; this intentionally limits the entire local instance to twenty authentication requests per minute. Configure the signed ingress before serving multiple production clients.
+
+Failed identity actions emit fixed security event codes through the shared redacted logger, using server-generated request correlation. Failures attributable to a verified session also enter `identity.security_audit`. Anonymous recording has a shared one-hundred-events-per-minute budget; each verified actor has a separate twenty-events-per-minute budget, so anonymous traffic cannot suppress that actor's audit. Credential values, email addresses, source addresses, request bodies and authentication URLs are excluded.
+
+Better Auth provider endpoints also ignore forwarding headers for throttling and use the verified ingress source plus route. Valid signed sources have independent buckets; missing or invalid proofs share an unattributed bucket for provider endpoints. The configured mail-request endpoints still return a generic no-op for invalid proofs. Provider buckets use atomic admission with endpoint-specific windows and keyed hashes. Each process removes up to 1,000 provider buckets inactive for at least twenty-four hours, at most once per minute, without waiting for rows locked by other requests.
 
 ## Verify
 
@@ -68,6 +89,6 @@ bun run security:scan dependencies
 bun run security:scan image common-sass:phase2
 ```
 
-Integration tests use isolated databases, actual restricted roles, real OpenFGA and local SMTP. Browser tests use a dedicated port 3102 and real registration, explicit confirmation and Chromium WebAuthn credentials. The built image tests create disposable databases and verify fresh/interrupted/existing/restored initialization, readiness, process supervision and shutdown. Reports live under ignored `artifacts/`; selected evidence is retained beside the acceptance record. Hosted CI still requires a repository push and is not implied by local results.
+Integration tests use isolated databases, actual restricted roles, real OpenFGA and local SMTP. Browser tests use a dedicated port 3102 and create a fresh migrated application/control installation for real registration, explicit confirmation and Chromium WebAuthn credentials; teardown removes only that run's fixture. The worker integration test also owns its database rather than relying on the current local application's state. The built image tests create disposable databases and verify fresh/interrupted/existing/restored initialization, readiness, process supervision and shutdown. Reports live under ignored `artifacts/`; selected evidence is retained beside the acceptance record. Hosted CI still requires a repository push and is not implied by local results.
 
 Phase 3 extends this protocol to resources, workspaces and service principals. Phase 6 owns full application-restore credential replacement, independent deletion-journal replay and security revalidation. Phase 2 owner recovery is scoped organizational authority recovery; it cannot release a restored application's global readiness gate.

@@ -25,6 +25,7 @@ const authorization = {
 const identity = {
 	IDENTITY_DATABASE_URL: databaseUrl,
 	AUTH_SECRET: z.string().min(32),
+	AUTH_INGRESS_SECRET: z.string().min(32).optional(),
 };
 const options = {
 	emptyStringAsUndefined: true,
@@ -44,11 +45,20 @@ export function readWebEnv(runtimeEnv: Environment = process.env) {
 			"Invalid runtime configuration; check required environment variables",
 		);
 	}
-	return createEnv({
+	const env = createEnv({
 		...options,
-		server: { DATABASE_URL: databaseUrl, APP_ORIGIN: origin, ...identity, ...authorization },
+		server: {
+			DATABASE_URL: databaseUrl,
+			APP_ORIGIN: origin,
+			...identity,
+			...authorization,
+		},
 		runtimeEnv,
 	});
+	if (env.AUTH_INGRESS_SECRET === env.AUTH_SECRET) {
+		throw new Error("Authentication and ingress signing keys must differ");
+	}
+	return env;
 }
 export function readWorkerEnv(runtimeEnv: Environment = process.env) {
 	return createEnv({
@@ -74,7 +84,9 @@ export function readMigrationEnv(runtimeEnv: Environment = process.env) {
 		runtimeEnv,
 	});
 }
-export function readAuthorizationCommandEnv(runtimeEnv: Environment = process.env) {
+export function readAuthorizationCommandEnv(
+	runtimeEnv: Environment = process.env,
+) {
 	return createEnv({
 		...options,
 		server: {
@@ -97,7 +109,8 @@ export function readOperatorCommandEnv(runtimeEnv: Environment = process.env) {
 			APP_ORIGIN: origin,
 			AUTH_SECRET: z.string().min(32),
 			OWNER_RECOVERY_PUBLIC_KEY: z.string().min(32),
-		}, runtimeEnv,
+		},
+		runtimeEnv,
 	});
 }
 export function readServeEnv(runtimeEnv: Environment = process.env) {

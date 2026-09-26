@@ -28,6 +28,7 @@ delete webEnv.SMTP_PASSWORD;
 const workerEnv = { ...process.env };
 delete workerEnv.DATABASE_URL;
 delete workerEnv.IDENTITY_DATABASE_URL;
+delete workerEnv.AUTH_INGRESS_SECRET;
 for (const [name, script, env] of [
 	["web", "/app/apps/web/server.js", webEnv],
 	["worker", "/app/dist/worker.mjs", workerEnv],

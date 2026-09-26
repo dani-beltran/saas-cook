@@ -54,8 +54,25 @@ describe("runtime configuration", () => {
 				APP_NAME: "Demo",
 				DEFAULT_LOCALE: "es",
 				AUTH_SECRET: "secret",
+				AUTH_INGRESS_SECRET: "ingress-secret",
 			}),
 		).toEqual({ appName: "Demo", defaultLocale: "es" });
+	});
+	it("validates an independent web-only ingress signing key", () => {
+		const configured = {
+			...valid,
+			AUTH_INGRESS_SECRET: "synthetic_independent_ingress_secret_0000",
+		};
+		expect(readWebEnv(configured).AUTH_INGRESS_SECRET).toBe(
+			configured.AUTH_INGRESS_SECRET,
+		);
+		expect(readWorkerEnv(configured)).not.toHaveProperty("AUTH_INGRESS_SECRET");
+		expect(() =>
+			readWebEnv({ ...valid, AUTH_INGRESS_SECRET: "too-short" }),
+		).toThrow(/^Invalid runtime configuration/);
+		expect(() =>
+			readWebEnv({ ...valid, AUTH_INGRESS_SECRET: valid.AUTH_SECRET }),
+		).toThrow("signing keys must differ");
 	});
 	it.each([
 		{ DEFAULT_LOCALE: "sensitive-invalid-locale" },

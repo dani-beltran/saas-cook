@@ -1,0 +1,30 @@
+{
+	"status": "passed",
+	"modelId": "01M3F1M7PV2Y89MKSR7AB75K18",
+	"assertions": [
+		{
+			"user": "user:alpha-owner",
+			"relation": "can_manage",
+			"allowed": true
+		},
+		{
+			"user": "user:alpha-owner",
+			"relation": "can_transfer",
+			"allowed": true
+		},
+		{
+			"user": "user:alpha-member",
+			"relation": "can_manage",
+			"allowed": false
+		},
+		{
+			"user": "user:beta-owner",
+			"relation": "can_read",
+			"allowed": false
+		}
+	],
+	"scope": "Phase 2 production contextual authorization model and compiler",
+	"sourceCommit": "ba69e9db080ad032d91fd204d62ace03deb09c65",
+	"sourceDirty": true,
+	"implementationSha256": "12846b14b37d313a3bd6836e1f95c9055d89f733d0f9f4af89808348fdd3c61b"
+}

@@ -1,9 +1,6 @@
 import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
-import {
-	authorizationModel,
-	compileContext,
-} from "@common-saas/authz/model";
+import { authorizationModel, compileContext } from "@common-saas/authz/model";
 
 // Validate the production compiler and pinned model without modifying application readiness.
 const base = process.env.OPENFGA_API_URL ?? "http://127.0.0.1:18081";
@@ -31,7 +28,12 @@ try {
 		"POST",
 		authorizationModel,
 	);
-	const context = compileContext({ organizationId: "alpha", epoch: "epoch", actorId: "alpha-owner", role: "owner" });
+	const context = compileContext({
+		organizationId: "alpha",
+		epoch: "epoch",
+		actorId: "alpha-owner",
+		role: "owner",
+	});
 	const tuples = context.tuples;
 	const assertions = [
 		{ user: "user:alpha-owner", relation: "can_manage", allowed: true },
@@ -64,8 +66,7 @@ try {
 				status: "passed",
 				modelId: model.authorization_model_id,
 				assertions,
-				scope:
-					"Phase 2 production contextual authorization model and compiler",
+				scope: "Phase 2 production contextual authorization model and compiler",
 			},
 			null,
 			2,

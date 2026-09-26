@@ -1,6 +1,7 @@
 import { oc } from "@orpc/contract";
 import { z } from "zod";
 import { tenancyContract } from "./tenancy";
+
 export type { OrganizationCommand, OrganizationSnapshotDto } from "./tenancy";
 
 export const diagnosticInput = z.strictObject({

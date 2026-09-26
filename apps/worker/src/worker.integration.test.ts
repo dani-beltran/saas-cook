@@ -11,11 +11,11 @@ import {
 import { Pool } from "pg";
 import { PgBoss } from "pg-boss";
 import { expect, it } from "vitest";
+import { createTestInstallation } from "../../../packages/testing/src/installation";
 
 it("reclaims an abandoned claim and processes durable jobs with restricted credentials, trace correlation and graceful shutdown", async () => {
-	const databaseUrl =
-		process.env.WORKER_DATABASE_URL ??
-		"postgres://common_saas_worker:local_phase1@127.0.0.1:55433/common_saas";
+	const installation = await createTestInstallation();
+	const databaseUrl = installation.env.WORKER_DATABASE_URL;
 	const pool = new Pool({ connectionString: databaseUrl });
 	const boss = new PgBoss({
 		connectionString: databaseUrl,
@@ -60,10 +60,10 @@ it("reclaims an abandoned claim and processes durable jobs with restricted crede
 					NODE_ENV: "test",
 					PATH: process.env.PATH,
 					WORKER_DATABASE_URL: databaseUrl,
-					AUTH_SECRET: "local_phase2_synthetic_secret_not_for_production_0001",
-					CONTROL_DATABASE_URL: process.env.CONTROL_DATABASE_URL ?? "postgres://common_saas_control_reader:local_phase2_control@127.0.0.1:55434/common_saas_control",
-					INSTALLATION_ID: process.env.INSTALLATION_ID ?? "10000000-0000-4000-8000-000000000001",
-					OPENFGA_API_URL: process.env.OPENFGA_API_URL ?? "http://127.0.0.1:18081",
+					AUTH_SECRET: installation.env.AUTH_SECRET,
+					CONTROL_DATABASE_URL: installation.env.CONTROL_DATABASE_URL,
+					INSTALLATION_ID: installation.env.INSTALLATION_ID,
+					OPENFGA_API_URL: installation.env.OPENFGA_API_URL,
 					SMTP_HOST: "127.0.0.1",
 					SMTP_PORT: "1026",
 					WORKER_HEARTBEAT_PATH: `/tmp/phase1-worker-${id}.json`,
@@ -107,8 +107,16 @@ it("reclaims an abandoned claim and processes durable jobs with restricted crede
 			).rows[0].count,
 		).toBe(1);
 	} finally {
-		child?.kill("SIGKILL");
-		await boss.stop();
-		await pool.end();
+		if (child && child.exitCode === null && child.signalCode === null) {
+			const exited = once(child, "exit");
+			child.kill("SIGKILL");
+			await exited;
+		}
+		try {
+			await boss.stop();
+		} finally {
+			await pool.end();
+			await installation.cleanup();
+		}
 	}
 });
