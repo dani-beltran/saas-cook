@@ -2,7 +2,7 @@
 
 An implementation plan for a reusable enterprise SaaS template built with **Next.js, React 19, TypeScript, shadcn/ui, Tailwind CSS, Better Auth, Drizzle ORM, PostgreSQL, and oRPC**, using **Bun** for package management and **Stripe** for payments and billing.
 
-**Status:** [Phase 0 validation artifacts](phase0/README.md) are implemented; its authorization candidate is rejected and its exit gate remains open. The production application, packages, migrations, agent skills and lifecycle commands described below remain planned. Prepared on 2026-09-13; validation status updated on 2026-09-22.
+**Status:** Phase 0 validation is complete for the template scope: the contextual authorization prototype passed its reference gate. The production application and Docker image remain planned.
 
 The folder name intentionally follows the requested spelling, `common-sass`. It lives inside the existing `common-saas` workspace.
 
@@ -17,7 +17,7 @@ The folder name intentionally follows the requested spelling, `common-sass`. It 
 | [4. Billing, usage, and operations](04-billing-usage-operations.md) | Monetization, entitlements, metering, audit, integrations, reliability, and data lifecycle |
 | [5. AI agent skills](05-ai-agent-skills.md) | Planned skills, feature briefs, implementation/evolution workflows, deterministic checks, and behavioral evaluation |
 | [6. Delivery roadmap](06-delivery-roadmap.md) | Dependencies, phases, effort assumptions, acceptance gates, and first implementation backlog |
-| [7. CI/CD and deployment](07-ci-cd-and-deployment.md) | GitHub Actions pipelines, single-container Docker deployment, optional Kubernetes/Helm, image promotion, migrations, and rollback |
+| [7. CI and Docker image build](07-ci-and-docker-image.md) | Source checks, image contents, reproducible Docker builds and image verification |
 
 ## Recommended foundation
 
@@ -30,7 +30,7 @@ The [required stack in architecture §2.1](02-architecture-and-security.md#21-st
 - OpenFGA for relationship-based permissions, subject to Phase 0 projection-safety and availability gates; authentication, permissions, paid entitlements, and quotas remain distinct.
 - Drizzle ORM for database models and type-safe SQL; Drizzle Kit and reviewed SQL migrations.
 - oRPC contracts and procedures in Next.js provide typed clients and public REST/OpenAPI exposure through shared domain services.
-- GitHub Actions builds and publishes to GHCR, then promotes a verified image digest to a Docker host; Kubernetes with Helm is an optional deployment profile. PostgreSQL, OpenFGA, and object storage remain external services.
+- GitHub Actions checks source and builds the combined Docker image. PostgreSQL, OpenFGA and object storage remain external services.
 - Self-hosted Better Auth for authentication, including email magic links and passkeys, with enterprise identity integration behind adapters.
 - Stripe for fixed and seat subscriptions; an independent usage ledger and an optional usage-billing adapter.
 - Repository-local AI agent skills that build and evolve complete features using proven platform services: database changes, validation, services, permissions, APIs, dashboard, tests, and documentation. Deterministic tooling validates the result; there is no custom CRUD generator or entity DSL.
@@ -41,11 +41,11 @@ The [required stack in architecture §2.1](02-architecture-and-security.md#21-st
 
 **Foundation:** identity including magic links/passkeys, organizations and ownership transfer, tenant isolation, ReBAC, dashboard, durable jobs/audit/outbox, provider-independent entitlement and capacity primitives, service-account/API-key enforcement, one reference domain feature, and AI agent skills. A local policy catalogue makes this preset runnable without billing credentials.
 
-**Commercial core:** subscriptions, provider-confirmed seat capacity, commercial entitlement sources, metered usage, product analytics, customer administration for audit/API keys, files, notifications, webhooks, personal account deletion, organization export/deletion, and a baseline recovery drill before accepting customer data.
+**Commercial core:** subscriptions, provider-confirmed seat capacity, commercial entitlement sources, metered usage, product analytics, customer administration for audit/API keys, files, notifications, webhooks, personal account deletion, organization export/deletion, and baseline application recovery tests.
 
 **Enterprise release:** SSO, SCIM, custom roles, security policies, support access, advanced retention/legal holds, expanded recovery drills, and a tested upgrade path.
 
-**Extensions:** Kubernetes/Helm deployment, dedicated tenant deployments, regional placement, complex metered contracts, custom domains, realtime collaboration, AI features, and industry-specific modules.
+**Extensions:** Complex metered contracts, custom domains, realtime collaboration, AI features, and industry-specific modules.
 
 The template should be a strong base for many SaaS products. Each product still supplies its own domain rules, pricing, regulatory requirements, and capacity targets.
 

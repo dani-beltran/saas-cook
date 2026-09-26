@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "event": "terminated",
+  "capturedAt": "2026-09-22T22:27:10.072Z",
+  "gateStatus": "INCOMPLETE",
+  "candidateDecision": "REJECT",
+  "error": "Error: Storage budget exceeded: 6523728315 > 6442450944",
+  "smoke": false,
+  "prefix": "bench-4a69da3e-346b-4244-a72b-8395d3395070",
+  "model": "01M35KG5N810HBBTDZSJ37881K",
+  "store": "01M35KG5N205SPHPCWQWP8C0CY",
+  "measuredSeconds": 51.138208083,
+  "requiredDurationSeconds": 1800,
+  "configuredDurationSeconds": 1800,
+  "workload": {
+    "resourceCount": 100000,
+    "tenantCount": 100,
+    "memberships": 1000,
+    "concurrency": 50,
+    "hotTenantFraction": 0.5,
+    "hotTrafficTarget": 0.8,
+    "mix": {
+      "read": 24122,
+      "update": 7958,
+      "createDelete": 4145,
+      "sharing": 3914
+    },
+    "hotRequests": 32060,
+    "sparseLists": 348
+  },
+  "limits": {
+    "pool": 60,
+    "projectorPool": 4,
+    "lockTimeoutMs": 1000,
+    "statementTimeoutMs": 5000,
+    "remoteTimeoutMs": 1000,
+    "attemptLeaseMs": 120000,
+    "maxPendingPool": 100,
+    "cleanupPageSize": 100,
+    "storageBudgetBytes": 6442450944,
+    "retainedTupleBudget": 1000000
+  },
+  "storage": {
+    "databaseBytes": 5449986491,
+    "walBytes": 1073741824,
+    "retainedTupleCount": 306197,
+    "peakRetainedTupleCount": 306197,
+    "terminalSnapshotTupleCount": 0,
+    "attemptCount": 1203,
+    "terminalAttemptCount": 1100,
+    "sampledAt": "2026-09-22T22:27:09.249Z"
+  },
+  "requests": 40139,
+  "firstSuccesses": 2341,
+  "eventualSuccesses": 2378,
+  "firstFailures": {
+    "projection_pending": 37798
+  },
+  "published": 493,
+  "abandoned": 0,
+  "projectionFailures": 0,
+  "cleanedTuples": 203767,
+  "cleanupErrors": 0,
+  "createReadableTimeouts": 21,
+  "latencyMs": {
+    "reads": {
+      "samples": 1436,
+      "p95": 52.22375000000466,
+      "p99": 70.17662499999278,
+      "max": 86.33716700001969
+    },
+    "writes": {
+      "samples": 905,
+      "p95": 18.657833000004757,
+      "p99": 24.002750000014203,
+      "max": 52.966333000018494
+    },
+    "fenceWaits": {
+      "samples": 83101,
+      "p95": 30.243041000008816,
+      "p99": 41.27270800000406,
+      "max": 528.9296249999898
+    },
+    "build": {
+      "samples": 493,
+      "p95": 230.3169169999892,
+      "p99": 373.4862500000163,
+      "max": 19346.571041000017
+    },
+    "cleanup": {
+      "samples": 2048,
+      "p95": 33.04824999999255,
+      "p99": 41.25191600000835,
+      "max": 189.1361250000191
+    },
+    "revocationCommit": {
+      "samples": 87,
+      "p95": 14.171375000005355,
+      "p99": 26.676666000013938,
+      "max": 26.676666000013938
+    },
+    "createToReadable": {
+      "samples": 177,
+      "p95": 1415.3710410000058,
+      "p99": 1782.9532500000205,
+      "max": 1963.904708999995
+    }
+  },
+  "errors": [],
+  "note": "Live snapshots include in-flight requests. A checkpoint is never evidence of completed duration or gate approval."
+}

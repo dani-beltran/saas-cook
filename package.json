@@ -21,8 +21,10 @@
 		"phase0:storybook": "node node_modules/storybook/dist/bin/dispatcher.js build --config-dir spikes/phase0/api-next/.storybook --output-dir artifacts/phase0-storybook --disable-telemetry",
 		"phase0:browser": "node node_modules/@playwright/test/cli.js test --config spikes/phase0/api-next/playwright.config.ts",
 		"phase0:toolchain": "node --import tsx scripts/phase0/toolchain.ts",
-		"phase0:authz:smoke": "node --import tsx spikes/phase0/authz/benchmark.ts --smoke",
-		"phase0:authz:benchmark": "node --import tsx spikes/phase0/authz/benchmark.ts"
+		"phase0:authz:smoke": "node --import tsx spikes/phase0/authz/benchmark.ts --contextual --smoke",
+		"phase0:authz:benchmark": "node --import tsx spikes/phase0/authz/benchmark.ts --contextual",
+		"phase0:authz:contextual": "node --import tsx spikes/phase0/authz/benchmark.ts --contextual",
+		"phase0:authz:legacy": "node --import tsx spikes/phase0/authz/benchmark.ts"
 	},
 	"devDependencies": {
 		"next": "16.3.5",

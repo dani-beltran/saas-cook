@@ -1,0 +1,11 @@
+{
+  "cause": "Host clamshell sleep interrupted workload; this run cannot qualify as a healthy reference measurement.",
+  "powerLog": [
+    "2026-09-23 11:45:01 +0200 Assertions          \tPID 333(powerd) TimedOut InternalPreventSleep \"com.apple.powermanagement.darkwakelinger\" 00:00:05  id:0x0xd00008897 [System: DeclUser SRPrevSleep kCPU kDisp]          ",
+    "2026-09-23 11:45:01 +0200 Sleep               \tEntering Sleep state due to 'Clamshell Sleep':TCPKeepAlive=active Using Batt (Charge:63%) 302 secs  ",
+    "2026-09-23 11:50:03 +0200 Assertions          \tPID 499(mDNSResponder) Created MaintenanceWake \"mDNSResponder:maintenance\" 00:00:00  id:0x0xd000088a1 [System: PrevIdle DeclUser kDisp]          ",
+    "2026-09-23 11:50:03 +0200 Wake                \tWake from Deep Idle [CDNVA] : due to smc.sysState.Wake(0x70070000) lid SMC.OutboxNotEmpty RTP.multi-touch/HID Activity Using BATT (Charge:63%)           ",
+    "2026-09-23 11:50:03 +0200 Kernel Client Acks  \tDelays to Wake notifications: [AppleCS42L84Audio driver is slow(msg: DidChangeState to 1)(73 ms)] [Codec Output driver is slow(msg: WillChangeState to 1)(71 ms)] [AppleConvergedIPCOLYBTControl driver is slow(msg: SetState to 1)(125 ms)] [AppleMultiFunctionManager driver is slow(msg: SetState to 1)(135 ms)] [RTBuddy(ANS2) driver is slow(msg: SetState to 2)(140 ms)]           ",
+    "2026-09-23 11:50:03 +0200 Assertions          \tPID 499(mDNSResponder) Released MaintenanceWake \"mDNSResponder:maintenance\" 00:00:00  id:0x0xd000088a1 [System: PrevIdle DeclUser kDisp]          "
+  ]
+}

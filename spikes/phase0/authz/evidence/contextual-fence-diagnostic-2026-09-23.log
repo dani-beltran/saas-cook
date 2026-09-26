@@ -1,0 +1,23 @@
+{"event":"seeding","tenants":100,"resources":100000,"clients":50,"durationSeconds":1800,"smoke":false}
+{"event":"measuring","measuredAt":"2026-09-23T09:16:30.418Z","durationSeconds":1800,"model":"01M36RRTB40E23JVYHSGXA80AS","store":"01M36RRTAYMK82GWTPF09EDSBS"}
+{"event":"progress","seconds":30.00408166699999,"requests":22488,"firstSuccesses":22439,"firstFailures":{},"published":0,"abandoned":0}
+{"event":"progress","seconds":60.006048750000005,"requests":45450,"firstSuccesses":45404,"firstFailures":{},"published":0,"abandoned":0}
+{"event":"progress","seconds":90.007093875,"requests":67681,"firstSuccesses":67632,"firstFailures":{},"published":0,"abandoned":0}
+{"event":"progress","seconds":120.00809724999999,"requests":90421,"firstSuccesses":90373,"firstFailures":{},"published":0,"abandoned":0}
+{"event":"progress","seconds":150.00921262499998,"requests":112986,"firstSuccesses":112941,"firstFailures":{},"published":0,"abandoned":0}
+{"event":"progress","seconds":180.00910016699999,"requests":135817,"firstSuccesses":135769,"firstFailures":{},"published":0,"abandoned":0}
+{"event":"progress","seconds":210.01004841699998,"requests":158724,"firstSuccesses":158677,"firstFailures":{},"published":0,"abandoned":0}
+{"event":"progress","seconds":240.068042667,"requests":181033,"firstSuccesses":180985,"firstFailures":{},"published":0,"abandoned":0}
+{"event":"progress","seconds":270.07023958400003,"requests":203053,"firstSuccesses":203005,"firstFailures":{},"published":0,"abandoned":0}
+{"event":"progress","seconds":300.070277,"requests":225787,"firstSuccesses":225738,"firstFailures":{},"published":0,"abandoned":0}
+{"event":"progress","seconds":330.1701605,"requests":248047,"firstSuccesses":247999,"firstFailures":{},"published":0,"abandoned":0}
+{"event":"progress","seconds":360.170182834,"requests":270868,"firstSuccesses":270818,"firstFailures":{},"published":0,"abandoned":0}
+{"event":"progress","seconds":390.190199167,"requests":293265,"firstSuccesses":293220,"firstFailures":{},"published":0,"abandoned":0}
+{"event":"progress","seconds":420.190990459,"requests":315623,"firstSuccesses":315576,"firstFailures":{},"published":0,"abandoned":0}
+{"event":"progress","seconds":450.221660709,"requests":337690,"firstSuccesses":337645,"firstFailures":{},"published":0,"abandoned":0}
+{"event":"progress","seconds":480.222216584,"requests":358594,"firstSuccesses":358547,"firstFailures":{},"published":0,"abandoned":0}
+{"event":"progress","seconds":510.41889083399997,"requests":379084,"firstSuccesses":379037,"firstFailures":{},"published":0,"abandoned":0}
+{"event":"progress","seconds":540.420091167,"requests":399282,"firstSuccesses":399233,"firstFailures":{},"published":0,"abandoned":0}
+{"event":"progress","seconds":570.5501487500001,"requests":419441,"firstSuccesses":419394,"firstFailures":{},"published":0,"abandoned":0}
+{"event":"progress","seconds":600.550853167,"requests":439771,"firstSuccesses":439771,"firstFailures":{},"published":0,"abandoned":0}
+{"event":"terminated","output":"artifacts/phase0/authz-contextual-full-2026-09-23.json","error":"Error: Benchmark interrupted by SIGINT","gateStatus":"INCOMPLETE"}

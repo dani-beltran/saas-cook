@@ -8,12 +8,14 @@ The [required stack](docs/02-architecture-and-security.md#21-stack-decisions) al
 
 The template is intended to be source code you own and customize. You supply your product-specific features, business rules, branding, and pricing.
 
-The default deployment runs the web app and background worker together in one Docker container, connected to external data services. Kubernetes deployment is optional.
+The template will build one Docker image containing the web app and background worker, with external data services configured at runtime.
 
-**Status:** Phase 0 validation spikes and decision records are implemented. The authorization candidate failed its decision gate, so Phase 0 is not approved and the production application remains planned. See the [Phase 0 results and reproduction guide](docs/phase0/README.md).
+**Status:** Phase 0 validation is complete for the template scope: the contextual authorization prototype passed its reference gate. The production application and Docker image remain planned.
 
 ## Planning and design
 
+New to the project? Read the [junior developer guide](docs/08-junior-developer-guide.md) for a plain-language explanation of the project, planned features, architecture, current status, and implementation phases.
+
 Start with the [project overview](docs/00-project-overview.md) for the original planning summary and an index of the documentation in [`docs/`](docs/). It explains the proposed foundation, delivery boundaries, and required design gates.
 
-The documentation details the [product plan](docs/01-product-plan.md), [architecture and security design](docs/02-architecture-and-security.md), data model, billing and operations, [AI agent skills](docs/05-ai-agent-skills.md), [delivery roadmap](docs/06-delivery-roadmap.md), and deployment strategy.
+The documentation details the [product plan](docs/01-product-plan.md), [architecture and security design](docs/02-architecture-and-security.md), data model, billing and operations, [AI agent skills](docs/05-ai-agent-skills.md), [delivery roadmap](docs/06-delivery-roadmap.md), and [Docker image build plan](docs/07-ci-and-docker-image.md).

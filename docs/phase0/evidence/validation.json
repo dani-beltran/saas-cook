@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "recordedAt": "2026-09-22T13:05:45.951585+00:00",
-  "phase0Exit": "HOLD",
-  "authorizationDecision": "REJECT full-organization-copy candidate",
+  "phase0Exit": "PASS",
+  "authorizationDecision": "ACCEPT bounded contextual prototype; full reference gate PASS. Historical full-copy candidate remains REJECTED.",
   "baseCommit": "22ab21d943e6e230cc86a5f0773842ecc963d473",
   "sourceFingerprint": {
     "algorithm": "sha256 over sorted path + NUL + bytes + NUL",
@@ -214,18 +214,27 @@
     "../../../spikes/phase0/authz/evidence/final-smoke-2026-09-22.json",
     "../../../spikes/phase0/authz/evidence/full-2026-09-22.json",
     "../../../spikes/phase0/authz/evidence/fault-timings-2026-09-22.json",
-    "../../../spikes/phase0/authz/evidence/storage-cap-2026-09-22.json"
+    "../../../spikes/phase0/authz/evidence/storage-cap-2026-09-22.json",
+    "../../../spikes/phase0/authz/evidence/full-rerun-2026-09-23.json",
+    "../../../spikes/phase0/authz/evidence/rerun-environment-2026-09-23.json",
+    "../../../spikes/phase0/authz/evidence/fault-timings-2026-09-23.json",
+    "../../../spikes/phase0/authz/evidence/retention-full-2026-09-23.json",
+    "../../../spikes/phase0/authz/evidence/retention-validation-2026-09-23.json",
+    "../../../spikes/phase0/authz/evidence/retention-fault-timings-2026-09-23.json",
+    "../../../spikes/phase0/authz/evidence/contextual-full-2026-09-23.json",
+    "../../../spikes/phase0/authz/evidence/contextual-validation-2026-09-23.json",
+    "../../../spikes/phase0/authz/evidence/contextual-fault-timings-2026-09-23.json",
+    "../../../spikes/phase0/authz/evidence/contextual-fence-diagnostic-2026-09-23.json",
+    "../../../spikes/phase0/authz/evidence/contextual-sleep-interrupted-2026-09-23.json",
+    "../../../spikes/phase0/authz/evidence/contextual-sleep-interrupted-host-2026-09-23.json"
   ],
-  "remainingExitGates": [
-    "Replacement authorization protocol and complete passing reference workload",
-    "Named deployment/recovery ownership and actual environment/provider confirmation",
-    "Agreed and feasible end-to-end recovery commitment including independent human revalidation"
-  ],
+  "remainingExitGates": [],
   "limitations": [
     "Synthetic spikes are not production application/module acceptance.",
     "Lifecycle, storage and analytics race models do not prove production SQL/provider semantics.",
-    "Reference-size authorization run was interrupted after storage exhaustion; no full30minute pass or final percentile is claimed.",
-    "No cloud deployment, live billing or provider certification was performed."
+    "Historical full-copy reference runs were incomplete. The separate contextual replacement completed a passing full reference run on September 23; this does not prove monthly availability or production integration.",
+    "No live billing or provider certification was performed.",
+    "The September 23 local-date rerun used an 8 GiB tmpfs and 6 GiB storage guard, but hit the 1000000 retained generation tuple guard after about one measured second. Its checkpoint is not final rate/percentile evidence."
   ],
   "cleanCopyVerification": {
     "checkedAt": "2026-09-22T13:05:22.861202+00:00",
@@ -263,5 +272,75 @@
     ],
     "databaseTestsRun": false,
     "cleanup": "Temporary source/dependency/build copy removed after this evidence was recorded."
+  },
+  "authorizationRerun20260923": {
+    "localDate": "2026-09-23",
+    "timezone": "Europe/Madrid",
+    "preflight": {
+      "command": "PHASE0_INTEGRATION=1 node node_modules/vitest/vitest.mjs run spikes/phase0/authz",
+      "exitCode": 0,
+      "filesPassed": 2,
+      "testsPassed": 18,
+      "durationSeconds": 0.7
+    },
+    "benchmarkCommand": "OPENFGA_VERSION=1.21.0 AUTHZ_DOCKER_LIMITS=14cpu-16745295872bytes-tmpfs8589934592bytes AUTHZ_STORAGE_BUDGET_BYTES=6442450944 AUTHZ_REPORT=artifacts/phase0/authz-full-rerun-2026-09-23.json node --import tsx spikes/phase0/authz/benchmark.ts",
+    "benchmarkExitCode": 2,
+    "result": {
+      "gateStatus": "INCOMPLETE",
+      "candidateDecision": "REJECT",
+      "termination": "Retained generation tuple budget exceeded: 1197732 > 1000000",
+      "measurementStartedAt": "2026-09-22T22:11:44.812Z",
+      "measuredSecondsAtStopReport": 1.0010849589999997,
+      "requiredMeasuredSeconds": 1800,
+      "firstSuccesses": 7,
+      "eventualSuccesses": 7,
+      "requests": 177,
+      "projectionPendingFailures": 170,
+      "projectionFailures": 0,
+      "cleanupErrors": 0
+    },
+    "environmentReport": "../../../spikes/phase0/authz/evidence/rerun-environment-2026-09-23.json",
+    "conclusion": "Phase 0 remains unapproved. The 8 GiB tmpfs rerun stopped at the unchanged retained-snapshot tuple cap with storage still free; it did not complete the 30-minute reference gate."
+  },
+  "authorizationSnapshotRetentionFix20260923": {
+    "validation": {
+      "testsCommand": "PHASE0_INTEGRATION=1 node node_modules/vitest/vitest.mjs run spikes/phase0/authz",
+      "testsPassed": 21,
+      "testFilesPassed": 2,
+      "modelTests": 10,
+      "realServiceTests": 11,
+      "durationSeconds": 1.99,
+      "typecheckCommand": "node node_modules/typescript/bin/tsc --noEmit",
+      "typecheckExitCode": 0,
+      "biome": "check exited 0; existing undeclared benchmark/integration environment-variable warnings remain"
+    },
+    "report": "../../../spikes/phase0/authz/evidence/retention-validation-2026-09-23.json",
+    "benchmarkExitCode": 2,
+    "conclusions": [
+      "The unchanged million-tuple retention guard was not hit. The sampled retained-snapshot peak was 306197, with zero terminal snapshot entries. After process exit, 1103 retired attempts held zero snapshot tuples.",
+      "The unchanged 6 GiB storage guard stopped the run after 51.138 measured seconds. OpenFGA storage dominated: tuple table including indexes 4442038272 bytes; changelog including indexes 1132617728 bytes.",
+      "The cleanup cursor had completed zero whole-store sweeps at shutdown. The full-copy workload generates remote data faster than this cleanup scan handles it; no steady-state remote-retention bound is claimed.",
+      "The stop checkpoint remains incomplete diagnostic evidence, not final latency/rate/write-amplification or reference gate approval.",
+      "Payload compaction fixes the local snapshot leak; production authorization selection remains rejected pending availability and remote-storage redesign."
+    ]
+  },
+  "updatedAt": "2026-09-23T10:26:28.275113+00:00",
+  "authorizationContextualFix20260923": {
+    "validation": "../../../spikes/phase0/authz/evidence/contextual-validation-2026-09-23.json",
+    "benchmark": "../../../spikes/phase0/authz/evidence/contextual-full-2026-09-23.json",
+    "gateStatus": "PASS",
+    "testsPassed": 33,
+    "typecheckExitCode": 0,
+    "benchmarkExitCode": 0,
+    "elapsedSeconds": 1821.564022625,
+    "requests": 1658137,
+    "firstSuccessFraction": 0.9995018505708515,
+    "eventualSuccessFraction": 0.9999541654278266,
+    "conclusion": "The bounded synthetic authorization gate is satisfied. Under the image-only template scope, Phase 0 has no remaining exit gates; application and image implementation remain planned."
+  },
+  "scopeRevision": {
+    "date": "2026-09-26",
+    "scope": "Template source and Docker image build; infrastructure operation is outside scope.",
+    "assessment": "Operational ownership, environment/provider confirmation and recovery-time commitments removed from template gates. No new test execution is claimed; historical run outcomes are preserved."
   }
 }

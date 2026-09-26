@@ -1,0 +1,167 @@
+{
+  "recordedAt": "2026-09-22T22:25:11.494116+00:00",
+  "localDate": "2026-09-23",
+  "timezone": "Europe/Madrid",
+  "gitHead": "02115b49fbb04749e6189f1422e1a3997269f690",
+  "sourceSha256": {
+    "spikes/phase0/authz/benchmark.ts": "ea66dc5b644eea8999135bb554d18d2ec5aad0bea7f646b4054dc7f6202b0339",
+    "spikes/phase0/authz/postgres.ts": "ab8f940e5f1c0fa4adffb7ad0a99ef50139d0c8ca3d005219e7340d74cc43285",
+    "spikes/phase0/authz/protocol.ts": "b0c65822ef9312f92a923032e5175f6e4bdaa946af17024e43f31688d6b6ea4a",
+    "spikes/phase0/authz/model.ts": "61cc6afbca6807babe8137561976418aef704884417fccd0fccc4baba7b20a00",
+    "spikes/phase0/authz/schema.sql": "f7d9908cddfdf6ccd3ead207ef82ebeda8731662825137a2371257ca7816febd",
+    "spikes/phase0/authz/integration.test.ts": "07c6ccdbee8e2d3f92580af1a894cbb82c8ccf9febf91dcb6521dfef4efe3612",
+    "spikes/phase0/authz/protocol.test.ts": "3ce3120fdf8df2d5ffa38ab13b5ac8390fe6d01a18a6d1c6fcd30bc2fa3d8cc8",
+    "spikes/phase0/compose.yaml": "c82578ba8ac44ddc3b39b7811132e171afd6364f8bff61d0427de3960ce4efb4"
+  },
+  "command": "OPENFGA_VERSION=1.21.0 AUTHZ_DOCKER_LIMITS=14cpu-16745295872bytes-tmpfs8589934592bytes AUTHZ_STORAGE_BUDGET_BYTES=6442450944 AUTHZ_REPORT=artifacts/phase0/authz-retention-full-2026-09-23.json node --import tsx spikes/phase0/authz/benchmark.ts",
+  "docker": {
+    "cpus": 14,
+    "memoryBytes": 16745295872,
+    "tmpfsBytes": 8589934592,
+    "engine": "29.7.2"
+  },
+  "limits": {
+    "storageBudgetBytes": 6442450944,
+    "retainedTupleBudget": 1000000
+  },
+  "validation": {
+    "testsCommand": "PHASE0_INTEGRATION=1 node node_modules/vitest/vitest.mjs run spikes/phase0/authz",
+    "testsPassed": 21,
+    "testFilesPassed": 2,
+    "modelTests": 10,
+    "realServiceTests": 11,
+    "durationSeconds": 1.99,
+    "typecheckCommand": "node node_modules/typescript/bin/tsc --noEmit",
+    "typecheckExitCode": 0,
+    "biome": "check exited 0; existing undeclared benchmark/integration environment-variable warnings remain"
+  },
+  "setup": "Only disposable Compose services reset after correctness tests. No competing tests during measurement.",
+  "scope": "Fixes retained terminal snapshot payloads. Namespace tombstones and outbox history remain; remote graph backlog and OpenFGA change history still require capacity/retention design.",
+  "benchmarkExitCode": 2,
+  "finalDiagnostics": {
+    "database": {
+      "attemptsByState": [
+        {
+          "state": "retired",
+          "attempts": 1103,
+          "retained_tuples": 0
+        },
+        {
+          "state": "active",
+          "attempts": 100,
+          "retained_tuples": 203584
+        }
+      ],
+      "databaseSizes": [
+        {
+          "datname": "postgres",
+          "bytes": 7861951
+        },
+        {
+          "datname": "phase0",
+          "bytes": 7861951
+        },
+        {
+          "datname": "template1",
+          "bytes": 7935679
+        },
+        {
+          "datname": "phase0_fga",
+          "bytes": 5582780095
+        },
+        {
+          "datname": "phase0_authz",
+          "bytes": 119912127
+        }
+      ],
+      "walBytes": 1073741824,
+      "cursors": [
+        {
+          "store": "01M35KG5N205SPHPCWQWP8C0CY",
+          "completed_sweeps": 0
+        }
+      ]
+    },
+    "openFgaTables": [
+      {
+        "relname": "tuple",
+        "bytes": 4442038272,
+        "n_live_tup": 1637246,
+        "n_dead_tup": 273662
+      },
+      {
+        "relname": "changelog",
+        "bytes": 1132617728,
+        "n_live_tup": 2386256,
+        "n_dead_tup": 0
+      },
+      {
+        "relname": "authorization_model",
+        "bytes": 32768,
+        "n_live_tup": 1,
+        "n_dead_tup": 0
+      },
+      {
+        "relname": "store",
+        "bytes": 32768,
+        "n_live_tup": 1,
+        "n_dead_tup": 0
+      },
+      {
+        "relname": "goose_db_version",
+        "bytes": 24576,
+        "n_live_tup": 7,
+        "n_dead_tup": 0
+      },
+      {
+        "relname": "assertion",
+        "bytes": 16384,
+        "n_live_tup": 0,
+        "n_dead_tup": 0
+      }
+    ],
+    "filesystem": {
+      "sizeBytes": 8589934592,
+      "usedBytes": 6808666112,
+      "availableBytes": 1781268480
+    },
+    "statisticsCaveat": "pg_stat_user_tables live/dead tuple counts are estimates; relation/database byte sizes are measured after process exit. The stop checkpoint precedes final in-flight work settling."
+  },
+  "result": {
+    "gateStatus": "INCOMPLETE",
+    "candidateDecision": "REJECT",
+    "error": "Error: Storage budget exceeded: 6523728315 > 6442450944",
+    "measuredSeconds": 51.138208083,
+    "requests": 40139,
+    "firstSuccesses": 2341,
+    "eventualSuccesses": 2378,
+    "firstFailures": {
+      "projection_pending": 37798
+    },
+    "projectionFailures": 0,
+    "cleanupErrors": 0,
+    "createReadableTimeouts": 21,
+    "storage": {
+      "databaseBytes": 5449986491,
+      "walBytes": 1073741824,
+      "retainedTupleCount": 306197,
+      "peakRetainedTupleCount": 306197,
+      "terminalSnapshotTupleCount": 0,
+      "attemptCount": 1203,
+      "terminalAttemptCount": 1100,
+      "sampledAt": "2026-09-22T22:27:09.249Z"
+    }
+  },
+  "conclusions": [
+    "The unchanged million-tuple retention guard was not hit. The sampled retained-snapshot peak was 306197, with zero terminal snapshot entries. After process exit, 1103 retired attempts held zero snapshot tuples.",
+    "The unchanged 6 GiB storage guard stopped the run after 51.138 measured seconds. OpenFGA storage dominated: tuple table including indexes 4442038272 bytes; changelog including indexes 1132617728 bytes.",
+    "The cleanup cursor had completed zero whole-store sweeps at shutdown. The full-copy workload generates remote data faster than this cleanup scan handles it; no steady-state remote-retention bound is claimed.",
+    "The stop checkpoint remains incomplete diagnostic evidence, not final latency/rate/write-amplification or reference gate approval.",
+    "Payload compaction fixes the local snapshot leak; production authorization selection remains rejected pending availability and remote-storage redesign."
+  ],
+  "retainedFilesSha256": {
+    "retention-full-2026-09-23.json": "d730d13c13e8b55a4358cd990e77d8f70b335e1915a1409e6311a1103b590a4d",
+    "retention-full-2026-09-23.log": "49a93d43c36c058ae655c0bf345225083aaf120e74256ae30ee6342e2b5e36f2",
+    "retention-fault-timings-2026-09-23.json": "3da84469c8169bb4ab18d8feb4efe5f7be62a0079b7f2fdd84bb95ce85f5580e"
+  }
+}

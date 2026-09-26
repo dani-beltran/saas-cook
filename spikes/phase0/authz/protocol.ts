@@ -21,6 +21,7 @@ export interface Attempt extends Namespace {
 	manifest: string;
 }
 export interface Revision extends Namespace {
+	evaluationMode?: "full-copy" | "contextual";
 	desired: number;
 	applied: number;
 	model: string;
@@ -45,6 +46,8 @@ export interface Authority {
 export class Unavailable extends Error {
 	constructor(
 		public readonly code:
+			| "context_limit"
+			| "policy_mismatch"
 			| "projection_pending"
 			| "recovery_pending"
 			| "lock_timeout"
@@ -152,6 +155,7 @@ export function newAttempt(
 
 export function canPublish(attempt: Attempt, revision: Revision): boolean {
 	return (
+		revision.evaluationMode !== "contextual" &&
 		attempt.state === "verified" &&
 		attempt.revision === revision.desired &&
 		attempt.epoch === revision.epoch &&

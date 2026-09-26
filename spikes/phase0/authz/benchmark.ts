@@ -4,10 +4,14 @@ import { mkdir, rename, writeFile } from "node:fs/promises";
 import { arch, cpus, platform, totalmem } from "node:os";
 import { dirname } from "node:path";
 import type { PoolClient } from "pg";
+import {
+	ContextualAuthority,
+	ContextualPolicy,
+	contextualLimits,
+} from "./contextual.js";
 import { fixtureTuples, qualifyObject } from "./model.js";
 import { limits, OpenFgaGraph, PostgresAuthority } from "./postgres.js";
 import {
-	checkAt,
 	project,
 	type Revision,
 	requireReady,
@@ -15,6 +19,7 @@ import {
 } from "./protocol.js";
 
 const smoke = process.argv.includes("--smoke");
+const contextual = process.argv.includes("--contextual");
 const durationSeconds = Number(
 	process.env.AUTHZ_DURATION_SECONDS ?? (smoke ? 10 : 1_800),
 );
@@ -50,7 +55,10 @@ const tenants = Array.from(
 	{ length: tenantCount },
 	(_, index) => `${prefix}-${index}`,
 );
-const authority = new PostgresAuthority(database);
+const authority = contextual
+	? new ContextualAuthority(database)
+	: new PostgresAuthority(database);
+let contextualPolicy: ContextualPolicy | undefined;
 const projector = new PostgresAuthority(database, limits.projectorPool);
 const collector = new PostgresAuthority(database, 2);
 let graph!: OpenFgaGraph;
@@ -90,6 +98,10 @@ let storage = {
 	databaseBytes: 0,
 	walBytes: 0,
 	retainedTupleCount: 0,
+	peakRetainedTupleCount: 0,
+	terminalSnapshotTupleCount: 0,
+	attemptCount: 0,
+	terminalAttemptCount: 0,
 	sampledAt: "",
 };
 let background: Promise<void>[] = [];
@@ -134,6 +146,7 @@ async function checkpoint(event: string, error?: unknown): Promise<void> {
 		candidateDecision: error ? "REJECT" : "PENDING",
 		error: error ? String(error) : undefined,
 		smoke,
+		contextual,
 		prefix,
 		model,
 		store: graph?.store,
@@ -198,8 +211,13 @@ async function checkStorage(): Promise<void> {
 	}>(
 		"SELECT (SELECT sum(pg_database_size(oid)) FROM pg_database WHERE datallowconn) AS database_bytes, (SELECT coalesce(sum(size),0) FROM pg_ls_waldir()) AS wal_bytes",
 	);
-	const retained = await collector.pool.query<{ count: string }>(
-		"SELECT coalesce(sum(jsonb_array_length(tuples)),0) AS count FROM phase0_authz.attempts WHERE organization LIKE $1",
+	const retained = await collector.pool.query<{
+		count: string;
+		terminal_tuples: string;
+		attempts: string;
+		terminal_attempts: string;
+	}>(
+		"SELECT coalesce(sum(jsonb_array_length(tuples)),0) AS count, coalesce(sum(jsonb_array_length(tuples)) FILTER (WHERE state IN ('retired','abandoned')),0) AS terminal_tuples, count(*) AS attempts, count(*) FILTER (WHERE state IN ('retired','abandoned')) AS terminal_attempts FROM phase0_authz.attempts WHERE organization LIKE $1",
 		[`${prefix}-%`],
 	);
 	const sizeRow = size.rows[0];
@@ -209,6 +227,13 @@ async function checkStorage(): Promise<void> {
 		databaseBytes: Number(sizeRow.database_bytes),
 		walBytes: Number(sizeRow.wal_bytes),
 		retainedTupleCount: Number(retainedRow.count),
+		peakRetainedTupleCount: Math.max(
+			storage.peakRetainedTupleCount,
+			Number(retainedRow.count),
+		),
+		terminalSnapshotTupleCount: Number(retainedRow.terminal_tuples),
+		attemptCount: Number(retainedRow.attempts),
+		terminalAttemptCount: Number(retainedRow.terminal_attempts),
 		sampledAt: new Date().toISOString(),
 	};
 	if (storage.databaseBytes + storage.walBytes > storageBudgetBytes)
@@ -237,21 +262,44 @@ function random(seed: number) {
 	};
 }
 
+async function checksAt(
+	client: PoolClient,
+	revision: Revision,
+	actor: string,
+	objects: string[],
+	permission = "can_read",
+): Promise<boolean[]> {
+	if (contextualPolicy)
+		return contextualPolicy.check(client, revision, actor, objects, permission);
+	requireReady(revision);
+	return Promise.all(
+		objects.map((object) =>
+			graph.check(
+				actor,
+				permission,
+				qualifyObject(object, revision),
+				revision.model,
+			),
+		),
+	);
+}
+
 async function authorized(
 	organization: string,
 	client: PoolClient,
 	revision: Revision,
 	permission = "can_manage",
 ) {
-	requireReady(revision);
 	if (
-		!(await checkAt(
-			graph,
-			revision,
-			`user:${organization}-u0`,
-			"project:r000000",
-			permission,
-		))
+		!(
+			await checksAt(
+				client,
+				revision,
+				`user:${organization}-u0`,
+				["project:r000000"],
+				permission,
+			)
+		)[0]
 	)
 		throw new Unavailable("denied");
 	return client;
@@ -271,9 +319,10 @@ async function operation(
 			organization,
 			false,
 			async (client, revision) => {
-				requireReady(revision);
 				if (!sparse) {
-					if (!(await checkAt(graph, revision, actor, "project:r000000")))
+					if (
+						!(await checksAt(client, revision, actor, ["project:r000000"]))[0]
+					)
 						throw new Unavailable("denied");
 					await client.query(
 						"SELECT version FROM phase0_authz.resources WHERE organization=$1 AND object='project:r000000'",
@@ -298,15 +347,11 @@ async function operation(
 					offset += 20
 				) {
 					const batch = rows.slice(offset, offset + 20);
-					const checks = await Promise.all(
-						batch.map((row) =>
-							graph.check(
-								actor,
-								"can_read",
-								qualifyObject(row.object, revision),
-								model,
-							),
-						),
+					const checks = await checksAt(
+						client,
+						revision,
+						actor,
+						batch.map((row) => row.object),
 					);
 					for (const [index, row] of batch.entries())
 						if (checks[index]) visible.push(row.object);
@@ -335,80 +380,86 @@ async function operation(
 			owner,
 		);
 	}
-	return authority.change(
-		organization,
-		async (client, revision) => {
-			await authorized(organization, client, revision);
-			if (kind === "createDelete") {
-				const previous = created.get(organization);
-				if (previous) {
-					await client.query(
-						"DELETE FROM phase0_authz.resources WHERE organization=$1 AND object=$2",
-						[organization, previous],
-					);
-					await client.query(
-						"DELETE FROM phase0_authz.source_tuples WHERE organization=$1 AND tuple->>'object'=$2",
-						[organization, previous],
-					);
-					created.delete(organization);
-					return undefined;
-				}
-				const object = `project:c${randomUUID()}`;
+	const mutate = async (client: PoolClient, revision: Revision) => {
+		if (!contextualPolicy) await authorized(organization, client, revision);
+		if (kind === "createDelete") {
+			const previous = created.get(organization);
+			if (previous) {
 				await client.query(
-					"INSERT INTO phase0_authz.resources (organization, object) VALUES ($1,$2)",
-					[organization, object],
+					"DELETE FROM phase0_authz.resources WHERE organization=$1 AND object=$2",
+					[organization, previous],
 				);
-				for (const tuple of [
-					{ user: "organization:root", relation: "organization", object },
-					{ user: owner, relation: "manager", object },
-				]) {
-					await client.query(
-						"INSERT INTO phase0_authz.source_tuples (organization, tuple) VALUES ($1,$2)",
-						[organization, tuple],
-					);
-				}
-				created.set(organization, object);
-				return object;
+				await client.query(
+					"DELETE FROM phase0_authz.source_tuples WHERE organization=$1 AND tuple->>'object'=$2",
+					[organization, previous],
+				);
+				created.delete(organization);
+				return undefined;
 			}
-			// Cycle sharing, revocation and workspace moves; u1 remains exactly the sparse fixture principal.
-			if (seed % 3 === 0) {
-				await client.query(
-					"DELETE FROM phase0_authz.source_tuples WHERE organization=$1 AND tuple->>'object'='project:r000001' AND tuple->>'relation'='parent'",
-					[organization],
-				);
+			const object = `project:c${randomUUID()}`;
+			await client.query(
+				"INSERT INTO phase0_authz.resources (organization, object) VALUES ($1,$2)",
+				[organization, object],
+			);
+			await client.query(
+				"INSERT INTO phase0_authz.source_tuples (organization, tuple) SELECT $1,value FROM jsonb_array_elements($2::jsonb)",
+				[
+					organization,
+					JSON.stringify([
+						{ user: "organization:root", relation: "organization", object },
+						{ user: owner, relation: "manager", object },
+					]),
+				],
+			);
+			created.set(organization, object);
+			return object;
+		}
+		// Cycle sharing, revocation and workspace moves; u1 remains exactly the sparse fixture principal.
+		if (seed % 3 === 0) {
+			await client.query(
+				"DELETE FROM phase0_authz.source_tuples WHERE organization=$1 AND tuple->>'object'='project:r000001' AND tuple->>'relation'='parent'",
+				[organization],
+			);
+			await client.query(
+				"INSERT INTO phase0_authz.source_tuples (organization,tuple) VALUES ($1,$2)",
+				[
+					organization,
+					{
+						user: seed % 2 ? "workspace:a" : "workspace:b",
+						relation: "parent",
+						object: "project:r000001",
+					},
+				],
+			);
+		} else {
+			await client.query(
+				"DELETE FROM phase0_authz.source_tuples WHERE organization=$1 AND tuple->>'object'='project:r000001' AND tuple->>'user'=$2",
+				[organization, `user:${organization}-u4`],
+			);
+			if (seed % 3 === 1)
 				await client.query(
 					"INSERT INTO phase0_authz.source_tuples (organization,tuple) VALUES ($1,$2)",
 					[
 						organization,
 						{
-							user: seed % 2 ? "workspace:a" : "workspace:b",
-							relation: "parent",
+							user: `user:${organization}-u4`,
+							relation: "viewer",
 							object: "project:r000001",
 						},
 					],
 				);
-			} else {
-				await client.query(
-					"DELETE FROM phase0_authz.source_tuples WHERE organization=$1 AND tuple->>'object'='project:r000001' AND tuple->>'user'=$2",
-					[organization, `user:${organization}-u4`],
-				);
-				if (seed % 3 === 1)
-					await client.query(
-						"INSERT INTO phase0_authz.source_tuples (organization,tuple) VALUES ($1,$2)",
-						[
-							organization,
-							{
-								user: `user:${organization}-u4`,
-								relation: "viewer",
-								object: "project:r000001",
-							},
-						],
-					);
-			}
-			return undefined;
-		},
-		owner,
-	);
+		}
+		return undefined;
+	};
+	return contextualPolicy && authority instanceof ContextualAuthority
+		? contextualPolicy.change(
+				authority,
+				organization,
+				owner,
+				"project:r000000",
+				mutate,
+			)
+		: authority.change(organization, mutate, owner);
 }
 
 async function projectionLoop() {
@@ -442,8 +493,10 @@ async function projectionLoop() {
 
 async function cleanupLoop() {
 	while (!stop) {
+		let sweepComplete = true;
 		try {
 			const result = await collector.cleanup(graph, `${prefix}-`);
+			sweepComplete = result.sweepComplete;
 			if (measuring && result.tuples) {
 				cleanupMs.push(result.ms);
 				cleanedTuples += result.tuples;
@@ -452,7 +505,9 @@ async function cleanupLoop() {
 			if (measuring) cleanupErrors++;
 			if (errors.length < 10) errors.push(String(error));
 		}
-		await pause(250);
+		// Yield between bounded pages, but do not throttle a large sweep to four
+		// pages per second. Back off between complete sweeps or on dependency errors.
+		await pause(sweepComplete ? 250 : 0);
 	}
 }
 
@@ -521,13 +576,12 @@ async function clientLoop(id: number) {
 					readable = await authority.transaction(
 						organization,
 						false,
-						(_client, revision) =>
-							checkAt(
-								graph,
-								revision,
-								`user:${organization}-u0`,
-								committedObject,
-							),
+						async (client, revision) =>
+							(
+								await checksAt(client, revision, `user:${organization}-u0`, [
+									committedObject,
+								])
+							)[0] ?? false,
 						`user:${organization}-u0`,
 					);
 					if (readable) break;
@@ -547,6 +601,7 @@ async function clientLoop(id: number) {
 try {
 	await authority.install();
 	({ graph, model } = await OpenFgaGraph.create(fgaUrl));
+	if (contextual) contextualPolicy = new ContextualPolicy(graph, model);
 	await checkStorage();
 	console.info(
 		JSON.stringify({
@@ -572,15 +627,18 @@ try {
 			fixtureTuples(organization, count),
 			epoch,
 		);
-		await project(projector, graph, organization);
+		if (!contextual) await project(projector, graph, organization);
 		await checkStorage();
 		if (index % 10 === 0) await checkpoint("seeding");
 	}
+	await authority.pool.query("ANALYZE phase0_authz.source_tuples");
 	const baseTupleCount = graph.tuplesWritten;
 	const baseWriteCalls = graph.writeCalls;
-	background = [projectionLoop(), cleanupLoop(), diagnosticLoop()].map((work) =>
-		work.catch(stopFor),
-	);
+	background = (
+		contextual
+			? [diagnosticLoop()]
+			: [projectionLoop(), cleanupLoop(), diagnosticLoop()]
+	).map((work) => work.catch(stopFor));
 	warmAt = performance.now();
 	warmup = new Date().toISOString();
 	const clients = Array.from({ length: concurrency }, (_, index) =>
@@ -594,6 +652,14 @@ try {
 	projector.fenceWaitMs.length = 0;
 	projector.failedFenceWaitMs.length = 0;
 	projector.poolWaitMs.length = 0;
+	if (authority instanceof ContextualAuthority)
+		authority.readinessMs.length = 0;
+	if (contextualPolicy) {
+		contextualPolicy.buildMs.length = 0;
+		contextualPolicy.checks = 0;
+		contextualPolicy.localDenials = 0;
+		contextualPolicy.maxContextTuples = 0;
+	}
 	startAt = performance.now();
 	measuredTupleStart = graph.tuplesWritten;
 	measuredWriteStart = graph.writeCalls;
@@ -674,7 +740,12 @@ try {
 	);
 	const result = {
 		schemaVersion: 1,
-		protocol: "immutable full graph per attempt",
+		protocol: contextual
+			? "authoritative PostgreSQL with request-local OpenFGA contexts"
+			: "immutable full graph per attempt",
+		readinessMeasurement: contextual
+			? "authorization change submission through source commit acknowledgement; no asynchronous projection"
+			: "outbox submission through generation activation",
 		backend: "real PostgreSQL and OpenFGA",
 		smoke,
 		startedAt: measuredAt,
@@ -727,6 +798,14 @@ try {
 			createReadBudgetMs: 2_000,
 			createReadDelayMs: 25,
 		},
+		contextual: contextualPolicy
+			? {
+					...contextualLimits,
+					checks: contextualPolicy.checks,
+					localDenials: contextualPolicy.localDenials,
+					maxContextTuples: contextualPolicy.maxContextTuples,
+				}
+			: null,
 		graph: {
 			baseTuples: baseTupleCount,
 			baseWriteCalls,
@@ -775,7 +854,11 @@ try {
 				...projector.failedFenceWaitMs,
 			]),
 			poolWaits: stats([...authority.poolWaitMs, ...projector.poolWaitMs]),
-			projection: projectionLatency,
+			projection:
+				authority instanceof ContextualAuthority
+					? stats(authority.readinessMs)
+					: projectionLatency,
+			contextBuild: contextualPolicy ? stats(contextualPolicy.buildMs) : null,
 			revocationCommit: stats(revocationMs),
 			build: stats(projectionBuildMs),
 			cleanup: stats(cleanupMs),

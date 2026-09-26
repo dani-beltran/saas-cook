@@ -161,6 +161,16 @@ describe.skipIf(!enabled)("PostgreSQL/OpenFGA generation fault suite", () => {
 			"projection_pending",
 		);
 		await project(authority, graph, organization);
+		// Terminal snapshots can be discarded even while an old HTTP write is held.
+		expect(
+			(
+				await authority.pool.query(
+					"SELECT tuples FROM phase0_authz.attempts WHERE id=$1",
+					[old.id],
+				)
+			).rows[0]?.tuples,
+		).toEqual([]);
+		await sweep(organization);
 		proxy.release();
 		await late;
 		proxy.close();
@@ -175,8 +185,171 @@ describe.skipIf(!enabled)("PostgreSQL/OpenFGA generation fault suite", () => {
 				model,
 			),
 		).toBe(true);
+		// A later sweep discovers the recreated relationships from OpenFGA itself.
+		await sweep(organization);
+		expect(
+			await graph.check(
+				`user:${organization}-u1`,
+				"can_read",
+				qualifyObject("project:r000000", old),
+				model,
+			),
+		).toBe(false);
+		expect(await read(organization, `user:${organization}-u0`)).toBe(true);
 		timings.connectionLoss = performance.now() - start;
 		expect(timings.connectionLoss).toBeLessThan(30_000);
+	});
+
+	async function sweep(organizationPrefix: string) {
+		for (let page = 0; page < 100; page++) {
+			const result = await authority.cleanup(graph, organizationPrefix);
+			if (result.sweepComplete) return;
+		}
+		throw new Error("Fixture cleanup did not finish within 100 pages");
+	}
+
+	it("retirement keeps only current snapshots and tombstones prevent namespace reuse", async () => {
+		const organization = await fixture("retention");
+		const first = (await project(authority, graph, organization)).attempt;
+		for (let revision = 0; revision < 20; revision++) {
+			await revoke(organization);
+			await project(authority, graph, organization);
+		}
+		const rows = await authority.pool.query<{
+			state: string;
+			count: string;
+			tuples: string;
+		}>(
+			"SELECT state,count(*),sum(jsonb_array_length(tuples)) AS tuples FROM phase0_authz.attempts WHERE organization=$1 GROUP BY state",
+			[organization],
+		);
+		expect(rows.rows.find((row) => row.state === "retired")).toMatchObject({
+			count: "20",
+			tuples: "0",
+		});
+		expect(rows.rows.find((row) => row.state === "active")?.count).toBe("1");
+		await expect(authority.prepare(organization, first.id)).rejects.toThrow();
+		await expect(
+			authority.pool.query(
+				"UPDATE phase0_authz.attempts SET state='verified' WHERE id=$1",
+				[first.id],
+			),
+		).rejects.toThrow("cannot be reactivated");
+		expect(await authority.publish(first)).toBe(false);
+		await sweep(organization);
+		expect(await read(organization, `user:${organization}-u0`)).toBe(true);
+		expect(await read(organization, `user:${organization}-u1`)).toBe(false);
+	});
+
+	it("expires crashed builders and preserves live building and verified snapshots", async () => {
+		const expiredOrg = await fixture("expired-builder");
+		const expired = await authority.prepare(expiredOrg, randomUUID());
+		const buildingOrg = await fixture("live-builder");
+		const building = await authority.prepare(buildingOrg, randomUUID());
+		const verifiedOrg = await fixture("live-verified");
+		const verified = await authority.prepare(verifiedOrg, randomUUID());
+		await graph.write(verified.tuples, model);
+		await authority.acknowledge(verified);
+		await authority.pool.query(
+			"UPDATE phase0_authz.attempts SET lease_until=now()-interval '1 second' WHERE id=$1",
+			[expired.id],
+		);
+		await sweep(prefix);
+		const rows = await authority.pool.query(
+			"SELECT id,state,jsonb_array_length(tuples) AS size FROM phase0_authz.attempts WHERE id=ANY($1::uuid[])",
+			[[expired.id, building.id, verified.id]],
+		);
+		expect(rows.rows.find((row) => row.id === expired.id)).toMatchObject({
+			state: "abandoned",
+			size: 0,
+		});
+		expect(rows.rows.find((row) => row.id === building.id)).toMatchObject({
+			state: "building",
+			size: building.tuples.length,
+		});
+		expect(rows.rows.find((row) => row.id === verified.id)).toMatchObject({
+			state: "verified",
+			size: verified.tuples.length,
+		});
+		await expect(authority.acknowledge(expired)).rejects.toThrow();
+		expect(await authority.publish(expired)).toBe(false);
+		expect(await authority.publish(verified)).toBe(true);
+	});
+
+	it("paginated cleanup resumes after ambiguous deletion and isolates literal organization scopes", async () => {
+		const organization = `${prefix}-pages_%`;
+		await authority.seed(
+			organization,
+			model,
+			fixtureTuples(organization, 600),
+			randomUUID(),
+		);
+		const old = (await project(authority, graph, organization)).attempt;
+		await revoke(organization);
+		await project(authority, graph, organization);
+		const otherOrg = await fixture("pages_OTHER");
+		const other = (await project(authority, graph, otherOrg)).attempt;
+		await revoke(otherOrg);
+		await project(authority, graph, otherOrg);
+		let failed = false;
+		const faulty = {
+			url: graph.url,
+			store: graph.store,
+			readPage: (token: string) => graph.readPage(token),
+			remove: async (tuples: readonly Tuple[], id: string) => {
+				await graph.remove(tuples, id);
+				failed = true;
+				throw new Error("Delete acknowledged remotely; worker lost response");
+			},
+		};
+		for (let page = 0; page < 100 && !failed; page++) {
+			const before = await authority.pool.query(
+				"SELECT continuation_token FROM phase0_authz.cleanup_cursors WHERE endpoint=$1 AND store=$2 AND organization_prefix=$3",
+				[graph.url, graph.store, organization],
+			);
+			try {
+				await authority.cleanup(faulty, organization);
+			} catch (error) {
+				expect(String(error)).toContain("worker lost response");
+				const after = await authority.pool.query(
+					"SELECT continuation_token FROM phase0_authz.cleanup_cursors WHERE endpoint=$1 AND store=$2 AND organization_prefix=$3",
+					[graph.url, graph.store, organization],
+				);
+				expect(after.rows).toEqual(before.rows);
+			}
+		}
+		expect(failed).toBe(true);
+		// A new worker uses the durable cursor; successful deletes may be replayed.
+		const restarted = new PostgresAuthority(
+			process.env.AUTHZ_DATABASE_URL ??
+				"postgresql://postgres:phase0@127.0.0.1:55432/phase0_authz",
+		);
+		try {
+			let complete = false;
+			for (let page = 0; page < 100 && !complete; page++)
+				complete = (await restarted.cleanup(graph, organization)).sweepComplete;
+			expect(complete).toBe(true);
+		} finally {
+			await restarted.pool.end();
+		}
+		await sweep(organization); // A new pass also covers concurrent pagination changes.
+		expect(
+			await graph.check(
+				`user:${organization}-u0`,
+				"can_read",
+				qualifyObject("project:r000000", old),
+				model,
+			),
+		).toBe(false);
+		expect(await read(organization, `user:${organization}-u0`)).toBe(true);
+		expect(
+			await graph.check(
+				`user:${otherOrg}-u1`,
+				"can_read",
+				qualifyObject("project:r000000", other),
+				model,
+			),
+		).toBe(true);
 	});
 
 	it("abandons ambiguous HTTP timeout and refuses its publication after late completion", async () => {

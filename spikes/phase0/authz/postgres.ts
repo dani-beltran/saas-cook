@@ -21,6 +21,7 @@ export const limits = {
 	remoteTimeoutMs: 1_000,
 	attemptLeaseMs: 120_000,
 	maxPendingPool: 100,
+	cleanupPageSize: 100,
 };
 
 export class OpenFgaGraph implements Graph {
@@ -87,6 +88,16 @@ export class OpenFgaGraph implements Graph {
 		);
 		return response.allowed;
 	}
+	async readPage(continuationToken: string): Promise<{
+		tuples: { key: Tuple }[];
+		continuation_token: string;
+	}> {
+		return this.request(`/stores/${this.store}/read`, {
+			page_size: limits.cleanupPageSize,
+			continuation_token: continuationToken,
+			consistency: "HIGHER_CONSISTENCY",
+		});
+	}
 	static async create(
 		url: string,
 	): Promise<{ graph: OpenFgaGraph; model: string }> {
@@ -104,6 +115,7 @@ export class OpenFgaGraph implements Graph {
 }
 
 interface TenantRow {
+	evaluation_mode: "full-copy" | "contextual";
 	organization: string;
 	desired: string;
 	applied: string;
@@ -111,9 +123,15 @@ interface TenantRow {
 	epoch: string;
 	model: string;
 	ready: boolean;
+	eligible: boolean;
 }
 function toRevision(row: TenantRow): Revision {
-	return { ...row, desired: Number(row.desired), applied: Number(row.applied) };
+	return {
+		...row,
+		evaluationMode: row.evaluation_mode,
+		desired: Number(row.desired),
+		applied: Number(row.applied),
+	};
 }
 
 export class PostgresAuthority implements Authority {
@@ -149,15 +167,8 @@ export class PostgresAuthority implements Authority {
 		let fenceStarted: number | undefined;
 		let fenceAcquired = false;
 		try {
-			await client.query("BEGIN");
 			await client.query(
-				`SET LOCAL lock_timeout = '${limits.lockTimeoutMs}ms'`,
-			);
-			await client.query(
-				`SET LOCAL statement_timeout = '${limits.statementTimeoutMs}ms'`,
-			);
-			await client.query(
-				"SET LOCAL idle_in_transaction_session_timeout = '5000ms'",
+				`BEGIN; SET LOCAL lock_timeout = '${limits.lockTimeoutMs}ms'; SET LOCAL statement_timeout = '${limits.statementTimeoutMs}ms'; SET LOCAL idle_in_transaction_session_timeout = '5000ms'`,
 			);
 			const started = performance.now();
 			fenceStarted = started;
@@ -176,19 +187,13 @@ export class PostgresAuthority implements Authority {
 			this.fenceWaitMs.push(performance.now() - started);
 			fenceAcquired = true;
 			const result = await client.query<TenantRow>(
-				"SELECT * FROM phase0_authz.tenants WHERE organization = $1",
-				[organization],
+				"SELECT t.*, ($2::text IS NULL OR EXISTS (SELECT 1 FROM phase0_authz.memberships m WHERE m.organization=t.organization AND m.actor=$2 AND m.active AND (m.expires_at IS NULL OR m.expires_at > clock_timestamp()))) AS eligible FROM phase0_authz.tenants t WHERE t.organization=$1",
+				[organization, actor ?? null],
 			);
 			const row = result.rows[0];
 			if (!row) throw new Error("Unknown fixture tenant");
 			const revision = toRevision(row);
-			if (actor) {
-				const eligible = await client.query(
-					"SELECT 1 FROM phase0_authz.memberships WHERE organization = $1 AND actor = $2 AND active AND (expires_at IS NULL OR expires_at > now())",
-					[organization, actor],
-				);
-				if (eligible.rowCount !== 1) throw new Unavailable("not_eligible");
-			}
+			if (!row.eligible) throw new Unavailable("not_eligible");
 			const value = await fn(client, revision);
 			await client.query("COMMIT");
 			return value;
@@ -208,13 +213,14 @@ export class PostgresAuthority implements Authority {
 		model: string,
 		tuples: Tuple[],
 		epoch: string,
+		evaluationMode: "full-copy" | "contextual" = "full-copy",
 	): Promise<void> {
 		const client = await this.pool.connect();
 		try {
 			await client.query("BEGIN");
 			await client.query(
-				"INSERT INTO phase0_authz.tenants (organization, model, epoch) VALUES ($1, $2, $3)",
-				[organization, model, epoch],
+				"INSERT INTO phase0_authz.tenants (organization, model, epoch, evaluation_mode, applied) VALUES ($1,$2,$3,$4,CASE WHEN $4='contextual' THEN 1 ELSE 0 END)",
+				[organization, model, epoch, evaluationMode],
 			);
 			await client.query(
 				"INSERT INTO phase0_authz.source_tuples (organization, tuple) SELECT $1, value FROM jsonb_array_elements($2::jsonb)",
@@ -238,6 +244,8 @@ export class PostgresAuthority implements Authority {
 	}
 	async prepare(organization: string, id: string): Promise<Attempt> {
 		return this.transaction(organization, true, async (client, revision) => {
+			if (revision.evaluationMode !== "full-copy")
+				throw new Unavailable("policy_mismatch");
 			await client.query(
 				"UPDATE phase0_authz.attempts SET state = 'abandoned' WHERE organization = $1 AND state IN ('building', 'verified')",
 				[organization],
@@ -369,32 +377,113 @@ export class PostgresAuthority implements Authority {
 		);
 	}
 	async cleanup(
-		graph: Graph,
+		graph: Pick<OpenFgaGraph, "url" | "store" | "readPage" | "remove">,
 		organizationPrefix: string,
-		count = 1,
-	): Promise<{ tuples: number; ms: number }> {
+	): Promise<{
+		tuples: number;
+		scanned: number;
+		sweepComplete: boolean;
+		ms: number;
+	}> {
 		const started = performance.now();
-		const candidates = await this.pool.query<{
-			id: string;
-			model: string;
-			tuples: Tuple[];
-		}>(
-			"SELECT id, model, tuples FROM phase0_authz.attempts WHERE state IN ('retired','abandoned') AND organization LIKE $1 ORDER BY cleaned_at NULLS FIRST, created_at LIMIT $2",
-			[`${organizationPrefix}%`, count],
-		);
-		let tuples = 0;
-		for (const attempt of candidates.rows) {
-			for (let offset = 0; offset < attempt.tuples.length; offset += 100) {
-				const batch = attempt.tuples.slice(offset, offset + 100);
-				await graph.remove(batch, attempt.model);
-				tuples += batch.length;
-			}
-			// Repeat sweeps: a late request can recreate unreachable tuples after cleanup.
-			await this.pool.query(
-				"UPDATE phase0_authz.attempts SET cleaned_at = now() WHERE id = $1",
-				[attempt.id],
+		const client = await this.pool.connect();
+		try {
+			await client.query("BEGIN");
+			await client.query(
+				`SET LOCAL statement_timeout = '${limits.statementTimeoutMs}ms'`,
 			);
+			// One page per call, serialized per store/scope. A crashed worker rolls back
+			// the cursor; replaying already successful deletes is idempotent.
+			const scope = [graph.url, graph.store, organizationPrefix];
+			const lock = await client.query<{ acquired: boolean }>(
+				"SELECT pg_try_advisory_xact_lock(hashtextextended($1,0)) AS acquired",
+				[`phase0:cleanup:${JSON.stringify(scope)}`],
+			);
+			if (!lock.rows[0]?.acquired) {
+				await client.query("COMMIT");
+				return {
+					tuples: 0,
+					scanned: 0,
+					sweepComplete: false,
+					ms: performance.now() - started,
+				};
+			}
+			// A crashed builder must not retain a snapshot forever. Publication and
+			// acknowledgement check the same row/state/lease; neither can revive it.
+			await client.query(
+				"UPDATE phase0_authz.attempts SET state='abandoned' WHERE starts_with(organization,$1) AND state IN ('building','verified') AND lease_until <= now()",
+				[organizationPrefix],
+			);
+			await client.query(
+				"INSERT INTO phase0_authz.cleanup_cursors (endpoint,store,organization_prefix) VALUES ($1,$2,$3) ON CONFLICT DO NOTHING",
+				scope,
+			);
+			const cursor = await client.query<{ continuation_token: string }>(
+				"SELECT continuation_token FROM phase0_authz.cleanup_cursors WHERE endpoint=$1 AND store=$2 AND organization_prefix=$3",
+				scope,
+			);
+			const page = await graph.readPage(
+				cursor.rows[0]?.continuation_token ?? "",
+			);
+			// Namespace components are matched exactly, never using a SQL LIKE pattern.
+			const entries = page.tuples.flatMap(({ key }) => {
+				const parts = key.object.slice(key.object.indexOf(":") + 1).split("/");
+				const [organization, epoch, generation] = parts;
+				return parts.length === 4 && organization.startsWith(organizationPrefix)
+					? [{ key, organization, epoch, generation }]
+					: [];
+			});
+			const retired = await client.query<{
+				organization: string;
+				epoch: string;
+				generation: string;
+				model: string;
+			}>(
+				"SELECT organization,epoch,generation,model FROM phase0_authz.attempts WHERE generation=ANY($1::text[]) AND state IN ('retired','abandoned')",
+				[[...new Set(entries.map((entry) => entry.generation))]],
+			);
+			const terminal = new Map(
+				retired.rows.map((row) => [row.generation, row]),
+			);
+			const batches = new Map<string, Tuple[]>();
+			for (const entry of entries) {
+				const attempt = terminal.get(entry.generation);
+				if (
+					!attempt ||
+					attempt.organization !== entry.organization ||
+					attempt.epoch !== entry.epoch
+				)
+					continue;
+				const batch = batches.get(attempt.model) ?? [];
+				batch.push(entry.key);
+				batches.set(attempt.model, batch);
+			}
+			let tuples = 0;
+			for (const [model, batch] of batches) {
+				for (let offset = 0; offset < batch.length; offset += 100) {
+					const chunk = batch.slice(offset, offset + 100);
+					await graph.remove(chunk, model);
+					tuples += chunk.length;
+				}
+			}
+			// Empty token restarts the next sweep: late writes, or tuples skipped by
+			// concurrent pagination changes, are rediscovered without old snapshots.
+			await client.query(
+				"UPDATE phase0_authz.cleanup_cursors SET continuation_token=$4, completed_sweeps=completed_sweeps + CASE WHEN $4='' THEN 1 ELSE 0 END WHERE endpoint=$1 AND store=$2 AND organization_prefix=$3",
+				[...scope, page.continuation_token],
+			);
+			await client.query("COMMIT");
+			return {
+				tuples,
+				scanned: page.tuples.length,
+				sweepComplete: !page.continuation_token,
+				ms: performance.now() - started,
+			};
+		} catch (error) {
+			await client.query("ROLLBACK").catch(() => undefined);
+			throw error;
+		} finally {
+			client.release();
 		}
-		return { tuples, ms: performance.now() - started };
 	}
 }

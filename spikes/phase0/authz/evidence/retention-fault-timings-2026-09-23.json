@@ -1,0 +1,12 @@
+{
+  "measuredAt": "2026-09-22T22:22:50.605Z",
+  "backend": "real PostgreSQL/OpenFGA with deterministic HTTP delay proxy",
+  "recoveryBudgetMs": 30000,
+  "timingsMs": {
+    "connectionLoss": 91.30616699999999,
+    "timeout": 27.029999999999973,
+    "outage": 20.043124999999918,
+    "sparseFence": 112.247791
+  },
+  "scope": "Projection and epoch fence only; not an independent recovery-store or complete restore drill."
+}

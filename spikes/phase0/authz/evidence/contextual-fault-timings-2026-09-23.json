@@ -1,0 +1,10 @@
+{
+  "capturedAt": "2026-09-23T09:51:24.105Z",
+  "recoveryBudgetMs": 30000,
+  "timingsMs": {
+    "connectionLoss": 5.6779169999999795,
+    "timeout": 6.240332999999964,
+    "outage": 5.003332999999884
+  },
+  "note": "Fresh authorized request after a fixture dependency returns; not disaster recovery or independent security revalidation."
+}

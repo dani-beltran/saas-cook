@@ -70,18 +70,20 @@ Global identity access uses narrowly scoped adapters and separate DB privileges.
 | `resource_registry` | `(organization_id, resource_type, resource_id)`, parent pointer, lifecycle state; allows explicit grants to reference known resources |
 | `resource_grants` | Organization, registered target, subject membership/team/service account, relation, expiry, grantor; unique normalized edge; reject cross-tenant subjects/parents |
 | `roles`, `role_permissions`, `role_assignments` | Tenant custom-role definitions from a versioned platform permission catalogue; assignments to validated subjects and scopes |
-| `authorization_revisions` | One row per organization: desired/applied revision, active generation/model/store, recovery epoch, verified readiness and failure status; restored equality alone cannot authorize access |
-| `authorization_projection_attempts` | Organization, unique attempt/generation ID, immutable source revision/model/recovery epoch, prepared/building/verified/active/abandoned/retired state, acknowledgement manifest and failure details; persist before remote writes |
+| `authorization_revisions` | One row per organization: source desired/applied revision, evaluation mode, pinned model/store, recovery epoch and verified readiness; contextual publication is the source commit, and restored equality alone cannot authorize access |
+| `authorization_projection_attempts` (historical spike only) | Retained for rejected full-copy regression evidence; contextual authorization creates no projection attempts or persisted graph snapshots |
 | `projects` | Organization, ID, name, tenant-unique slug, description, status, owner membership, optional workspace reference, version, timestamps; owner/workspace composite foreign keys include organization; optional soft deletion |
 | `tasks` | Optional reference extension: organization, ID, required parent project, title, state, assignee membership, version/timestamps |
 
-Use dedicated nullable subject columns with a CHECK requiring exactly one of membership/team/service account, or introduce a typed principal registry. Do not rely on an unconstrained subject string. Register/unregister resources and create/remove their local grants in the same transaction as domain lifecycle changes; graph projection follows the outbox.
+Use dedicated nullable subject columns with a CHECK requiring exactly one of membership/team/service account, or introduce a typed principal registry. Do not rely on an unconstrained subject string. Register/unregister resources and create/remove their local grants in the same transaction as domain lifecycle changes; contextual authorization reads those committed source relationships directly. Audit/downstream events may still use an outbox; permission availability does not await it.
 
 Every resource table provides a unique `(organization_id, id)` target for child composite foreign keys. For example, `(organization_id, project_id)` in `tasks` references `(organization_id, id)` in `projects`. An owner field references a membership in the same organization. Parent moves require authorization on both locations and a graph revision change.
 
 The actual OpenFGA tuple storage is in its own database and managed by OpenFGA migrations. Application code never writes its internal tables.
 
-Enforce unique, never-reused generation IDs and one active generation per organization. Projection activation and retirement follow the canonical [architecture §2.6 protocol](02-architecture-and-security.md#late-writes-and-projection-generations); schema constraints support that protocol rather than defining a second publication sequence.
+The contextual candidate stores its evaluation mode atomically when a fixture tenant is seeded, and advances desired/applied source revisions atomically on authorization changes. Each authorization query uses a new organization/epoch/request namespace without persisting it. The historical projection fixture retains unique, never-reused generation IDs and one active generation per organization. Both are governed by the [architecture §2.6 contract](02-architecture-and-security.md#sources-of-truth-and-revocation), not a separate schema-defined publication sequence.
+
+In the historical full-copy Phase 0 fixture, terminal attempt records retain identity/state/manifest metadata but discard their full tuple arrays. A database trigger makes retired/abandoned states irreversible and clears those payloads in the state-transition transaction. `cleanup_cursors` stores scan progress per endpoint, store and organization scope; cleanup enumerates remote tuples and matches terminal namespaces instead of depending on old snapshots. This is prototype retention machinery, not an approved production migration or metadata-retention policy.
 
 ## 3.5 Billing, entitlements, and usage tables
 
@@ -134,7 +136,7 @@ Foundation implements typed local entitlement policies, capacity buckets/reserva
 
 Domain and audit timestamps are independent of delivery timestamps. Events use versioned payloads; consumers declare supported versions. Large exports/log payloads live in private object storage with metadata in PostgreSQL.
 
-The deletion journal and deployment recovery epoch/readiness/evidence records live in a protected control-plane store with an independent recovery lifecycle. Journal IDs/sequences are immutable, writes are idempotent, and retention covers every restorable backup plus the replay window. Journal entries cover account/organization deletion, ownership-resolution receipts and analytics cleanup; they are not a complete history of ordinary access revocations. Recovery records identify restored databases, the journal watermark, independently verified security decisions, graph manifests, and the operator releasing readiness. These are explicit exceptions to application-database ownership. Replay, credential invalidation and security revalidation follow the canonical [operations §4.8 recovery protocol](04-billing-usage-operations.md#recovery-readiness-protocol).
+The deletion journal and application recovery epoch/readiness/evidence records live in a protected control-plane store with an independent recovery lifecycle. Journal IDs/sequences are immutable, writes are idempotent, and retention covers every restorable backup plus the replay window. Journal entries cover account/organization deletion, ownership-resolution receipts and analytics cleanup; they are not a complete history of ordinary access revocations. Recovery records identify restored databases, the journal watermark, independently verified security decisions, graph manifests, and the operator releasing readiness. These are explicit exceptions to application-database ownership. Replay, credential invalidation and security revalidation follow the canonical [operations §4.8 recovery protocol](04-billing-usage-operations.md#recovery-readiness-protocol).
 
 Identity adapters and service-key validation retain issuance/revalidation epoch metadata outside provider-owned fields where necessary. After an application-database restore, credentials and security relationships from the snapshot cannot become valid merely by copying the current epoch onto them; only the recovery protocol can establish new trusted state. Keep denied historical memberships for content references and rebuild active seat occupancy through the shared transition service.
 
@@ -153,7 +155,7 @@ Required starting indexes and safeguards:
 - Usage: unique `(organization_id, metric_key, deduplication_key)`; aggregation access by organization, metric, occurred time.
 - Reservations: unique `(organization_id, bucket_id, operation_key)` and an expiry scan index.
 - Seat transitions: unique `(organization_id, operation_key)` receipt; capacity row unique by organization; replayed invite/SCIM/role changes cannot spend or release twice.
-- Projection attempts: unique generation ID and `(organization_id, attempt_id)`; index lifecycle state/expiry for abandoned-generation cleanup; active pointer must identify a verified attempt for the current recovery epoch.
+- Historical full-copy spike projection attempts only: unique generation ID and `(organization_id, attempt_id)`; index lifecycle state/expiry for abandoned-generation cleanup; active pointer must identify a verified attempt for the current recovery epoch.
 - Upload finalization: unique `(organization_id, upload_attempt_id)` and immutable final object identity; scan approval cannot be reassigned to another key/version/digest.
 - Audit: `(organization_id, occurred_at DESC, id DESC)` plus deliberate action/actor filters; avoid indexing sensitive JSON indiscriminately.
 - Outbox/inbox: status/available-time indexes, event uniqueness, bounded payloads, aggregate sequence uniqueness where ordering matters.
@@ -164,12 +166,12 @@ Check constraints validate nonnegative quantities where appropriate, enum states
 ## 3.8 Migration and deletion policy
 
 1. Schema changes generate ordered SQL and migration metadata. Review indexes, defaults, constraints, tenant policies, and expected lock/runtime impact.
-2. Run migrations once as a deployment step with a dedicated role and migration lock. Application replicas do not each attempt DDL on boot.
-3. Use expand → deploy compatible code → backfill in resumable batches → validate → contract. Avoid rewriting large tables in a single request/deployment transaction.
+2. Expose migrations as an explicit one-off command with a dedicated role and migration lock. Application replicas do not each attempt DDL on boot.
+3. Use expand → run compatible code → backfill in resumable batches → validate → contract. Avoid rewriting large tables in a single request/migration transaction.
 4. Keep concurrent-index creation and other non-transactional operations in explicit migration steps supported by the runner.
 5. Test both empty-database creation and upgrade from the previous release. Verify RLS with the actual restricted runtime role.
 6. Do not edit applied migrations or generate automatic destructive rollback scripts. Prefer forward fixes and tested recovery plans; document incompatible changes before release.
 7. Soft deletion does not satisfy permanent deletion. Purge workflows remove domain data, grants, graph tuples, files, derived search data, credentials, and relevant provider mappings according to retention policy.
 8. Deleting one organization does not delete a user's independent memberships or another organization's data. Financial/audit retention and legal holds are explicit policy exceptions recorded in the deletion manifest.
 9. Personal account deletion removes global credentials and personal data according to policy while preserving continuing organizations and their billing. Ownership obligations must be resolved; historical actor references use the configured retention/anonymization rules. Analytics payloads, subject mappings, and provider copies participate in deletion.
-10. Deletion is acknowledged as scheduled only after the independent journal durably records it. A restore keeps tenant serving and workers gated until journal replay, graph reconstruction, and validation complete; local tombstones or matching authorization counters from a backup cannot release that gate.
+10. Deletion is acknowledged as scheduled only after the independent journal durably records it. A restore keeps tenant serving and workers gated until journal replay, current policy/context reconstruction, and independent security validation complete; local tombstones or matching authorization counters from a backup cannot release that gate.

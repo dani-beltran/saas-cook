@@ -6,10 +6,9 @@ Build a reusable B2B SaaS starting point that removes repeated platform work whi
 
 Initial assumptions:
 
-- One deployment serves many customer organizations. One organization is one tenant and initially one billing account.
+- One application serves many customer organizations. One organization is one tenant and initially one billing account.
 - A global user can join multiple organizations with different permissions in each.
 - A workspace is an optional subdivision of an organization, not a separate billing or isolation boundary.
-- The first reference deployment uses one region. Regional placement and dedicated databases are extensions.
 - The template is source code developers own and customize. It is not a runtime no-code application builder.
 - Products can disable optional modules. Tenant isolation, authorization, validation, and security audit cannot be disabled for convenience.
 - A demonstration Projects feature proves the architecture and agent-assisted development workflow; it is removable from products that do not need projects.
@@ -96,12 +95,10 @@ Release labels below are **F — foundation**, **C — commercial core**, **E �
 | Feature flags | Platform rollout switches separate from paid entitlements, safe targeting, kill switches, expiry owner | C |
 | Operator console | Tenant health, job/reconciliation failures, suspension, plan overrides, controlled support sessions | E |
 | Observability | LogTape structured logs, OpenTelemetry traces/metrics, error tracking, queue lag, isolation alerts, usage discrepancies | F/C |
-| Delivery tooling | Local dependencies, seed data, GitHub Actions CI/CD, single-container Docker deployment, registry/promotion, preview environments, migrations, rollback, release/version policy; production customer-data gate in C | F/C |
-| Kubernetes deployment | Optional Helm profile with separate web/worker containers, migration Jobs, and independent scaling; direct Docker deployment remains supported without cluster tooling | X |
+| Build tooling | Local dependencies, seed data, GitHub Actions CI, combined Docker image, migration command packaging and release/version policy | F |
 | Data lifecycle | Personal account deletion and organization export/deletion, independent deletion journal for both scopes, analytics-provider cleanup, baseline retention/backup expiry in C; advanced retention and legal-hold hooks in E | C/E |
-| Recovery | Encrypted backups, point-in-time recovery and gated baseline restore drill before customer data in C; expanded disaster recovery and measured enterprise targets in E | C/E |
+| Recovery | Application readiness gates, independent journal replay, credential replacement and security revalidation; synthetic recovery tests in C and expanded fault cases in E | C/E |
 | Security engineering | Threat model, dependency/secret scanning, restricted DB roles, security regression suite | F/E |
-| Regional/dedicated hosting | Tenant placement registry, dedicated deployment profile, migration/export tools | X |
 
 ## 1.3 Essential product journeys
 
@@ -170,7 +167,7 @@ Navigation responds to enabled modules and permissions. Deep links still perform
 - Track template provenance and supply codemods for upgrades. Applications should be able to update platform packages without replacing customized screens.
 - Add tenant cost attribution and budget alerts for expensive workloads. If AI is added, meter actual provider costs, enforce budgets, and reuse the same tenant/access boundary for retrieval and tools.
 - Start with fixed application schemas. Add tenant-defined custom fields through a typed metadata module only when needed; do not generate production DDL from tenant input.
-- Keep regulatory certifications, full ERP/accounting, marketplace payouts, arbitrary workflow engines, and active-active multi-region deployment outside the default release. Each requires a separate product and operational design.
+- Keep regulatory certifications, full ERP/accounting, marketplace payouts, arbitrary workflow engines outside the default release. Each requires a separate product and operational design.
 
 ## 1.6 Success criteria
 

@@ -44,7 +44,7 @@ Ingress limits per source and identity, CSRF/browser journeys, wrong-account inv
 
 ### Passkeys and assurance
 
-Fix origin and RP ID explicitly for each deployment. This fixture uses `https://auth.example.test` / `auth.example.test`; it is not a product hostname decision. Tenant custom domains must redirect to the canonical authentication origin. Authenticated registration, named credentials and removal are supported by the plugin. [Better Auth passkey documentation](https://better-auth.com/docs/plugins/passkey)
+Validate configured origin and RP ID explicitly. This fixture uses `https://auth.example.test` / `auth.example.test`; it is not a product hostname decision. Tenant custom domains must redirect to the canonical authentication origin. Authenticated registration, named credentials and removal are supported by the plugin. [Better Auth passkey documentation](https://better-auth.com/docs/plugins/passkey)
 
 **Observed 1.7.5 gap:** the installed passkey implementation invokes registration and authentication verification with `requireUserVerification: false`. Registration's `authenticatorSelection.userVerification: "required"` is not enough to enforce verified UV on the server; generated authentication options use `"preferred"`. A regression test produces a correctly signed assertion with no UV bit and demonstrates it succeeds when the application hook is absent. Both supported `afterVerification` hooks in the spike reject unless the library's verified `userVerified` result is true. Browser/device UI preferences are never assurance evidence.
 

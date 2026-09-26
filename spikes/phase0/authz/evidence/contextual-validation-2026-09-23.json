@@ -1,0 +1,203 @@
+{
+  "recordedAt": "2026-09-23T09:51:56.220532+00:00",
+  "gitHead": "02115b49fbb04749e6189f1422e1a3997269f690",
+  "sourceSha256": {
+    "spikes/phase0/authz/contextual.ts": "3caba97373e03cd6c98900ff4b1d04324d369a620066b9d218ba069c209c078f",
+    "spikes/phase0/authz/contextual.test.ts": "ba93d1f3e1c4b611d08a06570bb86d9fa69640b896b0b2b8b8b625d1f68f1d3f",
+    "spikes/phase0/authz/benchmark.ts": "1ab25007f3183f012075eb9d55e8479c5d149caa19aace57bede426284a8ba0c",
+    "spikes/phase0/authz/postgres.ts": "e341c309f1b8c8bcb6d0aa707c35859bdef865ac6ce5044412b5ef45dd521b24",
+    "spikes/phase0/authz/protocol.ts": "a9731297ecc329a72695cd3c34413bc2ae123c144ce4daac089cf5435e55d639",
+    "spikes/phase0/authz/model.ts": "61cc6afbca6807babe8137561976418aef704884417fccd0fccc4baba7b20a00",
+    "spikes/phase0/authz/schema.sql": "0a3c7adc4fc65942222857388ca06c37533525f71ca3db042085472352ecc082",
+    "spikes/phase0/authz/integration.test.ts": "07c6ccdbee8e2d3f92580af1a894cbb82c8ccf9febf91dcb6521dfef4efe3612",
+    "spikes/phase0/authz/protocol.test.ts": "3ce3120fdf8df2d5ffa38ab13b5ac8390fe6d01a18a6d1c6fcd30bc2fa3d8cc8",
+    "spikes/phase0/compose.yaml": "c82578ba8ac44ddc3b39b7811132e171afd6364f8bff61d0427de3960ce4efb4",
+    "package.json": "bea2254d350061cf38999520f8b3d0399ffd65d8c41dbf77cae2aa9841ea33f9"
+  },
+  "command": "OPENFGA_VERSION=1.21.0 AUTHZ_DOCKER_LIMITS=14cpu-16745295872bytes-tmpfs8589934592bytes AUTHZ_STORAGE_BUDGET_BYTES=6442450944 AUTHZ_REPORT=artifacts/phase0/authz-contextual-full-2026-09-23.json caffeinate -i node --import tsx spikes/phase0/authz/benchmark.ts --contextual",
+  "docker": {
+    "cpus": 14,
+    "memoryBytes": 16745295872,
+    "tmpfsBytes": 8589934592,
+    "engine": "29.7.2"
+  },
+  "tests": {
+    "command": "PHASE0_INTEGRATION=1 node node_modules/vitest/vitest.mjs run spikes/phase0/authz",
+    "files": 3,
+    "passed": 33,
+    "contextualCases": 12,
+    "historicalGenerationCases": 21,
+    "durationSeconds": 2.99
+  },
+  "typecheck": {
+    "command": "node node_modules/typescript/bin/tsc --noEmit",
+    "exitCode": 0
+  },
+  "measurementChanges": [
+    "The reference dataset, duration, warm-up, clients, traffic distribution, retry policy and numeric gate thresholds are unchanged.",
+    "Contextual candidate creates no persisted authorization tuples or generation attempts. Source commit is synchronous publication; readiness latency conservatively includes change submission through COMMIT acknowledgement.",
+    "Projection/build/cleanup for persistent graphs are not background jobs in contextual mode; raw graph write counts remain reported as zero, not omitted.",
+    "Sparse lists still scan up to 100 candidates in batches of 20; source closure can prove a candidate has no grant path, while every possible positive decision requires a real OpenFGA check.",
+    "SQL round trips are combined, including source lookup/eligibility, transaction setup and source-change revision journaling. Source tuples are ANALYZEd after seeding.",
+    "Source changes preauthorize in a separate shared-fence transaction, then reconstruct the exact context under an exclusive fence. Changed policy inputs or elapsed condition expiry require fresh evaluation. Membership and readiness are always checked again. Readiness timing includes preflight."
+  ],
+  "limitations": [
+    "The context compiler is pinned to the Phase 0 organization/team/workspace/project model, not arbitrary future OpenFGA models.",
+    "At most 100 contextual tuples per check, depth 3 and 20 candidates per batch; oversized/unsupported contexts fail closed.",
+    "Synthetic prototype only; recovery ownership, complete recovery protocol and production integration remain separate gates.",
+    "The final run recorded 750 first-attempt lock timeouts and 76 client timeouts. All remain counted; 76 requests failed eventually. Passing this aggregate synthetic gate is not zero-error or monthly availability evidence."
+  ],
+  "powerAssertion": "Process-scoped caffeinate -i prevents idle sleep; lid closure can still interrupt the benchmark.",
+  "faultTimings": "contextual-fault-timings-2026-09-23.json",
+  "completedAt": "2026-09-23T10:25:31.772980+00:00",
+  "benchmarkExitCode": 0,
+  "benchmarkReport": "contextual-full-2026-09-23.json",
+  "gateStatus": "PASS",
+  "finalSourceSha256": {
+    "spikes/phase0/authz/contextual.ts": "18aeb93c2a92d6195bd2308c79794c30c20210db771e64e91abd95db78d4816f",
+    "spikes/phase0/authz/contextual.test.ts": "39ac70d16bdf9911eade0d80a976fa82b6cd2f762caf9221ffe6c69516e52394",
+    "spikes/phase0/authz/benchmark.ts": "88d08131748a707645f681c90a6adcff0054839084af1c1a327742448c34b0e3",
+    "spikes/phase0/authz/postgres.ts": "e341c309f1b8c8bcb6d0aa707c35859bdef865ac6ce5044412b5ef45dd521b24",
+    "spikes/phase0/authz/protocol.ts": "a9731297ecc329a72695cd3c34413bc2ae123c144ce4daac089cf5435e55d639",
+    "spikes/phase0/authz/model.ts": "61cc6afbca6807babe8137561976418aef704884417fccd0fccc4baba7b20a00",
+    "spikes/phase0/authz/schema.sql": "0a3c7adc4fc65942222857388ca06c37533525f71ca3db042085472352ecc082",
+    "spikes/phase0/authz/integration.test.ts": "07c6ccdbee8e2d3f92580af1a894cbb82c8ccf9febf91dcb6521dfef4efe3612",
+    "spikes/phase0/authz/protocol.test.ts": "3ce3120fdf8df2d5ffa38ab13b5ac8390fe6d01a18a6d1c6fcd30bc2fa3d8cc8",
+    "spikes/phase0/compose.yaml": "c82578ba8ac44ddc3b39b7811132e171afd6364f8bff61d0427de3960ce4efb4",
+    "package.json": "bea2254d350061cf38999520f8b3d0399ffd65d8c41dbf77cae2aa9841ea33f9"
+  },
+  "postLaunchEdits": [
+    "Import ordering and TypeScript-only annotation cleanup; no measured runtime behavior changed.",
+    "Fault timing JSON formatting only; test assertions unchanged."
+  ],
+  "biome": {
+    "exitCode": 0,
+    "warnings": "19 undeclared environment-variable warnings; no errors"
+  },
+  "postRunDiagnostics": {
+    "tenants": 100,
+    "sourceTuples": 207921,
+    "attempts": 0,
+    "pendingTenants": 0,
+    "journalRows": 336399,
+    "openFgaTuples": 0,
+    "openFgaChangelog": 0,
+    "openFgaDatabaseBytes": 8140479,
+    "tmpfsBytes": 8589934592,
+    "tmpfsUsedBytes": 698662912,
+    "tmpfsFreeBytes": 7891271680
+  },
+  "result": {
+    "elapsedSeconds": 1821.564022625,
+    "requests": 1658137,
+    "firstSuccessFraction": 0.9995018505708515,
+    "eventualSuccessFraction": 0.9999541654278266,
+    "firstFailures": {
+      "23": 76,
+      "lock_timeout": 750
+    },
+    "createReadableTimeouts": 0,
+    "storage": {
+      "databaseBytes": 303731131,
+      "walBytes": 385875968,
+      "retainedTupleCount": 0,
+      "peakRetainedTupleCount": 0,
+      "terminalSnapshotTupleCount": 0,
+      "attemptCount": 0,
+      "terminalAttemptCount": 0,
+      "sampledAt": "2026-09-23T10:23:19.781Z"
+    },
+    "latencyMs": {
+      "reads": {
+        "samples": 994570,
+        "p95": 69.16316699999152,
+        "p99": 79.65212499990594,
+        "max": 1255.538166000042
+      },
+      "writes": {
+        "samples": 662741,
+        "p95": 116.36808399995789,
+        "p99": 133.35237500001676,
+        "max": 1269.9163329999428
+      },
+      "eventual": {
+        "samples": 1658061,
+        "p95": 106.46279100002721,
+        "p99": 126.25866600000882,
+        "max": 1397.0193339998368
+      },
+      "fenceWaits": {
+        "samples": 2066600,
+        "p95": 61.60183299984783,
+        "p99": 71.42112500000803,
+        "max": 1203.6215000001248
+      },
+      "failedFenceWaits": {
+        "samples": 764,
+        "p95": 1190.8260830000509,
+        "p99": 1202.40149999992,
+        "max": 1203.6215000001248
+      },
+      "poolWaits": {
+        "samples": 2066559,
+        "p95": 0.006041999906301498,
+        "p99": 0.010458000004291534,
+        "max": 0.9854579998645931
+      },
+      "projection": {
+        "samples": 325809,
+        "p95": 122.64950000005774,
+        "p99": 140.50170799996704,
+        "max": 1269.9130829998758
+      },
+      "contextBuild": {
+        "samples": 3074046,
+        "p95": 1.8524159998632967,
+        "p99": 2.9261249999981374,
+        "max": 1162.1346660000272
+      },
+      "revocationCommit": {
+        "samples": 53855,
+        "p95": 122.51329200016335,
+        "p99": 141.63566600019112,
+        "max": 1363.305999999866
+      },
+      "build": {
+        "samples": 0,
+        "p95": null,
+        "p99": null,
+        "max": null
+      },
+      "cleanup": {
+        "samples": 0,
+        "p95": null,
+        "p99": null,
+        "max": null
+      },
+      "createToReadable": {
+        "samples": 81680,
+        "p95": 177.64604100002907,
+        "p99": 251.6401659999974,
+        "max": 1403.2882499999832
+      }
+    },
+    "graph": {
+      "baseTuples": 0,
+      "baseWriteCalls": 0,
+      "tuplesWrittenIncludingWarmup": 0,
+      "writeCallsIncludingWarmup": 0,
+      "tuplesWrittenDuringMeasurementAndDrain": 0,
+      "writeCallsDuringMeasurementAndDrain": 0,
+      "cleanedTuples": 0,
+      "cleanupErrors": 0,
+      "writeAmplificationPerCommittedChange": 0,
+      "attemptStates": {},
+      "attemptsStarted": 0,
+      "abandonedBuildRate": 0,
+      "published": 0,
+      "abandoned": 0,
+      "projectionFailures": 0,
+      "pendingRevisions": 0
+    }
+  }
+}

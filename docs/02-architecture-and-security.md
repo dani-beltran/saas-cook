@@ -21,7 +21,7 @@ The following stack is required for implementation. Phase 0 pins a compatible, s
 | Validation | Zod | Explicit input/output schemas, forms and environment validation |
 | Forms | React Hook Form | Accessible form state and Zod-backed validation; server validation remains authoritative |
 | Unit tests | Vitest | Unit suites and integration suites against real PostgreSQL/OpenFGA fixtures |
-| End-to-end tests | Playwright | Browser journeys, tenant isolation and deployed smoke coverage |
+| End-to-end tests | Playwright | Browser journeys, tenant isolation and image smoke coverage |
 | Component development | Storybook | Isolated component development and stories for themes, locales and required UI states |
 | Linting and formatting | Biome | Shared formatting and lint rules, enforced locally and in CI |
 | Commit conventions | Commitlint | Conventional Commits checked by Git hooks and CI |
@@ -29,7 +29,7 @@ The following stack is required for implementation. Phase 0 pins a compatible, s
 | Code cleanup | Knip | Detect unused files, exports and dependencies with explicit framework/tool entry points |
 | Package manager | Bun workspaces | Pinned Bun version, committed `bun.lock`, reproducible installs and workspace scripts |
 | Typed environment | T3 Env | Zod-backed server/client configuration with separate web, worker and one-off command validation |
-| CI/CD | GitHub Actions | Required checks, immutable image releases, staging validation and protected production promotion |
+| CI | GitHub Actions | Required source checks and Docker image build/verification |
 | Logging | LogTape | Structured logs, request/job correlation and shared redaction policy |
 | AI coding context | `AGENTS.md` (Agents.md) | Repository instructions for the stack, architecture, commands and feature workflows |
 
@@ -49,8 +49,8 @@ Additional infrastructure supports the required stack:
 | Product analytics | Typed analytics adapter; PostHog reference integration, disabled without configuration | Product-event/report definitions and tracking controls; separate from audit, operational telemetry, and billable usage |
 | Development automation | Repository-local AI agent skills plus deterministic checks | Extend ordinary source using proven services; no custom CRUD generator or entity DSL |
 | Traces and metrics | OpenTelemetry, pluggable error sink | Correlate telemetry with LogTape logs across requests, events, workers and providers |
-| Image delivery | Docker BuildKit/buildx, GHCR | Build and promote immutable image releases through GitHub Actions |
-| Deployment | One Docker application container running web + worker; external OpenFGA, PostgreSQL and object storage | Direct Docker is the default; Kubernetes + Helm with split workloads is optional; both use one-off migrations and compatible rollback |
+| Image build | Docker BuildKit/buildx | Build and verify the combined application image in CI |
+| Packaging | One Docker image containing web + worker and command tooling | PostgreSQL, OpenFGA and object storage supplied through runtime configuration |
 
 Bun is the package manager and script entry point; the application runtime remains Node.js LTS. `bun run test:unit` invokes Vitest, and `bun run test:e2e` invokes Playwright. Phase 0 verifies the Bun workspace/Turborepo install and build path against the chosen Node.js and React 19 versions.
 
@@ -85,7 +85,7 @@ flowchart TD
 
 Use a modular monolith. oRPC handlers mounted in Next.js Route Handlers validate transport input, create a trusted context, and invoke domain services. Services coordinate authorization, business rules, repositories, entitlements, and events. Repositories own SQL. Workers call the same services with explicit job/service identities. [oRPC Next.js adapter](https://orpc.dev/docs/adapters/next)
 
-The diagram shows logical services, not required container boundaries. The default Docker image runs web and worker as supervised processes in one application container, with graceful shutdown and combined health checks. Their source packages and database roles stay separate; migration credentials are provided only to one-off commands. PostgreSQL, OpenFGA, and object storage remain external. The optional Kubernetes profile places web and worker in separate Deployments for independent scaling without changing domain behavior.
+The diagram shows logical services, not required container boundaries. The default Docker image runs web and worker as supervised processes in one application container, with graceful shutdown and combined health checks. Their source packages and database roles stay separate; migration credentials are provided only to one-off commands. PostgreSQL, OpenFGA, and object storage remain external.
 
 Server Components call services directly; they do not perform an HTTP round trip to their own API. Interactive clients use the typed oRPC client. oRPC procedures and any Server Actions are thin entry points to the same services. Better Auth endpoints and verified provider webhooks keep their dedicated Next.js handlers. No business rule should exist only in a page, procedure or action.
 
@@ -130,13 +130,9 @@ common-sass/
   AGENTS.md                                # AI coding context and canonical commands
   .agents/skills/                           # Planned SKILL.md packages and references
   feature-briefs/                           # Human-readable tasks and acceptance criteria
-  .github/workflows/                        # CI, release, deployment, infrastructure
-  infra/docker/                             # Combined app image; optional split targets
-  infra/helm/common-sass/                    # Optional Kubernetes application chart
-  infra/environments/                       # Non-secret staging/production values
-  infra/k8s/jobs/                            # Optional Kubernetes migration/publication Jobs
-  infra/terraform/                           # Optional host/cluster/service provisioning
-  scripts/                                  # Docker deployment/rollback; optional Kubernetes
+  .github/workflows/                        # Source checks and image build
+  infra/docker/                             # Combined application image
+  scripts/                                  # Build and local verification commands
   docs/                                     # Plan, ADRs, module and operator guides
   examples/                                 # Illustrative inputs and extension recipes
   package.json                              # Bun workspaces, pinned packageManager, scripts
@@ -159,7 +155,7 @@ Dependency direction: web/worker → modules → core and infrastructure adapter
 
 1. Authenticate the session or API key.
 2. Resolve the requested organization from a browser path or API path; resolve an ID from a slug through a restricted identity/control-plane lookup.
-3. Verify deployment recovery readiness, global user lifecycle status, current membership/service-account status, organization lifecycle state, and security policy. Invites, owner recovery, and pre-membership onboarding use narrowly scoped dedicated services.
+3. Verify application recovery readiness, global user lifecycle status, current membership/service-account status, organization lifecycle state, and security policy. Invites, owner recovery, and pre-membership onboarding use narrowly scoped dedicated services.
 4. Construct an immutable context containing actor, organization ID, request ID, authentication method, and verified policy state.
 5. Run tenant SQL on one connection in one transaction with a transaction-local tenant setting. Repositories require this context and cannot reach an unscoped pool.
 6. Apply relationship authorization, entitlement rules, and quota rules for the operation.
@@ -180,7 +176,7 @@ Proposed database policy:
 
 PostgreSQL documents owner/superuser bypass behavior, `FORCE ROW LEVEL SECURITY`, and commands/constraints outside row-policy filtering. RLS therefore supplements role restrictions and service checks rather than replacing them. [PostgreSQL row security policies](https://www.postgresql.org/docs/current/ddl-rowsecurity.html)
 
-The tenant session setting is controlled by trusted application code, not a security boundary against arbitrary SQL execution by a compromised application. Products needing infrastructure isolation should use the dedicated deployment extension.
+The tenant session setting is controlled by trusted application code, not a security boundary against arbitrary SQL execution by a compromised application.
 
 ### Isolation beyond SQL
 
@@ -214,7 +210,7 @@ Identity rules:
 Use the pinned identity adapter's supported plugins and test their actual behavior in Phase 0. The plugin APIs are integration choices; the following are application requirements. [Better Auth magic links](https://better-auth.com/docs/plugins/magic-link), [Better Auth passkeys](https://better-auth.com/docs/plugins/passkey)
 
 - **Magic links:** high-entropy tokens stored hashed, bounded expiry, atomic single-use redemption across replicas, generic request responses, per-identity/source rate limits, and allowlisted same-origin destinations. Keep tokens out of logs, analytics, referrers, and ordinary persistent job payloads; any necessary email-delivery payload is short-lived and protected. Use an explicit confirmation step so email scanners/prefetchers do not consume sign-in links. Test expired/replayed/concurrently redeemed links, scanners, and wrong-account invitation acceptance. Sign-up through magic links follows the product's registration/invitation policy rather than plugin defaults.
-- **Passkeys:** support authenticated enrollment, multiple named credentials, listing and revocation, and WebAuthn sign-in. Verify challenge freshness/single use, expected origin, RP ID, and user verification through the identity library; store public credentials only. Require recent authentication for enrollment/removal and maintain a tested recovery path before removing the final usable credential. Use a canonical authentication origin/RP ID with separate development/staging configuration; custom tenant domains redirect there rather than silently changing credential scope.
+- **Passkeys:** support authenticated enrollment, multiple named credentials, listing and revocation, and WebAuthn sign-in. Verify challenge freshness/single use, expected origin, RP ID, and user verification through the identity library; store public credentials only. Require recent authentication for enrollment/removal and maintain a tested recovery path before removing the final usable credential. Use a canonical authentication origin/RP ID with explicit runtime configuration; custom tenant domains redirect there rather than silently changing credential scope.
 - **Assurance and recovery:** record verified authentication method/time and relevant assurance in sessions. Email possession alone does not satisfy MFA or enforced enterprise SSO. A passkey satisfies an MFA requirement only when the configured policy accepts the verified user-verification assurance. Recovery, lost-device replacement, linking, and login all recheck global account status and target-organization policy; never reactivate an account with pending/final deletion. Test passwordless-only users performing sensitive actions without requiring a nonexistent password.
 
 ### Ownership transfer and personal account deletion
@@ -233,7 +229,7 @@ The resumable deletion, analytics cleanup, and restore protocol is specified in 
 
 Provide server and browser adapters using a shared versioned event catalogue. The server derives organization/user attribution from trusted context; browser events cannot assert authoritative billing, role, or ownership transitions. Deliver server-side success events after commit, with stable event IDs for retry deduplication. Analytics has a bounded, isolated delivery queue and may drop expired events with diagnostics; provider failure never fails a domain transaction or changes permissions, quotas, or billing.
 
-Default collection is off until configured. Apply deployment, organization, and user tracking controls before enqueue and again before delivery. Allowlist properties, use opaque analytics identifiers, and exclude names, emails, free-form resource content, secrets, and authentication URLs. Disable automatic capture/session replay by default. Operator access to cross-tenant reports is separate from customer access. Provider-independent report definitions and lifecycle cleanup are in [operations §4.9](04-billing-usage-operations.md#49-product-analytics).
+Default collection is off until configured. Apply application, organization, and user tracking controls before enqueue and again before delivery. Allowlist properties, use opaque analytics identifiers, and exclude names, emails, free-form resource content, secrets, and authentication URLs. Disable automatic capture/session replay by default. Operator access to cross-tenant reports is separate from customer access. Provider-independent report definitions and lifecycle cleanup are in [operations §4.9](04-billing-usage-operations.md#49-product-analytics).
 
 ## 2.6 Relationship-based authorization
 
@@ -275,24 +271,24 @@ OpenFGA describes organization/resource types and inherited permissions, as well
 
 ### Sources of truth and revocation
 
-Application PostgreSQL owns memberships, team membership, resource ownership/parents, and explicit grants. OpenFGA is a derived graph. Only the projector writes graph tuples; manual graph edits are unsupported and reconciled away. Application resource IDs remain stable; graph object IDs include organization and projection generation. Pin the store/model IDs and isolate deployment environments.
+Application PostgreSQL owns memberships, team membership, resource ownership/parents, and explicit grants. The replacement Phase 0 candidate supplies a bounded, request-local policy context to OpenFGA instead of publishing persistent permission graphs. OpenFGA still evaluates every possible positive decision against the pinned model. Application resource IDs remain stable; every authorization query qualifies graph references with organization, recovery epoch and a fresh request namespace. See [ADR P0-AUTHZ-2](phase0/contextual-authorization.md).
 
-**Required consistency contract; Phase 0 must prove the projection protocol:**
+**Required consistency contract for the contextual candidate:**
 
-1. Maintain per-organization `desired_revision`, `applied_revision`, active graph generation/model, and projection health, plus a deployment recovery epoch and readiness gate.
-2. Authorization-changing writes follow the [canonical lifecycle lock order](03-data-model.md#canonical-lifecycle-lock-order), acquire the organization authorization fence exclusively, update source records, advance the desired revision, and append an outbox event atomically.
-3. Protected user operations use that same lock order with shared lifecycle/authorization fences for their bounded database transaction, require recovery readiness, matching revisions and a verified active generation, perform current identity/status checks, then check OpenFGA before reading or mutating domain data. Authorization-changing operations acquire the exclusive authorization fence from the start; do not upgrade a shared lock mid-operation.
-4. Publish an applied revision only after all writes for its candidate generation are acknowledged and the projector revalidates its attempt, source revision, model, and recovery epoch under the exclusive fence. A timed-out or abandoned attempt cannot later publish. Partial failure leaves dependent operations denied.
-5. Graph reads use `HIGHER_CONSISTENCY` initially against the primary datastore. Do not interpret this setting as a transaction across PostgreSQL and OpenFGA.
-6. Revocation is logically effective when the authoritative database change commits. New dependent operations cannot use the old graph while projection is pending. Already-running operations that obtained the fence complete before that commit; already-delivered data cannot be recalled.
+1. Maintain the organization source revision, evaluation mode, pinned model/store, recovery epoch and readiness gate. Contextual source changes advance desired/applied revisions in the same transaction; their equality never substitutes for recovery revalidation.
+2. Authorization-changing writes follow the [canonical lifecycle lock order](03-data-model.md#canonical-lifecycle-lock-order), acquire the organization authorization fence exclusively from the start, and atomically update source records, revision, domain records and required audit/outbox data. A separate read-only shared-fence preflight may obtain the OpenFGA result before the mutating transaction. Under the exclusive fence, reconstruct all permission inputs and recheck membership/readiness; reuse that invocation’s result only if every input, model and epoch is identical and no condition has expired. Otherwise evaluate again. No lock upgrade or asynchronous permission publication is needed.
+3. Protected reads and ordinary updates hold shared lifecycle/authorization fences for their bounded database transaction. Validate local identity/membership eligibility and server-time expiry, recovery readiness, model and evaluation mode; load the relevant authoritative relationships; evaluate the resulting context through OpenFGA before domain SQL and commit.
+4. Contexts are specific to the validated policy compiler and model. Cap graph depth, candidate batch size and contextual tuple count; reject unsupported/oversized input rather than truncate it or grant broadly. A source-side filter may prove the absence of a necessary grant path, but every possible positive result requires OpenFGA evaluation. Qualify every object and team/parent/organization traversal in the same fresh request namespace.
+5. Queries use the pinned model and `HIGHER_CONSISTENCY`. A missing response, remote error or timeout cannot authorize a protected operation. Contextual tuples are never written or reused in another request; persisted tuples in old request/projection namespaces cannot grant access to a new namespace.
+6. Revocation is logically effective at the authoritative commit. Earlier fenced operations drain before it; later operations read the changed source immediately. A lost database connection invalidates the whole protected transaction even if an earlier HTTP query eventually returns allowed. Already-delivered data cannot be recalled.
 
-OpenFGA's higher-consistency query option bypasses its caches; it is not an acknowledgement that an application outbox has been applied. [OpenFGA consistency modes](https://openfga.dev/docs/interacting/consistency)
+OpenFGA's higher-consistency option is not a cross-service transaction. Safety comes from the database fence, the current source context, request namespace isolation and committing protected SQL on that same live connection. [OpenFGA contextual tuples](https://openfga.dev/docs/interacting/contextual-tuples), [consistency modes](https://openfga.dev/docs/interacting/consistency)
 
 ### Late writes and projection generations
 
 A PostgreSQL lock alone cannot fence an in-flight request to another service. Required failure scenario: attempt A sends a grant at revision N and loses its database connection; attempt B recovers and applies N, then N+1 revokes the grant; A's old request completes last. The old grant must remain unusable even when desired/applied revisions match. Client cancellation, retries, and periodic reconciliation do not establish this guarantee. OpenFGA documents atomicity within a write request, which does not order separate requests against the application's lock. [OpenFGA tuple writes](https://openfga.dev/docs/getting-started/update-tuples)
 
-The Phase 0 candidate uses a fresh, never-reused graph namespace for **each projection attempt**:
+The **rejected historical full-copy candidate** used a fresh, never-reused graph namespace for **each projection attempt**. Its implementation and fault evidence remain available for regression testing; the contextual candidate above supersedes its publication mechanism:
 
 1. Persist the attempt ID, generation, source revision, model, recovery epoch, and state before sending writes. Build from a consistent snapshot of authoritative organization relationships.
 2. Materialize the complete organization graph in that generation. Qualify every graph object and userset traversal with the generation; no parent/team/organization edge may reach a mutable or different generation. Stable principal IDs remain subject to current local eligibility checks.
@@ -300,15 +296,17 @@ The Phase 0 candidate uses a fresh, never-reused graph namespace for **each proj
 4. Under the exclusive fence, atomically activate the fully acknowledged candidate only if its source revision is still desired and its model/recovery epoch are current. Otherwise abandon it and build from the latest source. An old request can then affect only its retired or abandoned namespace.
 5. Retire generations after fenced readers drain. Cleanup may touch only retired/abandoned namespaces and must tolerate late writes recreating unreachable tuples; bound and monitor their storage. Namespace IDs are never reused, including after restores.
 
-This is a correctness-first prototype, with potentially expensive full-graph copies. Phase 0 must measure graph size, write amplification, abandoned builds, garbage collection, and availability. If it fails the budgets, record and prove a different protocol before Phase 2; receiver-enforced fencing or another authoritative authorization design may be evaluated. Update this contract, logical schema, and shared skill guidance with that ADR. Do not substitute mutable graph updates protected only by a database mutex or weaken revocation to pass the benchmark.
+The Phase 0 retention fix clears a snapshot's tuple payload atomically when its attempt becomes retired or abandoned, while retaining its small identity/state/manifest record as a namespace tombstone. Expired, unpublished attempts are abandoned as well. Cleanup discovers actual remote tuples through bounded OpenFGA Read pages and deletes only exact organization/epoch/generation matches with terminal attempt records. It persists scan progress only after successful deletes and repeats complete sweeps, so a write arriving after payload compaction is still discovered. Active, building, verified and unknown namespaces are not cleanup targets. This fixes full-snapshot retention in the prototype; it does not approve the full-copy protocol or prove a finite bound on tombstone metadata, remote backlog, or OpenFGA's own change history. See the [retention implementation and measurements](phase0/authorization.md#snapshot-retention-fix).
 
-Resource creation with its initial manager grant, deletion, parent moves, and team/custom-role changes all advance the revision. Dependent requests may be denied during projection, including immediately after a successful create. Use a bounded pending-readiness UI and idempotent retries; distinguish a committed mutation from a failed command. Keep transactions short and cap remote-call timeouts. Minimal account/recovery diagnostics remain separately authorized.
+The full-copy prototype failed availability and storage budgets. Its replacement is the authoritative request-context design in [ADR P0-AUTHZ-2](phase0/contextual-authorization.md), with the logical schema and shared skill guidance updated together. A database mutex around mutable remote writes remains insufficient, and revocation guarantees and numeric performance targets remain unchanged.
+
+Resource creation with its initial manager grant, deletion, parent moves, and team changes all advance the source revision. Under the contextual protocol, the committed source is immediately available to the next authorized query; there is no graph-publication pending window. Recovery and dependency failures remain explicit unavailable states. Preserve idempotency, distinguish committed mutations from failed commands, keep transactions short and bound remote-call timeouts. Custom-role graphs require a matching compiler/model release and fresh policy/size tests. Minimal account/recovery diagnostics remain separately authorized.
 
 Phase 0 must pass the healthy hot-tenant workload and fault suite in [operations §4.7](04-billing-usage-operations.md#phase-0-authorization-decision-gate), measuring eligible request failures, fence waits, and create-to-readable latency. Sparse authorized lists holding a shared fence must not starve revocations or projection. Re-run the gate on the real Phase 3 feature before extracting reusable agent skills.
 
 ### Authorization after restoration
 
-Any application/FGA restore invalidates authorization readiness. Follow the canonical [operations §4.8 recovery protocol](04-billing-usage-operations.md#recovery-readiness-protocol), which owns journal replay, credential invalidation, independent security revalidation, and readiness release. Rebuilt generations prove consistency with their input, not that restored memberships or grants remain authorized. The deletion journal alone cannot establish that ordinary post-backup revocations survived.
+Any application/FGA restore invalidates authorization readiness. Follow the canonical [operations §4.8 recovery protocol](04-billing-usage-operations.md#recovery-readiness-protocol), which owns journal replay, credential invalidation, independent security revalidation, and readiness release. A contextual query or rebuilt historical generation can only reflect its input; neither proves that restored memberships or grants remain authorized. The deletion journal alone cannot establish that ordinary post-backup revocations survived.
 
 ### Lists, counts, and field policies
 
@@ -333,9 +331,9 @@ Define oRPC contracts with explicit Zod input/output schemas in `packages/api-co
 - External effects do not occur inside database transactions. Write outbox entries with the domain change and audit event.
 - Verify typed-client inference and runtime schema rejection, and run the same tenant, authorization, idempotency and error-contract cases through both oRPC transports.
 
-### Phase 0 validation outcome (2026-09-22)
+### Phase 0 validation outcome (updated 2026-09-23)
 
-The [generation-isolated prototype](phase0/authorization.md) demonstrates the tested safety cases but its full-copy candidate is **rejected** for availability/storage. The protocol above remains the candidate specification, not an approved production selection. Its functional tests must be preserved while a replacement is designed and measured; dependent implementation cannot treat the Phase 0 gate as passed. The [stack, identity, API/database and operational decisions](phase0/README.md) record their own evidence and limitations.
+The [generation-isolated prototype](phase0/authorization.md) remains rejected for availability/storage. The [contextual replacement](phase0/contextual-authorization.md) retains the generation fault suite and adds real-service policy/late-response tests; its [completed reference run](phase0/contextual-authorization.md#completed-reference-result) passed the original authorization thresholds. Neither a passing functional suite nor an authorization-only gate approves all of Phase 0 or the production application. The [stack, identity, API/database and operational decisions](phase0/README.md) record their own evidence and limitations.
 
 ## 2.8 Decision register
 
@@ -343,13 +341,13 @@ The [generation-isolated prototype](phase0/authorization.md) demonstrates the te
 | --- | --- | --- |
 | Backend shape | Modular monolith + worker | Independently scaling domain or organizational ownership requires extraction |
 | Tenant placement | Shared tables + RLS | Contractual isolation, residency, or a tenant's sustained noisy-neighbor load |
-| Authorization | Phase 0 generation-isolated OpenFGA prototype plus transaction fences | Late-write safety or hot-tenant availability gate fails; select and prove an alternative before Phase 2 |
+| Authorization | Authoritative PostgreSQL context plus OpenFGA evaluation under transaction fences; [Phase 0 ADR](phase0/contextual-authorization.md) | Context/model bounds, fault safety or hot-tenant availability gate fails; prove any extension before Phase 2/3 |
 | Database migrations | Drizzle SQL generation + reviewed custom SQL | A requirement cannot be expressed or safely maintained in this workflow |
 | Organization ownership | Application domain; security deprovisioning overrides voluntary last-owner protection | Mapping, sole-owner recovery, or seat-admission spike fails; resolve in Phase 0 |
 | Queue | pg-boss | Queue workload competes materially with database traffic |
 | API | oRPC contracts/procedures + shared services; typed RPC and public REST/OpenAPI adapters in Next.js | Contract/versioning or client requirements require adapter changes within oRPC |
 | Feature development | AI agent skills edit ordinary source using shared services and deterministic checks | Skill evaluations or platform changes require revised guidance; no custom CRUD generator |
 | Monetization | Fixed/seat subscriptions; metered adapter optional | Product requires advanced usage contracts |
-| Deployment | Single Docker container on a host/VM; GitHub Actions/GHCR with digest promotion | Opt into Kubernetes + Helm for independent scaling/orchestration; choose host/registry provider and availability requirements |
+| Packaging | One Docker image containing web + worker and command tooling | PostgreSQL, OpenFGA and object storage supplied through runtime configuration |
 
-The [CI/CD and deployment plan](07-ci-cd-and-deployment.md) defines the combined Docker image and direct run commands, optional Kubernetes resources, workflow files, release sequencing, and failure handling.
+The [CI and Docker image plan](07-ci-and-docker-image.md) defines the combined application image, build inputs and image verification.

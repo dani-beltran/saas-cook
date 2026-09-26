@@ -1,0 +1,26 @@
+{"event":"seeding","tenants":100,"resources":100000,"clients":50,"durationSeconds":1800,"smoke":false}
+{"event":"measuring","measuredAt":"2026-09-23T09:34:41.282Z","durationSeconds":1800,"model":"01M36ST3EMT5861KSKA89EHT7E","store":"01M36ST3EEKMMNYH62SVSK341R"}
+{"event":"progress","seconds":30.000047084,"requests":30967,"firstSuccesses":30918,"firstFailures":{},"published":0,"abandoned":0}
+{"event":"progress","seconds":60.000041584,"requests":61889,"firstSuccesses":61841,"firstFailures":{},"published":0,"abandoned":0}
+{"event":"progress","seconds":90.00016933399998,"requests":93052,"firstSuccesses":93002,"firstFailures":{},"published":0,"abandoned":0}
+{"event":"progress","seconds":120.001040125,"requests":124312,"firstSuccesses":124263,"firstFailures":{},"published":0,"abandoned":0}
+{"event":"progress","seconds":150.00115266699999,"requests":155293,"firstSuccesses":155244,"firstFailures":{},"published":0,"abandoned":0}
+{"event":"progress","seconds":180.000991334,"requests":186096,"firstSuccesses":186049,"firstFailures":{},"published":0,"abandoned":0}
+{"event":"progress","seconds":210.07699958399996,"requests":217359,"firstSuccesses":217309,"firstFailures":{},"published":0,"abandoned":0}
+{"event":"progress","seconds":240.078039667,"requests":248261,"firstSuccesses":248212,"firstFailures":{},"published":0,"abandoned":0}
+{"event":"progress","seconds":270.154264125,"requests":279319,"firstSuccesses":279270,"firstFailures":{},"published":0,"abandoned":0}
+{"event":"progress","seconds":300.15448479199995,"requests":310264,"firstSuccesses":310216,"firstFailures":{},"published":0,"abandoned":0}
+{"event":"progress","seconds":330.253024042,"requests":340736,"firstSuccesses":340687,"firstFailures":{},"published":0,"abandoned":0}
+{"event":"progress","seconds":360.2529825,"requests":371306,"firstSuccesses":371258,"firstFailures":{},"published":0,"abandoned":0}
+{"event":"progress","seconds":390.355251417,"requests":402187,"firstSuccesses":402137,"firstFailures":{},"published":0,"abandoned":0}
+{"event":"progress","seconds":420.368964334,"requests":433260,"firstSuccesses":433211,"firstFailures":{},"published":0,"abandoned":0}
+{"event":"progress","seconds":450.36908529199997,"requests":463807,"firstSuccesses":463759,"firstFailures":{},"published":0,"abandoned":0}
+{"event":"progress","seconds":480.456057959,"requests":494063,"firstSuccesses":494015,"firstFailures":{},"published":0,"abandoned":0}
+{"event":"progress","seconds":510.65123974999995,"requests":524068,"firstSuccesses":524018,"firstFailures":{},"published":0,"abandoned":0}
+{"event":"progress","seconds":540.9550947089999,"requests":555094,"firstSuccesses":555047,"firstFailures":{},"published":0,"abandoned":0}
+{"event":"progress","seconds":571.027985917,"requests":585561,"firstSuccesses":585514,"firstFailures":{},"published":0,"abandoned":0}
+{"event":"progress","seconds":601.1525081670001,"requests":615902,"firstSuccesses":615855,"firstFailures":{},"published":0,"abandoned":0}
+{"event":"progress","seconds":930.360035167,"requests":645204,"firstSuccesses":645153,"firstFailures":{"23":4},"published":0,"abandoned":0}
+{"event":"progress","seconds":960.5710231249999,"requests":674634,"firstSuccesses":674540,"firstFailures":{"23":4,"57014":42},"published":0,"abandoned":0}
+{"event":"progress","seconds":984.8698041249999,"requests":697527,"firstSuccesses":697481,"firstFailures":{"23":4,"57014":42},"published":0,"abandoned":0}
+{"event":"terminated","output":"artifacts/phase0/authz-contextual-full-2026-09-23.json","error":"Error: Benchmark interrupted by SIGINT","gateStatus":"INCOMPLETE"}

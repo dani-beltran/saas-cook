@@ -31,7 +31,7 @@ Versions and declared licenses below were retrieved directly from the public npm
 | 21 | Knip | [knip 6.37.0](https://registry.npmjs.org/knip/6.37.0) | ISC | Node ^20.19 or >=22.12; declare framework/routes/stories/test entry points, explain narrow exclusions. |
 | 22 | Bun workspaces | [bun 1.4.2](https://registry.npmjs.org/bun/1.4.2) | MIT package; bundled third-party notices | Exact packageManager plus bun.lock; workspace:* references; reviewed lifecycle-script trust list. Node remains production runtime. |
 | 23 | T3 Env | [@t3-oss/env-nextjs 0.13.11](https://registry.npmjs.org/@t3-oss%2Fenv-nextjs/0.13.11), env-core 0.13.11 | MIT | Zod 4/TS >=5 accepted; validate each process; no production secrets at build. |
-| 24 | GitHub Actions | Hosted service; action commit pins in [deployment ADR](deployment.md) | Service terms; each action's upstream license | Separate untrusted PR checks, publish, staging and production jobs. A runner label is not an immutable machine image. |
+| 24 | GitHub Actions | Hosted service; action commit pins in [build-tool snapshot](tool-releases.json) | Service terms; each action's upstream license | Keep build jobs free of application credentials. A runner label is not an immutable machine image. |
 | 25 | LogTape | [@logtape/logtape 2.3.7](https://registry.npmjs.org/@logtape%2Flogtape/2.3.7) | MIT | Shared structured logs with allowlisted fields and redaction; verify sink behavior. |
 | 26 | AGENTS.md | Repository-owned, versioned with the source commit | Repository license decision applies | Instructions describe implemented commands/boundaries; no external runtime/package or invented version. |
 
@@ -49,6 +49,6 @@ Bun supports workspace package references and a root lockfile; this establishes 
 
 1. Install with the exact Bun version, commit bun.lock, then repeat with `bun install --frozen-lockfile`. Record OS/architecture, Node/Bun versions and native-script decisions. No `--force`, legacy peer bypass or unbounded runtime versions.
 2. Compile with strict TypeScript; production-build Next; run typed RPC and OpenAPI validation/error parity; render React Email and localized form stories with React 19. Execute unit/integration/browser runners on the selected Node line. Separate a dependency import probe from a feature acceptance test.
-3. A metadata match satisfies only version selection. Runtime, UI, Storybook, CI and deployed recovery acceptance remain assigned to their roadmap phases; the evidence register states exactly which probes ran.
-4. Patch updates are reviewed PRs with regenerated lockfile and relevant regression gates. Security fixes take priority; major updates repeat this matrix and architecture spikes. Preserve release digest/SBOM and old schema/model compatibility evidence for rollback.
+3. A metadata match satisfies only version selection. Runtime, UI, Storybook, CI and application recovery acceptance remain assigned to their roadmap phases; the evidence register states exactly which probes ran.
+4. Patch updates are reviewed PRs with regenerated lockfile and relevant regression gates. Security fixes take priority; major updates repeat this matrix and architecture spikes. Preserve release digest/SBOM and old schema/model compatibility evidence for previous-release compatibility.
 5. License review covers copied component notices, dependencies, bundled native binaries and base images. No project license existed at selection time; choosing a template distribution license is a maintainer decision and is not inferred from dependency licenses.
