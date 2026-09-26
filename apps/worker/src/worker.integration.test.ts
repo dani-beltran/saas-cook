@@ -1,4 +1,4 @@
-import { type ChildProcess, spawn } from "node:child_process";
+import { type ChildProcess, execFile, spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { once } from "node:events";
 import { setTimeout as delay } from "node:timers/promises";
@@ -12,6 +12,78 @@ import { Pool } from "pg";
 import { PgBoss } from "pg-boss";
 import { expect, it } from "vitest";
 import { createTestInstallation } from "../../../packages/testing/src/installation";
+
+it("explains missing bootstrap and stale database targets without leaking connection details", async () => {
+	const installation = await createTestInstallation();
+	const controlUrl = new URL(installation.env.CONTROL_DATABASE_URL);
+	controlUrl.username = "common_saas_control_admin";
+	const control = new Pool({ connectionString: controlUrl.toString() });
+	const missingDatabase = `missing_private_database_${randomUUID().replaceAll("-", "")}`;
+	const workerUrl = new URL(installation.env.WORKER_DATABASE_URL);
+	workerUrl.pathname = `/${missingDatabase}`;
+	try {
+		// Only this test's isolated control database is altered. Model a fresh
+		// local service whose bootstrap schema has not been provisioned yet.
+		await control.query("ALTER SCHEMA control RENAME TO uninitialized_control");
+		for (const status of ["schema_missing", "database_missing"] as const) {
+			if (status === "database_missing") {
+				await control.query(
+					"ALTER SCHEMA uninitialized_control RENAME TO control",
+				);
+			}
+			const result = await new Promise<{
+				code: string | number | null | undefined;
+				logs: string;
+			}>((resolve) => {
+				execFile(
+					process.execPath,
+					["--import", "tsx", "apps/worker/src/index.ts"],
+					{
+						env: {
+							...installation.env,
+							PATH: process.env.PATH,
+							NODE_ENV: "test",
+							SMTP_HOST: "127.0.0.1",
+							SMTP_PORT: "1026",
+							WORKER_DATABASE_URL:
+								status === "database_missing"
+									? workerUrl.toString()
+									: installation.env.WORKER_DATABASE_URL,
+							WORKER_HEARTBEAT_PATH: `/tmp/worker-startup-${randomUUID()}.json`,
+						},
+						timeout: 15_000,
+					},
+					(error, stdout, stderr) => {
+						resolve({ code: error?.code, logs: stdout + stderr });
+					},
+				);
+			});
+			expect(result.code).toBe(1);
+			const failure = result.logs
+				.trim()
+				.split("\n")
+				.map((line) => JSON.parse(line))
+				.find((record) => record.event === "worker.startup_failed");
+			expect(failure).toMatchObject({
+				operation: "worker.readiness",
+				status,
+				service: "worker",
+			});
+			expect(result.logs).not.toContain(missingDatabase);
+			expect(result.logs).not.toContain("local_phase");
+			expect(result.logs).not.toContain(installation.env.AUTH_SECRET);
+			expect(result.logs).not.toContain("postgres://");
+		}
+	} finally {
+		// Restore the schema even on assertion failure so fixture cleanup can
+		// find and remove its independent OpenFGA store.
+		await control.query(
+			"DO $$ BEGIN IF EXISTS (SELECT 1 FROM pg_namespace WHERE nspname='uninitialized_control') THEN ALTER SCHEMA uninitialized_control RENAME TO control; END IF; END $$",
+		);
+		await control.end();
+		await installation.cleanup();
+	}
+});
 
 it("reclaims an abandoned claim and processes durable jobs with restricted credentials, trace correlation and graceful shutdown", async () => {
 	const installation = await createTestInstallation();

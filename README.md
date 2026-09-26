@@ -27,6 +27,8 @@ bun run dev
 
 Open `http://localhost:3000`. Local services use disposable synthetic credentials. Register a test account and confirm its email in Mailpit. See the [runtime guide](docs/phase2/README.md) for tests, stories, image commands and implementation boundaries.
 
+Local service data is stored in memory and is lost when the containers stop or are recreated. After a reset, repeat `services:up`, `db:migrate` and `bootstrap` before `dev`. Keep the database targets in `.env` consistent with `.env.example`; Compose creates `common_saas` and `common_saas_control`, not temporary test databases. See [startup troubleshooting](docs/phase2/README.md#local-startup-troubleshooting) for worker failures.
+
 ## Planning and design
 
 New to the project? Read the [junior developer guide](docs/08-junior-developer-guide.md) for a plain-language explanation of the project, planned features, architecture, current status, and implementation phases.

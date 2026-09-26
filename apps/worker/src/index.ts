@@ -12,6 +12,7 @@ import {
 import { Pool } from "pg";
 import { PgBoss } from "pg-boss";
 import { z } from "zod";
+import { workerFailureStatus } from "./diagnostics";
 
 const env = readWorkerEnv();
 initializeObservability("worker");
@@ -111,10 +112,14 @@ process.once("SIGTERM", () => {
 process.once("SIGINT", () => {
 	void stop(0);
 });
+let startupOperation = "worker.heartbeat_cleanup";
 try {
 	await rm(heartbeatPath, { force: true });
+	startupOperation = "worker.readiness";
 	await ready();
+	startupOperation = "worker.queue_start";
 	await boss.start();
+	startupOperation = "worker.queue_work";
 	await boss.work(
 		"runtime-probe",
 		{ pollingIntervalSeconds: 1 },
@@ -132,6 +137,7 @@ try {
 			}
 		},
 	);
+	startupOperation = "worker.heartbeat";
 	await heartbeat();
 	timer = setInterval(() => {
 		pendingHeartbeat = pendingHeartbeat.then(heartbeat).catch(() => {
@@ -139,7 +145,11 @@ try {
 		});
 	}, 2000);
 	logEvent("worker.ready");
-} catch {
-	logEvent("worker.startup_failed");
+} catch (error) {
+	logEvent("worker.startup_failed", {
+		service: "worker",
+		operation: startupOperation,
+		status: workerFailureStatus(error),
+	});
 	await stop(1);
 }

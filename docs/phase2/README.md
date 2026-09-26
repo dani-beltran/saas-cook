@@ -24,6 +24,31 @@ Organization routes contain the authoritative organization UUID. Each tab keeps 
 
 Invitation and transfer emails point to the selected organization. The recipient must sign in to the matching verified account and explicitly accept. If the link was opened while signed out, sign in and reopen the invitation message. Security-sensitive routes send `no-store` and `no-referrer`; do not configure upstream access logs to retain authentication/invitation query strings.
 
+## Local startup troubleshooting
+
+The development command supervises both Next.js and the worker. If the worker exits, it stops Next.js too. A `worker.startup_failed` event includes an `operation` identifying the startup step and an allowlisted `status`; credentials and raw database errors remain excluded.
+
+| Status | What to check |
+| --- | --- |
+| `database_missing` | Check the database targets in `.env`. Compose creates `common_saas` for all four application roles and `common_saas_control` for both control roles. Temporary test database names will not survive a service reset. |
+| `schema_missing` | On a fresh local installation, run `bun run db:migrate` and `bun run bootstrap`. A missing control schema means bootstrap has not initialized that control database. |
+| `connection_failed` | Run `bun run services:up` and check the configured local hosts/ports. |
+| `access_denied` | Check the configured role credentials and, for a heartbeat operation, filesystem permissions. |
+| `authorization_not_ready` or `binding_mismatch` | Confirm the installation ID and application/control database pairing. Only a fresh installation or recorded interrupted initialization can bootstrap; existing or restored data requires the recovery procedure. |
+| `queue_setup_required` | Run `bun run db:migrate` to provision or update the queue under the migration role. |
+
+PostgreSQL, the independent control database and object storage use disposable `tmpfs` storage. Stopping/restarting or recreating their containers erases their data, including custom databases, migrations and bootstrap state. Stopping only `bun run dev` leaves the running services intact. After resetting these disposable services, check `.env` against `.env.example` and repeat:
+
+```sh
+bun run services:up
+bun run db:migrate
+bun run bootstrap
+bun run authz:publish
+bun run dev
+```
+
+Do not rerun bootstrap on an already initialized installation or remove its binding/control records. These fresh-setup steps apply when the disposable data has been lost; existing/restored data follows the [recovery contract](authorization.md).
+
 ## Runtime boundaries
 
 | Setting | Process and purpose |
