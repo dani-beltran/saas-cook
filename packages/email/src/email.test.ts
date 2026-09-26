@@ -15,6 +15,7 @@ it("renders localized, credential-free React Email HTML and plaintext", async ()
 it.each([
 	["verification", "Verifica tu dirección de correo"],
 	["reset", "Recupera el acceso a tu cuenta"],
+	["password-reset", "Restablece tu contraseña"],
 	["magic-link", "Confirma tu inicio de sesión"],
 	["invite", "Tienes una invitación a una organización"],
 	["transfer", "Acepta la propiedad de la organización"],
@@ -49,3 +50,18 @@ it.each([
 		} else expect(message.text).toContain("Abre el enlace seguro");
 	},
 );
+
+it("distinguishes password reset from passwordless recovery and preserves the MFA requirement", async () => {
+	const input = {
+		locale: "en" as const,
+		to: "recipient@example.test",
+		url: "https://auth.example.test/auth/reset-password?token=synthetic-token",
+	};
+	const reset = await renderIdentityEmail({ ...input, kind: "password-reset" });
+	const recovery = await renderIdentityEmail({ ...input, kind: "reset" });
+	expect(reset.subject).toBe("Reset your password");
+	expect(reset.subject).not.toBe(recovery.subject);
+	expect(reset.text).toContain("expires in five minutes and can be used once");
+	expect(reset.text).toContain("multi-factor authentication is enabled");
+	expect(reset.text).toContain("your password will stay unchanged");
+});

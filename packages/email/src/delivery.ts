@@ -14,6 +14,7 @@ const payloadSchema = z.strictObject({
 	kind: z.enum([
 		"verification",
 		"reset",
+		"password-reset",
 		"magic-link",
 		"invite",
 		"transfer",

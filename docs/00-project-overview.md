@@ -32,7 +32,7 @@ The [required stack in architecture §2.1](02-architecture-and-security.md#21-st
 - Drizzle ORM for database models and type-safe SQL; Drizzle Kit and reviewed SQL migrations.
 - oRPC contracts and procedures in Next.js provide typed clients and public REST/OpenAPI exposure through shared domain services.
 - GitHub Actions checks source and builds the combined Docker image. PostgreSQL, OpenFGA and object storage remain external services.
-- Self-hosted Better Auth for authentication, including email magic links and passkeys, with enterprise identity integration behind adapters.
+- Self-hosted Better Auth for authentication, including email/password, email magic links and passkeys, with enterprise identity integration behind adapters.
 - Stripe for fixed and seat subscriptions; an independent usage ledger and an optional usage-billing adapter.
 - Repository-local AI agent skills that build and evolve complete features using proven platform services: database changes, validation, services, permissions, APIs, dashboard, tests, and documentation. Deterministic tooling validates the result; there is no custom CRUD generator or entity DSL.
 - Product analytics through a typed event catalogue and an optional provider adapter, separate from audit, observability, and billable usage.
@@ -40,7 +40,7 @@ The [required stack in architecture §2.1](02-architecture-and-security.md#21-st
 
 ## Delivery boundaries
 
-**Foundation:** identity including magic links/passkeys, organizations and ownership transfer, tenant isolation, ReBAC, dashboard, durable jobs/audit/outbox, provider-independent entitlement and capacity primitives, service-account/API-key enforcement, one reference domain feature, and AI agent skills. A local policy catalogue makes this preset runnable without billing credentials.
+**Foundation:** identity including email/password registration and reset, magic links/passkeys and MFA recovery, organizations and ownership transfer, tenant isolation, ReBAC, dashboard, durable jobs/audit/outbox, provider-independent entitlement and capacity primitives, service-account/API-key enforcement, one reference domain feature, and AI agent skills. A local policy catalogue makes this preset runnable without billing credentials.
 
 **Commercial core:** subscriptions, provider-confirmed seat capacity, commercial entitlement sources, metered usage, product analytics, customer administration for audit/API keys, files, notifications, webhooks, personal account deletion, organization export/deletion, and baseline application recovery tests.
 

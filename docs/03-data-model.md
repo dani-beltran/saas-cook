@@ -38,7 +38,7 @@ The diagram shows logical relationships, not exhaustive SQL constraints. Polymor
 
 | Table or group | Essential data and rules |
 | --- | --- |
-| `users`, `auth_accounts`, `sessions`, `verification_challenges`, `mfa_credentials` | Identity-adapter records; global account lifecycle status/fence, verified identities, session method/assurance and expiry/revocation; hashed single-use magic-link challenges; never expose full rows as DTOs |
+| `users`, `auth_accounts`, `sessions`, `verification_challenges`, `mfa_credentials` | Identity-adapter records; global account lifecycle status/fence, verified identities, provider-hashed passwords, session method/assurance and expiry/revocation; hashed single-use magic-link and purpose-bound password-reset challenges; never expose full rows as DTOs |
 | `passkey_credentials` | Adapter-owned WebAuthn credential ID/public key, user handle, counter/device metadata, user-facing name and timestamps; unique credential ID; no private keys; enrollment/revocation audited |
 | `user_preferences` | User, locale, time zone, theme; own-user access only; analytics choices are owned exclusively by `analytics_preferences` |
 | `ownership_transfers` | Organization, initiating/recipient memberships, requested outgoing role, ownership version, expiry, pending/accepted/canceled/expired state, acceptance and audit receipt; same-tenant foreign keys, one active transfer per outgoing ownership |
@@ -62,6 +62,8 @@ This is the authoritative lock-order contract (`R-LIFECYCLE` in the roadmap); bi
 Account closure checks every current ownership obligation under these locks, freezes the global identity, and cancels pending incoming transfers/admissions before releasing the fences. A transfer acceptance conditionally rechecks active recipient/initiator state and expected ownership version in the same transaction as role/seat/audit updates. Use bounded transactions for freeze and per-organization state changes; run external cleanup later. Repeated deletion steps cannot release seats twice. Test closure racing new invitations, SCIM admission, recipient deprovisioning, and reciprocal transfers. Do not cascade-delete tenant resources through a user foreign key; reassign responsibility or retain a restricted historical actor reference.
 
 Global identity access uses narrowly scoped adapters and separate DB privileges. Tenant users must not obtain a global user directory by querying `users`; member listings expose only authorized organization membership projections. Organization creation, slug lookup, and cross-organization membership navigation use explicit control-plane services, not an RLS bypass flag.
+
+Password reset uses the existing identity verification store with a separate hashed identifier namespace and bounded payload containing the user, credential epoch and independent recovery epoch. Consumption, password replacement, credential-epoch advancement, session/challenge revocation and the security audit record commit together under the exclusive user fence. Password sign-in revalidates the credential under that same lifecycle boundary so a concurrent reset cannot mint a current session from an old password. Reset preserves authenticator credentials, passkeys and recovery codes; it cannot establish tenant access or reactivate an identity.
 
 ## 3.4 Authorization and domain tables
 
@@ -146,7 +148,7 @@ Required starting indexes and safeguards:
 
 - Active domain lists: `(organization_id, created_at DESC, id DESC)`; add declared selective filters/sorts based on real queries.
 - Tenant slugs: unique `(organization_id, slug)`, with a documented partial-index policy if reuse after soft deletion is allowed.
-- Magic links/WebAuthn: adapter-tested atomic challenge consumption and expiry; unique credential IDs and user-scoped credential inventory.
+- Magic links/password reset/WebAuthn: atomic challenge consumption and expiry; purpose and epoch separation for reset challenges; unique credential IDs and user-scoped credential inventory.
 - Ownership transfers: at most one active request for an outgoing ownership; conditional acceptance/version checks and same-tenant membership references.
 - Account closure: unique active request per user and unique `(request_id, organization_id)` step; minimal durable completion receipts; controlled status transitions.
 - Analytics: unique event/delivery keys, subject lookup for deletion, delivery expiry and pending deletion scans; analytics queue indexes isolated from financial-ledger indexes.

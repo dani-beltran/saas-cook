@@ -22,7 +22,7 @@ Release labels below are **F — foundation**, **C — commercial core**, **E �
 
 | Capability | Required behavior | Release |
 | --- | --- | --- |
-| Registration and sign-in | Email verification, password reset, secure sessions, generic account-discovery responses, optional social login | F |
+| Registration and sign-in | Email/password registration, email verification, password reset with preserved MFA/recovery, secure sessions, generic account-discovery responses, optional social login | F |
 | Email magic links | Passwordless email sign-in, short-lived single-use tokens, generic responses, safe redirects, rate limits, and organization-policy enforcement | F |
 | Passkeys | WebAuthn registration/sign-in, multiple named credentials, revoke/replace, verified origins/RP ID, user verification, and tested recovery | F |
 | Account security | MFA, recovery codes, session inventory, revoke one/all sessions, sensitive-action reauthentication | F |

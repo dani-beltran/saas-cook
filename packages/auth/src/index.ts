@@ -1,5 +1,5 @@
 import { AsyncLocalStorage } from "node:async_hooks";
-import { createHmac, randomUUID } from "node:crypto";
+import { createHash, createHmac, randomBytes, randomUUID } from "node:crypto";
 import { passkey } from "@better-auth/passkey";
 import { identitySchema } from "@common-saas/db/schema";
 import { enqueueIdentityEmail } from "@common-saas/email";
@@ -7,6 +7,7 @@ import { logEvent } from "@common-saas/observability";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError } from "better-auth/api";
+import { hashPassword } from "better-auth/crypto";
 import { magicLink, twoFactor } from "better-auth/plugins";
 import { drizzle } from "drizzle-orm/node-postgres";
 import type { Pool, PoolClient } from "pg";
@@ -41,7 +42,7 @@ export type SessionIdentity = Readonly<{
 type Readiness = { epoch: string; bindingId: string; installationId: string };
 type Ceremony = {
 	authenticatedAt?: Date;
-	method: "magic-link" | "passkey" | "totp" | "recovery";
+	method: "magic-link" | "password" | "passkey" | "totp" | "recovery";
 	userVerified: boolean;
 	mfa: boolean;
 	epoch: string;
@@ -49,7 +50,20 @@ type Ceremony = {
 	source: string | null;
 	route: string;
 	kind?: "verification" | "reset";
+	database?: PoolClient;
+	registration?: {
+		userId: string;
+		passwordHash: string;
+		credentialEpoch: number;
+	};
 };
+const passwordSchema = z.string().min(12).max(128);
+const passwordChallengeSchema = z.object({
+	userId: z.string(),
+	credentialEpoch: z.number(),
+	recoveryEpoch: z.string(),
+	passwordHash: z.string().optional(),
+});
 const ceremonies = new AsyncLocalStorage<Ceremony>();
 const protectedHeaders = {
 	"Cache-Control": "no-store",
@@ -123,6 +137,8 @@ export function createIdentityRuntime(
 		.parse(input.trustedIngressSecret);
 	if (ingressSecret === options.secret)
 		throw new Error("Ingress and identity signing secrets must differ");
+	const challengeId = (purpose: "registration" | "reset", token: string) =>
+		`password-${purpose}:${createHmac("sha256", options.secret).update(`password-${purpose}:v1\0${token}`).digest("hex")}`;
 	let nextProviderCleanup = 0;
 	function providerRateLimit(database: Pool | PoolClient) {
 		return {
@@ -202,7 +218,13 @@ SELECT id FROM identity.rate_limit WHERE last_request<$1 ORDER BY last_request F
 		trustedOrigins: [options.origin],
 		advanced: { ipAddress: { ipAddressHeaders: [] } },
 		secret: options.secret,
-		emailAndPassword: { enabled: false },
+		emailAndPassword: {
+			enabled: true,
+			requireEmailVerification: true,
+			autoSignIn: false,
+			minPasswordLength: 12,
+			maxPasswordLength: 128,
+		},
 		user: { deleteUser: { enabled: false } },
 		account: { accountLinking: { enabled: false } },
 		logger: { disabled: true },
@@ -271,7 +293,21 @@ SELECT id FROM identity.rate_limit WHERE last_request<$1 ORDER BY last_request F
 				disableSignUp: true,
 				sendMagicLink: async ({ email, token }) => {
 					const ceremony = ceremonies.getStore();
-					await enqueueIdentityEmail(pool, {
+					const database = ceremony?.database ?? pool;
+					if (ceremony?.registration) {
+						await database.query(
+							"INSERT INTO identity.verification(id,identifier,value,expires_at) VALUES($1,$2,$3,now()+interval '5 minutes')",
+							[
+								randomUUID(),
+								challengeId("registration", token),
+								JSON.stringify({
+									...ceremony.registration,
+									recoveryEpoch: ceremony.epoch,
+								}),
+							],
+						);
+					}
+					await enqueueIdentityEmail(database, {
 						secret: options.secret,
 						to: email,
 						kind: ceremony?.kind ?? "magic-link",
@@ -317,13 +353,255 @@ SELECT id FROM identity.rate_limit WHERE last_request<$1 ORDER BY last_request F
 					},
 				},
 			}),
-			twoFactor({
-				issuer: input.rpName ?? "Common SaaS",
-				allowPasswordless: true,
-				skipVerificationOnEnable: false,
-			}),
+			{
+				...twoFactor({
+					issuer: input.rpName ?? "Common SaaS",
+					allowPasswordless: true,
+					skipVerificationOnEnable: false,
+				}),
+				// Both password and magic-link logins use our pending session gate.
+				// Tenant actors are unavailable until cryptographic factor verification;
+				// do not replace that session with the provider's separate 2FA cookie flow.
+				hooks: undefined,
+			},
 		],
 	});
+	function providerFor(database: PoolClient) {
+		return betterAuth({
+			...auth.options,
+			rateLimit: {
+				...auth.options.rateLimit,
+				customStorage: providerRateLimit(database),
+			},
+			database: drizzleAdapter(drizzle(database, { schema: identitySchema }), {
+				provider: "pg",
+				schema: identitySchema,
+				transaction: false,
+			}),
+		});
+	}
+	async function issuePasswordReset(email: string, context: Ceremony) {
+		const client = await pool.connect();
+		try {
+			await client.query("BEGIN");
+			const user = (
+				await client.query<{ id: string }>(
+					'SELECT id FROM identity."user" WHERE email=$1',
+					[email],
+				)
+			).rows[0];
+			if (user) {
+				await client.query(
+					"SELECT pg_advisory_xact_lock(hashtextextended('user:'||$1,0))",
+					[user.id],
+				);
+				const current = (
+					await client.query<{ credential_epoch: string }>(
+						`SELECT u.credential_epoch FROM identity."user" u WHERE u.id=$1 AND u.lifecycle_status='active' AND u.email_verified
+AND EXISTS(SELECT 1 FROM identity.account a WHERE a.user_id=u.id AND a.provider_id='credential' AND a.account_id=u.id AND a.password IS NOT NULL)`,
+						[user.id],
+					)
+				).rows[0];
+				if (current) {
+					const token = randomBytes(32).toString("base64url");
+					const expiresAt = new Date(Date.now() + 300000);
+					await client.query(
+						"INSERT INTO identity.verification(id,identifier,value,expires_at) VALUES($1,$2,$3,$4)",
+						[
+							randomUUID(),
+							challengeId("reset", token),
+							JSON.stringify({
+								userId: user.id,
+								credentialEpoch: Number(current.credential_epoch),
+								recoveryEpoch: context.epoch,
+							}),
+							expiresAt,
+						],
+					);
+					await enqueueIdentityEmail(client, {
+						secret: options.secret,
+						to: email,
+						kind: "password-reset",
+						locale: context.locale,
+						url: `${options.origin}/auth/reset-password?token=${token}&locale=${context.locale}`,
+						expiresAt,
+					});
+				}
+			}
+			await client.query("COMMIT");
+		} catch (error) {
+			await client.query("ROLLBACK");
+			throw error;
+		} finally {
+			client.release();
+		}
+	}
+	async function resetPassword(token: string, password: string, epoch: string) {
+		const identifier = challengeId("reset", token);
+		const pending = (
+			await pool.query<{ value: string }>(
+				"SELECT value FROM identity.verification WHERE identifier=$1 AND expires_at>now()",
+				[identifier],
+			)
+		).rows[0];
+		if (!pending) throw new Error("Invalid reset");
+		const challenge = passwordChallengeSchema.parse(JSON.parse(pending.value));
+		const passwordHash = await hashPassword(password);
+		const client = await pool.connect();
+		try {
+			await client.query("BEGIN");
+			await client.query(
+				"SELECT pg_advisory_xact_lock(hashtextextended('user:'||$1,0))",
+				[challenge.userId],
+			);
+			const consumed = await client.query(
+				"DELETE FROM identity.verification WHERE identifier=$1 AND value=$2 AND expires_at>clock_timestamp() RETURNING id",
+				[identifier, pending.value],
+			);
+			const current = (
+				await client.query<{ email: string; credential_epoch: string }>(
+					"SELECT email,credential_epoch FROM identity.\"user\" WHERE id=$1 AND lifecycle_status='active' AND email_verified",
+					[challenge.userId],
+				)
+			).rows[0];
+			if (
+				consumed.rowCount !== 1 ||
+				!current ||
+				Number(current.credential_epoch) !== challenge.credentialEpoch ||
+				challenge.recoveryEpoch !== epoch ||
+				(await ready()) !== epoch
+			)
+				throw new Error("Invalid reset");
+			const updated = await client.query(
+				"UPDATE identity.account SET password=$2,updated_at=now() WHERE user_id=$1 AND provider_id='credential' AND account_id=$1 AND password IS NOT NULL",
+				[challenge.userId, passwordHash],
+			);
+			if (updated.rowCount !== 1) throw new Error("Invalid credential");
+			await client.query(
+				'UPDATE identity."user" SET credential_epoch=credential_epoch+1,updated_at=now() WHERE id=$1',
+				[challenge.userId],
+			);
+			await client.query("DELETE FROM identity.session WHERE user_id=$1", [
+				challenge.userId,
+			]);
+			// Invalidate outstanding email links, reset/registration challenges and any
+			// provider trust/challenge records. Reset never removes an enrolled factor.
+			await client.query(
+				`DELETE FROM identity.verification WHERE value=$1 OR
+CASE WHEN pg_input_is_valid(value,'jsonb') THEN value::jsonb->>'userId'=$1 OR value::jsonb->>'email'=$2 ELSE false END`,
+				[challenge.userId, current.email],
+			);
+			await client.query(
+				"INSERT INTO identity.security_audit(id,user_id,action) VALUES($1,$2,'password.reset')",
+				[randomUUID(), challenge.userId],
+			);
+			await client.query("COMMIT");
+		} catch (error) {
+			await client.query("ROLLBACK");
+			throw error;
+		} finally {
+			client.release();
+		}
+	}
+	async function confirmRegistration(
+		token: string,
+		destination: string,
+		headers: Headers,
+		context: Ceremony,
+	) {
+		const identifier = challengeId("registration", token);
+		const pending = (
+			await pool.query<{ value: string }>(
+				"SELECT value FROM identity.verification WHERE identifier=$1",
+				[identifier],
+			)
+		).rows[0];
+		const challenge = pending
+			? passwordChallengeSchema.parse(JSON.parse(pending.value))
+			: undefined;
+		// Match the pinned magic-link plugin's hashed identifier. Resolve the user
+		// before redemption so reset/freeze and ALL email confirmations serialize.
+		const magic = (
+			await pool.query<{ value: string }>(
+				"SELECT value FROM identity.verification WHERE identifier=$1 AND expires_at>now()",
+				[createHash("sha256").update(token).digest("base64url")],
+			)
+		).rows[0];
+		if (!magic) throw new Error("Invalid confirmation");
+		const email = z
+			.object({ email: z.email() })
+			.parse(JSON.parse(magic.value)).email;
+		const user = (
+			await pool.query<{ id: string }>(
+				'SELECT id FROM identity."user" WHERE email=$1',
+				[email],
+			)
+		).rows[0];
+		if (!user || (challenge && challenge.userId !== user.id))
+			throw new Error("Invalid confirmation");
+		const client = await pool.connect();
+		try {
+			await client.query("BEGIN");
+			await client.query(
+				"SELECT pg_advisory_xact_lock(hashtextextended('user:'||$1,0))",
+				[user.id],
+			);
+			const current = (
+				await client.query<{
+					email_verified: boolean;
+					credential_epoch: string;
+				}>(
+					"SELECT email_verified,credential_epoch FROM identity.\"user\" WHERE id=$1 AND lifecycle_status='active'",
+					[user.id],
+				)
+			).rows[0];
+			if (!current || (await ready()) !== context.epoch)
+				throw new Error("Invalid confirmation");
+			if (challenge && pending) {
+				const consumed = await client.query(
+					"DELETE FROM identity.verification WHERE identifier=$1 AND value=$2 AND expires_at>clock_timestamp() RETURNING id",
+					[identifier, pending.value],
+				);
+				if (
+					consumed.rowCount !== 1 ||
+					Number(current.credential_epoch) !== challenge.credentialEpoch ||
+					challenge.recoveryEpoch !== context.epoch
+				)
+					throw new Error("Invalid registration");
+			}
+			const result = await providerFor(client).api.magicLinkVerify({
+				query: { token, callbackURL: destination },
+				headers,
+				asResponse: true,
+			});
+			if (
+				result.status >= 300 &&
+				result.status < 400 &&
+				!result.headers.get("location")?.includes("error=")
+			) {
+				// A generic email-link verification must never activate a password an
+				// attacker preregistered for someone else's mailbox. Only this specific
+				// registration link may install its hash, while identity is unverified.
+				if (!current.email_verified && challenge?.passwordHash) {
+					await client.query(
+						"INSERT INTO identity.account(id,user_id,account_id,provider_id,password) VALUES($1,$2,$2,'credential',$3)",
+						[randomUUID(), challenge.userId, challenge.passwordHash],
+					);
+					await client.query(
+						"INSERT INTO identity.security_audit(id,user_id,action) VALUES($1,$2,'password.registered')",
+						[randomUUID(), challenge.userId],
+					);
+				}
+			}
+			await client.query("COMMIT");
+			return result;
+		} catch (error) {
+			await client.query("ROLLBACK");
+			throw error;
+		} finally {
+			client.release();
+		}
+	}
 	async function session(
 		headers: Headers,
 		options: { allowPendingMfa?: boolean } = {},
@@ -354,7 +632,7 @@ SELECT id FROM identity.rate_limit WHERE last_request<$1 ORDER BY last_request F
 		).rows[0];
 		if (
 			!row ||
-			!["magic-link", "passkey", "totp", "recovery"].includes(
+			!["magic-link", "password", "passkey", "totp", "recovery"].includes(
 				row.authentication_method,
 			) ||
 			(row.two_factor_enabled && !row.mfa && !options.allowPendingMfa)
@@ -470,6 +748,7 @@ SELECT id FROM identity.rate_limit WHERE last_request<$1 ORDER BY last_request F
 		"/revoke-sessions",
 		"/revoke-other-sessions",
 		"/sign-in/magic-link",
+		"/sign-in/email",
 		"/passkey/generate-register-options",
 		"/passkey/verify-registration",
 		"/passkey/generate-authenticate-options",
@@ -542,6 +821,7 @@ SELECT id FROM identity.rate_limit WHERE last_request<$1 ORDER BY last_request F
 				if (
 					route === "/register" ||
 					route === "/request-recovery" ||
+					route === "/request-password-reset" ||
 					route === "/sign-in/magic-link"
 				) {
 					if (request.method !== "POST")
@@ -558,6 +838,15 @@ SELECT id FROM identity.rate_limit WHERE last_request<$1 ORDER BY last_request F
 						return json({ status: true });
 					}
 					const email = parsed.data.email.trim().toLowerCase();
+					const password =
+						route === "/register" && body.password !== undefined
+							? passwordSchema.safeParse(body.password)
+							: undefined;
+					if (password && !password.success)
+						return json(
+							{ error: "Password must contain 12 to 128 characters" },
+							400,
+						);
 					const source = context.source;
 					if (source === null) {
 						failure.reason = "untrusted_ingress";
@@ -575,18 +864,120 @@ SELECT id FROM identity.rate_limit WHERE last_request<$1 ORDER BY last_request F
 					}
 					if (parsed.data.callbackURL)
 						safeDestination(parsed.data.callbackURL, options.origin);
+					if (route === "/request-password-reset") {
+						await issuePasswordReset(email, context);
+						return json({ status: true });
+					}
 					if (route === "/register") {
 						await pool.query(
 							'INSERT INTO identity."user"(id,name,email,email_verified) VALUES($1,$2,$3,false) ON CONFLICT(email) DO NOTHING',
 							[randomUUID(), parsed.data.name ?? email.split("@")[0], email],
 						);
 						context.kind = "verification";
+						if (password?.success) {
+							const passwordHash = await hashPassword(password.data);
+							const client = await pool.connect();
+							try {
+								await client.query("BEGIN");
+								const user = (
+									await client.query<{ id: string }>(
+										'SELECT id FROM identity."user" WHERE email=$1',
+										[email],
+									)
+								).rows[0];
+								await client.query(
+									"SELECT pg_advisory_xact_lock(hashtextextended('user:'||$1,0))",
+									[user.id],
+								);
+								const current = (
+									await client.query<{ credential_epoch: string }>(
+										"SELECT credential_epoch FROM identity.\"user\" WHERE id=$1 AND lifecycle_status='active' AND NOT email_verified",
+										[user.id],
+									)
+								).rows[0];
+								if (current) {
+									context.registration = {
+										userId: user.id,
+										passwordHash,
+										credentialEpoch: Number(current.credential_epoch),
+									};
+									context.database = client;
+									await providerFor(client).api.signInMagicLink({
+										body: { email, callbackURL: "/account" },
+										headers: request.headers,
+									});
+								}
+								await client.query("COMMIT");
+							} catch (error) {
+								await client.query("ROLLBACK");
+								throw error;
+							} finally {
+								context.database = undefined;
+								client.release();
+							}
+							return json({ status: true });
+						}
 					}
 					if (route === "/request-recovery") context.kind = "reset";
-					await auth.api.signInMagicLink({
-						body: { email, callbackURL: "/account" },
-						headers: request.headers,
-					});
+					const user = (
+						await pool.query<{ id: string }>(
+							'SELECT id FROM identity."user" WHERE email=$1',
+							[email],
+						)
+					).rows[0];
+					if (!user) return json({ status: true });
+					const client = await pool.connect();
+					try {
+						await client.query("BEGIN");
+						await client.query(
+							"SELECT pg_advisory_xact_lock(hashtextextended('user:'||$1,0))",
+							[user.id],
+						);
+						const current = await client.query(
+							"SELECT id FROM identity.\"user\" WHERE id=$1 AND lifecycle_status='active'",
+							[user.id],
+						);
+						if (current.rowCount) {
+							// Issue the challenge and encrypted email on the same fenced
+							// transaction so a concurrent reset cannot miss a pending link.
+							context.database = client;
+							await providerFor(client).api.signInMagicLink({
+								body: { email, callbackURL: "/account" },
+								headers: request.headers,
+							});
+						}
+						await client.query("COMMIT");
+					} catch (error) {
+						await client.query("ROLLBACK");
+						throw error;
+					} finally {
+						context.database = undefined;
+						client.release();
+					}
+					return json({ status: true });
+				}
+				if (route === "/reset-password") {
+					if (request.method !== "POST")
+						return json({ error: "Confirmation required" }, 405);
+					const parsed = z
+						.object({
+							token: z.string().min(20).max(512),
+							newPassword: passwordSchema,
+						})
+						.safeParse(body);
+					if (!parsed.success)
+						return json({ error: "Invalid reset request" }, 400);
+					if (
+						context.source === null ||
+						!(await throttle(`password-reset:source:${context.source}`, 20)) ||
+						!(await throttle(`password-reset:token:${parsed.data.token}`, 5))
+					)
+						return json({ error: "Try again later" }, 429);
+					await resetPassword(
+						parsed.data.token,
+						parsed.data.newPassword,
+						epoch,
+					);
 					return json({ status: true });
 				}
 				if (url.pathname === "/auth/confirm" || route === "/confirm") {
@@ -606,11 +997,12 @@ SELECT id FROM identity.rate_limit WHERE last_request<$1 ORDER BY last_request F
 					);
 					if (!(await throttle(`confirm:${parsed.data.token}`, 10)))
 						return json({ error: "Invalid or expired confirmation" }, 400);
-					const result = await auth.api.magicLinkVerify({
-						query: { token: parsed.data.token, callbackURL: destination },
-						headers: request.headers,
-						asResponse: true,
-					});
+					const result = await confirmRegistration(
+						parsed.data.token,
+						destination,
+						request.headers,
+						context,
+					);
 					const headers = new Headers(result.headers);
 					for (const [key, value] of Object.entries(protectedHeaders))
 						headers.set(key, value);
@@ -628,8 +1020,48 @@ SELECT id FROM identity.rate_limit WHERE last_request<$1 ORDER BY last_request F
 				if (!allowed.has(route) && route !== "/revoke-passkey")
 					return json({ error: "Not found" }, 404);
 				const anonymous =
+					route === "/sign-in/email" ||
 					route === "/passkey/generate-authenticate-options" ||
 					route === "/passkey/verify-authentication";
+				let passwordUser: string | undefined;
+				if (route === "/sign-in/email") {
+					const parsed = z
+						.object({
+							email: z.email().max(254),
+							password: z.string().min(1).max(128),
+						})
+						.safeParse(body);
+					if (request.method !== "POST" || !parsed.success)
+						return json({ error: "Invalid email or password" }, 401);
+					const email = parsed.data.email.toLowerCase();
+					if (
+						context.source === null ||
+						!(await throttle(`password:source:${context.source}`, 20)) ||
+						!(await throttle("password:global", 100)) ||
+						!(await throttle(`password:email:${email}`, 5))
+					)
+						return json({ error: "Try again later" }, 429);
+					passwordUser = (
+						await pool.query<{ id: string }>(
+							'SELECT id FROM identity."user" WHERE email=$1',
+							[email],
+						)
+					).rows[0]?.id;
+					if (!passwordUser) {
+						// Never let a user appearing after this lookup authenticate outside
+						// the lifecycle fence. Match the provider's unknown-user hash cost.
+						await hashPassword(parsed.data.password);
+						return json({ error: "Invalid email or password" }, 401);
+					}
+					context.method = "password";
+					// Forward only accepted inputs; redirect destinations and session/assurance
+					// fields cannot be supplied by the caller.
+					request = new Request(request.url, {
+						method: "POST",
+						headers: request.headers,
+						body: JSON.stringify({ email, password: parsed.data.password }),
+					});
+				}
 				const pendingAllowed = [
 					"/get-session",
 					"/sign-out",
@@ -698,7 +1130,7 @@ SELECT id FROM identity.rate_limit WHERE last_request<$1 ORDER BY last_request F
 						: undefined;
 				if (route === "/passkey/verify-authentication" && !credentialUser)
 					return json({ error: "Authentication failed" }, 401);
-				const lockedUser = actor?.userId ?? credentialUser;
+				const lockedUser = actor?.userId ?? credentialUser ?? passwordUser;
 				stage = "fence";
 				const guard = lockedUser ? await pool.connect() : undefined;
 				let result: Response;
@@ -744,8 +1176,10 @@ SELECT id FROM identity.rate_limit WHERE last_request<$1 ORDER BY last_request F
 							current?.lifecycle_status !== "active" ||
 							(actor &&
 								Number(current.credential_epoch) !== actor.credentialEpoch)
-						)
+						) {
+							if (route === "/sign-in/email") await hashPassword(body.password);
 							throw new Error("Identity unavailable");
+						}
 						if (actor && credentialMutation) {
 							await assertCurrent(actor);
 							requireFreshAssurance(actor, {
@@ -785,25 +1219,11 @@ SELECT id FROM identity.rate_limit WHERE last_request<$1 ORDER BY last_request F
 					}
 					// Bind every provider query to this already-fenced transaction. A session
 					// trigger must not reacquire its user lock on a second pooled connection.
-					const provider = guard
-						? betterAuth({
-								...auth.options,
-								rateLimit: {
-									...auth.options.rateLimit,
-									customStorage: providerRateLimit(guard),
-								},
-								database: drizzleAdapter(
-									drizzle(guard, { schema: identitySchema }),
-									{
-										provider: "pg",
-										schema: identitySchema,
-										transaction: false,
-									},
-								),
-							})
-						: auth;
+					const provider = guard ? providerFor(guard) : auth;
 					stage = "provider";
 					result = await provider.handler(request);
+					if (route === "/sign-in/email" && !result.ok)
+						result = json({ error: "Invalid email or password" }, 401);
 					if (
 						actor &&
 						result.ok &&
@@ -856,6 +1276,8 @@ SELECT id FROM identity.rate_limit WHERE last_request<$1 ORDER BY last_request F
 						? "type_error"
 						: "internal";
 			failure.diagnostic = `${stage}.${cause}`;
+			if (route === "/sign-in/email")
+				return json({ error: "Invalid email or password" }, 401);
 			return json({ error: "Identity action unavailable" }, 400);
 		}
 	}
@@ -871,6 +1293,8 @@ SELECT id FROM identity.rate_limit WHERE last_request<$1 ORDER BY last_request F
 			[
 				"/register",
 				"/request-recovery",
+				"/request-password-reset",
+				"/reset-password",
 				"/confirm",
 				"/revoke-passkey",
 			].includes(route)

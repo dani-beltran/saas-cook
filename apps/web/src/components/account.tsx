@@ -4,16 +4,9 @@ import { Button, Input } from "@common-saas/ui";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { identityClient } from "../lib/identity-client";
+import { identityRequest } from "../lib/identity-request";
+import { SignIn } from "./sign-in";
 
-async function identityRequest(path: string, body: unknown) {
-	const response = await fetch(`/api/auth/${path}`, {
-		method: "POST",
-		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify(body),
-	});
-	if (!response.ok) throw new Error("identity_failed");
-	return response.json();
-}
 type AccountSession = {
 	id: string;
 	token: string;
@@ -24,6 +17,10 @@ export function Account() {
 	const t = useTranslations("Account");
 	const locale = useLocale();
 	const { data: session, isPending, refetch } = identityClient.useSession();
+	const [sessionLoaded, setSessionLoaded] = useState(false);
+	useEffect(() => {
+		if (!isPending) setSessionLoaded(true);
+	}, [isPending]);
 	const pendingMfa = Boolean(
 		session?.user.twoFactorEnabled &&
 			!(session.session as { mfa?: boolean }).mfa,
@@ -61,14 +58,18 @@ export function Account() {
 	useEffect(() => {
 		if (session) void refresh().catch(() => setMessage(t("failed")));
 	}, [session, refresh, t]);
-	async function perform(action: () => Promise<unknown>, success = "saved") {
+	async function perform(
+		action: () => Promise<unknown>,
+		success = "saved",
+		failure = "failed",
+	) {
 		setBusy(true);
 		setMessage("");
 		try {
 			await action();
 			setMessage(t(success));
 		} catch {
-			setMessage(t("failed"));
+			setMessage(t(failure));
 		} finally {
 			setBusy(false);
 		}
@@ -78,7 +79,8 @@ export function Account() {
 		if (result.error) throw new Error("passkey");
 		await refetch();
 	}
-	if (isPending) return <p role="status">{t("loading")}</p>;
+	// Background session refreshes must not remount forms and discard typed input.
+	if (isPending && !sessionLoaded) return <p role="status">{t("loading")}</p>;
 	return (
 		<main className="mx-auto max-w-4xl space-y-8 p-6 sm:p-12">
 			<header className="flex items-center justify-between gap-4">
@@ -93,72 +95,12 @@ export function Account() {
 				{message}
 			</p>
 			{!session ? (
-				<section className="max-w-lg space-y-5 rounded-xl border border-border bg-card p-6">
-					<form
-						className="space-y-4"
-						onSubmit={(event) => {
-							event.preventDefault();
-							const data = new FormData(event.currentTarget);
-							const intent = (
-								event.nativeEvent as SubmitEvent
-							).submitter?.getAttribute("value");
-							void perform(async () => {
-								if (intent === "register")
-									await identityRequest("register", {
-										email: data.get("email"),
-										name: String(data.get("name") ?? "").trim() || undefined,
-										locale,
-									});
-								else if (intent === "recover")
-									await identityRequest("request-recovery", {
-										email: data.get("email"),
-										locale,
-									});
-								else
-									await identityRequest("sign-in/magic-link", {
-										email: data.get("email"),
-										callbackURL: `/${locale}/account`,
-										locale,
-									});
-							}, "sent");
-						}}
-					>
-						<label htmlFor="account-field-1" className="grid gap-2">
-							{t("email")}
-							<Input
-								id="account-field-1"
-								name="email"
-								type="email"
-								autoComplete="email"
-								required
-							/>
-						</label>
-						<label htmlFor="account-field-2" className="grid gap-2">
-							{t("name")}
-							<Input
-								id="account-field-2"
-								name="name"
-								autoComplete="name"
-								maxLength={80}
-							/>
-						</label>
-						<div className="flex flex-wrap gap-3">
-							<Button disabled={busy} type="submit" value="login">
-								{t("signIn")}
-							</Button>
-							<Button disabled={busy} type="submit" value="register">
-								{t("register")}
-							</Button>
-							<Button disabled={busy} type="submit" value="recover">
-								{t("recover")}
-							</Button>
-						</div>
-					</form>
-					<Button disabled={busy} onClick={() => void perform(passkeySignIn)}>
-						{t("passkey")}
-					</Button>
-					<p className="text-sm text-muted-foreground">{t("recoveryHelp")}</p>
-				</section>
+				<SignIn
+					busy={busy}
+					perform={perform}
+					refreshSession={refetch}
+					passkeySignIn={passkeySignIn}
+				/>
 			) : (
 				<>
 					<div className="flex items-center justify-between gap-4">
@@ -325,55 +267,83 @@ export function Account() {
 						)}
 						<h3 className="font-semibold">{t("mfa")}</h3>
 						{!pendingMfa && (
-							<div className="flex flex-wrap gap-3">
-								{!session.user.twoFactorEnabled ? (
-									<Button
-										disabled={busy}
-										onClick={() =>
-											void perform(async () =>
+							<form
+								className="space-y-3"
+								onSubmit={(event) => {
+									event.preventDefault();
+									const form = event.currentTarget;
+									const data = new FormData(form);
+									const intent = (
+										event.nativeEvent as SubmitEvent
+									).submitter?.getAttribute("value");
+									const password = String(data.get("password") ?? "");
+									void perform(async () => {
+										try {
+											const body = password ? { password } : {};
+											if (intent === "enable") {
 												setMfaSetup(
-													await identityRequest("two-factor/enable", {}),
-												),
-											)
+													await identityRequest("two-factor/enable", body),
+												);
+											} else if (intent === "codes") {
+												const result = await identityRequest(
+													"two-factor/generate-backup-codes",
+													body,
+												);
+												setMfaSetup({ backupCodes: result.backupCodes });
+											} else if (intent === "disable") {
+												await identityRequest("two-factor/disable", body);
+												setMfaSetup(null);
+												await refetch();
+											}
+										} finally {
+											form.reset();
 										}
-									>
-										{t("enableMfa")}
-									</Button>
-								) : (
-									<>
-										<Button
-											disabled={busy}
-											onClick={() =>
-												void perform(async () => {
-													const result = await identityRequest(
-														"two-factor/generate-backup-codes",
-														{},
-													);
-													setMfaSetup({ backupCodes: result.backupCodes });
-												})
-											}
-										>
-											{t("newRecoveryCodes")}
-										</Button>
-										<Button
-											disabled={busy}
-											onClick={() =>
-												void perform(async () => {
-													await identityRequest("two-factor/disable", {});
-													setMfaSetup(null);
-													await refetch();
-												})
-											}
-										>
-											{t("disableMfa")}
-										</Button>
-									</>
+									});
+								}}
+							>
+								<label htmlFor="mfa-password" className="grid max-w-sm gap-2">
+									{t("currentPassword")}
+									<Input
+										id="mfa-password"
+										name="password"
+										type="password"
+										autoComplete="current-password"
+										maxLength={128}
+										aria-describedby="mfa-password-help"
+									/>
+								</label>
+								<p
+									id="mfa-password-help"
+									className="text-sm text-muted-foreground"
+								>
+									{t("mfaPasswordHelp")}
+								</p>
+								{session.user.twoFactorEnabled && (
+									<p className="text-sm text-muted-foreground">
+										{t("mfaDisableHelp")}
+									</p>
 								)}
-							</div>
+								<div className="flex flex-wrap gap-3">
+									{!session.user.twoFactorEnabled ? (
+										<Button disabled={busy} type="submit" value="enable">
+											{t("enableMfa")}
+										</Button>
+									) : (
+										<>
+											<Button disabled={busy} type="submit" value="codes">
+												{t("newRecoveryCodes")}
+											</Button>
+											<Button disabled={busy} type="submit" value="disable">
+												{t("disableMfa")}
+											</Button>
+										</>
+									)}
+								</div>
+							</form>
 						)}
 						{mfaSetup && (
 							<div className="space-y-3">
-								<p>{t("mfaSetup")}</p>
+								<p>{t(mfaSetup.totpURI ? "mfaSetup" : "recoveryCodesHelp")}</p>
 								{mfaSetup.totpURI && (
 									<code className="block break-all">{mfaSetup.totpURI}</code>
 								)}

@@ -1,8 +1,9 @@
-import { randomUUID } from "node:crypto";
+import { createHmac, randomUUID } from "node:crypto";
 import { createSmtpTransport, deliverIdentityEmails } from "@common-saas/email";
 import { expect, type Page, test } from "@playwright/test";
 import { Pool } from "pg";
 
+const password = "Browser test password 2026!";
 const mailpit = process.env.MAILPIT_HTTP_URL ?? "http://127.0.0.1:8026";
 async function emailLink(
 	email: string,
@@ -54,10 +55,15 @@ async function emailLink(
 		.toBe(true);
 	return result;
 }
-async function signUp(page: Page, email: string) {
-	await page.goto("/en/account");
+async function signUp(page: Page, email: string, entry = "/en/account") {
+	await page.goto(entry);
+	await page
+		.getByRole("button", { name: "Create account", exact: true })
+		.click();
 	await page.getByLabel("Email", { exact: true }).fill(email);
 	await page.getByLabel("Name", { exact: true }).fill("Browser test member");
+	await page.getByLabel("Password", { exact: true }).fill(password);
+	await page.getByLabel("Confirm password", { exact: true }).fill(password);
 	await page
 		.getByRole("button", { name: "Create account", exact: true })
 		.click();
@@ -76,6 +82,249 @@ async function signUp(page: Page, email: string) {
 	).toBeVisible();
 	return link;
 }
+
+test("redirects the local alias before registration without relaxing auth origins", async ({
+	page,
+	baseURL,
+}) => {
+	if (!baseURL) throw new Error("Missing browser origin");
+	const alias = new URL("/en/account", baseURL);
+	alias.hostname = alias.hostname === "localhost" ? "127.0.0.1" : "localhost";
+	const redirect = await page.request.get(alias.href, { maxRedirects: 0 });
+	expect(redirect.status()).toBe(307);
+	expect(redirect.headers().location).toBe(
+		new URL("/en/account", baseURL).href,
+	);
+	await signUp(page, `alias-${randomUUID()}@example.test`, alias.href);
+	expect(new URL(page.url()).origin).toBe(new URL(baseURL).origin);
+	const forbidden = await page.request.post(
+		new URL("/api/auth/register", alias).href,
+		{
+			headers: { origin: alias.origin },
+			data: {
+				email: `forbidden-${randomUUID()}@example.test`,
+				name: "Synthetic alias test",
+				password,
+			},
+		},
+	);
+	expect(forbidden.status()).toBe(403);
+});
+
+async function enableVirtualAuthenticator(page: Page) {
+	const client = await page.context().newCDPSession(page);
+	await client.send("WebAuthn.enable");
+	await client.send("WebAuthn.addVirtualAuthenticator", {
+		options: {
+			protocol: "ctap2",
+			transport: "internal",
+			hasResidentKey: true,
+			hasUserVerification: true,
+			isUserVerified: true,
+			automaticPresenceSimulation: true,
+		},
+	});
+}
+
+function authenticatorCode(uri: string) {
+	const secret = new URL(uri).searchParams.get("secret") ?? "";
+	const bits = [...secret]
+		.map((character) =>
+			"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"
+				.indexOf(character)
+				.toString(2)
+				.padStart(5, "0"),
+		)
+		.join("");
+	const key = Buffer.from(
+		(bits.match(/.{8}/g) ?? []).map((byte) => Number.parseInt(byte, 2)),
+	);
+	const tick = Buffer.alloc(8);
+	tick.writeBigUInt64BE(BigInt(Math.floor(Date.now() / 30000)));
+	const digest = createHmac("sha1", key).update(tick).digest();
+	return ((digest.readUInt32BE(digest[19] & 15) & 0x7fffffff) % 1000000)
+		.toString()
+		.padStart(6, "0");
+}
+
+async function passwordSignIn(
+	page: Page,
+	email: string,
+	suppliedPassword: string,
+) {
+	await page.getByLabel("Email", { exact: true }).fill(email);
+	await page.getByLabel("Password", { exact: true }).fill(suppliedPassword);
+	await page
+		.getByRole("button", { name: "Sign in with password", exact: true })
+		.click();
+}
+
+test("password registration, sign-in, localized reset, and preserved MFA recovery", async ({
+	page,
+	browser,
+}, testInfo) => {
+	const email = `browser-password-${randomUUID().slice(0, 8)}@example.test`;
+	const newPassword = "Replacement browser password 2026!";
+	await signUp(page, email);
+	await page.getByLabel("Current password", { exact: true }).fill(password);
+	await page
+		.getByRole("button", { name: "Set up authenticator", exact: true })
+		.click();
+	await expect(page.locator("code")).toContainText("otpauth://");
+	const uri = await page.locator("code").innerText();
+	const recoveryCodes = (await page.locator("pre").innerText())
+		.trim()
+		.split("\n");
+	await page
+		.getByLabel("Verification code", { exact: true })
+		.fill(authenticatorCode(uri));
+	await page.getByRole("button", { name: "Verify", exact: true }).click();
+	await expect(
+		page.getByRole("button", { name: "Disable authenticator", exact: true }),
+	).toBeVisible();
+	await page.getByRole("button", { name: "Sign out", exact: true }).click();
+	await passwordSignIn(page, email, password);
+	await expect(page.getByRole("main").getByRole("alert")).toContainText(
+		"Complete sign-in with your authenticator",
+	);
+	await expect(
+		page.getByRole("heading", { name: "Organizations", exact: true }),
+	).toHaveCount(0);
+	await page
+		.getByLabel("Verification code", { exact: true })
+		.fill(authenticatorCode(uri));
+	await page.getByRole("button", { name: "Verify", exact: true }).click();
+	await expect(
+		page.getByRole("heading", { name: "Organizations", exact: true }),
+	).toBeVisible();
+
+	const resetContext = await browser.newContext();
+	const reset = await resetContext.newPage();
+	try {
+		await reset.goto("/es/account");
+		await reset
+			.getByRole("button", { name: "¿Olvidaste tu contraseña?", exact: true })
+			.click();
+		await reset.getByLabel("Correo electrónico", { exact: true }).fill(email);
+		await reset
+			.getByRole("button", {
+				name: "Enviar enlace para restablecer la contraseña",
+				exact: true,
+			})
+			.click();
+		await expect(reset.getByRole("status")).toContainText(
+			"recibirás un correo para restablecerla",
+		);
+		const link = await emailLink(
+			email,
+			/https?:\/\/[^\s<]+\/auth\/reset-password\?token=[A-Za-z0-9_-]+(?:&locale=es)?/,
+		);
+		expect(new URL(link).searchParams.get("locale")).toBe("es");
+		// Neither an email scanner nor rendering the form consumes the reset challenge.
+		await reset.request.get(link);
+		await reset.goto(link);
+		await expect(reset).toHaveURL(/\/auth\/reset-password$/);
+		await page.reload();
+		await expect(
+			page.getByRole("heading", { name: "Organizations", exact: true }),
+		).toBeVisible();
+		await reset
+			.getByLabel("Nueva contraseña", { exact: true })
+			.fill(newPassword);
+		await reset
+			.getByLabel("Confirmar contraseña", { exact: true })
+			.fill(newPassword);
+		await reset.setViewportSize({ width: 390, height: 844 });
+		await reset.screenshot({
+			path: testInfo.outputPath("password-reset-form-mobile.png"),
+			fullPage: true,
+		});
+		expect(
+			await reset.evaluate(
+				() => document.documentElement.scrollWidth <= innerWidth,
+			),
+		).toBe(true);
+		await reset
+			.getByRole("button", { name: "Restablecer contraseña", exact: true })
+			.click();
+		await expect(reset.getByRole("status")).toContainText(
+			"Tu contraseña se ha restablecido",
+		);
+		await reset.screenshot({
+			path: testInfo.outputPath("password-reset-spanish.png"),
+			fullPage: true,
+		});
+		await page.reload();
+		await expect(
+			page.getByRole("heading", {
+				name: "Sign in to your workspace",
+				exact: true,
+			}),
+		).toBeVisible();
+		await passwordSignIn(page, email, password);
+		await expect(page.getByRole("status")).toContainText("Could not sign in");
+		await passwordSignIn(page, email, newPassword);
+		await expect(page.getByRole("main").getByRole("alert")).toContainText(
+			"Complete sign-in with your authenticator",
+		);
+		await expect(
+			page.getByRole("heading", { name: "Organizations", exact: true }),
+		).toHaveCount(0);
+		await page.getByText("Use a recovery code", { exact: true }).click();
+		await page
+			.getByLabel("Recovery code", { exact: true })
+			.fill(recoveryCodes[0]);
+		await page
+			.locator("details")
+			.getByRole("button", { name: "Verify", exact: true })
+			.click();
+		await expect(
+			page.getByRole("heading", { name: "Organizations", exact: true }),
+		).toBeVisible();
+		await page
+			.getByLabel("Current password", { exact: true })
+			.fill(newPassword);
+		await page
+			.getByRole("button", { name: "Replace recovery codes", exact: true })
+			.click();
+		await expect(page.locator("pre")).not.toHaveText(recoveryCodes.join("\n"));
+		await expect(page.locator("pre")).toBeVisible();
+		await enableVirtualAuthenticator(page);
+		await page
+			.getByLabel("Passkey name", { exact: true })
+			.fill("Recovery passkey");
+		await page
+			.getByRole("button", { name: "Add a passkey", exact: true })
+			.click();
+		await expect(
+			page.getByText("Recovery passkey", { exact: true }),
+		).toBeVisible();
+		await page
+			.getByLabel("Current password", { exact: true })
+			.fill(newPassword);
+		await page
+			.getByRole("button", { name: "Disable authenticator", exact: true })
+			.click();
+		await expect(
+			page.getByRole("button", { name: "Set up authenticator", exact: true }),
+		).toBeVisible();
+		await reset.goto(link);
+		await reset
+			.getByLabel("Nueva contraseña", { exact: true })
+			.fill(newPassword);
+		await reset
+			.getByLabel("Confirmar contraseña", { exact: true })
+			.fill(newPassword);
+		await reset
+			.getByRole("button", { name: "Restablecer contraseña", exact: true })
+			.click();
+		await expect(reset.getByRole("main").getByRole("alert")).toContainText(
+			"El enlace puede no ser válido o haber caducado",
+		);
+	} finally {
+		await resetContext.close();
+	}
+});
 
 test("real registration, scanner confirmation, two memberships, per-tab isolation and last-owner guard", async ({
 	page,
@@ -157,21 +406,9 @@ test("real registration, scanner confirmation, two memberships, per-tab isolatio
 
 test("real browser WebAuthn enrollment and passwordless sign-in", async ({
 	page,
-	context,
 }, testInfo) => {
 	const id = randomUUID().slice(0, 8);
-	const client = await context.newCDPSession(page);
-	await client.send("WebAuthn.enable");
-	await client.send("WebAuthn.addVirtualAuthenticator", {
-		options: {
-			protocol: "ctap2",
-			transport: "internal",
-			hasResidentKey: true,
-			hasUserVerification: true,
-			isUserVerified: true,
-			automaticPresenceSimulation: true,
-		},
-	});
+	await enableVirtualAuthenticator(page);
 	await signUp(page, `browser-passkey-${id}@example.test`);
 	await page
 		.getByLabel("Passkey name", { exact: true })

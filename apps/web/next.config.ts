@@ -6,6 +6,9 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 export default withNextIntl({
 	poweredByHeader: false,
+	// Preserve the absolute loopback-origin redirect; Next otherwise treats
+	// localhost and 127.0.0.1 as the same host and emits a looping relative URL.
+	skipProxyUrlNormalize: true,
 	async headers() {
 		return [
 			{

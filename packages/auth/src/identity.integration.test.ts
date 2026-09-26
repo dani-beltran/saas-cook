@@ -565,6 +565,10 @@ CREATE TRIGGER test_rate_limit_delay BEFORE INSERT ON identity.rate_limit FOR EA
 			readiness: async () => publication,
 		});
 		await pool.query("DELETE FROM identity.ingress_limit");
+		await pool.query(
+			`INSERT INTO identity."user"(id,name,email,email_verified)
+SELECT gen_random_uuid()::text,'Synthetic ingress user','source-'||index||'@example.test',true FROM generate_series(0,107) AS inputs(index)`,
+		);
 		const signedRequest = (source: string, index: number) => {
 			const value = request("/api/auth/sign-in/magic-link", {
 				email: `source-${index}@example.test`,
@@ -624,6 +628,10 @@ CREATE TRIGGER test_rate_limit_delay BEFORE INSERT ON identity.rate_limit FOR EA
 	});
 	it("shares an unattributed source limit when ingress trust is not configured", async () => {
 		await pool.query("DELETE FROM identity.ingress_limit");
+		await pool.query(
+			`INSERT INTO identity."user"(id,name,email,email_verified)
+SELECT gen_random_uuid()::text,'Synthetic unattributed user','untrusted-'||index||'@example.test',true FROM generate_series(0,24) AS inputs(index)`,
+		);
 		const before = Number(
 			(await pool.query("SELECT count(*) FROM identity.verification")).rows[0]
 				.count,
@@ -963,6 +971,7 @@ CREATE TRIGGER test_rate_limit_delay BEFORE INSERT ON identity.rate_limit FOR EA
 				en: {
 					verification: "Verify your email address",
 					reset: "Recover your account access",
+					"password-reset": "Reset your password",
 					"magic-link": "Confirm your sign-in",
 					invite: "You have an organization invitation",
 					transfer: "Accept organization ownership",
@@ -972,6 +981,7 @@ CREATE TRIGGER test_rate_limit_delay BEFORE INSERT ON identity.rate_limit FOR EA
 				es: {
 					verification: "Verifica tu dirección de correo",
 					reset: "Recupera el acceso a tu cuenta",
+					"password-reset": "Restablece tu contraseña",
 					"magic-link": "Confirma tu inicio de sesión",
 					invite: "Tienes una invitación a una organización",
 					transfer: "Acepta la propiedad de la organización",
@@ -982,6 +992,7 @@ CREATE TRIGGER test_rate_limit_delay BEFORE INSERT ON identity.rate_limit FOR EA
 			for (const kind of [
 				"verification",
 				"reset",
+				"password-reset",
 				"magic-link",
 				"invite",
 				"transfer",
@@ -993,7 +1004,7 @@ CREATE TRIGGER test_rate_limit_delay BEFORE INSERT ON identity.rate_limit FOR EA
 					to: recipient,
 					kind,
 					locale,
-					url: `${origin}/auth/confirm?token=synthetic-private-token-${kind}`,
+					url: `${origin}${kind === "password-reset" ? "/auth/reset-password" : "/auth/confirm"}?token=synthetic-private-token-${kind}`,
 					transfer: {
 						fromEmail: "previous@example.test",
 						toEmail: "next@example.test",
@@ -1012,7 +1023,7 @@ CREATE TRIGGER test_rate_limit_delay BEFORE INSERT ON identity.rate_limit FOR EA
 					throw new Error("synthetic provider outage");
 				},
 			});
-			expect(first.failed).toBe(7);
+			expect(first.failed).toBe(8);
 			await worker.query(
 				"UPDATE identity.email_delivery SET available_at=now() WHERE delivered_at IS NULL",
 			);
@@ -1024,7 +1035,7 @@ CREATE TRIGGER test_rate_limit_delay BEFORE INSERT ON identity.rate_limit FOR EA
 					from: "noreply@example.test",
 				}),
 			});
-			expect(delivered.delivered).toBe(7);
+			expect(delivered.delivered).toBe(8);
 			expect(
 				(
 					await worker.query(
@@ -1047,7 +1058,7 @@ CREATE TRIGGER test_rate_limit_delay BEFORE INSERT ON identity.rate_limit FOR EA
 					},
 					{ timeout: 5000 },
 				)
-				.toBe(7);
+				.toBe(8);
 			expect(received.map((message) => message.Subject).sort()).toEqual(
 				Object.values(subjects).sort(),
 			);
@@ -1066,7 +1077,7 @@ CREATE TRIGGER test_rate_limit_delay BEFORE INSERT ON identity.rate_limit FOR EA
 				);
 				expect(content.HTML).toContain(`lang="${locale}"`);
 				expect(content.Text).toContain(
-					`${origin}/auth/confirm?token=synthetic-private-token-${kind}`,
+					`${origin}${kind === "password-reset" ? "/auth/reset-password" : "/auth/confirm"}?token=synthetic-private-token-${kind}`,
 				);
 				expect(content.Text).toContain(
 					locale === "es" ? "Continuar de forma segura" : "Continue securely",

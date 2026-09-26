@@ -1,5 +1,35 @@
 export const accountMessages = {
 	en: {
+		password: "Password",
+		confirmPassword: "Confirm password",
+		newPassword: "New password",
+		passwordHelp:
+			"Use 12 to 128 characters. Spaces and passphrases are welcome.",
+		passwordMismatch: "Passwords must match.",
+		passwordSignIn: "Sign in with password",
+		passwordSignInFailed:
+			"Could not sign in. Check your email and password, confirm your email address, and try again.",
+		signedIn: "Sign-in accepted. Complete any verification shown below.",
+		registrationHelp:
+			"Create an account with a password, then confirm your email address using the link we send you.",
+		forgotPassword: "Forgot password?",
+		resetPasswordRequest: "Send password reset link",
+		resetPasswordHelp:
+			"Enter the email address for your password account. Resetting your password keeps your authenticator and recovery codes in place.",
+		resetPasswordSent:
+			"If this address has an eligible password account, a password reset email is on its way.",
+		resetPassword: "Reset password",
+		resetPasswordConfirmation:
+			"Choose a new password only if you requested this reset. Your authenticator and recovery codes will still be required when applicable.",
+		resetPasswordFailed:
+			"The reset could not be completed. The link may be invalid or expired. Request a new link and try again.",
+		resetPasswordComplete:
+			"Your password was reset and previous sessions were signed out. Sign in with your new password, then complete any required verification.",
+		backToSignIn: "Back to sign-in",
+		currentPassword: "Current password",
+		mfaPasswordHelp:
+			"Enter your current password to manage your authenticator. Leave this blank if you only use email links or passkeys.",
+
 		capacityDenied:
 			"No seats are available. Increase capacity or deactivate a member.",
 		lastOwnerDenied:
@@ -19,7 +49,11 @@ export const accountMessages = {
 		mfaRequired:
 			"Complete sign-in with your authenticator, a recovery code, or a passkey to access your organizations.",
 		newRecoveryCodes: "Replace recovery codes",
+		recoveryCodesHelp:
+			"Save these recovery codes securely. Each code can be used once. Your previous recovery codes no longer work.",
 		disableMfa: "Disable authenticator",
+		mfaDisableHelp:
+			"Add a passkey before disabling your authenticator so you keep a verified recovery factor.",
 		useRecoveryCode: "Use a recovery code",
 		recoveryCode: "Recovery code",
 		currentSession: "This session",
@@ -104,6 +138,37 @@ export const accountMessages = {
 		removeTeamMember: "Remove member from team",
 	},
 	es: {
+		password: "Contraseña",
+		confirmPassword: "Confirmar contraseña",
+		newPassword: "Nueva contraseña",
+		passwordHelp:
+			"Usa entre 12 y 128 caracteres. Puedes incluir espacios y frases.",
+		passwordMismatch: "Las contraseñas deben coincidir.",
+		passwordSignIn: "Acceder con contraseña",
+		passwordSignInFailed:
+			"No se pudo iniciar sesión. Comprueba tu correo y contraseña, confirma tu dirección de correo e inténtalo de nuevo.",
+		signedIn:
+			"Acceso aceptado. Completa la verificación que se muestra a continuación.",
+		registrationHelp:
+			"Crea una cuenta con contraseña y confirma tu dirección de correo con el enlace que te enviaremos.",
+		forgotPassword: "¿Olvidaste tu contraseña?",
+		resetPasswordRequest: "Enviar enlace para restablecer la contraseña",
+		resetPasswordHelp:
+			"Introduce el correo de tu cuenta con contraseña. Restablecerla mantiene tu autenticador y tus códigos de recuperación.",
+		resetPasswordSent:
+			"Si la dirección tiene una cuenta con contraseña válida, recibirás un correo para restablecerla.",
+		resetPassword: "Restablecer contraseña",
+		resetPasswordConfirmation:
+			"Elige una nueva contraseña solo si solicitaste restablecerla. Tu autenticador y tus códigos de recuperación seguirán siendo necesarios cuando corresponda.",
+		resetPasswordFailed:
+			"No se pudo restablecer la contraseña. El enlace puede no ser válido o haber caducado. Solicita uno nuevo e inténtalo de nuevo.",
+		resetPasswordComplete:
+			"Tu contraseña se ha restablecido y las sesiones anteriores se han cerrado. Accede con tu nueva contraseña y completa la verificación necesaria.",
+		backToSignIn: "Volver al acceso",
+		currentPassword: "Contraseña actual",
+		mfaPasswordHelp:
+			"Introduce tu contraseña actual para gestionar tu autenticador. Deja este campo vacío si solo usas enlaces de correo o claves de acceso.",
+
 		capacityDenied:
 			"No quedan plazas. Aumenta la capacidad o desactiva un miembro.",
 		lastOwnerDenied:
@@ -124,7 +189,11 @@ export const accountMessages = {
 		mfaRequired:
 			"Completa el acceso con tu autenticador, un código de recuperación o una clave de acceso para acceder a tus organizaciones.",
 		newRecoveryCodes: "Reemplazar códigos de recuperación",
+		recoveryCodesHelp:
+			"Guarda estos códigos de recuperación de forma segura. Cada código se puede usar una vez. Los anteriores ya no son válidos.",
 		disableMfa: "Desactivar autenticador",
+		mfaDisableHelp:
+			"Añade una clave de acceso antes de desactivar tu autenticador para conservar un factor de recuperación verificado.",
 		useRecoveryCode: "Usar un código de recuperación",
 		recoveryCode: "Código de recuperación",
 		currentSession: "Esta sesión",
