@@ -25,9 +25,21 @@ bun run bootstrap
 bun run dev
 ```
 
-Open `http://localhost:3000`. Local services use disposable synthetic credentials. Register a test account and confirm its email in Mailpit. See the [runtime guide](docs/phase2/README.md) for tests, stories, image commands and implementation boundaries.
+### Create your first account
 
-Local service data is stored in memory and is lost when the containers stop or are recreated. After a reset, repeat `services:up`, `db:migrate` and `bootstrap` before `dev`. Keep the database targets in `.env` consistent with `.env.example`; Compose creates `common_saas` and `common_saas_control`, not temporary test databases. See [startup troubleshooting](docs/phase2/README.md#local-startup-troubleshooting) for worker failures.
+A fresh installation has no pre-created account. To create an account and start using the platform:
+
+1. Open the [account page](http://localhost:3000/en/account).
+2. Enter a synthetic test email such as `my-name@example.test` and your name, then click **Create account**.
+3. Open [Mailpit](http://localhost:8026), which captures local development emails instead of sending them to a real inbox.
+4. Find the message addressed to your test email with the subject **Verify your email address**, follow its link, and explicitly confirm on the page that opens.
+5. Once signed in, create an organization from the account page.
+
+Password authentication is disabled. For subsequent sign-ins, enter your registered email and click **Email a sign-in link**, then check Mailpit and confirm the link. You can also enroll a passkey from your account.
+
+Local services use disposable synthetic credentials. See the [runtime guide](docs/phase2/README.md) for tests, stories, image commands and implementation boundaries.
+
+Local service data is stored in memory and is lost when the containers stop or are recreated, including registered accounts. After a reset, repeat `services:up`, `db:migrate` and `bootstrap` before `dev`, then register again. Keep the database targets in `.env` consistent with `.env.example`; Compose creates `common_saas` and `common_saas_control`, not temporary test databases. See [startup troubleshooting](docs/phase2/README.md#local-startup-troubleshooting) for worker failures.
 
 ## Planning and design
 
