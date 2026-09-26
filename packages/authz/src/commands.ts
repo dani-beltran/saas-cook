@@ -14,8 +14,10 @@ type CommandOptions = {
 	installationId: string;
 	openfgaUrl: string;
 };
-/** Initial initialization only. Independent pending receipts allow bounded, safe retries. */
-export async function bootstrap(options: CommandOptions): Promise<void> {
+/** Initialize or resume safely; matching completed installations return without reinitializing. */
+export async function bootstrap(
+	options: CommandOptions,
+): Promise<"completed" | "already-completed"> {
 	safeIdentifier(options.installationId);
 	await initializeControlStore(options.controlPool);
 	const control = await options.controlPool.connect();
@@ -35,6 +37,11 @@ export async function bootstrap(options: CommandOptions): Promise<void> {
 			[options.installationId],
 		);
 		let pending = found.rows[0];
+		if (pending?.state === "ready") {
+			const publication = await getPublication(control, options.installationId);
+			await assertBinding(app, publication);
+			return "already-completed";
+		}
 		if (pending && pending.state !== "initializing")
 			throw new Error(
 				"Existing or restored installations cannot bootstrap as fresh",
@@ -125,6 +132,7 @@ export async function bootstrap(options: CommandOptions): Promise<void> {
 			],
 		);
 		await control.query("COMMIT");
+		return "completed";
 	} catch (error) {
 		await control.query("ROLLBACK").catch(() => {});
 		throw error;

@@ -48,7 +48,7 @@ export async function initializeControlStore(pool: Pool): Promise<void> {
 	}
 }
 export async function getPublication(
-	controlPool: Pool,
+	controlPool: Pool | PoolClient,
 	installationId: string,
 ): Promise<Publication> {
 	safeIdentifier(installationId);

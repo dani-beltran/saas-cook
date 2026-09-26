@@ -221,7 +221,10 @@ try {
 		`SELECT store_id FROM control.installations WHERE installation_id='${installationId}'`,
 	);
 	await docker(command("authz-publish"));
-	await rejected(command("bootstrap"));
+	assert.match(
+		await docker(command("bootstrap")),
+		/Bootstrap already completed successfully; nothing to do\./,
+	);
 	checks.push(
 		"real-model-bootstrap-resumes-identical-independent-epoch-and-publishes",
 	);

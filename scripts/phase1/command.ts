@@ -26,7 +26,7 @@ if (!mode || !modes.includes(mode)) {
 	process.exitCode = 2;
 } else if (process.argv.includes("--help")) {
 	process.stdout.write(
-		`${mode}: ${mode === "migrate" ? "Apply reviewed SQL and provision the queue with MIGRATION_DATABASE_URL." : "Validate the independent installation epoch and pinned authorization model using dedicated command credentials. Bootstrap only accepts a fresh installation or its interrupted initialization."}\n`,
+		`${mode}: ${mode === "migrate" ? "Apply reviewed SQL and provision the queue with MIGRATION_DATABASE_URL." : "Validate the independent installation epoch and pinned authorization model using dedicated command credentials. Bootstrap initializes a fresh installation, resumes interrupted initialization, or reports an already completed matching installation."}\n`,
 	);
 } else if (mode === "owner-recovery" || mode === "security-deactivate") {
 	let applicationPool: Pool | undefined;
@@ -93,13 +93,17 @@ if (!mode || !modes.includes(mode)) {
 			connectionTimeoutMillis: 5000,
 		});
 		const command = mode === "bootstrap" ? bootstrap : publishAuthorization;
-		await command({
+		const result = await command({
 			applicationPool,
 			controlPool,
 			installationId: env.INSTALLATION_ID,
 			openfgaUrl: env.OPENFGA_API_URL,
 		});
-		process.stdout.write(`${mode} completed.\n`);
+		process.stdout.write(
+			result === "already-completed"
+				? "Bootstrap already completed successfully; nothing to do.\n"
+				: `${mode} completed.\n`,
+		);
 	} catch {
 		process.stderr.write(
 			`${mode} failed; verify independent readiness, configuration and initialization state. Existing or restored data cannot be initialized as fresh.\n`,

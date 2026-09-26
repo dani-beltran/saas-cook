@@ -246,7 +246,7 @@ describe("production contextual authorization against real PostgreSQL and OpenFG
 	it("bootstraps model/independent readiness, uses restricted read role, and refuses existing/restored fresh initialization", async () => {
 		const f = await fixture();
 		await publishAuthorization(f.options);
-		await expect(bootstrap(f.options)).rejects.toThrow("Existing or restored");
+		await expect(bootstrap(f.options)).resolves.toBe("already-completed");
 		await expect(
 			bootstrap({ ...f.options, installationId: randomUUID() }),
 		).rejects.toThrow("binding");
@@ -264,6 +264,52 @@ describe("production contextual authorization against real PostgreSQL and OpenFG
 			{},
 		);
 		expect(tuples.tuples).toEqual([]);
+	});
+	it("recognizes populated completed installations without changing receipts or contacting OpenFGA", async () => {
+		const f = await fixture();
+		await f.seed();
+		const before = await f.control.query("SELECT * FROM control.installations");
+		const events = await f.control.query(
+			"SELECT * FROM control.security_events ORDER BY id",
+		);
+		await expect(
+			bootstrap({ ...f.options, openfgaUrl: "http://127.0.0.1:1" }),
+		).resolves.toBe("already-completed");
+		expect(
+			(await f.control.query("SELECT * FROM control.installations")).rows,
+		).toEqual(before.rows);
+		expect(
+			(
+				await f.control.query(
+					"SELECT * FROM control.security_events ORDER BY id",
+				)
+			).rows,
+		).toEqual(events.rows);
+	});
+	it.each(["binding_id", "recovery_epoch", "installation_id"])(
+		"rejects completed installation with mismatched %s",
+		async (column) => {
+			const f = await fixture();
+			await f.app.query(`UPDATE foundation.installation SET ${column}=$1`, [
+				randomUUID(),
+			]);
+			await expect(bootstrap(f.options)).rejects.toThrow(
+				"recovery revalidation",
+			);
+		},
+	);
+	it("rejects recovery-required state and a changed model after completion", async () => {
+		const f = await fixture();
+		await f.control.query(
+			"UPDATE control.installations SET state='recovery_required'",
+		);
+		await expect(bootstrap(f.options)).rejects.toThrow("Existing or restored");
+		await f.control.query(
+			"UPDATE control.installations SET state='ready', model_hash='changed'",
+		);
+		await expect(bootstrap(f.options)).rejects.toThrow(
+			"Independent authorization readiness required",
+		);
 	});
 	it("resumes an interrupted bootstrap from independent pending receipts without resetting its epoch", async () => {
 		const f = await fixture(false);
