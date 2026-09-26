@@ -78,6 +78,8 @@ export const accountMessages = {
 		loading: "Loading…",
 		failed:
 			"This action could not be completed. Check your access, reauthenticate if needed, and try again.",
+		unavailable:
+			"Account services are temporarily unavailable. Please try again shortly.",
 		saved: "Saved.",
 		security: "Security",
 		reauthenticate:
@@ -218,6 +220,8 @@ export const accountMessages = {
 		loading: "Cargando…",
 		failed:
 			"No se pudo completar la acción. Comprueba tu acceso, vuelve a identificarte si es necesario e inténtalo de nuevo.",
+		unavailable:
+			"Los servicios de cuenta no están disponibles temporalmente. Inténtalo de nuevo en unos momentos.",
 		saved: "Guardado.",
 		security: "Seguridad",
 		reauthenticate:

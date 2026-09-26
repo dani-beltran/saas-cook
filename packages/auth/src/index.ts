@@ -1276,6 +1276,8 @@ CASE WHEN pg_input_is_valid(value,'jsonb') THEN value::jsonb->>'userId'=$1 OR va
 						? "type_error"
 						: "internal";
 			failure.diagnostic = `${stage}.${cause}`;
+			if (stage === "readiness")
+				return json({ error: "Identity unavailable" }, 503);
 			if (route === "/sign-in/email")
 				return json({ error: "Invalid email or password" }, 401);
 			return json({ error: "Identity action unavailable" }, 400);

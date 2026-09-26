@@ -16,6 +16,8 @@ These commands require the dedicated migration and independent control-administr
 
 Coordinate the existing-installation upgrade in a maintenance window: drain the old web/worker processes, apply the migration and model upgrade with the new image, validate publication, then start the new runtime. Old binaries reject the successor model hash, and new binaries reject an unupgraded predecessor; mixing them is intentionally unavailable. Retry an interrupted model upgrade using the same installation instead of bootstrapping it again.
 
+If a correctly completed signup form fails after updating from Phase 2, check `/api/health`. An unupgraded installation reports `503` with `status: unready`; identity requests also report `503` (older code returned a misleading `400`). A ready Phase 2 installation with its original matching binding needs the upgrade sequence above. Recovery-required or restored installations must follow the recovery procedure instead.
+
 The organization page links to **Projects**. Interactive clients use the shared oRPC client; both `/api/rpc` and `/api/v1/organizations/{organizationId}/...` call the same services. `/api/openapi` publishes the generated contract. Browser mutations require the configured origin. API keys use `Authorization: Bearer <secret>` and remain pinned to one organization; a bearer header never falls back to a session cookie.
 
 Runtime settings are server-only:

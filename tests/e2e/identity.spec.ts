@@ -83,6 +83,44 @@ async function signUp(page: Page, email: string, entry = "/en/account") {
 	return link;
 }
 
+test("signup explains service outages and keeps the form available for retry", async ({
+	page,
+}) => {
+	let available = false;
+	await page.route("**/api/auth/register", (route) =>
+		route.fulfill({
+			status: available ? 200 : 503,
+			json: available ? { status: true } : { error: "Identity unavailable" },
+		}),
+	);
+	await page.goto("/en/account");
+	const submit = page.getByRole("button", {
+		name: "Create account",
+		exact: true,
+	});
+	await submit.click();
+	await page.getByLabel("Email", { exact: true }).fill("outage@example.test");
+	await page.getByLabel("Name", { exact: true }).fill("Synthetic outage test");
+	await page.getByLabel("Password", { exact: true }).fill(password);
+	await page.getByLabel("Confirm password", { exact: true }).fill(password);
+	await submit.click();
+	await expect(page.getByRole("status")).toContainText(
+		"Account services are temporarily unavailable. Please try again shortly.",
+	);
+	await expect(page.getByLabel("Email", { exact: true })).toHaveValue(
+		"outage@example.test",
+	);
+	await expect(page.getByLabel("Password", { exact: true })).toHaveValue(
+		password,
+	);
+	await expect(submit).toBeEnabled();
+	available = true;
+	await submit.click();
+	await expect(page.getByRole("status")).toContainText(
+		"an email is on its way",
+	);
+});
+
 test("redirects the local alias before registration without relaxing auth origins", async ({
 	page,
 	baseURL,

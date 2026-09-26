@@ -4,7 +4,7 @@ import { Button, Input } from "@common-saas/ui";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { identityClient } from "../lib/identity-client";
-import { identityRequest } from "../lib/identity-request";
+import { IdentityRequestError, identityRequest } from "../lib/identity-request";
 import { SignIn } from "./sign-in";
 
 type AccountSession = {
@@ -68,8 +68,14 @@ export function Account() {
 		try {
 			await action();
 			setMessage(t(success));
-		} catch {
-			setMessage(t(failure));
+		} catch (error) {
+			setMessage(
+				t(
+					error instanceof IdentityRequestError && error.status === 503
+						? "unavailable"
+						: failure,
+				),
+			);
 		} finally {
 			setBusy(false);
 		}

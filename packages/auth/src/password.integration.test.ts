@@ -187,6 +187,47 @@ describe("email/password identity with real PostgreSQL", () => {
 			request("/api/auth/reset-password", { token, newPassword }),
 		);
 
+	it.each(["unavailable", "mismatched"])(
+		"reports %s readiness as a service outage before accepting credentials",
+		async (state) => {
+			const unready = createIdentityRuntime(pool, {
+				secret,
+				origin,
+				readiness: async () => {
+					if (state === "unavailable")
+						throw new Error("Independent authorization readiness required");
+					return { ...publication, epoch: randomUUID() };
+				},
+			});
+			for (const route of [
+				"register",
+				"sign-in/email",
+				"request-password-reset",
+			]) {
+				const response = await unready.handler(
+					request(`/api/auth/${route}`, { email, password }),
+				);
+				expect(response.status).toBe(503);
+				expect(await response.json()).toEqual({
+					error: "Identity unavailable",
+				});
+				expect(response.headers.get("cache-control")).toBe("no-store");
+				expect(response.headers.get("referrer-policy")).toBe("no-referrer");
+				expect(cookies(response)).toBe("");
+			}
+			expect(
+				(await pool.query('SELECT id FROM identity."user"')).rowCount,
+			).toBe(0);
+			expect(
+				(await pool.query("SELECT id FROM identity.verification")).rowCount,
+			).toBe(0);
+			expect(await messages()).toEqual([]);
+			const retried = await register(email, password);
+			expect(retried.response.status).toBe(200);
+			expect(retried.mail).toHaveLength(1);
+		},
+	);
+
 	it("verifies registration explicitly before password sessions and never replaces existing credentials", async () => {
 		const registered = await register(email, password);
 		expect(await registered.response.json()).toEqual({ status: true });
@@ -277,7 +318,7 @@ describe("email/password identity with real PostgreSQL", () => {
 	});
 	it("enforces password bounds and hides unknown users behind the same invalid-credentials response", async () => {
 		for (const invalid of ["short", "a".repeat(129)]) {
-			await register(email, invalid);
+			expect((await register(email, invalid)).response.status).toBe(400);
 			expect(
 				(await pool.query('SELECT id FROM identity."user"')).rowCount,
 			).toBe(0);
