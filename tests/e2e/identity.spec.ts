@@ -58,7 +58,7 @@ async function emailLink(
 async function signUp(page: Page, email: string, entry = "/en/account") {
 	await page.goto(entry);
 	await page
-		.getByRole("button", { name: "Create account", exact: true })
+		.getByRole("link", { name: "Create an account", exact: true })
 		.click();
 	await page.getByLabel("Email", { exact: true }).fill(email);
 	await page.getByLabel("Name", { exact: true }).fill("Browser test member");
@@ -85,26 +85,46 @@ async function signUp(page: Page, email: string, entry = "/en/account") {
 
 test("signup explains service outages and keeps the form available for retry", async ({
 	page,
-}) => {
+}, testInfo) => {
 	let available = false;
-	await page.route("**/api/auth/register", (route) =>
-		route.fulfill({
+	let requests = 0;
+	let releaseRequest = () => {};
+	const pendingRequest = new Promise<void>((resolve) => {
+		releaseRequest = resolve;
+	});
+	await page.route("**/api/auth/register", async (route) => {
+		requests += 1;
+		await pendingRequest;
+		await route.fulfill({
 			status: available ? 200 : 503,
 			json: available ? { status: true } : { error: "Identity unavailable" },
-		}),
-	);
-	await page.goto("/en/account");
-	const submit = page.getByRole("button", {
-		name: "Create account",
-		exact: true,
+		});
 	});
-	await submit.click();
+	await page.goto("/en/account");
+	const submit = page.locator("form button[type=submit]");
+	await page
+		.getByRole("link", { name: "Create an account", exact: true })
+		.click();
 	await page.getByLabel("Email", { exact: true }).fill("outage@example.test");
 	await page.getByLabel("Name", { exact: true }).fill("Synthetic outage test");
 	await page.getByLabel("Password", { exact: true }).fill(password);
 	await page.getByLabel("Confirm password", { exact: true }).fill(password);
-	await submit.click();
-	await expect(page.getByRole("status")).toContainText(
+	try {
+		await submit.click();
+		await expect(submit).toBeDisabled();
+		await expect(page.locator("form")).toHaveAttribute("aria-busy", "true");
+		await page.locator("form").evaluate((form) => {
+			(form as HTMLFormElement).requestSubmit();
+		});
+		await page.screenshot({
+			path: testInfo.outputPath("sign-up-loading.png"),
+			fullPage: true,
+		});
+		expect(requests).toBe(1);
+	} finally {
+		releaseRequest();
+	}
+	await expect(page.getByRole("main").getByRole("alert")).toContainText(
 		"Account services are temporarily unavailable. Please try again shortly.",
 	);
 	await expect(page.getByLabel("Email", { exact: true })).toHaveValue(
@@ -114,11 +134,23 @@ test("signup explains service outages and keeps the form available for retry", a
 		password,
 	);
 	await expect(submit).toBeEnabled();
+	await page.screenshot({
+		path: testInfo.outputPath("sign-up-service-error.png"),
+		fullPage: true,
+	});
 	available = true;
 	await submit.click();
 	await expect(page.getByRole("status")).toContainText(
 		"an email is on its way",
 	);
+	expect(requests).toBe(2);
+	await expect(
+		page.getByRole("link", { name: "Back to sign-in", exact: true }),
+	).toBeVisible();
+	await page.screenshot({
+		path: testInfo.outputPath("sign-up-email-success.png"),
+		fullPage: true,
+	});
 });
 
 test("redirects the local alias before registration without relaxing auth origins", async ({
@@ -192,9 +224,7 @@ async function passwordSignIn(
 ) {
 	await page.getByLabel("Email", { exact: true }).fill(email);
 	await page.getByLabel("Password", { exact: true }).fill(suppliedPassword);
-	await page
-		.getByRole("button", { name: "Sign in with password", exact: true })
-		.click();
+	await page.getByRole("button", { name: "Sign in", exact: true }).click();
 }
 
 test("password registration, sign-in, localized reset, and preserved MFA recovery", async ({
@@ -241,7 +271,7 @@ test("password registration, sign-in, localized reset, and preserved MFA recover
 	try {
 		await reset.goto("/es/account");
 		await reset
-			.getByRole("button", { name: "¿Olvidaste tu contraseña?", exact: true })
+			.getByRole("link", { name: "¿Olvidaste tu contraseña?", exact: true })
 			.click();
 		await reset.getByLabel("Correo electrónico", { exact: true }).fill(email);
 		await reset
@@ -295,12 +325,14 @@ test("password registration, sign-in, localized reset, and preserved MFA recover
 		await page.reload();
 		await expect(
 			page.getByRole("heading", {
-				name: "Sign in to your workspace",
+				name: "Welcome back",
 				exact: true,
 			}),
 		).toBeVisible();
 		await passwordSignIn(page, email, password);
-		await expect(page.getByRole("status")).toContainText("Could not sign in");
+		await expect(page.getByRole("main").getByRole("alert")).toContainText(
+			"Could not sign in",
+		);
 		await passwordSignIn(page, email, newPassword);
 		await expect(page.getByRole("main").getByRole("alert")).toContainText(
 			"Complete sign-in with your authenticator",
@@ -460,7 +492,7 @@ test("real browser WebAuthn enrollment and passwordless sign-in", async ({
 	await page.getByRole("button", { name: "Sign out", exact: true }).click();
 	await expect(
 		page.getByRole("heading", {
-			name: "Sign in to your workspace",
+			name: "Welcome back",
 			exact: true,
 		}),
 	).toBeVisible();

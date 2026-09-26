@@ -1,14 +1,16 @@
 "use client";
-import { Button } from "@common-saas/ui";
 import { useEffect, useRef, useState } from "react";
 import { accountMessages } from "../i18n/account";
 import { identityRequest } from "../lib/identity-request";
+import { AuthFrame, AuthHeader, AuthNotice, AuthSubmit } from "./auth-ui";
 import { NewPasswordFields } from "./new-password-fields";
 
 export function ResetPassword() {
 	const captured = useRef(false);
+	const submitting = useRef(false);
 	const [token, setToken] = useState<string | null>(null);
 	const [locale, setLocale] = useState<"en" | "es">("en");
+	const [ready, setReady] = useState(false);
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState(false);
 	const [complete, setComplete] = useState(false);
@@ -20,20 +22,34 @@ export function ResetPassword() {
 		setLocale(query.get("locale") === "es" ? "es" : "en");
 		setError(!query.get("token"));
 		window.history.replaceState(null, "", "/auth/reset-password");
+		setReady(true);
 	}, []);
 	const labels = accountMessages[locale];
 	return (
-		<main className="mx-auto max-w-lg space-y-6 p-8" lang={locale}>
-			<h1 className="text-3xl font-semibold">{labels.resetPassword}</h1>
-			<p>{labels.resetPasswordConfirmation}</p>
-			<p role="alert">{error && labels.resetPasswordFailed}</p>
-			{complete ? (
-				<p role="status">{labels.resetPasswordComplete}</p>
-			) : (
+		<AuthFrame locale={locale} showLocaleSwitch={false}>
+			<AuthHeader
+				title={labels.resetPassword}
+				description={labels.resetPasswordConfirmation}
+			/>
+			{!ready && (
+				<p className="text-center text-sm text-muted-foreground" role="status">
+					{labels.loading}
+				</p>
+			)}
+			{complete && (
+				<AuthNotice kind="success">{labels.resetPasswordComplete}</AuthNotice>
+			)}
+			{ready && !complete && !token && (
+				<AuthNotice kind="error">{labels.resetPasswordFailed}</AuthNotice>
+			)}
+			{token && !complete && (
 				<form
-					className="space-y-4"
+					className="space-y-5"
+					aria-busy={busy}
+					aria-describedby={error ? "reset-password-error" : undefined}
 					onSubmit={async (event) => {
 						event.preventDefault();
+						if (submitting.current || !token) return;
 						const form = event.currentTarget;
 						const data = new FormData(form);
 						if (data.get("password") !== data.get("confirmPassword")) {
@@ -44,6 +60,7 @@ export function ResetPassword() {
 							}
 							return;
 						}
+						submitting.current = true;
 						setBusy(true);
 						setError(false);
 						try {
@@ -57,21 +74,41 @@ export function ResetPassword() {
 						} catch {
 							setError(true);
 						} finally {
+							submitting.current = false;
 							setBusy(false);
 						}
 					}}
 				>
-					<NewPasswordFields
-						labels={{ ...labels, password: labels.newPassword }}
-					/>
-					<Button disabled={busy || !token} type="submit">
+					<fieldset disabled={busy} className="space-y-5">
+						<NewPasswordFields
+							labels={{ ...labels, password: labels.newPassword }}
+						/>
+						<p className="text-xs leading-relaxed text-muted-foreground">
+							{labels.resetSecurityNote}
+						</p>
+					</fieldset>
+					{error && (
+						<AuthNotice kind="error" id="reset-password-error">
+							{labels.resetPasswordFailed}
+						</AuthNotice>
+					)}
+					<AuthSubmit busy={busy} pendingLabel={labels.loading} type="submit">
 						{labels.resetPassword}
-					</Button>
+					</AuthSubmit>
 				</form>
 			)}
-			<a className="block underline" href={`/${locale}/account`}>
-				{labels.backToSignIn}
-			</a>
-		</main>
+			{error && (
+				<p className="mt-5 text-center">
+					<a className="auth-link" href={`/${locale}/account?mode=reset`}>
+						{labels.requestNewLink}
+					</a>
+				</p>
+			)}
+			<p className="mt-7 text-center text-sm">
+				<a className="auth-link" href={`/${locale}/account`}>
+					{labels.backToSignIn}
+				</a>
+			</p>
+		</AuthFrame>
 	);
 }

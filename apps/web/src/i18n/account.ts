@@ -1,5 +1,55 @@
 export const accountMessages = {
 	en: {
+		requestNewLink: "Request a new link",
+		resetEmailNextStep:
+			"Check your spam folder if you don’t see it. Follow the reset link, choose a new password, then return here to sign in.",
+		resetSecurityNote: "Your authenticator and recovery codes stay in place.",
+		placeholderLogo: "Placeholder logo",
+		toggleTheme: "Toggle color theme",
+		showPassword: "Show password",
+		hidePassword: "Hide password",
+		showConfirmPassword: "Show confirm password",
+		hideConfirmPassword: "Hide confirm password",
+		signInTitle: "Welcome back",
+		signInDescription: "Sign in to continue to your workspace.",
+		signInAction: "Sign in",
+		createAccountLink: "Create an account",
+		registerTitle: "Create your account",
+		registerDescription: "A few details to get started with your workspace.",
+		resetTitle: "Reset your password",
+		resetDescription: "We’ll email you a link to choose a new password.",
+		linkTitle: "Sign in with an email link",
+		linkDescription: "Get a sign-in link in your inbox. No password needed.",
+		recoverTitle: "Recover your account",
+		recoverDescription:
+			"Start with an email link to regain access to your account.",
+		recoveryAction: "Send recovery link",
+		useEmailLink: "Use an email link",
+		alternativeMethods: "or continue with",
+		noAccount: "New here?",
+		hasAccount: "Already have an account?",
+		checkEmail: "Check your email",
+		checkEmailDescription: "Follow the link in your inbox to continue.",
+		registrationSent:
+			"If this address is eligible, an email is on its way. Open it and confirm your email address to finish creating your account.",
+		emailNextStep:
+			"Check your spam folder if you don’t see it. You can return here to sign in after confirming.",
+		tryAnotherEmail: "Try another email address",
+		signingIn: "Signing in…",
+		creatingAccount: "Creating account…",
+		sendingEmail: "Sending link…",
+		passkeyPending: "Waiting for your passkey…",
+		passkeyFailed:
+			"Passkey sign-in wasn’t completed. Try again, or use your password or an email link.",
+		authFailed: "We couldn’t complete your request. Please try again.",
+		tooManyRequests: "Too many attempts. Wait a moment, then try again.",
+		emailInvalid: "Enter a valid email address.",
+		nameRequired: "Enter your name.",
+		passwordRequired: "Enter your password.",
+		confirmAction: "Confirm",
+		confirmationFailed:
+			"This link is invalid or expired. Request a new sign-in link.",
+
 		password: "Password",
 		confirmPassword: "Confirm password",
 		newPassword: "New password",
@@ -20,7 +70,7 @@ export const accountMessages = {
 			"If this address has an eligible password account, a password reset email is on its way.",
 		resetPassword: "Reset password",
 		resetPasswordConfirmation:
-			"Choose a new password only if you requested this reset. Your authenticator and recovery codes will still be required when applicable.",
+			"Choose a new password only if you requested this reset.",
 		resetPasswordFailed:
 			"The reset could not be completed. The link may be invalid or expired. Request a new link and try again.",
 		resetPasswordComplete:
@@ -140,6 +190,60 @@ export const accountMessages = {
 		removeTeamMember: "Remove member from team",
 	},
 	es: {
+		requestNewLink: "Solicitar un nuevo enlace",
+		resetEmailNextStep:
+			"Si no lo ves, revisa la carpeta de correo no deseado. Sigue el enlace, elige una nueva contraseña y vuelve aquí para iniciar sesión.",
+		resetSecurityNote:
+			"Tu autenticador y tus códigos de recuperación se mantienen.",
+		placeholderLogo: "Logotipo de ejemplo",
+		toggleTheme: "Cambiar tema de color",
+		showPassword: "Mostrar contraseña",
+		hidePassword: "Ocultar contraseña",
+		showConfirmPassword: "Mostrar confirmación de contraseña",
+		hideConfirmPassword: "Ocultar confirmación de contraseña",
+		signInTitle: "Te damos la bienvenida",
+		signInDescription: "Inicia sesión para acceder a tu espacio de trabajo.",
+		signInAction: "Iniciar sesión",
+		createAccountLink: "Crear una cuenta",
+		registerTitle: "Crea tu cuenta",
+		registerDescription:
+			"Solo unos datos para empezar con tu espacio de trabajo.",
+		resetTitle: "Restablece tu contraseña",
+		resetDescription:
+			"Te enviaremos un enlace para elegir una nueva contraseña.",
+		linkTitle: "Accede con un enlace",
+		linkDescription: "Recibe un enlace de acceso por correo, sin contraseña.",
+		recoverTitle: "Recupera tu cuenta",
+		recoverDescription:
+			"Empieza con un enlace por correo para recuperar el acceso.",
+		recoveryAction: "Enviar enlace de recuperación",
+		useEmailLink: "Usar un enlace por correo",
+		alternativeMethods: "o continúa con",
+		noAccount: "¿Es tu primera vez?",
+		hasAccount: "¿Ya tienes una cuenta?",
+		checkEmail: "Revisa tu correo",
+		checkEmailDescription: "Sigue el enlace del correo para continuar.",
+		registrationSent:
+			"Si la dirección cumple los requisitos, recibirás un correo. Ábrelo y confirma tu dirección para terminar de crear tu cuenta.",
+		emailNextStep:
+			"Si no lo ves, revisa la carpeta de correo no deseado. Tras confirmar, puedes volver aquí para iniciar sesión.",
+		tryAnotherEmail: "Probar otra dirección de correo",
+		signingIn: "Iniciando sesión…",
+		creatingAccount: "Creando cuenta…",
+		sendingEmail: "Enviando enlace…",
+		passkeyPending: "Esperando tu clave de acceso…",
+		passkeyFailed:
+			"No se completó el acceso con la clave. Inténtalo de nuevo o usa tu contraseña o un enlace por correo.",
+		authFailed: "No pudimos completar tu solicitud. Inténtalo de nuevo.",
+		tooManyRequests:
+			"Demasiados intentos. Espera un momento e inténtalo de nuevo.",
+		emailInvalid: "Introduce una dirección de correo válida.",
+		nameRequired: "Introduce tu nombre.",
+		passwordRequired: "Introduce tu contraseña.",
+		confirmAction: "Confirmar",
+		confirmationFailed:
+			"El enlace no es válido o ha caducado. Solicita uno nuevo.",
+
 		password: "Contraseña",
 		confirmPassword: "Confirmar contraseña",
 		newPassword: "Nueva contraseña",
@@ -161,7 +265,7 @@ export const accountMessages = {
 			"Si la dirección tiene una cuenta con contraseña válida, recibirás un correo para restablecerla.",
 		resetPassword: "Restablecer contraseña",
 		resetPasswordConfirmation:
-			"Elige una nueva contraseña solo si solicitaste restablecerla. Tu autenticador y tus códigos de recuperación seguirán siendo necesarios cuando corresponda.",
+			"Elige una nueva contraseña solo si solicitaste restablecerla.",
 		resetPasswordFailed:
 			"No se pudo restablecer la contraseña. El enlace puede no ser válido o haber caducado. Solicita uno nuevo e inténtalo de nuevo.",
 		resetPasswordComplete:

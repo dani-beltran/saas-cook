@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { identityClient } from "../lib/identity-client";
 import { IdentityRequestError, identityRequest } from "../lib/identity-request";
+import { AuthFrame, AuthHeader } from "./auth-ui";
 import { SignIn } from "./sign-in";
 
 type AccountSession = {
@@ -86,7 +87,23 @@ export function Account() {
 		await refetch();
 	}
 	// Background session refreshes must not remount forms and discard typed input.
-	if (isPending && !sessionLoaded) return <p role="status">{t("loading")}</p>;
+	if (isPending && !sessionLoaded)
+		return (
+			<AuthFrame locale={locale === "es" ? "es" : "en"} showLocaleSwitch>
+				<AuthHeader
+					title={t("signInTitle")}
+					description={t("signInDescription")}
+				/>
+				<p
+					role="status"
+					className="py-12 text-center text-sm text-muted-foreground"
+				>
+					{t("loading")}
+				</p>
+			</AuthFrame>
+		);
+	if (!session)
+		return <SignIn refreshSession={refetch} passkeySignIn={passkeySignIn} />;
 	return (
 		<main className="mx-auto max-w-4xl space-y-8 p-6 sm:p-12">
 			<header className="flex items-center justify-between gap-4">
@@ -100,14 +117,7 @@ export function Account() {
 			<p role="status" aria-live="polite">
 				{message}
 			</p>
-			{!session ? (
-				<SignIn
-					busy={busy}
-					perform={perform}
-					refreshSession={refetch}
-					passkeySignIn={passkeySignIn}
-				/>
-			) : (
+			{session && (
 				<>
 					<div className="flex items-center justify-between gap-4">
 						<p>{session.user.email}</p>
