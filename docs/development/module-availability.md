@@ -14,6 +14,7 @@ Use this implementation inventory with the [roadmap acceptance register](../06-d
 | Audit/outbox | Domain events commit atomically and contain bounded allowlisted metadata. A durable event is not automatically a notification, activity feed, usage charge or analytics event. |
 | Local worker/services | Disposable PostgreSQL application/control stores, OpenFGA, mail and queue runtime support Foundation validation. Test installation helpers create isolated databases; never bootstrap an ambient database as a fixture. |
 | Billing/providers/usage ledger | Phase 5. A pinned Stripe dependency is not an adapter. Foundation tests need no billing credentials and must retain real local policy enforcement. |
+| Personal appearance/profile picture | Identity-owned color mode and private bounded PostgreSQL avatar storage; see [personal settings](../../feature-briefs/personal-settings.md). This does not implement the general file module. |
 | Files/import/export, cross-resource search, activity feeds, analytics | Phase 6. Do not expose unrestricted storage/search/counts as a substitute. Project-local search is available; it does not satisfy cross-resource search. |
 | Enterprise identity/custom roles/support | Later phases. Existing FGA model types and roles are bounded; complex graphs need an explicit design and tests. |
 

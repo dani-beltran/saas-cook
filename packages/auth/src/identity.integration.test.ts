@@ -8,6 +8,7 @@ import {
 } from "@common-saas/email";
 import { logEvent } from "@common-saas/observability";
 import { Pool } from "pg";
+import sharp from "sharp";
 import {
 	afterAll,
 	beforeAll,
@@ -209,6 +210,304 @@ describe("production identity with real PostgreSQL and SMTP", () => {
 			replay: () => runtime.handler(req()),
 		};
 	}
+	function personalRequest(
+		path = "personal-settings",
+		body?: unknown,
+		user = userId,
+		cookie = signedInCookie,
+	) {
+		const result = request(`/api/auth/${path}`, body, cookie);
+		result.headers.set("x-personal-user", user);
+		return result;
+	}
+	async function avatarRequest(
+		bytes: Buffer,
+		expectedVersion: string | null,
+		operationKey = randomUUID(),
+	) {
+		return runtime.handler(
+			new Request(`${origin}/api/auth/avatar`, {
+				method: "POST",
+				headers: {
+					origin,
+					cookie: signedInCookie,
+					"x-personal-user": userId,
+					"content-type": "image/png",
+					"x-avatar-version": expectedVersion ?? "none",
+					"x-operation-key": operationKey,
+				},
+				body: new Uint8Array(bytes),
+			}),
+		);
+	}
+	it("persists personal color mode, rejects stale/arbitrary/other-account writes and disallows bearer fallback", async () => {
+		expect(
+			await (await runtime.handler(personalRequest())).json(),
+		).toMatchObject({ userId, mode: null, themeVersion: 0, image: null });
+		const update = { mode: "dark", expectedVersion: 0 };
+		expect(
+			(await runtime.handler(personalRequest("personal-settings", update)))
+				.status,
+		).toBe(200);
+		expect(
+			(await runtime.handler(personalRequest("personal-settings", update)))
+				.status,
+		).toBe(200);
+		expect(
+			(
+				await runtime.handler(
+					personalRequest("personal-settings", {
+						mode: "light",
+						expectedVersion: 0,
+					}),
+				)
+			).status,
+		).toBe(409);
+		expect(
+			(
+				await runtime.handler(
+					personalRequest("personal-settings", { ...update, userId: "other" }),
+				)
+			).status,
+		).toBe(400);
+		expect(
+			(
+				await runtime.handler(
+					personalRequest("personal-settings", { ...update, mode: "purple" }),
+				)
+			).status,
+		).toBe(400);
+		expect(
+			(
+				await runtime.handler(
+					personalRequest("personal-settings", update, "other"),
+				)
+			).status,
+		).toBe(409);
+		const bearer = personalRequest();
+		bearer.headers.set("authorization", "Bearer unsupported");
+		expect((await runtime.handler(bearer)).status).toBe(401);
+		const wrongOrigin = personalRequest("personal-settings", update);
+		wrongOrigin.headers.set("origin", "https://other.test");
+		expect((await runtime.handler(wrongOrigin)).status).toBe(403);
+		expect(
+			(await runtime.handler(request("/api/auth/personal-settings"))).status,
+		).toBe(401);
+		expect(
+			await runtime.personalSettings.read(
+				new Headers({ cookie: signedInCookie }),
+			),
+		).toMatchObject({ mode: "dark", themeVersion: 1 });
+		expect(
+			(
+				await runtime.handler(
+					personalRequest("update-user", {
+						image: "https://other.test/image.png",
+					}),
+				)
+			).ok,
+		).toBe(false);
+		expect(
+			(
+				await runtime.handler(
+					personalRequest("avatar", { image: "https://other.test/image.png" }),
+				)
+			).status,
+		).toBe(400);
+	});
+	it("uploads, retries, replaces and removes atomically with private owner-only delivery and session image propagation", async () => {
+		const bytes = await sharp({
+			create: { width: 700, height: 600, channels: 3, background: "teal" },
+		})
+			.png()
+			.toBuffer();
+		const key = randomUUID();
+		const uploaded = await avatarRequest(bytes, null, key);
+		expect(uploaded.status).toBe(200);
+		const first = await uploaded.json();
+		expect(first.avatarVersion).toBe(key);
+		expect((await avatarRequest(bytes, null, key)).status).toBe(200);
+		const session = await runtime.handler(
+			request("/api/auth/get-session", undefined, signedInCookie),
+		);
+		expect((await session.json()).user.image).toBe(first.image);
+		const served = await runtime.handler(
+			request(first.image, undefined, signedInCookie),
+		);
+		expect(served.status).toBe(200);
+		expect(served.headers.get("cache-control")).toBe("private, no-store");
+		expect(served.headers.get("content-type")).toBe("image/webp");
+		expect(
+			(await sharp(Buffer.from(await served.arrayBuffer())).metadata()).width,
+		).toBe(512);
+		expect((await runtime.handler(request(first.image))).status).toBe(401);
+		const other = await issue("another@example.test", "/api/auth/register");
+		const signed = await runtime.handler(
+			request("/api/auth/confirm", {
+				token: other.token,
+				destination: "/en/account",
+			}),
+		);
+		expect(
+			(await runtime.handler(request(first.image, undefined, cookies(signed))))
+				.status,
+		).toBe(404);
+		expect((await avatarRequest(Buffer.from("malformed"), key)).status).toBe(
+			422,
+		);
+		expect((await runtime.handler(personalRequest())).status).toBe(200);
+		const replacement = await avatarRequest(bytes, key);
+		expect(replacement.status).toBe(200);
+		const second = await replacement.json();
+		expect(second.avatarVersion).not.toBe(key);
+		expect(
+			(await runtime.handler(request(first.image, undefined, signedInCookie)))
+				.status,
+		).toBe(404);
+		expect(
+			(
+				await runtime.handler(
+					personalRequest("avatar", {
+						expectedVersion: key,
+						operationKey: randomUUID(),
+					}),
+				)
+			).status,
+		).toBe(409);
+		expect(
+			(
+				await pool.query(
+					"SELECT count(*) FROM identity.user_avatar WHERE user_id=$1 AND bytes IS NOT NULL",
+					[userId],
+				)
+			).rows[0].count,
+		).toBe("1");
+		const removal = {
+			expectedVersion: second.avatarVersion,
+			operationKey: randomUUID(),
+		};
+		expect(
+			(await runtime.handler(personalRequest("avatar", removal))).status,
+		).toBe(200);
+		expect(
+			(await runtime.handler(personalRequest("avatar", removal))).status,
+		).toBe(200);
+		expect(
+			(
+				await pool.query(
+					"SELECT count(*) FROM identity.user_avatar WHERE user_id=$1 AND bytes IS NOT NULL",
+					[userId],
+				)
+			).rows[0].count,
+		).toBe("0");
+		expect(
+			(
+				await runtime.personalSettings.read(
+					new Headers({ cookie: signedInCookie }),
+				)
+			)?.image,
+		).toBeNull();
+		expect((await avatarRequest(bytes, null, key)).status).toBe(409);
+	});
+	it("serializes competing avatars and rejects revoked/frozen/pending-MFA identities", async () => {
+		const bytes = await sharp({
+			create: { width: 20, height: 20, channels: 3, background: "blue" },
+		})
+			.png()
+			.toBuffer();
+		const results = await Promise.all([
+			avatarRequest(bytes, null),
+			avatarRequest(bytes, null),
+		]);
+		expect(results.map((result) => result.status).sort()).toEqual([200, 409]);
+		await pool.query(
+			'UPDATE identity."user" SET two_factor_enabled=true WHERE id=$1',
+			[userId],
+		);
+		expect((await runtime.handler(personalRequest())).status).toBe(401);
+		await pool.query(
+			`UPDATE identity."user" SET two_factor_enabled=false,lifecycle_status='frozen' WHERE id=$1`,
+			[userId],
+		);
+		expect((await runtime.handler(personalRequest())).status).toBe(401);
+		await pool.query(
+			`UPDATE identity."user" SET lifecycle_status='active' WHERE id=$1`,
+			[userId],
+		);
+		await pool.query("DELETE FROM identity.session WHERE user_id=$1", [userId]);
+		expect((await runtime.handler(personalRequest())).status).toBe(401);
+	});
+
+	it("rolls back avatar bytes, pointer and audit on database failure or session expiry during SQL", async () => {
+		const bytes = await sharp({
+			create: { width: 20, height: 20, channels: 3, background: "green" },
+		})
+			.png()
+			.toBuffer();
+		const initial = await (await avatarRequest(bytes, null)).json();
+		const audit = (
+			await pool.query("SELECT * FROM identity.security_audit ORDER BY id")
+		).rows;
+		await migrator.query(
+			`CREATE FUNCTION identity.fail_avatar() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'synthetic failure'; END $$; CREATE TRIGGER fail_avatar BEFORE UPDATE OF image ON identity."user" FOR EACH ROW EXECUTE FUNCTION identity.fail_avatar()`,
+		);
+		try {
+			expect((await avatarRequest(bytes, initial.avatarVersion)).status).toBe(
+				503,
+			);
+			expect(
+				(
+					await runtime.personalSettings.read(
+						new Headers({ cookie: signedInCookie }),
+					)
+				)?.image,
+			).toBe(initial.image);
+			expect(
+				(await pool.query("SELECT * FROM identity.security_audit ORDER BY id"))
+					.rows,
+			).toEqual(audit);
+		} finally {
+			await migrator.query(
+				'DROP TRIGGER fail_avatar ON identity."user"; DROP FUNCTION identity.fail_avatar()',
+			);
+		}
+		await migrator.query(
+			`CREATE FUNCTION identity.delay_avatar() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN PERFORM pg_sleep(0.8); RETURN NEW; END $$; CREATE TRIGGER delay_avatar BEFORE UPDATE OF image ON identity."user" FOR EACH ROW EXECUTE FUNCTION identity.delay_avatar()`,
+		);
+		try {
+			await pool.query(
+				"UPDATE identity.session SET expires_at=clock_timestamp()+interval '0.5 seconds' WHERE user_id=$1",
+				[userId],
+			);
+			expect((await avatarRequest(bytes, initial.avatarVersion)).ok).toBe(
+				false,
+			);
+			expect(
+				(
+					await pool.query('SELECT image FROM identity."user" WHERE id=$1', [
+						userId,
+					])
+				).rows[0].image,
+			).toBe(initial.image);
+			expect(
+				(
+					await pool.query(
+						"SELECT version FROM identity.user_avatar WHERE user_id=$1",
+						[userId],
+					)
+				).rows[0].version,
+			).toBe(initial.avatarVersion);
+			expect(
+				(await pool.query("SELECT * FROM identity.security_audit ORDER BY id"))
+					.rows,
+			).toEqual(audit);
+		} finally {
+			await migrator.query(
+				'DROP TRIGGER delay_avatar ON identity."user"; DROP FUNCTION identity.delay_avatar()',
+			);
+		}
+	});
+
 	it("uses generic requests, hashes tokens, prevents implicit signup, and has non-consuming scanner GETs", async () => {
 		const known = await issue();
 		const unknown = await issue("unknown@example.test");

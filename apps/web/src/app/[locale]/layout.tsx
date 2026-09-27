@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 	description: "Manage your account, organizations, members and security.",
 };
 
-export { productViewport as viewport } from "../../product-theme";
+export { personalViewport as generateViewport } from "../../lib/server-personal-settings";
 
 export default async function LocaleLayout({
 	children,

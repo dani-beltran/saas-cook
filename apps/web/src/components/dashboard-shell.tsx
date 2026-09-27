@@ -12,6 +12,7 @@ import {
 import { dashboardMessages } from "../i18n/dashboard";
 import { identityClient } from "../lib/identity-client";
 import "./dashboard.css";
+import { UserAvatar } from "./user-avatar";
 
 const AppName = createContext("Common SaaS");
 export function DashboardBrand({
@@ -138,7 +139,12 @@ export function DashboardFrame({
 	organizations: Array<{ id: string; name: string }>;
 	state: "loading" | "ready" | "error";
 	pendingMfa?: boolean;
-	user?: { name?: string | null; email: string };
+	user?: {
+		id?: string;
+		name?: string | null;
+		email: string;
+		image?: string | null;
+	};
 	onRetry: () => void;
 	onLocaleChange?: (locale: "en" | "es") => void;
 }) {
@@ -279,9 +285,7 @@ export function DashboardFrame({
 				<div className="dashboard-sidebar-footer">
 					{user && (
 						<a href={`/${locale}/account`} className="dashboard-user">
-							<span className="dashboard-avatar" aria-hidden="true">
-								{(user.name || user.email).slice(0, 1).toUpperCase()}
-							</span>
+							<UserAvatar user={user} />
 							<span>
 								<strong>{user.name || copy.account}</strong>
 								<small>{user.email}</small>

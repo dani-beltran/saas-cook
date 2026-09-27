@@ -103,3 +103,15 @@ use the same expressions/collation as the feature service; empty companies sort 
 The feature upgrade test preserves populated `0007` Projects, organizations,
 audit/outbox and closed readiness state, then replays the journal. Removing this
 sample from a deployed product requires a new migration; this history remains.
+
+
+`0009_personal_settings` adds nullable personal color mode and revision zero to
+existing identities, without rewriting existing images/history. The private
+`identity.user_avatar` table stores one bounded normalized WebP and version per
+user. Removal clears the payload but retains a version tombstone so delayed
+uploads cannot resurrect removed pictures. Only the identity role receives table
+privileges; tenant web/worker roles cannot read it. User deletion cascades the
+private row. Apply before starting the new binaries; no backfill, new environment
+variables, OpenFGA model or publication is needed. Fresh, populated 0008 upgrade,
+journal replay, role denial and storage constraints have dedicated integration
+coverage. The existing `user.image` remains the sole display pointer.

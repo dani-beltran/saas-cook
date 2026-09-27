@@ -3,6 +3,7 @@ import {
 	bigint,
 	boolean,
 	check,
+	customType,
 	foreignKey,
 	index,
 	integer,
@@ -37,6 +38,8 @@ export const user = identity.table(
 		email: text("email").notNull().unique(),
 		emailVerified: boolean("email_verified").notNull().default(false),
 		image: text("image"),
+		themeMode: text("theme_mode"),
+		themeVersion: integer("theme_version").notNull().default(0),
 		twoFactorEnabled: boolean("two_factor_enabled").notNull().default(false),
 		lifecycleStatus: text("lifecycle_status").notNull().default("active"),
 		credentialEpoch: bigint("credential_epoch", { mode: "number" })
@@ -50,6 +53,29 @@ export const user = identity.table(
 			sql`${table.lifecycleStatus} IN ('active','frozen','deleted')`,
 		),
 		check("user_credential_epoch_check", sql`${table.credentialEpoch}>0`),
+		check(
+			"user_theme_mode_check",
+			sql`${table.themeMode} IS NULL OR ${table.themeMode} IN ('light','dark','system')`,
+		),
+		check("user_theme_version_check", sql`${table.themeVersion}>=0`),
+	],
+);
+// Bounded private avatar storage; the identity user.image remains the display pointer.
+const bytea = customType<{ data: Buffer }>({ dataType: () => "bytea" });
+export const userAvatar = identity.table(
+	"user_avatar",
+	{
+		userId: text("user_id")
+			.primaryKey()
+			.references(() => user.id, { onDelete: "cascade" }),
+		version: uuid("version").notNull().unique(),
+		bytes: bytea("bytes"),
+	},
+	(table) => [
+		check(
+			"user_avatar_bytes_check",
+			sql`octet_length(${table.bytes}) BETWEEN 1 AND 524288`,
+		),
 	],
 );
 export const session = identity.table("session", {

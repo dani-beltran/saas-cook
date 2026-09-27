@@ -1,5 +1,9 @@
 # Developer-configured product theme
 
+## Intentional personal-mode extension (2026-09-27)
+
+The [personal settings feature](personal-settings.md) supersedes the original exclusion of user-facing appearance controls and persisted modes. Product configuration remains the fallback and still exclusively owns palette, typography, radius, shadows and density. Only color mode now has a per-user database override, authenticated server resolution and immediate client synchronization. The original design and its verification below are retained as historical evidence; they do not verify the extension.
+
 ## Request and decisions
 
 Unify the existing Common SaaS appearance while preserving the current teal identity, localized authentication/dashboard flows, responsive layouts and developer-owned components. This is a presentation-only extension to the Foundation UI-01 shared theme/locale acceptance boundary in `docs/06-delivery-roadmap.md`.

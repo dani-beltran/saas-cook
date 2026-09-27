@@ -13,6 +13,7 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import type { Pool, PoolClient } from "pg";
 import { z } from "zod";
 import { ingressSource } from "./ingress";
+import { createPersonalSettings } from "./personal-settings";
 
 const optionsSchema = z.strictObject({
 	secret: z.string().min(32),
@@ -113,6 +114,7 @@ export function createIdentityAdapter(
 		trustedOrigins: [options.origin],
 		secret: options.secret,
 		emailAndPassword: { enabled: false },
+		disabledPaths: ["/update-user"],
 		user: { deleteUser: { enabled: false } },
 		account: { accountLinking: { enabled: false } },
 		logger: { disabled: true },
@@ -229,6 +231,7 @@ SELECT id FROM identity.rate_limit WHERE last_request<$1 ORDER BY last_request F
 		account: { accountLinking: { enabled: false } },
 		logger: { disabled: true },
 		disabledPaths: [
+			"/update-user",
 			"/magic-link/verify",
 			"/delete-user",
 			"/delete-user/callback",
@@ -604,12 +607,15 @@ CASE WHEN pg_input_is_valid(value,'jsonb') THEN value::jsonb->>'userId'=$1 OR va
 	}
 	async function session(
 		headers: Headers,
-		options: { allowPendingMfa?: boolean } = {},
+		options: { allowPendingMfa?: boolean; disableRefresh?: boolean } = {},
 	): Promise<SessionIdentity | null> {
 		const epoch = await ready();
 		const result = await auth.api.getSession({
 			headers,
-			query: { disableCookieCache: true },
+			query: {
+				disableCookieCache: true,
+				disableRefresh: options.disableRefresh ?? false,
+			},
 		});
 		if (!result) return null;
 		const row = (
@@ -774,6 +780,10 @@ CASE WHEN pg_input_is_valid(value,'jsonb') THEN value::jsonb->>'userId'=$1 OR va
 		failure: Failure,
 	): Promise<Response> {
 		const url = new URL(request.url);
+		if (
+			["/api/auth/personal-settings", "/api/auth/avatar"].includes(url.pathname)
+		)
+			return personalSettings.handle(request);
 		const route = url.pathname.replace(/^\/api\/auth/, "");
 		const json = (value: unknown, status = 200) =>
 			Response.json(value, { status, headers: protectedHeaders });
@@ -1335,5 +1345,14 @@ CASE WHEN pg_input_is_valid(value,'jsonb') THEN value::jsonb->>'userId'=$1 OR va
 		}
 		return response;
 	}
-	return { handler, session, assertCurrent, auth };
+	const personalSettings = createPersonalSettings(pool, {
+		origin: options.origin,
+		// Personal reads/uploads never silently extend a session outside its fence.
+		session: (headers) => session(headers, { disableRefresh: true }),
+		assertCurrent,
+		throttle,
+	});
+	return { handler, session, assertCurrent, auth, personalSettings };
 }
+
+export type { PersonalSettings } from "./personal-settings";

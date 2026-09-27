@@ -18,7 +18,7 @@ await build({
 	target: "node24",
 	format: "esm",
 	sourcemap: true,
-	external: ["pg-native"],
+	external: ["pg-native", "sharp"],
 	banner: {
 		js: "import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);",
 	},

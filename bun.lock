@@ -75,6 +75,7 @@
         "react": "19.3.0",
         "react-dom": "19.3.0",
         "react-hook-form": "7.88.0",
+        "sharp": "0.35.4",
         "zod": "4.6.5",
       },
       "devDependencies": {
@@ -144,6 +145,7 @@
         "better-auth": "1.7.5",
         "drizzle-orm": "0.45.3",
         "pg": "8.23.0",
+        "sharp": "0.35.4",
         "zod": "4.6.5",
       },
       "devDependencies": {

@@ -10,6 +10,7 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
+		"sharp": "0.35.4",
 		"@common-saas/db": "workspace:*",
 		"@common-saas/observability": "workspace:*",
 		"better-auth": "1.7.5",

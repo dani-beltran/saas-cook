@@ -11,6 +11,7 @@
 		"storybook:build": "node ../../node_modules/storybook/dist/bin/dispatcher.js build --config-dir .storybook --output-dir ../../artifacts/storybook --disable-telemetry"
 	},
 	"dependencies": {
+		"sharp": "0.35.4",
 		"@common-saas/api": "workspace:*",
 		"@common-saas/config": "workspace:*",
 		"@common-saas/observability": "workspace:*",

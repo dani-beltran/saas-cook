@@ -222,7 +222,7 @@
 	}
 	.account-identity-row {
 		display: grid;
-		grid-template-columns: 44px minmax(0, 1fr);
+		grid-template-columns: 64px minmax(0, 1fr);
 		align-items: start;
 		gap: 12px 16px;
 	}
@@ -240,4 +240,118 @@
 		justify-self: start;
 		margin: 0;
 	}
+}
+
+.account-appearance {
+	margin-top: 28px;
+	padding-top: 28px;
+	border-top: 1px solid var(--border);
+}
+.account-picture-controls {
+	margin-top: 20px;
+}
+.account-picture-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+}
+.account-preference-status {
+	min-height: 24px;
+	margin-top: 8px;
+	font-size: 13px;
+}
+.account-mode-options {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 12px;
+	max-width: 580px;
+}
+.account-mode-option {
+	position: relative;
+	padding: 10px;
+	border: 1px solid var(--input);
+	border-radius: var(--panel-radius);
+	cursor: pointer;
+}
+.account-mode-option:has(:checked) {
+	border-color: var(--primary);
+	outline: 2px solid var(--primary);
+	outline-offset: -2px;
+	background: var(--accent);
+}
+.account-mode-option:has(:focus-visible) {
+	outline: 3px solid var(--ring);
+	outline-offset: 3px;
+}
+.account-mode-option input {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	opacity: 0;
+}
+.account-mode-label {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 10px;
+	font-size: 13px;
+	font-weight: 550;
+}
+.account-mode-check {
+	visibility: hidden;
+	color: var(--primary);
+}
+.account-mode-option:has(:checked) .account-mode-check {
+	visibility: visible;
+}
+.account-mode-option:has(:disabled) {
+	opacity: 0.6;
+	cursor: default;
+}
+.account-mode-preview {
+	/* Resolve paired tokens here, independently of the selected page mode. */
+	--background: light-dark(var(--background-light), var(--background-dark));
+	--muted: light-dark(var(--muted-light), var(--muted-dark));
+	--primary: light-dark(var(--primary-light), var(--primary-dark));
+	--border: light-dark(var(--border-light), var(--border-dark));
+	display: grid;
+	gap: 6px;
+	height: 66px;
+	padding: 12px 12px 12px 28%;
+	border: 1px solid var(--border);
+	border-radius: var(--control-radius);
+	background: var(--background);
+}
+.account-mode-preview span {
+	border-radius: 3px;
+	background: var(--muted);
+	border: 1px solid var(--border);
+}
+.account-mode-preview span:first-child {
+	width: 60%;
+	background: var(--primary);
+}
+.account-mode-preview.mode-light {
+	color-scheme: only light;
+}
+.account-mode-preview.mode-dark {
+	color-scheme: only dark;
+}
+.account-mode-preview.mode-system {
+	color-scheme: light dark;
+}
+@media (max-width: 420px) {
+	.account-mode-options {
+		gap: 8px;
+	}
+	.account-mode-option {
+		padding: 8px;
+	}
+}
+
+.account-avatar.user-avatar {
+	flex-basis: 64px;
+	width: 64px;
+	height: 64px;
+	border-radius: 50%;
 }

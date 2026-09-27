@@ -11,7 +11,12 @@ import { identityClient } from "../lib/identity-client";
 import { IdentityRequestError, identityRequest } from "../lib/identity-request";
 import { AuthFrame, AuthHeader } from "./auth-ui";
 import { DashboardShell } from "./dashboard-shell";
+import {
+	AppearanceSettings,
+	ProfilePictureControls,
+} from "./personal-settings";
 import { SignIn } from "./sign-in";
+import { UserAvatar } from "./user-avatar";
 import "./account-dashboard.css";
 
 type AccountSession = {
@@ -352,11 +357,7 @@ export function Account() {
 						</div>
 					</div>
 					<div className="account-identity-row">
-						<span className="account-avatar" aria-hidden="true">
-							{(session.user.name || session.user.email)
-								.slice(0, 2)
-								.toUpperCase()}
-						</span>
+						<UserAvatar user={session.user} className="account-avatar" />
 						<div className="account-identity-text">
 							<strong>{session.user.name || session.user.email}</strong>
 							<p className="account-setting-description">
@@ -387,7 +388,9 @@ export function Account() {
 							{t("signOut")}
 						</Button>
 					</div>
+					{!pendingMfa && <ProfilePictureControls key={currentIdentity} />}
 					{feedback("identity")}
+					{!pendingMfa && <AppearanceSettings />}
 				</div>
 				{pendingMfa ? (
 					<p role="alert" className="dashboard-notice">

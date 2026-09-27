@@ -64,6 +64,13 @@
 			"when": 1790471047923,
 			"tag": "0008_example_customers",
 			"breakpoints": true
+		},
+		{
+			"idx": 9,
+			"version": "7",
+			"when": 1790502427327,
+			"tag": "0009_personal_settings",
+			"breakpoints": true
 		}
 	]
 }

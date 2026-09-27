@@ -21,6 +21,8 @@ export default withNextIntl({
 		];
 	},
 	output: "standalone",
+	// Keep native bindings outside webpack and trace them into the standalone image.
+	serverExternalPackages: ["sharp"],
 	outputFileTracingRoot: resolve(import.meta.dirname, "../.."),
 	transpilePackages: [
 		"@common-saas/api",

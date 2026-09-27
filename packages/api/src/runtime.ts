@@ -121,3 +121,5 @@ export async function shutdownApplicationRuntime() {
 	runtime = undefined;
 	await current?.close();
 }
+
+export type { PersonalSettings } from "@common-saas/auth";

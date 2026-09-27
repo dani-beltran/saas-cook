@@ -252,6 +252,16 @@ try {
 	checks.push(
 		"existing-and-restored-application-data-cannot-bootstrap-as-fresh",
 	);
+	await docker([
+		"run",
+		"--rm",
+		"--entrypoint",
+		"/nodejs/bin/node",
+		image,
+		"-e",
+		"require('/app/apps/web/.next/server/app/api/health/route.js').routeModule.ensureUserland().catch(()=>process.exit(1))",
+	]);
+	checks.push("compiled-identity-route-loads-native-avatar-dependencies");
 	const id = await start();
 	assert.equal(
 		await docker(["exec", id, "/nodejs/bin/node", "--version"]),
@@ -259,9 +269,12 @@ try {
 	);
 	await node(
 		id,
-		"const {createRequire}=require('node:module');const r=createRequire('/app/apps/web/server.js');const n=createRequire(r.resolve('next'));n('sharp')({create:{width:1,height:1,channels:4,background:'#fff'}}).png().toBuffer().then(b=>{if(!b.length)process.exit(1)})",
+		"const {createRequire}=require('node:module');const r=createRequire('/app/apps/web/server.js');const n=createRequire(r.resolve('next'));const sharp=n('sharp');(async()=>{for(const format of ['jpeg','png','webp']){const b=await sharp({create:{width:640,height:480,channels:3,background:'#148c80'}}).withMetadata({orientation:6}).toFormat(format).toBuffer();const out=await sharp(b,{failOn:'warning',limitInputPixels:16000000}).autoOrient().resize(512,512,{fit:'cover',withoutEnlargement:true}).webp({quality:82}).toBuffer();const m=await sharp(out).metadata();if(m.format!=='webp'||m.width>512||m.height>512||m.exif||m.icc)throw new Error('Avatar native pipeline failed')}})().catch(()=>process.exit(1))",
 	);
-	checks.push("pinned-runtime-and-native-image-library");
+	checks.push(
+		"pinned-runtime-and-native-image-library",
+		"native-avatar-jpeg-png-webp-orientation-resize-metadata-strip",
+	);
 	const port = (await docker(["port", id, "3000/tcp"])).split(":").at(-1);
 	const origin = `http://127.0.0.1:${port}`;
 	const page = await fetch(`${origin}/en`);
