@@ -234,6 +234,7 @@ test("password registration, sign-in, localized reset, and preserved MFA recover
 	const email = `browser-password-${randomUUID().slice(0, 8)}@example.test`;
 	const newPassword = "Replacement browser password 2026!";
 	await signUp(page, email);
+	await page.getByRole("tab", { name: "Security", exact: true }).click();
 	await page.getByLabel("Current password", { exact: true }).fill(password);
 	await page
 		.getByRole("button", { name: "Set up authenticator", exact: true })
@@ -250,11 +251,18 @@ test("password registration, sign-in, localized reset, and preserved MFA recover
 	await expect(
 		page.getByRole("button", { name: "Disable authenticator", exact: true }),
 	).toBeVisible();
+	await page
+		.getByRole("tab", { name: "Account identity", exact: true })
+		.click();
 	await page.getByRole("button", { name: "Sign out", exact: true }).click();
 	await passwordSignIn(page, email, password);
 	await expect(page.getByRole("main").getByRole("alert")).toContainText(
 		"Complete sign-in with your authenticator",
 	);
+	await expect(page.getByRole("tab", { selected: true })).toHaveText(
+		"Security",
+	);
+	await expect(page.getByRole("tabpanel")).toHaveCount(1);
 	await expect(
 		page.getByRole("heading", { name: "Organizations", exact: true }),
 	).toHaveCount(0);
@@ -262,6 +270,7 @@ test("password registration, sign-in, localized reset, and preserved MFA recover
 		.getByLabel("Verification code", { exact: true })
 		.fill(authenticatorCode(uri));
 	await page.getByRole("button", { name: "Verify", exact: true }).click();
+	await page.getByRole("tab", { name: "Organizations", exact: true }).click();
 	await expect(
 		page.getByRole("heading", { name: "Organizations", exact: true }),
 	).toBeVisible();
@@ -348,9 +357,11 @@ test("password registration, sign-in, localized reset, and preserved MFA recover
 			.locator("details")
 			.getByRole("button", { name: "Verify", exact: true })
 			.click();
+		await page.getByRole("tab", { name: "Organizations", exact: true }).click();
 		await expect(
 			page.getByRole("heading", { name: "Organizations", exact: true }),
 		).toBeVisible();
+		await page.getByRole("tab", { name: "Security", exact: true }).click();
 		await page
 			.getByLabel("Current password", { exact: true })
 			.fill(newPassword);
@@ -405,6 +416,7 @@ test("real registration, scanner confirmation, two memberships, per-tab isolatio
 	const id = randomUUID().slice(0, 8);
 	const email = `browser-owner-${id}@example.test`;
 	const link = await signUp(page, email);
+	await page.getByRole("tab", { name: "Organizations", exact: true }).click();
 	await page
 		.getByLabel("Organization name", { exact: true })
 		.fill(`North ${id}`);
@@ -430,6 +442,7 @@ test("real registration, scanner confirmation, two memberships, per-tab isolatio
 		.getByRole("button", { name: "Cancel", exact: true })
 		.click();
 	await page.getByRole("link", { name: "Account", exact: true }).click();
+	await page.getByRole("tab", { name: "Organizations", exact: true }).click();
 	await page
 		.getByLabel("Organization name", { exact: true })
 		.fill(`South ${id}`);
@@ -490,6 +503,7 @@ test("real browser WebAuthn enrollment and passwordless sign-in", async ({
 	const id = randomUUID().slice(0, 8);
 	await enableVirtualAuthenticator(page);
 	await signUp(page, `browser-passkey-${id}@example.test`);
+	await page.getByRole("tab", { name: "Security", exact: true }).click();
 	await page
 		.getByLabel("Passkey name", { exact: true })
 		.fill("Browser credential");
@@ -499,6 +513,9 @@ test("real browser WebAuthn enrollment and passwordless sign-in", async ({
 	await expect(
 		page.getByText("Browser credential", { exact: true }),
 	).toBeVisible();
+	await page
+		.getByRole("tab", { name: "Account identity", exact: true })
+		.click();
 	await page.getByRole("button", { name: "Sign out", exact: true }).click();
 	await expect(
 		page.getByRole("heading", {
@@ -537,6 +554,9 @@ for (const outgoingRole of ["member", "inactive"] as const) {
 		try {
 			await signUp(page, ownerEmail);
 			await signUp(recipient, recipientEmail);
+			await page
+				.getByRole("tab", { name: "Organizations", exact: true })
+				.click();
 			await page
 				.getByLabel("Organization name", { exact: true })
 				.fill(`Transfer ${id}`);
@@ -818,6 +838,7 @@ test("Project dashboard validates, edits, detects conflicts, moves and restores 
 }, testInfo) => {
 	const id = randomUUID().slice(0, 8);
 	await signUp(page, `browser-project-${id}@example.test`);
+	await page.getByRole("tab", { name: "Organizations", exact: true }).click();
 	await page
 		.getByLabel("Organization name", { exact: true })
 		.fill(`Projects ${id}`);

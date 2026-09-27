@@ -2,12 +2,87 @@ import { randomUUID } from "node:crypto";
 import { expect, test } from "@playwright/test";
 import { dashboardSignUp } from "./dashboard-helpers";
 
+test("account tabs show one section, support keyboard navigation and preserve drafts and deep links", async ({
+	page,
+}) => {
+	await dashboardSignUp(
+		page,
+		`account-tabs-${randomUUID().slice(0, 8)}@example.test`,
+	);
+	for (const locale of ["en", "es"] as const) {
+		await page.setViewportSize(
+			locale === "en"
+				? { width: 1440, height: 1000 }
+				: { width: 390, height: 844 },
+		);
+		await page.goto(`/${locale}/account`);
+		const names =
+			locale === "en"
+				? ["Account identity", "Organizations", "Security", "Sessions"]
+				: ["Identidad de la cuenta", "Organizaciones", "Seguridad", "Sesiones"];
+		const tabs = page.getByRole("tab");
+		await expect(tabs).toHaveText(names);
+		const expectSection = async (index: number) => {
+			await expect(page.getByRole("tabpanel")).toHaveCount(1);
+			await expect(
+				page.getByRole("tabpanel", { name: names[index], exact: true }),
+			).toBeVisible();
+			await expect(page.getByRole("tab", { selected: true })).toHaveText(
+				names[index],
+			);
+		};
+		await expectSection(0);
+		for (const index of [1, 2, 3, 0]) {
+			await tabs.nth(index).click();
+			await expectSection(index);
+		}
+		await tabs.first().press("ArrowLeft");
+		await expectSection(3);
+		await expect(tabs.last()).toBeFocused();
+		await tabs.last().press("ArrowRight");
+		await expectSection(0);
+		await tabs.first().press("End");
+		await expectSection(3);
+		await tabs.last().press("Home");
+		await expectSection(0);
+		await tabs.first().press("ArrowRight");
+		await expectSection(1);
+		await expect(tabs.nth(1)).toBeFocused();
+		await tabs.nth(1).press("Tab");
+		await expect(page.locator("#account-organization-name")).toBeFocused();
+		const organizationName = page.locator("#account-organization-name");
+		await organizationName.fill("Unfinished organization");
+		await tabs.nth(2).click();
+		await tabs.nth(1).click();
+		await expect(organizationName).toHaveValue("Unfinished organization");
+		await page.reload();
+		await expectSection(1);
+		await page.goto(`/${locale}/account#security`);
+		await expectSection(2);
+		await page.goto(`/${locale}/account#sessions`);
+		await expectSection(3);
+		await page.goto(`/${locale}/account#reauthenticate`);
+		await expectSection(2);
+		await expect(page.locator("#reauthenticate")).toBeVisible();
+		await page.goto(`/${locale}/account#organizations`);
+		await expectSection(1);
+		await page.reload();
+		await expectSection(1);
+		expect(
+			await page.evaluate(
+				() => document.documentElement.scrollWidth <= innerWidth,
+			),
+		).toBe(true);
+	}
+});
+
 test("organization creation retains values and its operation key after a committed response is lost", async ({
 	page,
 }, testInfo) => {
 	const id = randomUUID().slice(0, 8);
 	await dashboardSignUp(page, `account-retry-${id}@example.test`);
-	const organizations = page.getByRole("region", {
+	await page.getByRole("tab", { name: "Organizations", exact: true }).click();
+	const organizations = page.getByRole("tabpanel", {
 		name: "Organizations",
 		exact: true,
 	});
@@ -109,7 +184,8 @@ test("session revocation confirms consequences, keeps the current session and si
 			other.getByRole("heading", { name: "Your account", exact: true }),
 		).toBeVisible();
 		await page.reload();
-		const sessions = page.getByRole("region", {
+		await page.getByRole("tab", { name: "Sessions", exact: true }).click();
+		const sessions = page.getByRole("tabpanel", {
 			name: "Sessions",
 			exact: true,
 		});

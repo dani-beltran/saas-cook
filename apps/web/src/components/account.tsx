@@ -26,6 +26,7 @@ type Notice = {
 	kind: "success" | "error";
 	reauthenticate?: boolean;
 };
+type AccountSection = "identity" | "organizations" | "security" | "sessions";
 
 export function Account() {
 	const t = useTranslations("Account");
@@ -40,6 +41,38 @@ export function Account() {
 		session?.user.twoFactorEnabled &&
 			!(session.session as { mfa?: boolean }).mfa,
 	);
+	const [section, setSection] = useState<AccountSection>("identity");
+	const activeSection =
+		pendingMfa && (section === "organizations" || section === "sessions")
+			? "security"
+			: section;
+	const tabs = [
+		{ id: "identity", label: copy.identity },
+		...(!pendingMfa
+			? [{ id: "organizations", label: t("organizations") } as const]
+			: []),
+		{ id: "security", label: t("security") },
+		...(!pendingMfa ? [{ id: "sessions", label: t("sessions") } as const] : []),
+	] satisfies Array<{ id: AccountSection; label: string }>;
+	useEffect(() => {
+		function readSection() {
+			const hash = window.location.hash.slice(1);
+			if (hash === "identity" || hash === "security") setSection(hash);
+			else if (hash === "organizations" || hash === "sessions")
+				setSection(pendingMfa ? "security" : hash);
+			else if (hash === "reauthenticate") setSection("security");
+			else if (!hash) setSection(pendingMfa ? "security" : "identity");
+		}
+		readSection();
+		// Put the required verification form in view when sign-in needs MFA.
+		if (pendingMfa) setSection("security");
+		window.addEventListener("hashchange", readSection);
+		return () => window.removeEventListener("hashchange", readSection);
+	}, [pendingMfa]);
+	function selectSection(next: AccountSection) {
+		setSection(next);
+		window.history.replaceState(window.history.state, "", `#${next}`);
+	}
 	const accountId = session?.user.id;
 	const previousAccount = useRef(accountId);
 	const sessionId = session?.session.id;
@@ -259,16 +292,48 @@ export function Account() {
 						<p className="dashboard-description">{copy.description}</p>
 					</div>
 				</header>
-				<nav className="dashboard-subnav" aria-label={copy.accountSections}>
-					<a href="#identity">{copy.identity}</a>
-					{!pendingMfa && <a href="#organizations">{t("organizations")}</a>}
-					<a href="#security">{t("security")}</a>
-					{!pendingMfa && <a href="#sessions">{t("sessions")}</a>}
-				</nav>
-				<section
+				<div
+					className="dashboard-subnav"
+					role="tablist"
+					aria-label={copy.accountSections}
+				>
+					{tabs.map((tab, index) => (
+						<button
+							type="button"
+							role="tab"
+							key={tab.id}
+							id={`account-tab-${tab.id}`}
+							aria-controls={tab.id}
+							aria-selected={activeSection === tab.id}
+							tabIndex={activeSection === tab.id ? 0 : -1}
+							onClick={() => selectSection(tab.id)}
+							onKeyDown={(event) => {
+								let next = index;
+								if (event.key === "ArrowRight")
+									next = (index + 1) % tabs.length;
+								else if (event.key === "ArrowLeft")
+									next = (index + tabs.length - 1) % tabs.length;
+								else if (event.key === "Home") next = 0;
+								else if (event.key === "End") next = tabs.length - 1;
+								else return;
+								event.preventDefault();
+								const target = tabs[next];
+								if (target) {
+									selectSection(target.id);
+									document.getElementById(`account-tab-${target.id}`)?.focus();
+								}
+							}}
+						>
+							{tab.label}
+						</button>
+					))}
+				</div>
+				<div
 					className="dashboard-section"
 					id="identity"
-					aria-labelledby="identity-title"
+					role="tabpanel"
+					aria-labelledby="account-tab-identity"
+					hidden={activeSection !== "identity"}
 				>
 					<div className="account-section-intro">
 						<div>
@@ -313,7 +378,7 @@ export function Account() {
 						</Button>
 					</div>
 					{feedback("identity")}
-				</section>
+				</div>
 				{pendingMfa ? (
 					<p role="alert" className="dashboard-notice">
 						{t("mfaRequired")}
@@ -337,10 +402,12 @@ export function Account() {
 								</Button>
 							</div>
 						)}
-						<section
+						<div
 							className="dashboard-section"
 							id="organizations"
-							aria-labelledby="organizations-title"
+							role="tabpanel"
+							aria-labelledby="account-tab-organizations"
+							hidden={activeSection !== "organizations"}
 						>
 							<div className="account-section-intro">
 								<div>
@@ -459,13 +526,15 @@ export function Account() {
 								</Button>
 							</form>
 							{feedback("organizations")}
-						</section>
+						</div>
 					</>
 				)}
-				<section
+				<div
 					className="dashboard-section"
 					id="security"
-					aria-labelledby="security-title"
+					role="tabpanel"
+					aria-labelledby="account-tab-security"
+					hidden={activeSection !== "security"}
 				>
 					<div className="account-section-intro">
 						<div>
@@ -838,12 +907,14 @@ export function Account() {
 							{feedback("reauthenticate")}
 						</div>
 					</div>
-				</section>
+				</div>
 				{!pendingMfa && (
-					<section
+					<div
 						className="dashboard-section"
 						id="sessions"
-						aria-labelledby="sessions-title"
+						role="tabpanel"
+						aria-labelledby="account-tab-sessions"
+						hidden={activeSection !== "sessions"}
 					>
 						<div className="account-section-intro">
 							<div>
@@ -932,7 +1003,7 @@ export function Account() {
 							</Button>
 						)}
 						{feedback("sessions")}
-					</section>
+					</div>
 				)}
 			</div>
 		</DashboardShell>

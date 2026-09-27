@@ -12,6 +12,7 @@ test("organization tabs, retry keys, sensitive denial, and localized member acce
 	const memberEmail = `org-dashboard-member-${id}@example.test`;
 	const canceledEmail = `org-dashboard-canceled-${id}@example.test`;
 	await dashboardSignUp(page, ownerEmail);
+	await page.getByRole("tab", { name: "Organizations", exact: true }).click();
 	await page
 		.getByLabel("Organization name", { exact: true })
 		.fill(`Studio ${id}`);
