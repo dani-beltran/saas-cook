@@ -1,6 +1,135 @@
 import { randomUUID } from "node:crypto";
 import { expect, test } from "@playwright/test";
-import { dashboardSignUp } from "./dashboard-helpers";
+import { Pool } from "pg";
+import { dashboardSignUp, emailLink } from "./dashboard-helpers";
+
+test("an older sign-in keeps account settings available and asks for confirmation only for sessions", async ({
+	page,
+}, testInfo) => {
+	const id = randomUUID().slice(0, 8);
+	const email = `account-freshness-${id}@example.test`;
+	await dashboardSignUp(page, email);
+	const organizationName = `Account freshness ${id}`;
+	const created = await page.request.post("/api/v1/organizations", {
+		headers: { origin: new URL(page.url()).origin },
+		data: {
+			name: organizationName,
+			slug: `account-freshness-${id}`,
+			operationKey: randomUUID(),
+		},
+	});
+	expect(created.status()).toBe(200);
+	const current = await page.request.get("/api/auth/get-session");
+	expect(current.status()).toBe(200);
+	const { session } = await current.json();
+	const connectionString = process.env.IDENTITY_DATABASE_URL;
+	if (!connectionString)
+		throw new Error("An isolated identity database is required");
+	const identity = new Pool({ connectionString, max: 1 });
+	try {
+		// Age only this synthetic session beyond the real provider's freshness gate.
+		const aged = await identity.query(
+			"UPDATE identity.session SET created_at=now()-interval '6 minutes' WHERE id=$1",
+			[session.id],
+		);
+		expect(aged.rowCount).toBe(1);
+	} finally {
+		await identity.end();
+	}
+	const restricted = await page.request.get("/api/auth/list-sessions");
+	expect(restricted.status()).toBe(403);
+	expect((await restricted.json()).code).toBe("SESSION_NOT_FRESH");
+
+	for (const locale of ["en", "es"] as const) {
+		await page.goto(`/${locale}/account#organizations`);
+		await page.reload();
+		const organizations = page.getByRole("tabpanel");
+		await expect(
+			organizations.getByRole("link", { name: new RegExp(organizationName) }),
+		).toBeVisible();
+		await expect(page.getByRole("main").getByRole("alert")).toHaveCount(0);
+		await page
+			.getByRole("tab", {
+				name: locale === "en" ? "Security" : "Seguridad",
+				exact: true,
+			})
+			.click();
+		await expect(page.getByRole("tabpanel")).toContainText(
+			locale === "en"
+				? "No passkeys added yet."
+				: "Todavía no has añadido claves de acceso.",
+		);
+		await page
+			.getByRole("tab", {
+				name: locale === "en" ? "Sessions" : "Sesiones",
+				exact: true,
+			})
+			.click();
+		const sessions = page.getByRole("tabpanel");
+		await expect(sessions.getByRole("status")).toContainText(
+			locale === "en"
+				? "Confirm your identity to view and manage your active sessions."
+				: "Confirma tu identidad para ver y gestionar tus sesiones activas.",
+		);
+		await expect(sessions.getByRole("listitem")).toHaveCount(0);
+		await page.screenshot({
+			path: testInfo.outputPath(`account-sessions-confirm-${locale}.png`),
+			fullPage: true,
+		});
+		await sessions.getByRole("link").click();
+		await expect(page.locator("#reauthenticate")).toBeVisible();
+	}
+	await page.goto("/en/account#sessions");
+	await page
+		.getByRole("tabpanel")
+		.getByRole("link", { name: "Confirm your identity" })
+		.click();
+	await page
+		.locator("#reauthenticate")
+		.getByRole("button", { name: "Email a sign-in link" })
+		.click();
+	await expect(
+		page.locator("#reauthenticate").getByRole("status"),
+	).toContainText("an email is on its way");
+	await page.goto(await emailLink(email));
+	await page.getByRole("button", { name: "Confirm", exact: true }).click();
+	await expect(
+		page.getByRole("heading", { name: "Your account", exact: true }),
+	).toBeVisible();
+	await page.getByRole("tab", { name: "Sessions", exact: true }).click();
+	await expect(page.getByRole("tabpanel").getByRole("listitem")).toHaveCount(2);
+	await expect(
+		page
+			.getByRole("tabpanel")
+			.getByRole("link", { name: "Confirm your identity" }),
+	).toHaveCount(0);
+	await expect(page.getByRole("main").getByRole("alert")).toHaveCount(0);
+	await page.screenshot({
+		path: testInfo.outputPath("account-settings-recovered.png"),
+		fullPage: true,
+	});
+});
+
+test("unexpected account loading failures remain visible and can be retried", async ({
+	page,
+}) => {
+	await dashboardSignUp(
+		page,
+		`account-load-retry-${randomUUID().slice(0, 8)}@example.test`,
+	);
+	await page.route("**/api/auth/list-sessions", (route) =>
+		route.fulfill({ status: 503, json: { error: "Identity unavailable" } }),
+	);
+	await page.reload();
+	await expect(page.getByRole("main").getByRole("alert")).toContainText(
+		"We could not load your account settings.",
+	);
+	await page.unroute("**/api/auth/list-sessions");
+	await page.getByRole("button", { name: "Try again", exact: true }).click();
+	await page.getByRole("tab", { name: "Sessions", exact: true }).click();
+	await expect(page.getByRole("tabpanel").getByRole("listitem")).toHaveCount(1);
+	await expect(page.getByRole("main").getByRole("alert")).toHaveCount(0);
+});
 
 test("account tabs show one section, support keyboard navigation and preserve drafts and deep links", async ({
 	page,

@@ -97,6 +97,7 @@ export function Account() {
 		[],
 	);
 	const [sessions, setSessions] = useState<AccountSession[]>([]);
+	const [sessionReauthRequired, setSessionReauthRequired] = useState(false);
 	const [mfaSetup, setMfaSetup] = useState<{
 		totpURI?: string;
 		backupCodes: string[];
@@ -129,6 +130,7 @@ export function Account() {
 			setOrganizations([]);
 			setKeys([]);
 			setSessions([]);
+			setSessionReauthRequired(false);
 			setLoading(false);
 			return;
 		}
@@ -147,10 +149,17 @@ export function Account() {
 					identityClient.listSessions(),
 				]);
 			if (!current()) return;
-			if (credentials.error || activeSessions.error) throw new Error("account");
+			// Session inventory requires a recent sign-in; an older, valid session
+			// can still load organizations and passkeys.
+			const reauthRequired =
+				activeSessions.error?.status === 403 &&
+				activeSessions.error.code === "SESSION_NOT_FRESH";
+			if (credentials.error || (activeSessions.error && !reauthRequired))
+				throw new Error("account");
 			setOrganizations(nextOrganizations);
 			setKeys(credentials.data ?? []);
 			setSessions(activeSessions.data ?? []);
+			setSessionReauthRequired(reauthRequired);
 		} catch {
 			if (current()) setLoadFailed(true);
 		} finally {
@@ -169,6 +178,7 @@ export function Account() {
 		setOrganizations([]);
 		setKeys([]);
 		setSessions([]);
+		setSessionReauthRequired(false);
 		organizationAttempt.current = null;
 		resetOrganization();
 	}, [accountId, resetOrganization]);
@@ -922,6 +932,14 @@ export function Account() {
 								<p>{copy.sessionsDescription}</p>
 							</div>
 						</div>
+						{sessionReauthRequired && (
+							<div className="dashboard-notice" role="status">
+								<p>{copy.sessionsReauthRequired}</p>
+								<a className="mt-3 inline-block" href="#reauthenticate">
+									{copy.reauthenticateTitle}
+								</a>
+							</div>
+						)}
 						<ul className="account-session-list">
 							{[...sessions]
 								.sort(
@@ -973,9 +991,12 @@ export function Account() {
 									</li>
 								))}
 						</ul>
-						{!loading && !loadFailed && sessions.length === 0 && (
-							<p className="account-setting-description">{copy.noSessions}</p>
-						)}
+						{!loading &&
+							!loadFailed &&
+							!sessionReauthRequired &&
+							sessions.length === 0 && (
+								<p className="account-setting-description">{copy.noSessions}</p>
+							)}
 						{!loading &&
 							!loadFailed &&
 							sessions.length > 0 &&

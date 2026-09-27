@@ -42,6 +42,8 @@ export const accountDashboardMessages = {
 		reauthenticated: "Your sign-in has been refreshed.",
 		sessionsDescription:
 			"Review where you are signed in. Signing out another session does not affect this one.",
+		sessionsReauthRequired:
+			"Confirm your identity to view and manage your active sessions. Your other account settings are still available.",
 		signedIn: "Signed in",
 		expires: "Expires",
 		noOtherSessions: "You are not signed in anywhere else.",
@@ -105,6 +107,8 @@ export const accountDashboardMessages = {
 		reauthenticated: "Tu autenticación se ha renovado.",
 		sessionsDescription:
 			"Revisa dónde has iniciado sesión. Cerrar otra sesión no afecta a esta.",
+		sessionsReauthRequired:
+			"Confirma tu identidad para ver y gestionar tus sesiones activas. Los demás ajustes de tu cuenta siguen disponibles.",
 		signedIn: "Inicio de sesión",
 		expires: "Caduca",
 		noOtherSessions: "No tienes sesiones abiertas en otros dispositivos.",
