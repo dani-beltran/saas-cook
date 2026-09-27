@@ -1,14 +1,9 @@
-/* Authentication-only treatment; shared controls and dashboard tokens stay unchanged. */
+/* Authentication layout; appearance comes from the shared root tokens. */
 .auth-page {
 	min-height: 100dvh;
-	color-scheme: light;
 	background: var(--background);
 	color: var(--foreground);
-	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 	-webkit-font-smoothing: antialiased;
-}
-.auth-page.dark {
-	color-scheme: dark;
 }
 .auth-link.auth-link-muted {
 	color: var(--muted-foreground);
@@ -33,9 +28,9 @@
 	max-width: 482px;
 	padding: 40px;
 	border: 1px solid var(--border);
-	border-radius: 18px;
+	border-radius: var(--auth-radius);
 	background: var(--card);
-	box-shadow: 0 4px 24px -12px rgb(0 0 0 / 12%);
+	box-shadow: var(--elevation-panel);
 }
 .auth-mark {
 	display: grid;
@@ -44,7 +39,7 @@
 	height: 44px;
 	margin: 0 auto 24px;
 	border: 1px solid var(--border);
-	border-radius: 12px;
+	border-radius: var(--panel-radius);
 	background: var(--background);
 	color: var(--foreground);
 }
@@ -70,20 +65,20 @@
 	font-weight: 500;
 }
 .auth-page .auth-input {
-	height: 46px;
-	border-radius: 8px;
+	height: var(--auth-control-height);
+	border-radius: var(--control-radius);
 	background: var(--card);
-	box-shadow: 0 1px 2px rgb(0 0 0 / 3%);
+	box-shadow: var(--elevation-low);
 }
 .auth-page .auth-primary {
 	width: 100%;
-	min-height: 46px;
+	min-height: var(--auth-control-height);
 	gap: 8px;
-	border-radius: 8px;
-	box-shadow: 0 1px 2px rgb(0 0 0 / 8%);
+	border-radius: var(--control-radius);
+	box-shadow: var(--elevation-low);
 }
 .auth-link {
-	border-radius: 3px;
+	border-radius: var(--control-radius);
 	color: var(--primary);
 	font-size: 14px;
 	font-weight: 500;
@@ -102,17 +97,17 @@
 	justify-content: center;
 	gap: 10px;
 	width: 100%;
-	min-height: 44px;
-	padding: 10px 12px;
-	border: 1px solid var(--border);
-	border-radius: 8px;
-	background: var(--card);
-	color: var(--foreground);
+	min-height: var(--auth-control-height);
+	padding: var(--control-padding-y) 12px;
+	border: 1px solid var(--input);
+	border-radius: var(--control-radius);
+	background: var(--secondary);
+	color: var(--secondary-foreground);
 	font-size: 14px;
 	font-weight: 500;
 }
 .auth-secondary:hover {
-	background: var(--muted);
+	background: var(--secondary-hover);
 }
 .auth-secondary:disabled {
 	opacity: 0.5;
@@ -142,32 +137,20 @@
 }
 .auth-notice {
 	border: 1px solid var(--border);
-	border-radius: 8px;
+	border-radius: var(--control-radius);
 	padding: 13px 14px;
 	font-size: 14px;
 	line-height: 1.6;
 	overflow-wrap: anywhere;
 }
 .auth-error {
-	border-color: color-mix(in srgb, var(--destructive) 35%, transparent);
+	border-color: var(--destructive);
 	color: var(--destructive);
-	background: color-mix(in srgb, var(--destructive) 5%, var(--card));
+	background: var(--danger-surface);
 }
 .auth-success {
-	background: var(--background);
-}
-.auth-theme {
-	display: grid;
-	place-items: center;
-	width: 36px;
-	height: 36px;
-	border: 1px solid var(--border);
-	border-radius: 50%;
-	background: var(--card);
-	color: var(--muted-foreground);
-}
-.auth-theme:hover {
-	color: var(--foreground);
+	color: var(--success-foreground);
+	background: var(--success-surface);
 }
 .auth-password-toggle {
 	position: absolute;
@@ -176,7 +159,7 @@
 	display: grid;
 	place-items: center;
 	width: 44px;
-	border-radius: 7px;
+	border-radius: var(--control-radius);
 	color: var(--muted-foreground);
 }
 .auth-password-toggle:hover {
@@ -196,15 +179,6 @@
 @keyframes auth-spin {
 	to {
 		transform: rotate(360deg);
-	}
-}
-@media (prefers-reduced-motion: reduce) {
-	.auth-page *,
-	.auth-page *::before,
-	.auth-page *::after {
-		animation: none;
-		transition: none;
-		scroll-behavior: auto;
 	}
 }
 @media (max-width: 540px) {

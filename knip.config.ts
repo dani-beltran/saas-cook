@@ -19,6 +19,9 @@ const config: KnipConfig = {
 				"infra/docker/*.{ts,cjs,mjs}",
 				"*.config.ts",
 			],
+			playwright: {
+				config: ["playwright.config.ts", "playwright.theme.config.ts"],
+			},
 			vitest: { config: ["vitest.config.ts", "vitest.phase0.config.ts"] },
 			// Retained Phase 0 install/version evidence is read dynamically by
 			// scripts/phase0/toolchain.ts. These are exact root-only exceptions;

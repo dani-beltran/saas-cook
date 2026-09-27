@@ -15,6 +15,7 @@ Repository skills guide ordinary source edits; they are not a runtime customer-p
 | Strict DTOs and RPC/OpenAPI contracts | [resources.ts](../../packages/api-contracts/src/resources.ts), [router.ts](../../packages/api/src/router.ts), [handlers.ts](../../packages/api/src/handlers.ts) |
 | Runtime service composition and client | [runtime.ts](../../packages/api/src/runtime.ts), [client.ts](../../packages/api/src/client.ts) |
 | Project UI and navigation | [projects.tsx](../../apps/web/src/components/projects.tsx), [organization.tsx](../../apps/web/src/components/organization.tsx) |
+| Product appearance | [developer configuration](../../apps/web/src/product-theme.ts), [shared tokens](../../packages/ui/src/theme.css), [customization guide](theming.md) |
 | Shared forms, stories, locale copy | [project-form.tsx](../../packages/ui/src/project-form.tsx), [project-form.stories.tsx](../../packages/ui/src/project-form.stories.tsx), [messages.ts](../../packages/ui/src/messages.ts) |
 | Runtime validation and public allowlist | [server.ts](../../packages/config/src/server.ts), [client.ts](../../packages/config/src/client.ts) |
 | Real-service fixture and checks | [installation.ts](../../packages/testing/src/installation.ts), [verification](verification.md) |

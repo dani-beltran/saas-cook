@@ -65,9 +65,6 @@ export const messages = {
 			editProject: "Edit project",
 			version: "Version",
 			openProjects: "Open projects",
-			theme: "Appearance",
-			light: "Light",
-			dark: "Dark",
 			language: "Language",
 		},
 		Shell: {
@@ -77,9 +74,6 @@ export const messages = {
 			overview: "Overview",
 			organization: "Demo organization",
 			language: "Language",
-			theme: "Appearance",
-			light: "Light",
-			dark: "Dark",
 			foundation: "Foundation preview",
 			notice:
 				"This is a synthetic preview. Sign-in, membership and access controls arrive in Phase 2.",
@@ -171,9 +165,6 @@ export const messages = {
 			editProject: "Editar proyecto",
 			version: "Versión",
 			openProjects: "Abrir proyectos",
-			theme: "Apariencia",
-			light: "Claro",
-			dark: "Oscuro",
 			language: "Idioma",
 		},
 		Shell: {
@@ -183,9 +174,6 @@ export const messages = {
 			overview: "Resumen",
 			organization: "Organización de prueba",
 			language: "Idioma",
-			theme: "Apariencia",
-			light: "Claro",
-			dark: "Oscuro",
 			foundation: "Vista previa de la base",
 			notice:
 				"Esta es una vista previa con datos de prueba. El inicio de sesión, las membresías y el control de acceso llegan en la fase 2.",

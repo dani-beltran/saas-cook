@@ -1,13 +1,15 @@
 import { randomUUID } from "node:crypto";
 import { mkdir } from "node:fs/promises";
 import { expect, test } from "@playwright/test";
+import { themeAttributes, themeOptions } from "../../packages/ui/src/theme";
+import { contrast } from "../theme/contrast";
 import { dashboardSignUp } from "./dashboard-helpers";
 
 test("authenticated pages: desktop/mobile, English/Spanish, light/dark and shell keyboard navigation", async ({
 	page,
 	baseURL,
 }) => {
-	test.setTimeout(120_000);
+	test.setTimeout(240_000);
 	const id = randomUUID().slice(0, 8);
 	await dashboardSignUp(page, `visual-${id}@example.test`);
 	const headers = { origin: baseURL ?? "" };
@@ -57,11 +59,8 @@ test("authenticated pages: desktop/mobile, English/Spanish, light/dark and shell
 	}
 	await mkdir("artifacts/dashboard-redesign/screenshots", { recursive: true });
 	for (const locale of ["en", "es"]) {
-		for (const theme of ["light", "dark"]) {
-			await page.evaluate(
-				(value) => localStorage.setItem("common-saas-appearance", value),
-				theme,
-			);
+		for (const theme of ["light", "dark"] as const) {
+			await page.emulateMedia({ colorScheme: theme });
 			for (const size of ["desktop", "mobile"]) {
 				await page.setViewportSize(
 					size === "desktop"
@@ -75,9 +74,6 @@ test("authenticated pages: desktop/mobile, English/Spanish, light/dark and shell
 				]) {
 					await page.goto(`/${locale}${route}`);
 					await expect(page.locator(".dashboard-shell")).toBeVisible();
-					await expect(page.locator(".dashboard-shell")).toHaveClass(
-						theme === "dark" ? /dark/ : /^dashboard-shell$/,
-					);
 					await expect(
 						page
 							.locator("#dashboard-organization option")
@@ -95,16 +91,47 @@ test("authenticated pages: desktop/mobile, English/Spanish, light/dark and shell
 							page.getByRole("heading", { name: "North Studio", exact: true }),
 						).toBeVisible();
 					await expect(page.getByRole("main")).toBeVisible();
-					expect(
-						await page.evaluate(
-							() => document.documentElement.scrollWidth <= innerWidth,
-						),
-					).toBe(true);
-					await page.screenshot({
-						path: `artifacts/dashboard-redesign/screenshots/${section}-${locale}-${theme}-${size}.png`,
-						fullPage: true,
-						animations: "disabled",
-					});
+					// Vary visual attributes on the loaded page; keep real identity throttles enabled.
+					for (const palette of themeOptions.palette) {
+						await page.locator("html").evaluate((root, attributes) => {
+							for (const [key, value] of Object.entries(attributes))
+								root.setAttribute(key, value);
+						}, themeAttributes({ palette }));
+						await expect(page.locator("body")).toHaveCSS(
+							"background-color",
+							theme === "dark" ? "rgb(17, 33, 42)" : "rgb(248, 250, 252)",
+						);
+						for (const selector of [
+							".dashboard-description",
+							".dashboard-nav-link[aria-current]",
+							"#dashboard-organization",
+							".projects-status-active",
+						]) {
+							const element = page.locator(selector).first();
+							if (await element.isVisible())
+								expect(
+									await contrast(element),
+									selector,
+								).toBeGreaterThanOrEqual(4.5);
+						}
+						const input = page
+							.locator("input[data-slot=input]:visible")
+							.first();
+						if (await input.count())
+							expect(
+								await contrast(input, "border-top-color"),
+							).toBeGreaterThanOrEqual(3);
+						expect(
+							await page.evaluate(
+								() => document.documentElement.scrollWidth <= innerWidth,
+							),
+						).toBe(true);
+						await page.screenshot({
+							path: `artifacts/dashboard-redesign/screenshots/${section}-${locale}-${palette}-${theme}-${size}.png`,
+							fullPage: true,
+							animations: "disabled",
+						});
+					}
 				}
 			}
 		}

@@ -1,66 +1,124 @@
 @import "tailwindcss";
+@import "./theme.css";
 @source "./**/*.{ts,tsx}";
 @source "../../../apps/web/src/**/*.{ts,tsx}";
-@custom-variant dark (&:where(.dark, .dark *));
-
-:root {
-	--background: #f8fafc;
-	--foreground: #172b35;
-	--card: #ffffff;
-	--muted: #edf2f4;
-	--muted-foreground: #52636d;
-	--primary: #17675d;
-	--primary-foreground: #ffffff;
-	--border: #d6e0e4;
-	--input: #aabcc4;
-	--ring: #17675d;
-	--destructive: #b42318;
-}
-
-.dark {
-	--background: #11212a;
-	--foreground: #edf5f6;
-	--card: #192d37;
-	--muted: #243d47;
-	--muted-foreground: #b2c7ce;
-	--primary: #9ee0cb;
-	--primary-foreground: #102f2a;
-	--border: #36525e;
-	--input: #6c8b97;
-	--ring: #9ee0cb;
-	--destructive: #ffb4a8;
-}
 
 @theme inline {
 	--color-background: var(--background);
 	--color-foreground: var(--foreground);
 	--color-card: var(--card);
+	--color-card-foreground: var(--card-foreground);
+	--color-popover: var(--popover);
+	--color-popover-foreground: var(--popover-foreground);
 	--color-muted: var(--muted);
 	--color-muted-foreground: var(--muted-foreground);
 	--color-primary: var(--primary);
 	--color-primary-foreground: var(--primary-foreground);
+	--color-primary-hover: var(--primary-hover);
+	--color-secondary: var(--secondary);
+	--color-secondary-foreground: var(--secondary-foreground);
+	--color-secondary-hover: var(--secondary-hover);
+	--color-accent: var(--accent);
+	--color-accent-foreground: var(--accent-foreground);
 	--color-border: var(--border);
 	--color-input: var(--input);
+	--color-input-background: var(--input-background);
 	--color-ring: var(--ring);
+	--color-sidebar: var(--sidebar);
+	--color-sidebar-foreground: var(--sidebar-foreground);
+	--color-sidebar-accent: var(--sidebar-accent);
+	--color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+	--color-sidebar-border: var(--sidebar-border);
+	--color-sidebar-ring: var(--sidebar-ring);
 	--color-destructive: var(--destructive);
+	--color-destructive-foreground: var(--destructive-foreground);
+	--color-destructive-hover: var(--destructive-hover);
+	--color-danger-surface: var(--danger-surface);
+	--color-success: var(--success);
+	--color-success-surface: var(--success-surface);
+	--color-success-foreground: var(--success-foreground);
+	--color-warning: var(--warning);
+	--color-warning-surface: var(--warning-surface);
+	--color-warning-foreground: var(--warning-foreground);
+	--color-info: var(--info);
+	--color-info-surface: var(--info-surface);
+	--color-info-foreground: var(--info-foreground);
+	--font-sans: var(--font-body);
+	--font-mono: var(--font-code);
+	--radius-sm: calc(var(--shape-radius) * 0.5);
+	--radius-md: var(--control-radius);
+	--radius-lg: var(--shape-radius);
+	--radius-xl: var(--panel-radius);
+	--radius-2xl: var(--dialog-radius);
+	--shadow-xs: var(--elevation-low);
+	--shadow-sm: var(--elevation-panel);
+	--shadow-lg: var(--elevation-overlay);
+	--spacing-control: var(--control-height);
+	--spacing-control-y: var(--control-padding-y);
+	--spacing-field: var(--field-gap);
 }
 
-body {
-	margin: 0;
-	font-family: Arial, Helvetica, sans-serif;
+@layer base {
+	body {
+		margin: 0;
+		background: var(--background);
+		color: var(--foreground);
+		font-family: var(--font-body);
+		-webkit-font-smoothing: antialiased;
+	}
+	* {
+		box-sizing: border-box;
+	}
+	:is(h1, h2, h3, h4) {
+		font-family: var(--font-heading);
+	}
+	:is(code, pre, kbd) {
+		font-family: var(--font-code);
+	}
+	::selection {
+		background: var(--primary);
+		color: var(--primary-foreground);
+	}
+	select {
+		color: var(--foreground);
+		background-color: var(--input-background);
+		min-height: var(--control-height);
+	}
+	:is(input, progress) {
+		accent-color: var(--primary);
+	}
+	:is(button, select, summary) {
+		min-height: 24px;
+		min-width: 24px;
+	}
+	:is(button, input, select, textarea, summary, a):focus-visible {
+		outline: 2px solid var(--ring);
+		outline-offset: 3px;
+	}
 }
 
-* {
-	box-sizing: border-box;
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		/* biome-ignore lint/complexity/noImportantStyles: reduced motion must override component animations. */
+		animation: none !important;
+		/* biome-ignore lint/complexity/noImportantStyles: reduced motion must override component transitions. */
+		transition: none !important;
+		/* biome-ignore lint/complexity/noImportantStyles: reduced motion also disables smooth scrolling. */
+		scroll-behavior: auto !important;
+	}
 }
-
-select {
-	color: var(--foreground);
-	background-color: var(--card);
-}
-
-select:focus-visible,
-a:focus-visible {
-	outline: 2px solid var(--ring);
-	outline-offset: 3px;
+@media (forced-colors: active) {
+	:is(button, input, select, textarea, dialog) {
+		border: 1px solid ButtonText;
+	}
+	:is(button, input, select, textarea, summary, a):focus-visible {
+		/* biome-ignore lint/complexity/noImportantStyles: forced colors must override component focus colors. */
+		outline: 2px solid Highlight !important;
+	}
+	[aria-current="page"],
+	[aria-selected="true"] {
+		outline: 2px solid Highlight;
+	}
 }

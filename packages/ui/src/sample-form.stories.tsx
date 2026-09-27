@@ -13,7 +13,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Empty: Story = {};
 export const Spanish: Story = { globals: { locale: "es" } };
-export const Dark: Story = { globals: { theme: "dark" } };
+export const Dark: Story = { globals: { mode: "dark" } };
 export const Invalid: Story = {
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement);

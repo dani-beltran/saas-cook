@@ -42,10 +42,11 @@ test("localized validation, keyboard focus and synthetic organization state", as
 	await expect(page.getByTestId("current-organization")).toHaveText(
 		"South Workshop",
 	);
-	await page.getByRole("button", { name: "Appearance" }).click();
-	await expect(
-		page.getByRole("button", { name: "Appearance" }),
-	).toHaveAttribute("aria-pressed", "true");
+	await page.emulateMedia({ colorScheme: "dark" });
+	await expect(page.locator("body")).toHaveCSS(
+		"background-color",
+		"rgb(17, 33, 42)",
+	);
 	await expect(page.getByLabel("Project name")).toHaveCSS(
 		"border-top-width",
 		"1px",

@@ -4,6 +4,7 @@
 	"type": "module",
 	"exports": {
 		".": "./src/index.ts",
+		"./theme": "./src/theme.ts",
 		"./messages": "./src/messages.ts",
 		"./styles.css": "./src/styles.css"
 	},

@@ -35,7 +35,7 @@
 	flex: 0 0 44px;
 	height: 44px;
 	border: 1px solid var(--border);
-	border-radius: 12px;
+	border-radius: var(--panel-radius);
 	background: var(--muted);
 	font-size: 15px;
 	font-weight: 600;
@@ -138,7 +138,7 @@
 	margin-top: 20px;
 	padding: 18px;
 	border: 1px solid var(--border);
-	border-radius: 10px;
+	border-radius: var(--panel-radius);
 	background: var(--muted);
 }
 .account-secret h4 {
@@ -150,7 +150,7 @@
 	margin: 14px 0;
 	padding: 12px;
 	border: 1px solid var(--border);
-	border-radius: 6px;
+	border-radius: var(--control-radius);
 	background: var(--card);
 	font-size: 12px;
 	overflow-wrap: anywhere;
@@ -168,7 +168,7 @@
 	justify-content: space-between;
 	align-items: center;
 	gap: 14px;
-	padding: 18px 0;
+	padding: var(--row-padding-y) 0;
 	border-bottom: 1px solid var(--border);
 	font-size: 13px;
 }
@@ -199,7 +199,7 @@
 }
 .account-dashboard .account-feedback-error {
 	color: var(--destructive);
-	border-color: color-mix(in srgb, var(--destructive) 35%, var(--border));
+	border-color: var(--destructive);
 }
 .account-dashboard .account-feedback a {
 	text-decoration: underline;

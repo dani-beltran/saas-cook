@@ -187,5 +187,5 @@ export const SpanishMembers: Story = {
 };
 export const DarkTeam: Story = {
 	args: { mode: "team" },
-	globals: { theme: "dark" },
+	globals: { mode: "dark" },
 };

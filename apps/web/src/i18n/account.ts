@@ -5,7 +5,6 @@ export const accountMessages = {
 			"Check your spam folder if you don’t see it. Follow the reset link, choose a new password, then return here to sign in.",
 		resetSecurityNote: "Your authenticator and recovery codes stay in place.",
 		placeholderLogo: "Placeholder logo",
-		toggleTheme: "Toggle color theme",
 		showPassword: "Show password",
 		hidePassword: "Hide password",
 		showConfirmPassword: "Show confirm password",
@@ -197,7 +196,6 @@ export const accountMessages = {
 		resetSecurityNote:
 			"Tu autenticador y tus códigos de recuperación se mantienen.",
 		placeholderLogo: "Logotipo de ejemplo",
-		toggleTheme: "Cambiar tema de color",
 		showPassword: "Mostrar contraseña",
 		hidePassword: "Ocultar contraseña",
 		showConfirmPassword: "Mostrar confirmación de contraseña",

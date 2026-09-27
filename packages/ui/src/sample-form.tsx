@@ -26,7 +26,7 @@ export function SampleForm() {
 
 	return (
 		<form
-			className="grid gap-5"
+			className="grid gap-field"
 			noValidate
 			onSubmit={handleSubmit(() => undefined)}
 		>

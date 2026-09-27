@@ -113,7 +113,7 @@ export const SpanishDirectory: Story = {
 };
 export const DarkDirectory: Story = {
 	args: { mode: "table" },
-	globals: { theme: "dark" },
+	globals: { mode: "dark" },
 };
 export const CreateValidation: Story = { args: { mode: "form" } };
 export const Pending: Story = { args: { mode: "pending" } };

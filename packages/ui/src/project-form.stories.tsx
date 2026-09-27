@@ -12,7 +12,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 export const Create: Story = {};
 export const Spanish: Story = { globals: { locale: "es" } };
-export const Dark: Story = { globals: { theme: "dark" } };
+export const Dark: Story = { globals: { mode: "dark" } };
 export const Saving: Story = { args: { busy: true } };
 export const Editing: Story = {
 	args: {
@@ -46,7 +46,7 @@ export const SpanishInvalid: Story = {
 export const PendingEdit: Story = {
 	...Editing,
 	args: { ...Editing.args, busy: true, onCancel: fn() },
-	globals: { theme: "dark" },
+	globals: { mode: "dark" },
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement);
 		await expect(

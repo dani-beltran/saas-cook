@@ -75,14 +75,16 @@ export const Spanish: Story = {
 	},
 };
 export const Appearance: Story = {
+	globals: { mode: "dark", palette: "violet", density: "compact" },
 	play: async ({ canvasElement }) => {
-		const canvas = within(canvasElement);
-		const toggle = canvas.getByRole("button", { name: "Toggle color theme" });
-		const pressed = toggle.getAttribute("aria-pressed");
-		await userEvent.click(toggle);
-		await expect(toggle).toHaveAttribute(
-			"aria-pressed",
-			pressed === "true" ? "false" : "true",
+		await expect(canvasElement.ownerDocument.documentElement).toHaveAttribute(
+			"data-mode",
+			"dark",
 		);
+		await expect(
+			within(canvasElement).queryByRole("button", {
+				name: "Toggle color theme",
+			}),
+		).not.toBeInTheDocument();
 	},
 };

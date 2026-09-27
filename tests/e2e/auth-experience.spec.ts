@@ -26,19 +26,10 @@ for (const locale of ["en", "es"] as const) {
 				}),
 			).toBeVisible();
 			await expect(page.locator("html")).toHaveAttribute("lang", locale);
-			const themeToggle = page.getByRole("button", {
-				name: locale === "en" ? "Toggle color theme" : "Cambiar tema de color",
-				exact: true,
-			});
-			if (
-				(await themeToggle.getAttribute("aria-pressed")) !==
-				String(theme === "dark")
-			) {
-				await themeToggle.click();
-			}
-			await expect(themeToggle).toHaveAttribute(
-				"aria-pressed",
-				String(theme === "dark"),
+			await expect(page.locator("html")).toHaveAttribute("data-mode", "system");
+			await expect(page.locator("body")).toHaveCSS(
+				"background-color",
+				theme === "dark" ? "rgb(17, 33, 42)" : "rgb(248, 250, 252)",
 			);
 			for (const viewport of [
 				{ name: "desktop", width: 1440, height: 1000 },

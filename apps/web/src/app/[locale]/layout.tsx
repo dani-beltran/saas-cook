@@ -7,12 +7,15 @@ import { NextIntlClientProvider } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import type { ReactNode } from "react";
 import { DashboardBrand } from "../../components/dashboard-shell";
+import { ThemeDocument } from "../../components/theme-document";
 import { accountMessages } from "../../i18n/account";
 
 export const metadata: Metadata = {
 	title: "Common SaaS · Foundation",
 	description: "Manage your account, organizations, members and security.",
 };
+
+export { productViewport as viewport } from "../../product-theme";
 
 export default async function LocaleLayout({
 	children,
@@ -25,18 +28,16 @@ export default async function LocaleLayout({
 	if (locale !== "en" && locale !== "es") notFound();
 	setRequestLocale(locale);
 	return (
-		<html lang={locale}>
-			<body>
-				<NextIntlClientProvider
-					locale={locale}
-					messages={{ ...messages[locale], Account: accountMessages[locale] }}
-					timeZone="UTC"
-				>
-					<DashboardBrand name={publicConfig(process.env).appName}>
-						{children}
-					</DashboardBrand>
-				</NextIntlClientProvider>
-			</body>
-		</html>
+		<ThemeDocument locale={locale}>
+			<NextIntlClientProvider
+				locale={locale}
+				messages={{ ...messages[locale], Account: accountMessages[locale] }}
+				timeZone="UTC"
+			>
+				<DashboardBrand name={publicConfig(process.env).appName}>
+					{children}
+				</DashboardBrand>
+			</NextIntlClientProvider>
+		</ThemeDocument>
 	);
 }

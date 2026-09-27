@@ -142,7 +142,11 @@ test("real CRUD, URL queries, cursor navigation, keyboard dialogs and both local
 	await expect(
 		page.getByRole("button", { name: "Añadir cliente", exact: true }),
 	).toBeFocused();
-	await page.getByRole("button", { name: "Cambiar tema de color" }).click();
+	await page.emulateMedia({ colorScheme: "dark" });
+	await expect(page.locator("body")).toHaveCSS(
+		"background-color",
+		"rgb(17, 33, 42)",
+	);
 	await page.screenshot({
 		path: info.outputPath("customers-spanish-dark.png"),
 		fullPage: true,

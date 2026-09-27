@@ -1,0 +1,108 @@
+/* Visual source of truth. Paired colors follow the root's used color-scheme. */
+:root {
+	color-scheme: light dark;
+	--background: light-dark(#f8fafc, #11212a);
+	--foreground: light-dark(#172b35, #edf5f6);
+	--card: light-dark(#ffffff, #192d37);
+	--card-foreground: var(--foreground);
+	--popover: var(--card);
+	--popover-foreground: var(--foreground);
+	--muted: light-dark(#edf2f4, #243d47);
+	--muted-foreground: light-dark(#52636d, #b2c7ce);
+	--primary: light-dark(#17675d, #9ee0cb);
+	--primary-foreground: light-dark(#ffffff, #102f2a);
+	--primary-hover: light-dark(#12584f, #b4ead9);
+	--accent: light-dark(#e0f0eb, #28483f);
+	--accent-foreground: light-dark(#12584f, #b4ead9);
+	--secondary: var(--card);
+	--secondary-foreground: var(--foreground);
+	--secondary-hover: var(--muted);
+	/* Border is decorative; input identifies interactive control boundaries. */
+	--border: light-dark(#d6e0e4, #36525e);
+	--input: light-dark(#768993, #829da8);
+	--input-background: var(--card);
+	--ring: var(--primary);
+	--sidebar: var(--background);
+	--sidebar-foreground: var(--foreground);
+	--sidebar-accent: var(--accent);
+	--sidebar-accent-foreground: var(--accent-foreground);
+	--sidebar-border: var(--border);
+	--sidebar-ring: var(--ring);
+	/* Status meaning is independent of the selected brand. */
+	--destructive: light-dark(#b42318, #ffb4a8);
+	--destructive-foreground: light-dark(#ffffff, #48110b);
+	--destructive-hover: light-dark(#951d13, #ffc6bd);
+	--danger-surface: light-dark(#fff0ee, #402724);
+	--success: light-dark(#176142, #9be2bb);
+	--success-surface: light-dark(#eaf5ee, #203d30);
+	--success-foreground: var(--success);
+	--warning: light-dark(#754807, #f5d08a);
+	--warning-surface: light-dark(#fff5dd, #40341e);
+	--warning-foreground: var(--warning);
+	--info: light-dark(#215ba0, #a8d0ff);
+	--info-surface: light-dark(#edf4ff, #233b55);
+	--info-foreground: var(--info);
+	--overlay: light-dark(rgb(9 19 27 / 44%), rgb(0 0 0 / 64%));
+	--font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+	--font-heading: var(--font-body);
+	--font-code: ui-monospace, "SFMono-Regular", Consolas, monospace;
+	--shape-radius: 0.5rem;
+	--control-radius: var(--shape-radius);
+	--panel-radius: calc(var(--shape-radius) * 1.5);
+	--dialog-radius: calc(var(--shape-radius) * 1.75);
+	--auth-radius: calc(var(--shape-radius) * 2.25);
+	--elevation-low: 0 1px 2px light-dark(rgb(0 0 0 / 8%), rgb(0 0 0 / 24%));
+	--elevation-panel: 0 4px 24px -12px
+		light-dark(rgb(0 0 0 / 12%), rgb(0 0 0 / 36%));
+	--elevation-overlay: 0 24px 80px
+		light-dark(rgb(0 0 0 / 18%), rgb(0 0 0 / 50%));
+	--control-height: 2.5rem;
+	--auth-control-height: 2.875rem;
+	--control-padding-y: 0.5rem;
+	--field-gap: 1.25rem;
+	--row-padding-y: 1.125rem;
+}
+:root[data-mode="light"] {
+	color-scheme: only light;
+}
+:root[data-mode="dark"] {
+	color-scheme: only dark;
+}
+:root[data-palette="blue"] {
+	--primary: light-dark(#245ba8, #a8ccff);
+	--primary-foreground: light-dark(#ffffff, #122c50);
+	--primary-hover: light-dark(#1c4b8d, #c1daff);
+	--accent: light-dark(#e7effb, #243e5e);
+	--accent-foreground: light-dark(#1c4b8d, #c1daff);
+}
+:root[data-palette="violet"] {
+	--primary: light-dark(#7040a0, #d6b7f5);
+	--primary-foreground: light-dark(#ffffff, #321747);
+	--primary-hover: light-dark(#5d3189, #e2ccfa);
+	--accent: light-dark(#f1eafa, #423050);
+	--accent-foreground: light-dark(#5d3189, #e2ccfa);
+}
+:root[data-typography="humanist"] {
+	--font-body: "Trebuchet MS", Verdana, sans-serif;
+}
+:root[data-typography="serif"] {
+	--font-heading: Georgia, "Times New Roman", serif;
+}
+:root[data-radius="square"] {
+	--shape-radius: 0rem;
+}
+:root[data-radius="soft"] {
+	--shape-radius: 0.75rem;
+}
+:root[data-shadows="none"] {
+	--elevation-low: none;
+	--elevation-panel: none;
+	--elevation-overlay: none;
+}
+:root[data-density="compact"] {
+	--control-height: 2.25rem;
+	--auth-control-height: 2.5rem;
+	--control-padding-y: 0.375rem;
+	--field-gap: 1rem;
+	--row-padding-y: 0.75rem;
+}

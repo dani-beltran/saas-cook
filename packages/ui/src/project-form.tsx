@@ -49,7 +49,7 @@ export function ProjectForm({
 	const pending = busy || isSubmitting;
 	return (
 		<form
-			className="grid gap-5 text-sm"
+			className="grid gap-field text-sm"
 			aria-busy={pending}
 			noValidate
 			onSubmit={handleSubmit(async (value) => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, SampleForm } from "@common-saas/ui";
+import { SampleForm } from "@common-saas/ui";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
@@ -15,15 +15,12 @@ export function Shell({ appName }: { appName: string }) {
 	const [organization, setOrganization] = useState<string>(
 		demoOrganizations[0].id,
 	);
-	const [theme, setTheme] = useState<"light" | "dark">("light");
 	const currentOrganization = demoOrganizations.find(
 		(item) => item.id === organization,
 	);
 
 	return (
-		<div
-			className={`${theme === "dark" ? "dark" : ""} min-h-screen bg-background text-foreground`}
-		>
+		<div className="min-h-screen bg-background text-foreground">
 			<a
 				className="sr-only focus:not-sr-only focus:fixed focus:z-50 focus:m-3 focus:rounded focus:bg-card focus:p-3"
 				href="#main-content"
@@ -104,13 +101,6 @@ export function Shell({ appName }: { appName: string }) {
 									</option>
 								</select>
 							</div>
-							<Button
-								aria-label={t("theme")}
-								aria-pressed={theme === "dark"}
-								onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-							>
-								{theme === "light" ? t("dark") : t("light")}
-							</Button>
 						</div>
 					</header>
 					<main

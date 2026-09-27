@@ -11,7 +11,6 @@ import {
 } from "react";
 import { dashboardMessages } from "../i18n/dashboard";
 import { identityClient } from "../lib/identity-client";
-import { useAppearance } from "./appearance";
 import "./dashboard.css";
 
 const AppName = createContext("Common SaaS");
@@ -146,7 +145,6 @@ export function DashboardFrame({
 	const locale = useLocale() === "es" ? "es" : "en";
 	const copy = dashboardMessages[locale];
 	const name = useContext(AppName);
-	const { dark, toggleTheme } = useAppearance();
 	const [open, setOpen] = useState(false);
 	const current = organizations.find((item) => item.id === organizationId);
 	const organizationPath = `/${locale}/organizations/${organizationId}`;
@@ -161,7 +159,7 @@ export function DashboardFrame({
 		</a>
 	);
 	return (
-		<div className={`dashboard-shell${dark ? " dark" : ""}`} lang={locale}>
+		<div className="dashboard-shell" lang={locale}>
 			<a href="#dashboard-content" className="dashboard-skip">
 				{copy.skip}
 			</a>
@@ -317,15 +315,6 @@ export function DashboardFrame({
 								Español
 							</option>
 						</select>
-						<button
-							type="button"
-							aria-label={copy.theme}
-							aria-pressed={dark}
-							onClick={toggleTheme}
-						>
-							<span aria-hidden="true">{dark ? "☾" : "☼"}</span>
-							{dark ? copy.dark : copy.light}
-						</button>
 					</div>
 				</div>
 			</aside>
