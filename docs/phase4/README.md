@@ -54,6 +54,7 @@ renamed product, directory page and new email are disposable evaluation outputs,
 not additions to the production reference application's domain.
 
 See the [acceptance record](acceptance.md) for results and limitations. The user
-explicitly excluded the missing Phase 3 performance run. Phase 4 tooling never
-invokes it, and these checks cannot sign off `R-AUTHZ-PERF` or the full Foundation
-milestone while that gate remains open.
+explicitly excluded the then-missing Phase 3 performance run from that evaluation.
+Phase 4 tooling never invokes it. The separate [manual 2026-09-27 run](../phase3/acceptance.md#accepted-direct-project-performance-result)
+now passes the real-feature `R-AUTHZ-PERF` gate; Phase 4 checks do not establish
+performance acceptance or the remaining Foundation release sign-off.

@@ -42,4 +42,4 @@ Test revoked, expired, wrong-tenant and rotated keys, missing scopes, missing Pr
 - Parent deletion, disabled policy, membership/key expiry, connection loss, late FGA responses, model/epoch changes and endpoint failure obey the production failure boundary, including the final transaction expiry guard.
 - Dashboard/API paths agree on authorization and version conflicts; keyboard navigation and English/Spanish loading/empty/denied/pending/conflict/error states work.
 
-Preserve prior custom code and all migration/model history. Run the declared independent repeats and retain failures. The missing Phase 3 performance benchmark is excluded from this Phase 4 execution and remains unpassed.
+Preserve prior custom code and all migration/model history. Run the declared independent repeats and retain failures. The Phase 3 performance benchmark is excluded from this Phase 4 execution. Its real-feature gate subsequently passed in the separate [manual 2026-09-27 run](../docs/phase3/acceptance.md#accepted-direct-project-performance-result); that result is independent of this evaluation.

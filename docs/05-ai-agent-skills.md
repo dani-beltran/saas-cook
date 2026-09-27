@@ -4,7 +4,7 @@
 
 Ship repository-local skills that help an AI coding agent bootstrap a product and implement or evolve complete SaaS features in ordinary application source. Skills use the existing codebase, an agreed feature brief, and proven platform services. This replaces the custom CRUD/entity generator, its declarative DSL, rendering pipeline, and generated/custom ownership system.
 
-**Status: implemented authoring packages and evaluation tooling.** The six repository-local skills, shared references, briefs and deterministic checks are available. The [Phase 4 guide](phase4/README.md) documents invocation and the [acceptance record](phase4/acceptance.md) records actual behavior evaluation results. Phase 3's corrected sustained benchmark is excluded by the Phase 4 execution request and remains a separate pending gate.
+**Status: implemented authoring packages and evaluation tooling.** The six repository-local skills, shared references, briefs and deterministic checks are available. The [Phase 4 guide](phase4/README.md) documents invocation and the [acceptance record](phase4/acceptance.md) records actual behavior evaluation results. Phase 3's sustained benchmark was excluded from that Phase 4 execution; the separate [manual 2026-09-27 run](phase3/acceptance.md#accepted-direct-project-performance-result) now passes the real-feature `R-AUTHZ-PERF` gate.
 
 Agents write and edit code; deterministic tools and behavioral tests establish whether the result is correct. Different runs may produce different implementations. There is no byte-for-byte generation promise, and updating a skill never automatically rewrites an application's code.
 

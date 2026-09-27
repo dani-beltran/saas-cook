@@ -82,10 +82,13 @@ report handling so future skipped or missing regressions cannot satisfy the gate
 Image acceptance, vulnerability scans and remote GitHub CI have not been rerun
 for this local Phase 4 change; no result for them is claimed here.
 
-The missing corrected Phase 3 benchmark is explicitly excluded by the user.
-`R-AUTHZ-PERF` stays pending; neither benchmark nor performance smoke is run.
-The complete Foundation milestone therefore remains open even after the skill
-behavior gate is accepted.
+The user explicitly excluded the then-missing corrected Phase 3 benchmark from
+this evaluation. Neither benchmark nor performance smoke was run, and
+`R-AUTHZ-PERF` remained pending at that time. The separate
+[manual 2026-09-27 run](../phase3/acceptance.md#accepted-direct-project-performance-result)
+subsequently passed the real-feature performance gate. It does not refresh this
+historical skill evaluation or current-image/security evidence; the remaining
+Foundation release sign-off stays open.
 
 ## Retained evidence
 

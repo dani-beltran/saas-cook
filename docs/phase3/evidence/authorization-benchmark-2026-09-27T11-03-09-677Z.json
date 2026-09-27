@@ -1,0 +1,753 @@
+{
+	"status": "passed",
+	"stage": "evidence",
+	"runId": "2026-09-27T11-03-09-677Z",
+	"checkpointAt": "2026-09-27T11:34:17.514Z",
+	"scope": "R-AUTHZ-PERF actual in-process Project API (25 RPC +25 REST clients); real signed Better Auth sessions; excludes TCP/Next wrapper",
+	"attempts": 524149,
+	"successes": 524149,
+	"failures": {},
+	"failuresByOperation": {},
+	"failureCodes": {},
+	"failureStatuses": {},
+	"contextualTupleCounts": {
+		"count": 1223641,
+		"p95": 5,
+		"p99": 5,
+		"max": 5
+	},
+	"measuredFgaChecks": 1223641,
+	"measuredFgaWrites": 0,
+	"mix": {
+		"read": 209613,
+		"update": 104871,
+		"list": 104838,
+		"delete": 25111,
+		"create": 27315,
+		"share": 27238,
+		"revoke": 25163
+	},
+	"authorizationChanges": {
+		"shareConfirmations": 27238,
+		"revocationDenials": 25163,
+		"warmupFailures": 0,
+		"valid": true
+	},
+	"firstAttemptSuccessRate": 1,
+	"durationSeconds": 1800.6776642500001,
+	"requestedDurationMs": 1800000,
+	"clients": 50,
+	"resourceCount": 100000,
+	"cursorPolicy": {
+		"idleLimitMs": 300000,
+		"measuredResets": 6517
+	},
+	"eventLoop": {
+		"probeIntervalMs": 1000,
+		"stallLimitMs": 5000,
+		"maxLagMs": 24.578458999982104,
+		"scope": "warmup and measured traffic; a stall invalidates the run without retries"
+	},
+	"source": {
+		"head": "1ef59f52534e13098cf27831983260c934e15eed",
+		"base": "1ef59f52534e13098cf27831983260c934e15eed",
+		"dirty": true,
+		"sourceBefore": {
+			"sha256": "8482f8022253a68f509ba05ed302443a5ff552ca079dc80cdd109310f6c1112c",
+			"algorithm": "shared scripts/phase1/source-fingerprint.ts"
+		},
+		"packageManager": "bun@1.4.2",
+		"services": {
+			"available": true,
+			"containers": [
+				{
+					"id": "630ae9ebaa8abd5c2bc9598df0291dc680fcee0129f2b27952cba3937948bad9",
+					"name": "/common-saas-phase1-control-postgres-1",
+					"image": "postgres:18.6@sha256:86c951e05bf56c93d95d397747fb8820ac76cc3bedb78f43abd83eedbe3666ae",
+					"imageId": "sha256:86c951e05bf56c93d95d397747fb8820ac76cc3bedb78f43abd83eedbe3666ae",
+					"limits": {
+						"memoryBytes": 0,
+						"nanoCpus": 0,
+						"cpuQuota": 0,
+						"cpuPeriod": 0,
+						"cpusetCpus": "",
+						"tmpfs": {
+							"/var/lib/postgresql": "size=256m"
+						}
+					},
+					"command": ["postgres"]
+				},
+				{
+					"id": "d2f577c0eeb16cc085af3f963190d66ea5aa771d3e5d59278b3e8d86614e60e5",
+					"name": "/common-saas-phase1-openfga-1",
+					"image": "openfga/openfga:v1.21.0@sha256:2113c664a486b5da8d7a2cdab479e0d4e30639c80fd2c000540f645c1dbc1e55",
+					"imageId": "sha256:2113c664a486b5da8d7a2cdab479e0d4e30639c80fd2c000540f645c1dbc1e55",
+					"limits": {
+						"memoryBytes": 0,
+						"nanoCpus": 0,
+						"cpuQuota": 0,
+						"cpuPeriod": 0,
+						"cpusetCpus": ""
+					},
+					"command": ["run"],
+					"version": ""
+				},
+				{
+					"id": "9a694afc5f9996cddd7f49de10f2647520497b3da0f3bda5e72870af415a859e",
+					"name": "/common-saas-phase1-postgres-1",
+					"image": "postgres:18.6@sha256:86c951e05bf56c93d95d397747fb8820ac76cc3bedb78f43abd83eedbe3666ae",
+					"imageId": "sha256:86c951e05bf56c93d95d397747fb8820ac76cc3bedb78f43abd83eedbe3666ae",
+					"limits": {
+						"memoryBytes": 0,
+						"nanoCpus": 0,
+						"cpuQuota": 0,
+						"cpuPeriod": 0,
+						"cpusetCpus": "",
+						"tmpfs": {
+							"/var/lib/postgresql": "size=1g"
+						}
+					},
+					"command": ["postgres"]
+				}
+			]
+		},
+		"sourceAfter": {
+			"sha256": "8482f8022253a68f509ba05ed302443a5ff552ca079dc80cdd109310f6c1112c",
+			"algorithm": "shared scripts/phase1/source-fingerprint.ts"
+		},
+		"sourceStable": true
+	},
+	"storageBefore": {
+		"sampledAt": "2026-09-27T11:03:16.051Z",
+		"application": {
+			"database_bytes": "117061311",
+			"wal_lsn": "0/D762B20",
+			"wal_position_bytes": "225848096",
+			"version": "PostgreSQL 18.6 (Debian 18.6-1.pgdg13+2) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+			"shared_buffers": "128MB",
+			"max_connections": "100",
+			"work_mem": "4MB",
+			"fsync": "on",
+			"synchronous_commit": "on"
+		},
+		"control": {
+			"database_bytes": "8124095",
+			"wal_lsn": "0/251B228",
+			"wal_position_bytes": "38908456",
+			"version": "PostgreSQL 18.6 (Debian 18.6-1.pgdg13+2) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit"
+		},
+		"relations": [
+			{
+				"relname": "account",
+				"bytes": "16384"
+			},
+			{
+				"relname": "api_keys",
+				"bytes": "40960"
+			},
+			{
+				"relname": "audit_events",
+				"bytes": "32768"
+			},
+			{
+				"relname": "authorization_revisions",
+				"bytes": "73728"
+			},
+			{
+				"relname": "capacity_buckets",
+				"bytes": "98304"
+			},
+			{
+				"relname": "capacity_reservations",
+				"bytes": "32768"
+			},
+			{
+				"relname": "email_delivery",
+				"bytes": "24576"
+			},
+			{
+				"relname": "example_customer_operations",
+				"bytes": "16384"
+			},
+			{
+				"relname": "example_customers",
+				"bytes": "49152"
+			},
+			{
+				"relname": "ingress_limit",
+				"bytes": "16384"
+			},
+			{
+				"relname": "installation",
+				"bytes": "40960"
+			},
+			{
+				"relname": "invitations",
+				"bytes": "40960"
+			},
+			{
+				"relname": "membership_transitions",
+				"bytes": "16384"
+			},
+			{
+				"relname": "memberships",
+				"bytes": "524288"
+			},
+			{
+				"relname": "organizations",
+				"bytes": "81920"
+			},
+			{
+				"relname": "outbox_events",
+				"bytes": "16384"
+			},
+			{
+				"relname": "owner_recovery_cases",
+				"bytes": "16384"
+			},
+			{
+				"relname": "ownership_transfers",
+				"bytes": "32768"
+			},
+			{
+				"relname": "passkey",
+				"bytes": "24576"
+			},
+			{
+				"relname": "projects",
+				"bytes": "49094656"
+			},
+			{
+				"relname": "rate_limit",
+				"bytes": "24576"
+			},
+			{
+				"relname": "resource_grants",
+				"bytes": "38428672"
+			},
+			{
+				"relname": "resource_operations",
+				"bytes": "16384"
+			},
+			{
+				"relname": "resource_registry",
+				"bytes": "17817600"
+			},
+			{
+				"relname": "runtime_heartbeats",
+				"bytes": "16384"
+			},
+			{
+				"relname": "runtime_probes",
+				"bytes": "8192"
+			},
+			{
+				"relname": "seat_capacities",
+				"bytes": "24576"
+			},
+			{
+				"relname": "security_audit",
+				"bytes": "16384"
+			},
+			{
+				"relname": "service_accounts",
+				"bytes": "24576"
+			},
+			{
+				"relname": "session",
+				"bytes": "172032"
+			},
+			{
+				"relname": "team_members",
+				"bytes": "8192"
+			},
+			{
+				"relname": "teams",
+				"bytes": "32768"
+			},
+			{
+				"relname": "two_factor",
+				"bytes": "24576"
+			},
+			{
+				"relname": "user",
+				"bytes": "442368"
+			},
+			{
+				"relname": "user_avatar",
+				"bytes": "24576"
+			},
+			{
+				"relname": "verification",
+				"bytes": "24576"
+			}
+		],
+		"walScope": "WAL positions are cluster-wide and include any concurrent database activity; database/relation sizes are fixture-specific."
+	},
+	"graphBefore": {
+		"sampledAt": "2026-09-27T11:03:16.062Z",
+		"storeId": "01M3H8GZVD2M9XE3HYXV1WTM4T",
+		"modelId": "01M3H8GZVPJ9TN0VTZ38XF924A",
+		"modelHash": "2ecdc13a6938f4209ca5e5a34924efb53f256c80fd6d8c5ceeeaca15f6079a7e",
+		"observedTuples": 0,
+		"exact": true,
+		"verifiedEmpty": true
+	},
+	"latencyMs": {
+		"read": {
+			"count": 314451,
+			"p95": 169.72333299997263,
+			"p99": 217.37120900000446,
+			"max": 651.6350409998558
+		},
+		"write": {
+			"count": 209698,
+			"p95": 532.856332999887,
+			"p99": 622.8527500000782,
+			"max": 1044.1325419999193
+		},
+		"createToReadable": {
+			"count": 27315,
+			"p95": 533.671250000014,
+			"p99": 613.8434589999961,
+			"max": 926.2361659999005
+		},
+		"sourceCommit": {
+			"count": 104827,
+			"p95": 566.6274170000106,
+			"p99": 641.4214159999974,
+			"max": 1044.1323750000447
+		},
+		"fenceWait": {
+			"count": 631147,
+			"p95": 43.61358300014399,
+			"p99": 56.156667000148445,
+			"max": 455.3985840000678
+		},
+		"revocation": {
+			"count": 25163,
+			"p95": 508.4688750000205,
+			"p99": 567.1549580001738,
+			"max": 900.9763329999987
+		},
+		"revocationFenceWait": {
+			"count": 25163,
+			"p95": 48.87062499998137,
+			"p99": 58.457625000039116,
+			"max": 378.9269159999676
+		}
+	},
+	"storage": {
+		"before": {
+			"sampledAt": "2026-09-27T11:03:16.051Z",
+			"application": {
+				"database_bytes": "117061311",
+				"wal_lsn": "0/D762B20",
+				"wal_position_bytes": "225848096",
+				"version": "PostgreSQL 18.6 (Debian 18.6-1.pgdg13+2) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+				"shared_buffers": "128MB",
+				"max_connections": "100",
+				"work_mem": "4MB",
+				"fsync": "on",
+				"synchronous_commit": "on"
+			},
+			"control": {
+				"database_bytes": "8124095",
+				"wal_lsn": "0/251B228",
+				"wal_position_bytes": "38908456",
+				"version": "PostgreSQL 18.6 (Debian 18.6-1.pgdg13+2) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit"
+			},
+			"relations": [
+				{
+					"relname": "account",
+					"bytes": "16384"
+				},
+				{
+					"relname": "api_keys",
+					"bytes": "40960"
+				},
+				{
+					"relname": "audit_events",
+					"bytes": "32768"
+				},
+				{
+					"relname": "authorization_revisions",
+					"bytes": "73728"
+				},
+				{
+					"relname": "capacity_buckets",
+					"bytes": "98304"
+				},
+				{
+					"relname": "capacity_reservations",
+					"bytes": "32768"
+				},
+				{
+					"relname": "email_delivery",
+					"bytes": "24576"
+				},
+				{
+					"relname": "example_customer_operations",
+					"bytes": "16384"
+				},
+				{
+					"relname": "example_customers",
+					"bytes": "49152"
+				},
+				{
+					"relname": "ingress_limit",
+					"bytes": "16384"
+				},
+				{
+					"relname": "installation",
+					"bytes": "40960"
+				},
+				{
+					"relname": "invitations",
+					"bytes": "40960"
+				},
+				{
+					"relname": "membership_transitions",
+					"bytes": "16384"
+				},
+				{
+					"relname": "memberships",
+					"bytes": "524288"
+				},
+				{
+					"relname": "organizations",
+					"bytes": "81920"
+				},
+				{
+					"relname": "outbox_events",
+					"bytes": "16384"
+				},
+				{
+					"relname": "owner_recovery_cases",
+					"bytes": "16384"
+				},
+				{
+					"relname": "ownership_transfers",
+					"bytes": "32768"
+				},
+				{
+					"relname": "passkey",
+					"bytes": "24576"
+				},
+				{
+					"relname": "projects",
+					"bytes": "49094656"
+				},
+				{
+					"relname": "rate_limit",
+					"bytes": "24576"
+				},
+				{
+					"relname": "resource_grants",
+					"bytes": "38428672"
+				},
+				{
+					"relname": "resource_operations",
+					"bytes": "16384"
+				},
+				{
+					"relname": "resource_registry",
+					"bytes": "17817600"
+				},
+				{
+					"relname": "runtime_heartbeats",
+					"bytes": "16384"
+				},
+				{
+					"relname": "runtime_probes",
+					"bytes": "8192"
+				},
+				{
+					"relname": "seat_capacities",
+					"bytes": "24576"
+				},
+				{
+					"relname": "security_audit",
+					"bytes": "16384"
+				},
+				{
+					"relname": "service_accounts",
+					"bytes": "24576"
+				},
+				{
+					"relname": "session",
+					"bytes": "172032"
+				},
+				{
+					"relname": "team_members",
+					"bytes": "8192"
+				},
+				{
+					"relname": "teams",
+					"bytes": "32768"
+				},
+				{
+					"relname": "two_factor",
+					"bytes": "24576"
+				},
+				{
+					"relname": "user",
+					"bytes": "442368"
+				},
+				{
+					"relname": "user_avatar",
+					"bytes": "24576"
+				},
+				{
+					"relname": "verification",
+					"bytes": "24576"
+				}
+			],
+			"walScope": "WAL positions are cluster-wide and include any concurrent database activity; database/relation sizes are fixture-specific."
+		},
+		"after": {
+			"sampledAt": "2026-09-27T11:34:16.744Z",
+			"application": {
+				"database_bytes": "351000255",
+				"wal_lsn": "0/446FE6F0",
+				"wal_position_bytes": "1148184304",
+				"version": "PostgreSQL 18.6 (Debian 18.6-1.pgdg13+2) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+				"shared_buffers": "128MB",
+				"max_connections": "100",
+				"work_mem": "4MB",
+				"fsync": "on",
+				"synchronous_commit": "on"
+			},
+			"control": {
+				"database_bytes": "8124095",
+				"wal_lsn": "0/251B3A0",
+				"wal_position_bytes": "38908832",
+				"version": "PostgreSQL 18.6 (Debian 18.6-1.pgdg13+2) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit"
+			},
+			"relations": [
+				{
+					"relname": "account",
+					"bytes": "16384"
+				},
+				{
+					"relname": "api_keys",
+					"bytes": "40960"
+				},
+				{
+					"relname": "audit_events",
+					"bytes": "99581952"
+				},
+				{
+					"relname": "authorization_revisions",
+					"bytes": "90112"
+				},
+				{
+					"relname": "capacity_buckets",
+					"bytes": "98304"
+				},
+				{
+					"relname": "capacity_reservations",
+					"bytes": "14426112"
+				},
+				{
+					"relname": "email_delivery",
+					"bytes": "24576"
+				},
+				{
+					"relname": "example_customer_operations",
+					"bytes": "16384"
+				},
+				{
+					"relname": "example_customers",
+					"bytes": "49152"
+				},
+				{
+					"relname": "ingress_limit",
+					"bytes": "16384"
+				},
+				{
+					"relname": "installation",
+					"bytes": "40960"
+				},
+				{
+					"relname": "invitations",
+					"bytes": "40960"
+				},
+				{
+					"relname": "membership_transitions",
+					"bytes": "16384"
+				},
+				{
+					"relname": "memberships",
+					"bytes": "524288"
+				},
+				{
+					"relname": "organizations",
+					"bytes": "81920"
+				},
+				{
+					"relname": "outbox_events",
+					"bytes": "53575680"
+				},
+				{
+					"relname": "owner_recovery_cases",
+					"bytes": "16384"
+				},
+				{
+					"relname": "ownership_transfers",
+					"bytes": "32768"
+				},
+				{
+					"relname": "passkey",
+					"bytes": "24576"
+				},
+				{
+					"relname": "projects",
+					"bytes": "63176704"
+				},
+				{
+					"relname": "rate_limit",
+					"bytes": "24576"
+				},
+				{
+					"relname": "resource_grants",
+					"bytes": "50700288"
+				},
+				{
+					"relname": "resource_operations",
+					"bytes": "34750464"
+				},
+				{
+					"relname": "resource_registry",
+					"bytes": "22700032"
+				},
+				{
+					"relname": "runtime_heartbeats",
+					"bytes": "16384"
+				},
+				{
+					"relname": "runtime_probes",
+					"bytes": "8192"
+				},
+				{
+					"relname": "seat_capacities",
+					"bytes": "24576"
+				},
+				{
+					"relname": "security_audit",
+					"bytes": "16384"
+				},
+				{
+					"relname": "service_accounts",
+					"bytes": "24576"
+				},
+				{
+					"relname": "session",
+					"bytes": "172032"
+				},
+				{
+					"relname": "team_members",
+					"bytes": "8192"
+				},
+				{
+					"relname": "teams",
+					"bytes": "32768"
+				},
+				{
+					"relname": "two_factor",
+					"bytes": "24576"
+				},
+				{
+					"relname": "user",
+					"bytes": "442368"
+				},
+				{
+					"relname": "user_avatar",
+					"bytes": "24576"
+				},
+				{
+					"relname": "verification",
+					"bytes": "24576"
+				}
+			],
+			"walScope": "WAL positions are cluster-wide and include any concurrent database activity; database/relation sizes are fixture-specific."
+		},
+		"applicationGrowthBytes": 233938944,
+		"applicationClusterWalGrowthBytes": "922336208",
+		"controlGrowthBytes": 0,
+		"controlClusterWalGrowthBytes": "376",
+		"measuredInterval": "after seed, including warmup and measured traffic"
+	},
+	"startedAt": "2026-09-27T11:03:11.590Z",
+	"endedAt": "2026-09-27T11:34:17.875Z",
+	"warmupMs": 60000,
+	"tenants": 100,
+	"memberships": 1000,
+	"projects": 100000,
+	"workloadVersion": "direct-project-v1",
+	"hotTenant": {
+		"resources": 50000,
+		"trafficPercent": 80,
+		"actualTrafficPercent": 80.01465232214504,
+		"sparseAccessPercent": 1
+	},
+	"sparseLists": 42066,
+	"sparseRows": 17072,
+	"revocationDenials": 25163,
+	"eventualSuccessRate": 1,
+	"retries": 0,
+	"requestsPerSecond": 291.0843014306579,
+	"graph": {
+		"before": {
+			"sampledAt": "2026-09-27T11:03:16.062Z",
+			"storeId": "01M3H8GZVD2M9XE3HYXV1WTM4T",
+			"modelId": "01M3H8GZVPJ9TN0VTZ38XF924A",
+			"modelHash": "2ecdc13a6938f4209ca5e5a34924efb53f256c80fd6d8c5ceeeaca15f6079a7e",
+			"observedTuples": 0,
+			"exact": true,
+			"verifiedEmpty": true
+		},
+		"after": {
+			"sampledAt": "2026-09-27T11:34:16.748Z",
+			"storeId": "01M3H8GZVD2M9XE3HYXV1WTM4T",
+			"modelId": "01M3H8GZVPJ9TN0VTZ38XF924A",
+			"modelHash": "2ecdc13a6938f4209ca5e5a34924efb53f256c80fd6d8c5ceeeaca15f6079a7e",
+			"observedTuples": 0,
+			"exact": true,
+			"verifiedEmpty": true
+		},
+		"contextualTupleLimitPerDecision": 100,
+		"submittedContextTupleCounts": {
+			"count": 1223641,
+			"p95": 5,
+			"p99": 5,
+			"max": 5
+		},
+		"measuredCheckRequests": 1223641,
+		"measuredTupleWriteRequests": 0,
+		"cleanup": "No contextual tuple persistence or generation cleanup work; fixture teardown is not authorization cleanup.",
+		"persistedTupleWrites": 0,
+		"projectionAttempts": 0,
+		"abandonedBuilds": 0,
+		"cleanupMs": 0
+	},
+	"hardware": {
+		"platform": "darwin",
+		"arch": "arm64",
+		"cpus": 14,
+		"cpu": "Apple M4 Pro",
+		"memoryBytes": 51539607552,
+		"node": "v24.19.0"
+	},
+	"pools": {
+		"web": 8,
+		"identity": 8,
+		"control": 8,
+		"queueWaitIncludedInRequestLatency": true
+	},
+	"limits": {
+		"transactionStatementMs": 8000,
+		"lockMs": 5000,
+		"fgaMs": 3000
+	}
+}

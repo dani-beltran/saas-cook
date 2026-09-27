@@ -82,6 +82,8 @@ Prevent host sleep during the full run (on macOS, use `caffeinate -i bun run aut
 
 ### Run the full performance gate
 
+The [manual 2026-09-27 run passed](acceptance.md#accepted-direct-project-performance-result): 524,149 successful operations over 1,800.678 measured seconds, zero failures/retries, and all latency targets met on stable `direct-project-v1` source. The acceptance record retains the complete report and fingerprint. Use the procedure below for subsequent runs when the implementation or workload changes.
+
 From the repository root, use Node **24.19.0**, Bun **1.4.2** and a running Docker daemon. Create `.env` from `.env.example` if it does not already exist, then run:
 
 ```sh
@@ -92,4 +94,4 @@ caffeinate -i bun run authz:benchmark
 
 On systems without macOS `caffeinate`, run `bun run authz:benchmark` with host sleep disabled. Allow for fixture setup, a 60-second warm-up and at least 30 measured minutes. Keep the source unchanged and do not run competing builds, tests or benchmarks during measurement. No development server or application build is required. The fixture creates, migrates and bootstraps isolated application/control databases and cleans them up afterward; it does not initialize or reset the ordinary development application. Database administrator overrides (`TEST_DATABASE_ADMIN_URL`, `TEST_CONTROL_ADMIN_URL`) and `OPENFGA_API_URL` must refer to disposable local services.
 
-Inspect `artifacts/phase3/authorization-benchmark-<run-id>.json` for the retained run and `artifacts/phase3/authorization-benchmark.json` for the latest finalized report. Acceptance requires exit code zero, `status: "passed"`, `workloadVersion: "direct-project-v1"`, `authorizationChanges.valid: true`, at least 1,800 measured seconds and `source.sourceStable: true`. Interruptions retain timestamped diagnostics and cannot pass; use the run ID and timestamp to avoid mistaking an older report for the current attempt. A smoke result is never full performance acceptance. Update the acceptance record with the new report and fingerprint only after the corrected full run passes.
+Inspect `artifacts/phase3/authorization-benchmark-<run-id>.json` for the retained run and `artifacts/phase3/authorization-benchmark.json` for the latest finalized report. Acceptance requires exit code zero, `status: "passed"`, `workloadVersion: "direct-project-v1"`, `authorizationChanges.valid: true`, at least 1,800 measured seconds and `source.sourceStable: true`. Interruptions retain timestamped diagnostics and cannot pass; use the run ID and timestamp to avoid mistaking an older report for the current attempt. A smoke result is never full performance acceptance. Update the acceptance record with each new report and fingerprint only after that full run passes.
