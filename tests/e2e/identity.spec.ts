@@ -354,6 +354,7 @@ test("password registration, sign-in, localized reset, and preserved MFA recover
 		await page
 			.getByLabel("Current password", { exact: true })
 			.fill(newPassword);
+		page.once("dialog", (dialog) => dialog.accept());
 		await page
 			.getByRole("button", { name: "Replace recovery codes", exact: true })
 			.click();
@@ -372,6 +373,7 @@ test("password registration, sign-in, localized reset, and preserved MFA recover
 		await page
 			.getByLabel("Current password", { exact: true })
 			.fill(newPassword);
+		page.once("dialog", (dialog) => dialog.accept());
 		await page
 			.getByRole("button", { name: "Disable authenticator", exact: true })
 			.click();
@@ -414,13 +416,20 @@ test("real registration, scanner confirmation, two memberships, per-tab isolatio
 		page.getByRole("heading", { name: `North ${id}`, exact: true }),
 	).toBeVisible();
 	const north = page.url();
+	await page.getByLabel(`Manage member: ${email}`, { exact: true }).click();
 	await page.getByRole("button", { name: "Deactivate", exact: true }).click();
+	await page
+		.getByRole("dialog")
+		.getByRole("button", { name: "Confirm change", exact: true })
+		.click();
 	await expect(page.getByRole("status")).toContainText(
 		"final owner cannot be deactivated",
 	);
 	await page
-		.getByRole("link", { name: "Back to account", exact: true })
+		.getByRole("dialog")
+		.getByRole("button", { name: "Cancel", exact: true })
 		.click();
+	await page.getByRole("link", { name: "Account", exact: true }).click();
 	await page
 		.getByLabel("Organization name", { exact: true })
 		.fill(`South ${id}`);
@@ -439,6 +448,7 @@ test("real registration, scanner confirmation, two memberships, per-tab isolatio
 	await expect(
 		page.getByRole("heading", { name: `South ${id}`, exact: true }),
 	).toBeVisible();
+	await northTab.getByRole("tab", { name: "Teams", exact: true }).click();
 	await northTab
 		.getByLabel("Team name", { exact: true })
 		.fill(`North team ${id}`);
@@ -556,6 +566,7 @@ for (const outgoingRole of ["member", "inactive"] as const) {
 				},
 			});
 			expect(deniedOrigin.status()).toBe(403);
+			await page.getByRole("tab", { name: "Invitations", exact: true }).click();
 			await page.getByLabel("Email", { exact: true }).fill(recipientEmail);
 			await page
 				.getByRole("button", { name: "Invite member", exact: true })
@@ -577,6 +588,7 @@ for (const outgoingRole of ["member", "inactive"] as const) {
 			).toBe(200);
 			expect((await recipient.request.get(endpoint)).status()).toBe(403);
 			await page.reload();
+			await page.getByRole("tab", { name: "Ownership", exact: true }).click();
 			await page
 				.getByLabel("Recipient member", { exact: true })
 				.selectOption({ label: recipientEmail });
@@ -608,6 +620,10 @@ for (const outgoingRole of ["member", "inactive"] as const) {
 				await page
 					.getByRole("button", { name: "Nominate recipient", exact: true })
 					.click();
+				await page
+					.getByRole("dialog")
+					.getByRole("button", { name: "Confirm change", exact: true })
+					.click();
 				await expect(page.getByRole("status")).toContainText("Saved");
 			}
 			const pending = await (await page.request.get(endpoint)).json();
@@ -631,6 +647,10 @@ for (const outgoingRole of ["member", "inactive"] as const) {
 			await recipient
 				.getByRole("button", { name: "Accept", exact: true })
 				.click();
+			await recipient
+				.getByRole("dialog")
+				.getByRole("button", { name: "Confirm change", exact: true })
+				.click();
 			await expect(
 				recipient.getByRole("heading", {
 					name: "Transfer ownership",
@@ -638,6 +658,7 @@ for (const outgoingRole of ["member", "inactive"] as const) {
 				}),
 			).toBeVisible();
 			// The old owner's existing tab retains stale controls; the RPC command must still recheck authoritative ownership.
+			await page.getByRole("tab", { name: "Teams", exact: true }).click();
 			await page
 				.getByLabel("Team name", { exact: true })
 				.fill("Rejected old-owner team");
@@ -685,10 +706,12 @@ for (const outgoingRole of ["member", "inactive"] as const) {
 			const teamName = snapshot.teams[0].name;
 			expect(snapshot.teams[0].membershipIds).toEqual([]);
 			await recipient.reload();
+			await recipient.getByRole("tab", { name: "Teams", exact: true }).click();
 			const team = recipient.getByRole("article", {
 				name: `Team ${teamName}`,
 				exact: true,
 			});
+			await team.locator("summary").click();
 			await expect(team).toContainText("This team has no members.");
 			await team
 				.getByLabel("Member", { exact: true })
@@ -726,6 +749,10 @@ for (const outgoingRole of ["member", "inactive"] as const) {
 					exact: true,
 				})
 				.click();
+			await recipient
+				.getByRole("dialog")
+				.getByRole("button", { name: "Confirm change", exact: true })
+				.click();
 			await expect(team).toContainText("This team has no members.");
 			expect(
 				(await (await recipient.request.get(endpoint)).json()).teams[0]
@@ -748,6 +775,7 @@ for (const outgoingRole of ["member", "inactive"] as const) {
 				).status(),
 			).toBe(200);
 			await recipient.reload();
+			await team.locator("summary").click();
 			await expect(team.getByRole("listitem")).toContainText(recipientEmail);
 			await recipient.screenshot({
 				path: testInfo.outputPath(
@@ -769,6 +797,10 @@ for (const outgoingRole of ["member", "inactive"] as const) {
 			).toBe(true);
 			await team
 				.getByRole("button", { name: `Delete team ${teamName}`, exact: true })
+				.click();
+			await recipient
+				.getByRole("dialog")
+				.getByRole("button", { name: "Confirm change", exact: true })
 				.click();
 			await expect(team).toHaveCount(0);
 			expect(
@@ -807,6 +839,10 @@ test("Project dashboard validates, edits, detects conflicts, moves and restores 
 		name: "Workspaces",
 		exact: true,
 	});
+	await workspaces
+		.locator("summary")
+		.filter({ hasText: "Create workspace" })
+		.click();
 	await workspaces.getByLabel("Name", { exact: true }).fill("Design studio");
 	await workspaces.getByLabel("Slug", { exact: true }).fill(`design-${id}`);
 	await workspaces
@@ -866,16 +902,23 @@ test("Project dashboard validates, edits, detects conflicts, moves and restores 
 	await editing
 		.getByRole("button", { name: "Save changes", exact: true })
 		.click();
-	await expect(page.getByRole("status")).toContainText("This item has changed");
+	await expect(editing.getByRole("status")).toContainText(
+		"This item has changed",
+	);
 	await editing.getByRole("button", { name: "Cancel", exact: true }).click();
 	await page.getByRole("button", { name: "Refresh", exact: true }).click();
 	await expect(card).toContainText("Concurrent server change");
 	await workspaces
 		.getByRole("button", { name: "Archive", exact: true })
 		.click();
+	await page
+		.getByRole("dialog")
+		.getByRole("button", { name: "Archive workspace", exact: true })
+		.click();
 	await expect(
 		workspaces.getByRole("button", { name: "Unarchive", exact: true }),
 	).toBeVisible();
+	await card.locator("summary").click();
 	await card
 		.getByLabel("Destination for Website refresh", { exact: true })
 		.selectOption("");
@@ -883,7 +926,18 @@ test("Project dashboard validates, edits, detects conflicts, moves and restores 
 	await expect(
 		card.getByLabel("Destination for Website refresh", { exact: true }),
 	).toHaveValue("");
+	await expect(card.getByRole("status")).toContainText("Changes saved.");
+	if (
+		!(await card
+			.locator("details.projects-context")
+			.evaluate((element) => element.hasAttribute("open")))
+	)
+		await card.locator("summary").click();
 	await card.getByRole("button", { name: "Delete", exact: true }).click();
+	await page
+		.getByRole("dialog")
+		.getByRole("button", { name: "Delete project", exact: true })
+		.click();
 	await expect(
 		page.getByRole("heading", { name: "Website refresh", exact: true }),
 	).toHaveCount(0);

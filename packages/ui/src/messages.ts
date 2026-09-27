@@ -1,6 +1,36 @@
 export const messages = {
 	en: {
 		Projects: {
+			eyebrow: "Organization workspace",
+			project: "Project",
+			updated: "Updated",
+			noDescription: "No description yet.",
+			readDescription: "Read full description",
+			assignedWorkspace: "Assigned workspace",
+			noResults: "No matching projects",
+			emptyTitle: "A place for your next project",
+			emptyHint:
+				"Projects you can access appear here. Create a project to start organizing your work.",
+			clearSearch: "Clear search",
+			continuationHint:
+				"More projects may be available. Continue to the next page.",
+			paginationHint: "Showing accessible projects as you load them.",
+			createHint: "Give your project a name and a place to belong.",
+			editHint: "Keep the details and status of your project up to date.",
+			projectActions: "Actions for {name}",
+			projectDisabled:
+				"This project action is currently disabled. You can still read or delete existing projects.",
+			accountSecurity: "Open account security",
+			deleteTitle: "Delete {name}?",
+			deleteHint:
+				"This project will move to deleted projects and release its capacity. You can restore it later if capacity is available.",
+			confirmDelete: "Delete project",
+			archiveTitle: "Archive {name}?",
+			confirmArchive: "Archive workspace",
+			workspaceHint: "Group related projects and manage where work belongs.",
+			workspaceActive: "Available for new projects.",
+			workspaceRefresh: "Refresh workspaces",
+			renameWorkspace: "Rename {name}",
 			title: "Projects",
 			subtitle: "Create, organize and share work in this organization.",
 			back: "Organization settings",
@@ -9,6 +39,9 @@ export const messages = {
 			slugHint: "Use 2–63 lowercase letters, numbers or hyphens.",
 			description: "Description",
 			workspace: "Workspace",
+			workspaceInvalid:
+				"Choose an available workspace, or select No workspace.",
+			workspaceUnavailableSelection: "Selected workspace is unavailable",
 			noWorkspace: "No workspace",
 			status: "Status",
 			active: "Active",
@@ -98,6 +131,38 @@ export const messages = {
 	},
 	es: {
 		Projects: {
+			eyebrow: "Trabajo de la organización",
+			project: "Proyecto",
+			updated: "Actualizado",
+			noDescription: "Todavía no hay descripción.",
+			readDescription: "Leer descripción completa",
+			assignedWorkspace: "Espacio de trabajo asignado",
+			noResults: "No hay proyectos coincidentes",
+			emptyTitle: "Un lugar para tu próximo proyecto",
+			emptyHint:
+				"Aquí aparecen los proyectos a los que tienes acceso. Crea un proyecto para empezar a organizar tu trabajo.",
+			clearSearch: "Borrar búsqueda",
+			continuationHint:
+				"Puede haber más proyectos disponibles. Continúa a la siguiente página.",
+			paginationHint:
+				"Se muestran los proyectos accesibles a medida que los cargas.",
+			createHint: "Dale un nombre a tu proyecto y elige dónde organizarlo.",
+			editHint: "Mantén al día los detalles y el estado del proyecto.",
+			projectActions: "Acciones de {name}",
+			projectDisabled:
+				"Esta acción está desactivada. Puedes consultar o eliminar los proyectos existentes.",
+			accountSecurity: "Abrir seguridad de la cuenta",
+			deleteTitle: "¿Eliminar {name}?",
+			deleteHint:
+				"El proyecto pasará a los proyectos eliminados y liberará capacidad. Podrás restaurarlo después si hay capacidad disponible.",
+			confirmDelete: "Eliminar proyecto",
+			archiveTitle: "¿Archivar {name}?",
+			confirmArchive: "Archivar espacio de trabajo",
+			workspaceHint:
+				"Agrupa proyectos relacionados y organiza los espacios de trabajo.",
+			workspaceActive: "Disponible para nuevos proyectos.",
+			workspaceRefresh: "Actualizar espacios de trabajo",
+			renameWorkspace: "Renombrar {name}",
 			title: "Proyectos",
 			subtitle: "Crea, organiza y comparte el trabajo en esta organización.",
 			back: "Configuración de la organización",
@@ -106,6 +171,10 @@ export const messages = {
 			slugHint: "Usa entre 2 y 63 letras minúsculas, números o guiones.",
 			description: "Descripción",
 			workspace: "Espacio de trabajo",
+			workspaceInvalid:
+				"Elige un espacio disponible o selecciona Sin espacio de trabajo.",
+			workspaceUnavailableSelection:
+				"El espacio seleccionado no está disponible",
 			noWorkspace: "Sin espacio de trabajo",
 			status: "Estado",
 			active: "Activo",

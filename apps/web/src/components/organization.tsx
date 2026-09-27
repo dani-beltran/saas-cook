@@ -1,39 +1,762 @@
 "use client";
+
 import { createApiClient } from "@common-saas/api/client";
 import type {
 	OrganizationCommand,
 	OrganizationSnapshotDto,
 } from "@common-saas/api-contracts";
 import { Button, Input } from "@common-saas/ui";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocale, useTranslations } from "next-intl";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { organizationDashboardCopy } from "../i18n/organization-dashboard";
+import { DashboardShell } from "./dashboard-shell";
+import "./organization-dashboard.css";
+
+type CommandInput = OrganizationCommand extends infer Command
+	? Command extends OrganizationCommand
+		? Omit<Command, "operationKey">
+		: never
+	: never;
+type Section = "members" | "invitations" | "teams" | "security" | "ownership";
+type Summary = Pick<OrganizationSnapshotDto, "organization" | "membership">;
+type Feedback = {
+	scope: string;
+	message: string;
+	failed?: boolean;
+	reauth?: boolean;
+};
+type Run = (scope: string, value: CommandInput) => Promise<boolean>;
+type Confirm = (
+	scope: string,
+	value: CommandInput,
+	description: string,
+	title?: string,
+) => void;
+type Confirmation = {
+	scope: string;
+	value: CommandInput;
+	description: string;
+	title: string;
+};
+
+function useCopy() {
+	const locale = useLocale();
+	return {
+		locale,
+		t: useTranslations("Account"),
+		copy: organizationDashboardCopy[locale === "es" ? "es" : "en"],
+	};
+}
+
+function Notice({
+	feedback,
+	scope,
+}: {
+	feedback: Feedback | null;
+	scope: string;
+}) {
+	const { copy, locale } = useCopy();
+	if (!feedback || feedback.scope !== scope) return null;
+	return (
+		<div
+			className={`dashboard-notice org-feedback${feedback.failed ? " org-feedback-error" : ""}`}
+		>
+			<p role="status" aria-live="polite">
+				{feedback.message}
+			</p>
+			{feedback.reauth && (
+				<>
+					<p>{copy.verifyHint}</p>
+					<a
+						href={`/${locale}/account#security`}
+						target="_blank"
+						rel="noreferrer"
+					>
+						{copy.verifyAccount} ↗
+					</a>
+				</>
+			)}
+		</div>
+	);
+}
+
+export function ConfirmDialog({
+	value,
+	busy,
+	feedback,
+	onCancel,
+	onConfirm,
+}: {
+	value: Confirmation | null;
+	busy: boolean;
+	feedback: Feedback | null;
+	onCancel: () => void;
+	onConfirm: () => void;
+}) {
+	const { t, copy } = useCopy();
+	const dialog = useRef<HTMLDialogElement>(null);
+	const id = useId();
+	useEffect(() => {
+		if (value && !dialog.current?.open) dialog.current?.showModal();
+		if (!value && dialog.current?.open) dialog.current.close();
+	}, [value]);
+	return (
+		<dialog
+			ref={dialog}
+			className="org-dialog"
+			aria-labelledby={`${id}-title`}
+			aria-describedby={`${id}-description`}
+			onCancel={(event) => {
+				event.preventDefault();
+				if (!busy) onCancel();
+			}}
+		>
+			{value && (
+				<>
+					<h2 id={`${id}-title`}>{value.title}</h2>
+					<p id={`${id}-description`} className="dashboard-description">
+						{value.description}
+					</p>
+					<Notice feedback={feedback} scope={value.scope} />
+					<div className="org-dialog-actions">
+						<Button
+							className="dashboard-secondary"
+							disabled={busy}
+							onClick={onCancel}
+						>
+							{t("cancel")}
+						</Button>
+						<Button disabled={busy} onClick={onConfirm}>
+							{busy ? copy.working : copy.confirmChange}
+						</Button>
+					</div>
+				</>
+			)}
+		</dialog>
+	);
+}
+
+function InviteForm({ busy, run }: { busy: boolean; run: Run }) {
+	const { t, copy } = useCopy();
+	const schema = z.object({
+		email: z.email(t("emailInvalid")),
+		role: z.enum(["member", "admin", "billing"]),
+	});
+	const {
+		register,
+		handleSubmit,
+		reset,
+		formState: { errors },
+	} = useForm<z.infer<typeof schema>>({
+		resolver: zodResolver(schema),
+		defaultValues: { email: "", role: "member" },
+	});
+	return (
+		<form
+			className="org-inline-form"
+			noValidate
+			aria-busy={busy}
+			onSubmit={handleSubmit(async (value) => {
+				if (await run("invitations", { action: "invite", ...value })) reset();
+			})}
+		>
+			<div className="dashboard-field org-form-grow">
+				<label htmlFor="invitation-email">{t("email")}</label>
+				<Input
+					id="invitation-email"
+					type="email"
+					autoComplete="off"
+					disabled={busy}
+					aria-invalid={Boolean(errors.email)}
+					aria-describedby={errors.email ? "invitation-email-error" : undefined}
+					{...register("email")}
+				/>
+				{errors.email && (
+					<p
+						className="org-field-error"
+						role="alert"
+						id="invitation-email-error"
+					>
+						{errors.email.message}
+					</p>
+				)}
+			</div>
+			<div className="dashboard-field">
+				<label htmlFor="invitation-role">{t("role")}</label>
+				<select id="invitation-role" disabled={busy} {...register("role")}>
+					<option value="member">{t("member")}</option>
+					<option value="admin">{t("admin")}</option>
+					<option value="billing">{t("billing")}</option>
+				</select>
+			</div>
+			<Button type="submit" disabled={busy}>
+				{busy ? copy.working : t("invite")}
+			</Button>
+		</form>
+	);
+}
+
+function CreateTeamForm({ busy, run }: { busy: boolean; run: Run }) {
+	const { t, copy } = useCopy();
+	const schema = z.object({
+		name: z
+			.string()
+			.trim()
+			.min(1, copy.teamNameInvalid)
+			.max(80, copy.teamNameInvalid),
+	});
+	const {
+		register,
+		handleSubmit,
+		reset,
+		formState: { errors },
+	} = useForm<z.infer<typeof schema>>({
+		resolver: zodResolver(schema),
+		defaultValues: { name: "" },
+	});
+	return (
+		<form
+			className="org-inline-form"
+			noValidate
+			aria-busy={busy}
+			onSubmit={handleSubmit(async (value) => {
+				if (await run("teams", { action: "createTeam", ...value })) reset();
+			})}
+		>
+			<div className="dashboard-field org-form-grow">
+				<label htmlFor="team-name">{t("team")}</label>
+				<Input
+					id="team-name"
+					autoComplete="off"
+					disabled={busy}
+					aria-invalid={Boolean(errors.name)}
+					aria-describedby={errors.name ? "team-name-error" : undefined}
+					{...register("name")}
+				/>
+				{errors.name && (
+					<p className="org-field-error" role="alert" id="team-name-error">
+						{errors.name.message}
+					</p>
+				)}
+			</div>
+			<Button type="submit" disabled={busy}>
+				{busy ? copy.working : t("createTeam")}
+			</Button>
+		</form>
+	);
+}
+
+function CapacityForm({
+	seats,
+	busy,
+	run,
+}: {
+	seats: OrganizationSnapshotDto["seats"];
+	busy: boolean;
+	run: Run;
+}) {
+	const { t, copy } = useCopy();
+	const schema = z.object({
+		capacity: z
+			.number()
+			.int(copy.capacityInvalid)
+			.min(seats.occupied, copy.capacityInvalid)
+			.max(100000, copy.capacityInvalid),
+	});
+	const {
+		register,
+		handleSubmit,
+		reset,
+		formState: { errors },
+	} = useForm<z.infer<typeof schema>>({
+		resolver: zodResolver(schema),
+		defaultValues: { capacity: seats.capacity },
+	});
+	useEffect(() => {
+		reset({ capacity: seats.capacity });
+	}, [reset, seats.capacity]);
+	return (
+		<form
+			className="org-inline-form"
+			noValidate
+			aria-busy={busy}
+			onSubmit={handleSubmit(async (value) => {
+				await run("capacity", { action: "capacity", ...value });
+			})}
+		>
+			<div className="dashboard-field">
+				<label htmlFor="seat-capacity">{t("seatCapacity")}</label>
+				<Input
+					id="seat-capacity"
+					type="number"
+					min={seats.occupied}
+					max={100000}
+					disabled={busy}
+					aria-invalid={Boolean(errors.capacity)}
+					aria-describedby={errors.capacity ? "seat-capacity-error" : undefined}
+					{...register("capacity", { valueAsNumber: true })}
+				/>
+				{errors.capacity && (
+					<p className="org-field-error" role="alert" id="seat-capacity-error">
+						{errors.capacity.message}
+					</p>
+				)}
+			</div>
+			<Button type="submit" className="dashboard-secondary" disabled={busy}>
+				{t("saveCapacity")}
+			</Button>
+		</form>
+	);
+}
+
+export function MemberRow({
+	member,
+	currentId,
+	busy,
+	run,
+	confirm,
+}: {
+	member: OrganizationSnapshotDto["members"][number];
+	currentId: string;
+	busy: boolean;
+	run: Run;
+	confirm: Confirm;
+}) {
+	const { t, copy } = useCopy();
+	const [role, setRole] = useState(member.role);
+	useEffect(() => setRole(member.role), [member.role]);
+	return (
+		<li className="org-member-row">
+			<div className="org-member-identity">
+				<span className="org-avatar" aria-hidden="true">
+					{member.email.slice(0, 1).toUpperCase()}
+				</span>
+				<span className="org-email">
+					{member.email}
+					{member.id === currentId && (
+						<span className="org-you">{copy.you}</span>
+					)}
+				</span>
+			</div>
+			<span className="org-role-label">{t(member.role)}</span>
+			<span
+				className={`dashboard-badge org-status-${member.status === "active" ? "active" : "inactive"}`}
+			>
+				{member.status === "active" ? copy.active : copy.inactive}
+			</span>
+			<details
+				className="org-member-menu"
+				onKeyDown={(event) => {
+					if (event.key === "Escape") {
+						event.currentTarget.open = false;
+						event.currentTarget.querySelector("summary")?.focus();
+					}
+				}}
+			>
+				<summary aria-label={`${copy.manageMember}: ${member.email}`}>
+					{copy.manage}
+				</summary>
+				<div className="org-member-menu-content">
+					<form
+						onSubmit={(event) => {
+							event.preventDefault();
+							confirm(
+								"members",
+								{
+									action: "membership",
+									membershipId: member.id,
+									status: member.status === "active" ? "active" : "inactive",
+									role,
+									billable:
+										role === member.role ? member.billable : role !== "billing",
+								},
+								copy.confirmRole,
+								`${copy.saveRole}: ${member.email}`,
+							);
+						}}
+					>
+						<label htmlFor={`role-${member.id}`}>{t("role")}</label>
+						<select
+							id={`role-${member.id}`}
+							value={role}
+							disabled={busy}
+							onChange={(event) =>
+								setRole(event.target.value as typeof member.role)
+							}
+						>
+							{member.role === "owner" && (
+								<option value="owner">{t("owner")}</option>
+							)}
+							<option value="admin">{t("admin")}</option>
+							<option value="member">{t("member")}</option>
+							<option value="billing">{t("billing")}</option>
+						</select>
+						<Button
+							type="submit"
+							className="dashboard-secondary"
+							disabled={busy || role === member.role}
+						>
+							{copy.saveRole}
+						</Button>
+					</form>
+					<Button
+						className={
+							member.status === "active"
+								? "dashboard-danger"
+								: "dashboard-secondary"
+						}
+						disabled={busy}
+						onClick={() => {
+							const value = {
+								action: "membership" as const,
+								membershipId: member.id,
+								role: member.role,
+								billable: member.billable,
+								status:
+									member.status === "active"
+										? ("inactive" as const)
+										: ("active" as const),
+							};
+							if (member.status === "active")
+								confirm(
+									"members",
+									value,
+									copy.confirmDeactivate,
+									`${t("suspend")}: ${member.email}`,
+								);
+							else void run("members", value);
+						}}
+					>
+						{t(member.status === "active" ? "suspend" : "activate")}
+					</Button>
+				</div>
+			</details>
+		</li>
+	);
+}
+
+export function TeamCard({
+	team,
+	snapshot,
+	busy,
+	run,
+	confirm,
+}: {
+	team: OrganizationSnapshotDto["teams"][number];
+	snapshot: OrganizationSnapshotDto;
+	busy: boolean;
+	run: Run;
+	confirm: Confirm;
+}) {
+	const { t, copy } = useCopy();
+	const [filter, setFilter] = useState("");
+	const [selected, setSelected] = useState("");
+	const members = snapshot.members.filter((member) =>
+		team.membershipIds.includes(member.id),
+	);
+	const available = snapshot.members.filter(
+		(member) =>
+			member.status === "active" && !team.membershipIds.includes(member.id),
+	);
+	const filtered = available.filter((member) =>
+		member.email.toLocaleLowerCase().includes(filter.toLocaleLowerCase()),
+	);
+	const selectedId = filtered.some((member) => member.id === selected)
+		? selected
+		: (filtered[0]?.id ?? "");
+	return (
+		<article
+			className="org-team"
+			aria-label={t("teamDetails", { name: team.name })}
+		>
+			<details>
+				<summary className="org-team-summary">
+					<h3>{team.name}</h3>
+					<span className="dashboard-badge">{members.length}</span>
+				</summary>
+				<div className="org-team-body">
+					{members.length ? (
+						<ul className="org-team-members">
+							{members.map((member) => (
+								<li key={member.id}>
+									<span className="org-email">{member.email}</span>
+									<Button
+										className="dashboard-secondary"
+										disabled={busy}
+										aria-label={t("removeTeamMemberNamed", {
+											email: member.email,
+											team: team.name,
+										})}
+										onClick={() =>
+											confirm(
+												"teams",
+												{
+													action: "removeTeamMember",
+													teamId: team.id,
+													membershipId: member.id,
+												},
+												copy.confirmTeamMember,
+												t("removeTeamMember"),
+											)
+										}
+									>
+										{t("remove")}
+									</Button>
+								</li>
+							))}
+						</ul>
+					) : (
+						<p className="dashboard-description">{t("teamEmpty")}</p>
+					)}
+					{available.length ? (
+						<form
+							className="org-team-add"
+							onSubmit={(event) => {
+								event.preventDefault();
+								if (selectedId)
+									void run("teams", {
+										action: "addTeamMember",
+										teamId: team.id,
+										membershipId: selectedId,
+									});
+							}}
+						>
+							<div className="dashboard-field">
+								<label htmlFor={`team-filter-${team.id}`}>
+									{copy.searchTeamMembers}
+								</label>
+								<Input
+									id={`team-filter-${team.id}`}
+									value={filter}
+									onChange={(event) => setFilter(event.target.value)}
+									disabled={busy}
+									type="search"
+								/>
+							</div>
+							<div className="org-inline-form">
+								<div className="dashboard-field org-form-grow">
+									<label htmlFor={`team-member-${team.id}`}>
+										{t("membership")}
+									</label>
+									<select
+										id={`team-member-${team.id}`}
+										value={selectedId}
+										disabled={busy || !filtered.length}
+										onChange={(event) => setSelected(event.target.value)}
+									>
+										{filtered.length ? (
+											filtered.map((member) => (
+												<option key={member.id} value={member.id}>
+													{member.email}
+												</option>
+											))
+										) : (
+											<option value="">{copy.noMatches}</option>
+										)}
+									</select>
+								</div>
+								<Button
+									type="submit"
+									className="dashboard-secondary"
+									disabled={busy || !selectedId}
+								>
+									{t("addTeamMember")}
+								</Button>
+							</div>
+						</form>
+					) : (
+						<p className="dashboard-description">{copy.allMembersAdded}</p>
+					)}
+					<div className="org-team-danger">
+						<Button
+							className="dashboard-danger"
+							disabled={busy}
+							aria-label={t("removeTeamNamed", { name: team.name })}
+							onClick={() =>
+								confirm(
+									"teams",
+									{ action: "removeTeam", teamId: team.id },
+									copy.confirmTeamDelete,
+									t("removeTeamNamed", { name: team.name }),
+								)
+							}
+						>
+							{t("removeTeam")}
+						</Button>
+					</div>
+				</div>
+			</details>
+		</article>
+	);
+}
+
+function SecurityPolicy({
+	summary,
+	editable,
+	busy,
+	confirm,
+}: {
+	summary: Summary;
+	editable: boolean;
+	busy: boolean;
+	confirm: Confirm;
+}) {
+	const { t, copy, locale } = useCopy();
+	const policy = summary.organization.securityPolicy;
+	return (
+		<>
+			{editable ? (
+				<>
+					<p className="dashboard-description">{t("policyAssurance")}</p>
+					<a
+						className="org-inline-link"
+						href={`/${locale}/account#security`}
+						target="_blank"
+						rel="noreferrer"
+					>
+						{copy.verifyAccount} ↗
+					</a>
+					<form
+						className="org-policy-form"
+						onSubmit={(event) => {
+							event.preventDefault();
+							const data = new FormData(event.currentTarget);
+							confirm(
+								"security",
+								{
+									action: "securityPolicy",
+									requireMfa: data.has("requireMfa"),
+									acceptPasskeyMfa: data.has("acceptPasskeyMfa"),
+									requiredAuthMethod: data.has("passkeyOnly")
+										? "passkey"
+										: null,
+								},
+								copy.confirmPolicy,
+								t("savePolicy"),
+							);
+						}}
+					>
+						<label className="org-policy-row">
+							<span>{t("requireMfa")}</span>
+							<input
+								type="checkbox"
+								name="requireMfa"
+								disabled={busy}
+								defaultChecked={policy?.requireMfa}
+							/>
+						</label>
+						<label className="org-policy-row">
+							<span>{t("acceptPasskeyMfa")}</span>
+							<input
+								type="checkbox"
+								name="acceptPasskeyMfa"
+								disabled={busy}
+								defaultChecked={policy?.acceptPasskeyMfa}
+							/>
+						</label>
+						<label className="org-policy-row">
+							<span>{t("passkeyOnly")}</span>
+							<input
+								type="checkbox"
+								name="passkeyOnly"
+								disabled={busy}
+								defaultChecked={policy?.requiredAuthMethod === "passkey"}
+							/>
+						</label>
+						<Button type="submit" disabled={busy}>
+							{t("savePolicy")}
+						</Button>
+					</form>
+				</>
+			) : (
+				<>
+					<p className="dashboard-description">{copy.ownerOnly}</p>
+					<dl className="org-policy-readonly">
+						<div>
+							<dt>{t("requireMfa")}</dt>
+							<dd className="dashboard-badge">
+								{policy?.requireMfa ? copy.policyEnabled : copy.policyOptional}
+							</dd>
+						</div>
+						<div>
+							<dt>{t("acceptPasskeyMfa")}</dt>
+							<dd className="dashboard-badge">
+								{policy?.acceptPasskeyMfa
+									? copy.policyAccepted
+									: copy.policyNotAccepted}
+							</dd>
+						</div>
+						<div>
+							<dt>{t("passkeyOnly")}</dt>
+							<dd className="dashboard-badge">
+								{policy?.requiredAuthMethod === "passkey"
+									? copy.policyEnabled
+									: copy.policyOptional}
+							</dd>
+						</div>
+					</dl>
+				</>
+			)}
+		</>
+	);
+}
 
 export function Organization({ organizationId }: { organizationId: string }) {
-	const locale = useLocale();
-	const t = useTranslations("Account");
+	const { locale, t, copy } = useCopy();
 	const projects = useTranslations("Projects");
 	const [snapshot, setSnapshot] = useState<OrganizationSnapshotDto | null>(
 		null,
 	);
-	const [summary, setSummary] = useState<{
-		organization: { name: string };
-		membership: { role: string };
-	} | null>(null);
-	const [message, setMessage] = useState("");
-	const [busy, setBusy] = useState(false);
+	const [summary, setSummary] = useState<Summary | null>(null);
+	const [loading, setLoading] = useState(true);
+	const [loadFailed, setLoadFailed] = useState(false);
+	const [feedback, setFeedback] = useState<Feedback | null>(null);
+	const [busyScope, setBusyScope] = useState<string | null>(null);
+	const [section, setSection] = useState<Section>("members");
+	const [memberFilter, setMemberFilter] = useState("");
+	const [teamFilter, setTeamFilter] = useState("");
+	const [confirmation, setConfirmation] = useState<Confirmation | null>(null);
 	const [acceptance, setAcceptance] = useState<{
 		kind: "invite" | "transfer";
 		value: string;
 	} | null>(null);
+	const generation = useRef(0);
+	const mounted = useRef(false);
+	const busyRef = useRef(false);
+	const operationKeys = useRef(new Map<string, string>());
+	const busy = busyScope !== null;
+
 	const refresh = useCallback(async () => {
-		const api = createApiClient(`${window.location.origin}/api/rpc`);
-		const own = await api.organizations.summary({ organizationId });
-		setSummary(own);
-		if (["owner", "admin"].includes(own.membership.role))
-			setSnapshot(await api.organizations.get({ organizationId }));
-		else setSnapshot(null);
+		const request = ++generation.current;
+		setLoading(true);
+		setLoadFailed(false);
+		try {
+			const api = createApiClient(`${window.location.origin}/api/rpc`);
+			const own = await api.organizations.summary({ organizationId });
+			const current = ["owner", "admin"].includes(own.membership.role)
+				? await api.organizations.get({ organizationId })
+				: null;
+			if (mounted.current && request === generation.current) {
+				setSummary(own);
+				setSnapshot(current);
+			}
+			return true;
+		} catch {
+			if (mounted.current && request === generation.current) {
+				setSummary(null);
+				setSnapshot(null);
+				setLoadFailed(true);
+			}
+			return false;
+		} finally {
+			if (mounted.current && request === generation.current) setLoading(false);
+		}
 	}, [organizationId]);
 	useEffect(() => {
+		mounted.current = true;
 		const query = new URLSearchParams(window.location.search);
 		const invite = query.get("invite");
 		const transfer = query.get("transfer");
@@ -42,572 +765,728 @@ export function Organization({ organizationId }: { organizationId: string }) {
 				kind: invite ? "invite" : "transfer",
 				value: invite ?? transfer ?? "",
 			});
-			window.history.replaceState(null, "", window.location.pathname);
+			query.delete("invite");
+			query.delete("transfer");
+			const remaining = query.toString();
+			window.history.replaceState(
+				null,
+				"",
+				`${window.location.pathname}${remaining ? `?${remaining}` : ""}${window.location.hash}`,
+			);
 		}
-		void refresh().catch(() => setMessage(t("permission")));
-	}, [refresh, t]);
-	async function command(value: OrganizationCommand) {
-		setBusy(true);
-		setMessage("");
+		function readSection() {
+			const hash = window.location.hash.slice(1);
+			if (
+				["members", "invitations", "teams", "security", "ownership"].includes(
+					hash,
+				)
+			)
+				setSection(hash as Section);
+		}
+		readSection();
+		window.addEventListener("hashchange", readSection);
+		void refresh();
+		return () => {
+			mounted.current = false;
+			generation.current++;
+			window.removeEventListener("hashchange", readSection);
+		};
+	}, [refresh]);
+
+	const run: Run = async (scope, value) => {
+		if (busyRef.current) return false;
+		busyRef.current = true;
+		setBusyScope(scope);
+		setFeedback(null);
+		// Another action in the same section must not replace a pending retry key.
+		const submission = `${scope}:${JSON.stringify(value)}`;
+		let operationKey = operationKeys.current.get(submission);
+		if (!operationKey) {
+			operationKey = crypto.randomUUID();
+			operationKeys.current.set(submission, operationKey);
+		}
 		try {
 			await createApiClient(
 				`${window.location.origin}/api/rpc`,
-			).organizations.command({ organizationId, command: value });
-			setMessage(t("saved"));
-			setAcceptance(null);
-			await refresh();
+			).organizations.command({
+				organizationId,
+				command: { ...value, operationKey },
+			});
+			operationKeys.current.delete(submission);
+			if (!mounted.current) return true;
+			if (
+				value.action === "acceptInvitation" ||
+				value.action === "acceptTransfer"
+			) {
+				setAcceptance(null);
+				if (value.action === "acceptTransfer") setSection("ownership");
+			}
+			setConfirmation(null);
+			const refreshed = await refresh();
+			if (mounted.current)
+				setFeedback({
+					scope,
+					message: refreshed ? t("saved") : copy.refreshFailed,
+				});
+			return true;
 		} catch (error) {
+			if (!mounted.current) return false;
 			const failure = error as { code?: string; message?: string };
-			setMessage(
-				t(
-					failure.message === "CAPACITY"
-						? "capacityDenied"
-						: failure.message === "LAST_OWNER"
-							? "lastOwnerDenied"
-							: failure.code === "CONFLICT"
-								? "conflict"
-								: failure.code === "FORBIDDEN"
-									? "permission"
-									: failure.code === "UNAUTHORIZED"
-										? "reauthenticate"
-										: "operationFailed",
-				),
-			);
+			const reauth =
+				failure.code === "UNAUTHORIZED" || failure.message === "ASSURANCE";
+			const message =
+				failure.message === "CAPACITY"
+					? t("capacityDenied")
+					: failure.message === "LAST_OWNER"
+						? t("lastOwnerDenied")
+						: failure.message === "EXPIRED"
+							? copy.expiredLink
+							: reauth
+								? t("reauthenticate")
+								: failure.code === "CONFLICT"
+									? t("conflict")
+									: failure.code === "FORBIDDEN"
+										? t("permission")
+										: copy.unavailable;
+			setFeedback({
+				scope,
+				message,
+				failed: true,
+				reauth:
+					reauth ||
+					([
+						"securityPolicy",
+						"startTransfer",
+						"acceptTransfer",
+						"acceptInvitation",
+					].includes(value.action) &&
+						failure.code === "FORBIDDEN"),
+			});
+			return false;
 		} finally {
-			setBusy(false);
+			busyRef.current = false;
+			if (mounted.current) setBusyScope(null);
 		}
-	}
-	const operationKey = () => crypto.randomUUID();
+	};
+	const confirm: Confirm = (
+		scope,
+		value,
+		description,
+		title = copy.confirmChange,
+	) => {
+		setFeedback(null);
+		setConfirmation({ scope, value, description, title });
+	};
+	const isOwner = summary?.membership.role === "owner";
+	const tabs: { id: Section; label: string }[] = [
+		{ id: "members", label: t("members") },
+		{ id: "invitations", label: t("invitations") },
+		{ id: "teams", label: t("teams") },
+		{ id: "security", label: t("security") },
+		{ id: "ownership", label: copy.ownership },
+	];
+	const selectSection = (next: Section) => {
+		setSection(next);
+		window.history.replaceState(
+			null,
+			"",
+			`${window.location.pathname}${window.location.search}#${next}`,
+		);
+	};
+	const filteredMembers =
+		snapshot?.members.filter((member) =>
+			member.email
+				.toLocaleLowerCase()
+				.includes(memberFilter.toLocaleLowerCase()),
+		) ?? [];
+	const filteredTeams =
+		snapshot?.teams.filter((team) =>
+			team.name.toLocaleLowerCase().includes(teamFilter.toLocaleLowerCase()),
+		) ?? [];
+	const pendingTransfers =
+		snapshot?.transfers.filter((transfer) => transfer.status === "pending") ??
+		[];
+	const recipients =
+		snapshot?.members.filter(
+			(member) =>
+				member.id !== snapshot.membership.id && member.status === "active",
+		) ?? [];
+	const notice = (scope: string) => (
+		<Notice feedback={confirmation ? null : feedback} scope={scope} />
+	);
+	const statusLabel = (status: string) =>
+		({
+			active: copy.active,
+			inactive: copy.inactive,
+			pending: copy.pending,
+			accepted: copy.accepted,
+			canceled: copy.canceled,
+			expired: copy.expired,
+		})[status] ?? copy.unknownStatus;
+	const date = (value: string) =>
+		new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(
+			new Date(value),
+		);
+
 	return (
-		<main className="mx-auto max-w-5xl space-y-8 p-6 sm:p-12">
-			<a className="underline" href={`/${locale}/account`}>
-				{t("back")}
-			</a>
-			<h1 className="text-3xl font-semibold">
-				{summary?.organization.name ?? t("organizations")}
-			</h1>
-			<a
-				className="inline-flex rounded-md bg-primary px-4 py-2 text-primary-foreground"
-				href={`/${locale}/organizations/${organizationId}/projects`}
-			>
-				{projects("openProjects")}
-			</a>
-			<p role="status" aria-live="polite">
-				{message}
-			</p>
-			{acceptance && (
-				<section className="space-y-4 rounded-xl border border-border p-6">
-					<h2>
-						{t(
-							acceptance.kind === "invite"
-								? "inviteReceived"
-								: "transferReceived",
+		<DashboardShell
+			section="organization"
+			organizationId={organizationId}
+			onLocaleChange={
+				acceptance
+					? (nextLocale) => {
+							const url = new URL(window.location.href);
+							url.pathname = url.pathname.replace(
+								/^\/(en|es)(?=\/|$)/,
+								`/${nextLocale}`,
+							);
+							url.searchParams.set(acceptance.kind, acceptance.value);
+							window.location.assign(url.href);
+						}
+					: undefined
+			}
+		>
+			<div className="org-page">
+				<header className="dashboard-page-header">
+					<div>
+						<p className="dashboard-eyebrow">{copy.eyebrow}</p>
+						<h1>{summary?.organization.name ?? t("organizations")}</h1>
+						<p className="dashboard-description">{copy.description}</p>
+					</div>
+					<div className="org-header-actions">
+						{summary && (
+							<Button
+								className="dashboard-secondary"
+								disabled={busy || loading}
+								onClick={() => void refresh()}
+							>
+								{loading ? t("loading") : t("fresh")}
+							</Button>
 						)}
-					</h2>
-					<p>{t("reauthenticate")}</p>
-					<Button
-						disabled={busy}
-						onClick={() =>
-							void command(
+						<a
+							className="org-project-link"
+							href={`/${locale}/organizations/${organizationId}/projects`}
+						>
+							{projects("openProjects")} <span aria-hidden="true">↗</span>
+						</a>
+					</div>
+				</header>
+				{acceptance && (
+					<section
+						className="org-acceptance"
+						aria-labelledby="acceptance-heading"
+					>
+						<h2 id="acceptance-heading">
+							{t(
 								acceptance.kind === "invite"
-									? {
+									? "inviteReceived"
+									: "transferReceived",
+							)}
+						</h2>
+						<p className="dashboard-description">{copy.acceptanceNote}</p>
+						{notice("acceptance")}
+						<div className="org-inline-actions">
+							<Button
+								disabled={busy}
+								onClick={() => {
+									if (acceptance.kind === "invite")
+										void run("acceptance", {
 											action: "acceptInvitation",
 											token: acceptance.value,
-											operationKey: operationKey(),
-										}
-									: {
-											action: "acceptTransfer",
-											transferId: acceptance.value,
-											operationKey: operationKey(),
-										},
-							)
-						}
-					>
-						{t("accept")}
-					</Button>
-				</section>
-			)}
-			{summary && !snapshot && (
-				<p>
-					{t("role")}: {summary.membership.role}
-				</p>
-			)}
-			{snapshot ? (
-				<>
-					<p>
-						{t("seats")}: {snapshot.seats.occupied} / {snapshot.seats.capacity}
-					</p>
-					<section className="space-y-4 rounded-xl border border-border p-6">
-						<h2 className="text-xl font-semibold">{t("members")}</h2>
-						<div className="overflow-x-auto">
-							<table className="w-full text-left">
-								<thead>
-									<tr>
-										<th className="p-2">{t("membership")}</th>
-										<th className="p-2">{t("role")}</th>
-										<th className="p-2">{t("status")}</th>
-										<th />
-									</tr>
-								</thead>
-								<tbody>
-									{snapshot.members.map((member) => (
-										<tr key={member.id}>
-											<td className="p-2 break-all">{member.email}</td>
-											<td className="p-2">
-												<select
-													className="min-h-10 rounded border border-input p-2"
-													aria-label={`${t("role")} ${member.email}`}
-													value={member.role}
-													disabled={busy}
-													onChange={(event) => {
-														const role = event.target
-															.value as typeof member.role;
-														void command({
-															action: "membership",
-															membershipId: member.id,
-															status:
-																member.status === "active"
-																	? "active"
-																	: "inactive",
-															role,
-															billable: role !== "billing",
-															operationKey: operationKey(),
-														});
-													}}
-												>
-													{member.role === "owner" && (
-														<option value="owner">{t("owner")}</option>
-													)}
-													<option value="admin">{t("admin")}</option>
-													<option value="member">{t("member")}</option>
-													<option value="billing">{t("billing")}</option>
-												</select>
-											</td>
-											<td className="p-2">{member.status}</td>
-											<td className="p-2">
-												<Button
-													disabled={busy}
-													onClick={() =>
-														void command({
-															action: "membership",
-															membershipId: member.id,
-															role: member.role,
-															billable: member.billable,
-															status:
-																member.status === "active"
-																	? "inactive"
-																	: "active",
-															operationKey: operationKey(),
-														})
-													}
-												>
-													{t(
-														member.status === "active" ? "suspend" : "activate",
-													)}
-												</Button>
-											</td>
-										</tr>
-									))}
-								</tbody>
-							</table>
+										});
+									else
+										confirm(
+											"acceptance",
+											{
+												action: "acceptTransfer",
+												transferId: acceptance.value,
+											},
+											copy.confirmAcceptTransfer,
+											t("transferReceived"),
+										);
+								}}
+							>
+								{busyScope === "acceptance" ? copy.working : t("accept")}
+							</Button>
+							<a
+								href={`/${locale}/account#security`}
+								target="_blank"
+								rel="noreferrer"
+							>
+								{copy.verifyAccount} ↗
+							</a>
 						</div>
 					</section>
-					<section className="space-y-4 rounded-xl border border-border p-6">
-						<h2 className="text-xl font-semibold">{t("invitations")}</h2>
-						<form
-							className="flex flex-wrap items-end gap-3"
-							onSubmit={(event) => {
-								event.preventDefault();
-								const data = new FormData(event.currentTarget);
-								void command({
-									action: "invite",
-									email: String(data.get("email")),
-									role: data.get("role") as "admin" | "member" | "billing",
-									operationKey: operationKey(),
-								});
-							}}
-						>
-							<label className="grid gap-2" htmlFor="invitation-email">
-								{t("email")}
-								<Input
-									id="invitation-email"
-									name="email"
-									type="email"
-									required
-								/>
-							</label>
-							<label className="grid gap-2">
-								{t("role")}
-								<select
-									className="min-h-10 rounded border border-input p-2"
-									name="role"
-								>
-									<option value="member">{t("member")}</option>
-									<option value="admin">{t("admin")}</option>
-									<option value="billing">{t("billing")}</option>
-								</select>
-							</label>
-							<Button type="submit" disabled={busy}>
-								{t("invite")}
-							</Button>
-						</form>
-						<ul>
-							{snapshot.invitations.map((invite) => (
-								<li className="break-all py-2" key={invite.id}>
-									{invite.email} · {invite.status}{" "}
-									{invite.status === "pending" && (
-										<Button
-											disabled={busy}
-											onClick={() =>
-												void command({
-													action: "cancelInvitation",
-													invitationId: invite.id,
-													operationKey: operationKey(),
-												})
-											}
-										>
-											{t("cancel")}
-										</Button>
-									)}
-								</li>
-							))}
-						</ul>
-					</section>
-					<section className="space-y-4 rounded-xl border border-border p-6">
-						<h2 className="text-xl font-semibold">{t("teams")}</h2>
-						<form
-							className="flex flex-wrap items-end gap-3"
-							onSubmit={(event) => {
-								event.preventDefault();
-								const data = new FormData(event.currentTarget);
-								void command({
-									action: "createTeam",
-									name: String(data.get("name")),
-									operationKey: operationKey(),
-								});
-							}}
-						>
-							<label className="grid gap-2" htmlFor="team-name">
-								{t("team")}
-								<Input id="team-name" name="name" required maxLength={80} />
-							</label>
-							<Button type="submit" disabled={busy}>
-								{t("createTeam")}
-							</Button>
-						</form>
-						{snapshot.teams.map((team) => {
-							const members = snapshot.members.filter((member) =>
-								team.membershipIds.includes(member.id),
-							);
-							const available = snapshot.members.filter(
-								(member) =>
-									member.status === "active" &&
-									!team.membershipIds.includes(member.id),
-							);
-							return (
-								<article
-									className="min-w-0 space-y-4 rounded-lg border border-border p-4"
-									key={team.id}
-									aria-label={t("teamDetails", { name: team.name })}
-								>
-									<div className="flex flex-wrap items-center justify-between gap-3">
-										<h3 className="min-w-0 break-words text-lg font-semibold">
-											{team.name}
-										</h3>
-										<Button
-											disabled={busy}
-											aria-label={t("removeTeamNamed", { name: team.name })}
-											onClick={() =>
-												void command({
-													action: "removeTeam",
-													teamId: team.id,
-													operationKey: operationKey(),
-												})
-											}
-										>
-											{t("removeTeam")}
-										</Button>
-									</div>
-									{members.length ? (
-										<ul className="space-y-2">
-											{members.map((member) => (
-												<li
-													className="flex flex-wrap items-center justify-between gap-3"
-													key={member.id}
-												>
-													<span className="break-all">{member.email}</span>
-													<Button
-														disabled={busy}
-														aria-label={t("removeTeamMemberNamed", {
-															email: member.email,
-															team: team.name,
-														})}
-														onClick={() =>
-															void command({
-																action: "removeTeamMember",
-																teamId: team.id,
-																membershipId: member.id,
-																operationKey: operationKey(),
-															})
-														}
-													>
-														{t("removeTeamMember")}
-													</Button>
-												</li>
-											))}
-										</ul>
-									) : (
-										<p>{t("teamEmpty")}</p>
-									)}
-									{available.length > 0 && (
-										<form
-											className="flex flex-wrap items-end gap-3"
-											onSubmit={(event) => {
-												event.preventDefault();
-												const data = new FormData(event.currentTarget);
-												void command({
-													action: "addTeamMember",
-													teamId: team.id,
-													membershipId: String(data.get("membershipId")),
-													operationKey: operationKey(),
-												});
-											}}
-										>
-											<div className="grid min-w-0 max-w-full flex-1 basis-64 gap-2">
-												<label htmlFor={`team-member-${team.id}`}>
-													{t("membership")}
-												</label>
-												<select
-													id={`team-member-${team.id}`}
-													className="min-h-10 w-full min-w-0 max-w-full rounded border border-input p-2"
-													name="membershipId"
-												>
-													{available.map((member) => (
-														<option key={member.id} value={member.id}>
-															{member.email}
-														</option>
-													))}
-												</select>
-											</div>
-											<Button type="submit" disabled={busy}>
-												{t("addTeamMember")}
-											</Button>
-										</form>
-									)}
-								</article>
-							);
-						})}
-					</section>
-					{snapshot.membership.role === "owner" && (
-						<section className="space-y-5 rounded-xl border border-border p-6">
-							<h2 className="text-xl font-semibold">{t("security")}</h2>
-							<p>{t("policyAssurance")}</p>
-							<form
-								className="grid gap-4"
-								onSubmit={(event) => {
-									event.preventDefault();
-									const data = new FormData(event.currentTarget);
-									void command({
-										action: "securityPolicy",
-										requireMfa: data.has("requireMfa"),
-										acceptPasskeyMfa: data.has("acceptPasskeyMfa"),
-										requiredAuthMethod: data.has("passkeyOnly")
-											? "passkey"
-											: null,
-										operationKey: operationKey(),
-									});
-								}}
-							>
-								<label className="flex gap-3">
-									<input
-										type="checkbox"
-										name="requireMfa"
-										defaultChecked={
-											snapshot.organization.securityPolicy?.requireMfa
-										}
-									/>
-									{t("requireMfa")}
-								</label>
-								<label className="flex gap-3">
-									<input
-										type="checkbox"
-										name="acceptPasskeyMfa"
-										defaultChecked={
-											snapshot.organization.securityPolicy?.acceptPasskeyMfa
-										}
-									/>
-									{t("acceptPasskeyMfa")}
-								</label>
-								<label className="flex gap-3">
-									<input
-										type="checkbox"
-										name="passkeyOnly"
-										defaultChecked={
-											snapshot.organization.securityPolicy
-												?.requiredAuthMethod === "passkey"
-										}
-									/>
-									{t("passkeyOnly")}
-								</label>
-								<Button type="submit" disabled={busy}>
-									{t("savePolicy")}
-								</Button>
-							</form>
-							<form
-								className="flex flex-wrap items-end gap-3"
-								onSubmit={(event) => {
-									event.preventDefault();
-									const data = new FormData(event.currentTarget);
-									void command({
-										action: "capacity",
-										capacity: Number(data.get("capacity")),
-										operationKey: operationKey(),
-									});
-								}}
-							>
-								<label className="grid gap-2" htmlFor="seat-capacity">
-									{t("seatCapacity")}
-									<Input
-										id="seat-capacity"
-										type="number"
-										name="capacity"
-										min={snapshot.seats.occupied}
-										max={100000}
-										defaultValue={snapshot.seats.capacity}
-										required
-									/>
-								</label>
-								<Button type="submit" disabled={busy}>
-									{t("saveCapacity")}
-								</Button>
-							</form>
-						</section>
+				)}
+				{!summary && loading && (
+					<p className="dashboard-empty" role="status">
+						{copy.loading}
+					</p>
+				)}
+				{!confirmation &&
+					feedback &&
+					!acceptance &&
+					(feedback.scope === "acceptance" || !snapshot) && (
+						<Notice feedback={feedback} scope={feedback.scope} />
 					)}
-					{snapshot.membership.role === "owner" && (
-						<section className="space-y-4 rounded-xl border border-border p-6">
-							<h2 className="text-xl font-semibold">{t("transfer")}</h2>
-							<p>{t("reauthenticate")}</p>
-							<form
-								className="flex flex-wrap items-end gap-3"
-								onSubmit={(event) => {
-									event.preventDefault();
-									const data = new FormData(event.currentTarget);
-									void command({
-										action: "startTransfer",
-										recipientMembershipId: String(data.get("membershipId")),
-										outgoingRole: data.get("outgoingRole") as
-											| "admin"
-											| "member"
-											| "billing"
-											| "inactive",
-										operationKey: operationKey(),
-									});
-								}}
+				{loadFailed && !acceptance && (
+					<div className="dashboard-notice">
+						<p role="status">{copy.loadFailed}</p>
+						<div className="org-inline-actions">
+							<Button
+								className="dashboard-secondary"
+								disabled={busy || loading}
+								onClick={() => void refresh()}
 							>
-								<div className="grid min-w-0 max-w-full flex-1 basis-64 gap-2">
-									<label htmlFor="transfer-recipient">{t("recipient")}</label>
-									<select
-										id="transfer-recipient"
-										className="min-h-10 w-full min-w-0 max-w-full rounded border border-input p-2"
-										name="membershipId"
-										required
-									>
-										{snapshot.members
-											.filter(
-												(member) =>
-													member.id !== snapshot.membership.id &&
-													member.status === "active",
-											)
-											.map((member) => (
-												<option key={member.id} value={member.id}>
-													{member.email}
-												</option>
-											))}
-									</select>
+								{copy.retry}
+							</Button>
+							<a href={`/${locale}/account`}>{t("back")}</a>
+						</div>
+					</div>
+				)}
+				{summary && !snapshot && (
+					<>
+						<section
+							className="dashboard-section"
+							aria-labelledby="membership-heading"
+						>
+							<div className="dashboard-section-heading">
+								<h2 id="membership-heading">{copy.memberOverview}</h2>
+								<p className="dashboard-description">
+									{copy.memberDescription}
+								</p>
+							</div>
+							<dl className="org-policy-readonly">
+								<div>
+									<dt>{t("email")}</dt>
+									<dd className="org-email">{summary.membership.email}</dd>
 								</div>
-								<div className="grid min-w-0 max-w-full flex-1 basis-64 gap-2">
-									<label htmlFor="transfer-outgoing-role">
-										{t("outgoingRole")}
-									</label>
-									<select
-										id="transfer-outgoing-role"
-										className="min-h-10 w-full min-w-0 max-w-full rounded border border-input p-2"
-										name="outgoingRole"
-										defaultValue="member"
-									>
-										<option value="admin">{t("admin")}</option>
-										<option value="member">{t("member")}</option>
-										<option value="billing">{t("billing")}</option>
-										<option value="inactive">{t("leaveOrganization")}</option>
-									</select>
+								<div>
+									<dt>{t("role")}</dt>
+									<dd className="dashboard-badge">
+										{t(summary.membership.role)}
+									</dd>
 								</div>
-								<Button type="submit" disabled={busy}>
-									{t("nominate")}
-								</Button>
-							</form>
+								<div>
+									<dt>{t("status")}</dt>
+									<dd className="dashboard-badge org-status-active">
+										{statusLabel(summary.membership.status)}
+									</dd>
+								</div>
+							</dl>
+							<p className="dashboard-description">{copy.memberPrivacy}</p>
 						</section>
-					)}
-					<section className="space-y-4 rounded-xl border border-border p-6">
-						<h2 className="text-xl font-semibold">{t("pending")}</h2>
-						<ul className="space-y-3">
-							{snapshot.transfers
-								.filter((transfer) => transfer.status === "pending")
-								.map((transfer) => (
-									<li className="flex flex-wrap gap-4" key={transfer.id}>
-										<span className="min-w-0 break-all">
-											{snapshot.members.find(
-												(member) => member.id === transfer.toMembershipId,
-											)?.email ?? transfer.toMembershipId}
-										</span>
-										<span>
-											{t("outgoingRole")}:{" "}
-											{t(
-												transfer.outgoingRole === "inactive"
-													? "leaveOrganization"
-													: transfer.outgoingRole,
-											)}
-										</span>
-										{transfer.toMembershipId === snapshot.membership.id && (
-											<Button
-												disabled={busy}
-												onClick={() =>
-													void command({
-														action: "acceptTransfer",
-														transferId: transfer.id,
-														operationKey: operationKey(),
-													})
-												}
-											>
-												{t("accept")}
-											</Button>
-										)}
-										<Button
-											disabled={busy}
-											onClick={() =>
-												void command({
-													action: "cancelTransfer",
-													transferId: transfer.id,
-													operationKey: operationKey(),
-												})
+						<section
+							className="dashboard-section"
+							aria-labelledby="member-security-heading"
+						>
+							<div className="dashboard-section-heading">
+								<h2 id="member-security-heading">{t("security")}</h2>
+							</div>
+							<SecurityPolicy
+								summary={summary}
+								editable={false}
+								busy={busy}
+								confirm={confirm}
+							/>
+						</section>
+					</>
+				)}
+				{snapshot && (
+					<>
+						<div className="org-tab-bar">
+							<div
+								className="dashboard-subnav org-tabs"
+								role="tablist"
+								aria-label={copy.navigation}
+							>
+								{tabs.map((tab, index) => (
+									<button
+										type="button"
+										role="tab"
+										key={tab.id}
+										id={`org-tab-${tab.id}`}
+										aria-controls={`org-panel-${tab.id}`}
+										aria-selected={section === tab.id}
+										tabIndex={section === tab.id ? 0 : -1}
+										onClick={() => selectSection(tab.id)}
+										onKeyDown={(event) => {
+											let next = index;
+											if (event.key === "ArrowRight")
+												next = (index + 1) % tabs.length;
+											else if (event.key === "ArrowLeft")
+												next = (index + tabs.length - 1) % tabs.length;
+											else if (event.key === "Home") next = 0;
+											else if (event.key === "End") next = tabs.length - 1;
+											else return;
+											event.preventDefault();
+											const target = tabs[next];
+											if (target) {
+												selectSection(target.id);
+												document
+													.getElementById(`org-tab-${target.id}`)
+													?.focus();
 											}
-										>
-											{t("cancel")}
-										</Button>
-									</li>
+										}}
+									>
+										{tab.label}
+									</button>
 								))}
-						</ul>
-					</section>
-				</>
-			) : (
-				<Button
-					disabled={busy}
-					onClick={() =>
-						void refresh().catch(() => setMessage(t("permission")))
-					}
-				>
-					{t("fresh")}
-				</Button>
-			)}
-		</main>
+							</div>
+						</div>
+						<section
+							className="org-panel"
+							id="org-panel-members"
+							role="tabpanel"
+							aria-labelledby="org-tab-members"
+							hidden={section !== "members"}
+						>
+							<div className="dashboard-section-heading">
+								<h2>{t("members")}</h2>
+								<p className="dashboard-description">
+									{copy.membersDescription}
+								</p>
+							</div>
+							<div className="org-seats">
+								<div>
+									<span>{copy.seatUsage}</span>
+									<strong>
+										{snapshot.seats.occupied}
+										<span> / {snapshot.seats.capacity}</span>
+									</strong>
+									<p className="dashboard-description">{copy.seatHint}</p>
+								</div>
+								<progress
+									aria-label={copy.seatUsage}
+									value={snapshot.seats.occupied}
+									max={Math.max(1, snapshot.seats.capacity)}
+								/>
+							</div>
+							{isOwner && (
+								<details className="org-capacity">
+									<summary>{copy.capacitySettings}</summary>
+									<CapacityForm seats={snapshot.seats} busy={busy} run={run} />
+									{notice("capacity")}
+								</details>
+							)}
+							<div className="dashboard-field org-filter">
+								<label htmlFor="member-filter">{copy.searchMembers}</label>
+								<Input
+									id="member-filter"
+									type="search"
+									value={memberFilter}
+									onChange={(event) => setMemberFilter(event.target.value)}
+								/>
+							</div>
+							{notice("members")}
+							{filteredMembers.length ? (
+								<ul className="org-members">
+									{filteredMembers.map((member) => (
+										<MemberRow
+											key={member.id}
+											member={member}
+											currentId={snapshot.membership.id}
+											busy={busy}
+											run={run}
+											confirm={confirm}
+										/>
+									))}
+								</ul>
+							) : (
+								<p className="dashboard-empty">{copy.noMatches}</p>
+							)}
+						</section>
+						<section
+							className="org-panel"
+							id="org-panel-invitations"
+							role="tabpanel"
+							aria-labelledby="org-tab-invitations"
+							hidden={section !== "invitations"}
+						>
+							<div className="dashboard-section-heading">
+								<h2>{t("invitations")}</h2>
+								<p className="dashboard-description">
+									{copy.invitationsDescription}
+								</p>
+							</div>
+							<InviteForm busy={busy} run={run} />
+							{notice("invitations")}
+							<p className="org-list-caption">{copy.loadedInvitations}</p>
+							{snapshot.invitations.length ? (
+								<ul className="org-invitations">
+									{snapshot.invitations.map((invite) => (
+										<li className="org-invitation" key={invite.id}>
+											<div>
+												<p className="org-email">{invite.email}</p>
+												<p className="dashboard-description">
+													{t(invite.role)} · {copy.expires}{" "}
+													{date(invite.expiresAt)}
+												</p>
+											</div>
+											<span className="dashboard-badge">
+												{statusLabel(invite.status)}
+											</span>
+											{invite.status === "pending" && (
+												<Button
+													className="dashboard-secondary"
+													disabled={busy}
+													onClick={() =>
+														confirm(
+															"invitations",
+															{
+																action: "cancelInvitation",
+																invitationId: invite.id,
+															},
+															copy.confirmInvitation,
+															`${t("cancel")}: ${invite.email}`,
+														)
+													}
+												>
+													{t("cancel")}
+												</Button>
+											)}
+										</li>
+									))}
+								</ul>
+							) : (
+								<p className="dashboard-empty">{copy.noInvitations}</p>
+							)}
+						</section>
+						<section
+							className="org-panel"
+							id="org-panel-teams"
+							role="tabpanel"
+							aria-labelledby="org-tab-teams"
+							hidden={section !== "teams"}
+						>
+							<div className="dashboard-section-heading">
+								<h2>{t("teams")}</h2>
+								<p className="dashboard-description">{copy.teamsDescription}</p>
+							</div>
+							<CreateTeamForm busy={busy} run={run} />
+							{notice("teams")}
+							{snapshot.teams.length > 0 && (
+								<div className="dashboard-field org-filter">
+									<label htmlFor="team-filter">{copy.searchTeams}</label>
+									<Input
+										id="team-filter"
+										type="search"
+										value={teamFilter}
+										onChange={(event) => setTeamFilter(event.target.value)}
+									/>
+								</div>
+							)}
+							<p className="org-list-caption">{copy.loadedTeams}</p>
+							{filteredTeams.map((team) => (
+								<TeamCard
+									key={team.id}
+									team={team}
+									snapshot={snapshot}
+									busy={busy}
+									run={run}
+									confirm={confirm}
+								/>
+							))}
+							{!filteredTeams.length && (
+								<p className="dashboard-empty">
+									{snapshot.teams.length ? copy.noMatches : copy.noTeams}
+								</p>
+							)}
+						</section>
+						<section
+							className="org-panel"
+							id="org-panel-security"
+							role="tabpanel"
+							aria-labelledby="org-tab-security"
+							hidden={section !== "security"}
+						>
+							<div className="dashboard-section-heading">
+								<h2>{t("security")}</h2>
+								<p className="dashboard-description">
+									{copy.securityDescription}
+								</p>
+							</div>
+							{notice("security")}
+							<SecurityPolicy
+								key={JSON.stringify(snapshot.organization.securityPolicy)}
+								summary={snapshot}
+								editable={isOwner}
+								busy={busy}
+								confirm={confirm}
+							/>
+						</section>
+						<section
+							className="org-panel"
+							id="org-panel-ownership"
+							role="tabpanel"
+							aria-labelledby="org-tab-ownership"
+							hidden={section !== "ownership"}
+						>
+							<div className="dashboard-section-heading">
+								<h2>{t("transfer")}</h2>
+								<p className="dashboard-description">
+									{copy.ownershipDescription}
+								</p>
+							</div>
+							{notice("ownership")}
+							{isOwner &&
+								(recipients.length ? (
+									<form
+										className="org-transfer-form"
+										onSubmit={(event) => {
+											event.preventDefault();
+											const data = new FormData(event.currentTarget);
+											confirm(
+												"ownership",
+												{
+													action: "startTransfer",
+													recipientMembershipId: String(
+														data.get("membershipId"),
+													),
+													outgoingRole: data.get("outgoingRole") as
+														| "admin"
+														| "member"
+														| "billing"
+														| "inactive",
+												},
+												copy.confirmTransfer,
+												t("nominate"),
+											);
+										}}
+									>
+										<div className="dashboard-field">
+											<label htmlFor="transfer-recipient">
+												{t("recipient")}
+											</label>
+											<select
+												id="transfer-recipient"
+												name="membershipId"
+												disabled={busy}
+												required
+											>
+												{recipients.map((member) => (
+													<option key={member.id} value={member.id}>
+														{member.email}
+													</option>
+												))}
+											</select>
+										</div>
+										<div className="dashboard-field">
+											<label htmlFor="transfer-outgoing-role">
+												{t("outgoingRole")}
+											</label>
+											<select
+												id="transfer-outgoing-role"
+												name="outgoingRole"
+												defaultValue="member"
+												disabled={busy}
+											>
+												<option value="admin">{t("admin")}</option>
+												<option value="member">{t("member")}</option>
+												<option value="billing">{t("billing")}</option>
+												<option value="inactive">
+													{t("leaveOrganization")}
+												</option>
+											</select>
+										</div>
+										<p className="dashboard-description">{copy.transferNote}</p>
+										<Button
+											type="submit"
+											className="dashboard-secondary"
+											disabled={busy}
+										>
+											{t("nominate")}
+										</Button>
+									</form>
+								) : (
+									<p className="dashboard-empty">{copy.noRecipients}</p>
+								))}
+							<div className="org-pending-transfers">
+								<h3>{t("pending")}</h3>
+								{pendingTransfers.length ? (
+									<ul>
+										{pendingTransfers.map((transfer) => (
+											<li key={transfer.id}>
+												<div>
+													<p className="org-email">
+														{snapshot.members.find(
+															(member) => member.id === transfer.toMembershipId,
+														)?.email ?? copy.unknownStatus}
+													</p>
+													<p className="dashboard-description">
+														{t("outgoingRole")}:{" "}
+														{t(
+															transfer.outgoingRole === "inactive"
+																? "leaveOrganization"
+																: transfer.outgoingRole,
+														)}
+													</p>
+													<p className="dashboard-description">
+														{copy.expires} {date(transfer.expiresAt)}
+													</p>
+												</div>
+												<div className="org-inline-actions">
+													{transfer.toMembershipId ===
+														snapshot.membership.id && (
+														<Button
+															disabled={busy}
+															onClick={() =>
+																confirm(
+																	"ownership",
+																	{
+																		action: "acceptTransfer",
+																		transferId: transfer.id,
+																	},
+																	copy.confirmAcceptTransfer,
+																	t("accept"),
+																)
+															}
+														>
+															{t("accept")}
+														</Button>
+													)}
+													{isOwner &&
+														transfer.fromMembershipId ===
+															snapshot.membership.id && (
+															<Button
+																className="dashboard-secondary"
+																disabled={busy}
+																onClick={() =>
+																	confirm(
+																		"ownership",
+																		{
+																			action: "cancelTransfer",
+																			transferId: transfer.id,
+																		},
+																		copy.confirmCancelTransfer,
+																		t("cancel"),
+																	)
+																}
+															>
+																{t("cancel")}
+															</Button>
+														)}
+												</div>
+											</li>
+										))}
+									</ul>
+								) : (
+									<p className="dashboard-description">{copy.noTransfers}</p>
+								)}
+							</div>
+						</section>
+					</>
+				)}
+				<ConfirmDialog
+					value={confirmation}
+					busy={busy}
+					feedback={feedback}
+					onCancel={() => setConfirmation(null)}
+					onConfirm={() => {
+						if (confirmation) void run(confirmation.scope, confirmation.value);
+					}}
+				/>
+			</div>
+		</DashboardShell>
 	);
 }

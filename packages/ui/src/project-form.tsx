@@ -34,13 +34,24 @@ export function ProjectForm({
 		name: z.string().trim().min(2, t("nameInvalid")).max(80, t("nameInvalid")),
 		slug: z.string().regex(/^[a-z0-9][a-z0-9-]{1,62}$/, t("slugInvalid")),
 		description: z.string().max(4000, t("descriptionInvalid")),
-		workspaceId: z.string(),
+		workspaceId: z
+			.string()
+			.refine(
+				(value) =>
+					Boolean(initial) ||
+					value === "" ||
+					workspaces.some(
+						(workspace) => workspace.id === value && !workspace.archivedAt,
+					),
+				t("workspaceInvalid"),
+			),
 		status: z.enum(["active", "completed", "archived"]),
 	});
 	const {
 		register,
 		handleSubmit,
-		formState: { errors },
+		watch,
+		formState: { errors, isSubmitting },
 	} = useForm<ProjectFormValues>({
 		resolver: zodResolver(schema),
 		defaultValues: initial ?? {
@@ -51,14 +62,29 @@ export function ProjectForm({
 			status: "active",
 		},
 	});
+	const pending = busy || isSubmitting;
+	const selectedWorkspaceId = watch("workspaceId");
+	const unavailableWorkspace =
+		Boolean(selectedWorkspaceId) &&
+		!workspaces.some(
+			(workspace) =>
+				workspace.id === selectedWorkspaceId && !workspace.archivedAt,
+		);
 	return (
-		<form className="grid gap-4" noValidate onSubmit={handleSubmit(onSave)}>
+		<form
+			className="grid gap-5 text-sm"
+			aria-busy={pending}
+			noValidate
+			onSubmit={handleSubmit(async (value) => {
+				if (!pending) await onSave(value);
+			})}
+		>
 			<div className="grid gap-2">
 				<label htmlFor={`${id}-name`}>{t("name")}</label>
 				<Input
 					id={`${id}-name`}
 					autoComplete="off"
-					disabled={busy}
+					disabled={pending}
 					aria-invalid={Boolean(errors.name)}
 					aria-describedby={errors.name ? `${id}-name-error` : undefined}
 					{...register("name")}
@@ -74,7 +100,7 @@ export function ProjectForm({
 					<label htmlFor={`${id}-slug`}>{t("slug")}</label>
 					<Input
 						id={`${id}-slug`}
-						disabled={busy}
+						disabled={pending}
 						autoComplete="off"
 						aria-invalid={Boolean(errors.slug)}
 						aria-describedby={`${id}-slug-hint${errors.slug ? ` ${id}-slug-error` : ""}`}
@@ -98,8 +124,8 @@ export function ProjectForm({
 				<label htmlFor={`${id}-description`}>{t("description")}</label>
 				<textarea
 					id={`${id}-description`}
-					className="min-h-24 rounded-md border border-input bg-background p-3"
-					disabled={busy}
+					className="min-h-28 resize-y rounded-md border border-input bg-background p-3 outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+					disabled={pending}
 					aria-invalid={Boolean(errors.description)}
 					aria-describedby={
 						errors.description ? `${id}-description-error` : undefined
@@ -121,8 +147,8 @@ export function ProjectForm({
 					<label htmlFor={`${id}-status`}>{t("status")}</label>
 					<select
 						id={`${id}-status`}
-						disabled={busy}
-						className="min-h-10 rounded border border-input bg-background p-2"
+						disabled={pending}
+						className="min-h-10 rounded-md border border-input bg-background p-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
 						{...register("status")}
 					>
 						<option value="active">{t("active")}</option>
@@ -131,16 +157,26 @@ export function ProjectForm({
 					</select>
 				</div>
 			) : (
-				workspaces.length > 0 && (
+				(workspaces.length > 0 || Boolean(selectedWorkspaceId)) && (
 					<div className="grid gap-2">
 						<label htmlFor={`${id}-workspace`}>{t("workspace")}</label>
 						<select
 							id={`${id}-workspace`}
-							disabled={busy}
-							className="min-h-10 rounded border border-input bg-background p-2"
+							value={selectedWorkspaceId}
+							disabled={pending}
+							aria-invalid={Boolean(errors.workspaceId)}
+							aria-describedby={
+								errors.workspaceId ? `${id}-workspace-error` : undefined
+							}
+							className="min-h-10 rounded-md border border-input bg-background p-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
 							{...register("workspaceId")}
 						>
 							<option value="">{t("noWorkspace")}</option>
+							{unavailableWorkspace && (
+								<option value={selectedWorkspaceId} disabled>
+									{t("workspaceUnavailableSelection")}
+								</option>
+							)}
 							{workspaces
 								.filter((item) => !item.archivedAt)
 								.map((item) => (
@@ -149,15 +185,29 @@ export function ProjectForm({
 									</option>
 								))}
 						</select>
+						{errors.workspaceId && (
+							<p
+								id={`${id}-workspace-error`}
+								role="alert"
+								className="text-destructive"
+							>
+								{errors.workspaceId.message}
+							</p>
+						)}
 					</div>
 				)
 			)}
-			<div className="flex gap-3">
-				<Button type="submit" disabled={busy}>
-					{busy ? t("saving") : initial ? t("save") : t("create")}
+			<div className="flex flex-wrap gap-3 border-t border-border pt-5">
+				<Button type="submit" disabled={pending}>
+					{pending ? t("saving") : initial ? t("save") : t("create")}
 				</Button>
 				{onCancel && (
-					<Button type="button" disabled={busy} onClick={onCancel}>
+					<Button
+						type="button"
+						className="border border-border bg-background text-foreground hover:bg-muted"
+						disabled={pending}
+						onClick={onCancel}
+					>
 						{t("cancel")}
 					</Button>
 				)}

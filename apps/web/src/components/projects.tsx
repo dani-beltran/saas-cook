@@ -10,6 +10,13 @@ import {
 } from "@common-saas/ui";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { DashboardShell } from "./dashboard-shell";
+import "./projects-dashboard.css";
+
+type Feedback = { message: string; failed?: boolean; signIn?: boolean };
+type Confirmation =
+	| { kind: "delete"; project: ProjectDto }
+	| { kind: "archive"; workspace: WorkspaceDto };
 
 export function Projects({ organizationId }: { organizationId: string }) {
 	const locale = useLocale();
@@ -19,41 +26,90 @@ export function Projects({ organizationId }: { organizationId: string }) {
 	const [nextCursor, setNextCursor] = useState<string | null>(null);
 	const [workspaceCursor, setWorkspaceCursor] = useState<string | null>(null);
 	const [search, setSearch] = useState("");
+	const [searchDraft, setSearchDraft] = useState("");
 	const [includeDeleted, setIncludeDeleted] = useState(false);
 	const [loading, setLoading] = useState(true);
+	const [workspaceLoading, setWorkspaceLoading] = useState(true);
+	const [workspaceUnavailable, setWorkspaceUnavailable] = useState(false);
 	const [busy, setBusy] = useState(false);
-	const [message, setMessage] = useState("");
-	const [workspaceMessage, setWorkspaceMessage] = useState("");
+	const [focusProjectAction, setFocusProjectAction] = useState(false);
+	const [feedback, setFeedback] = useState<
+		Record<string, Feedback | undefined>
+	>({});
 	const [editor, setEditor] = useState<ProjectDto | "create" | null>(null);
-	const [theme, setTheme] = useState<"light" | "dark">("light");
+	const [confirmation, setConfirmation] = useState<Confirmation | null>(null);
 	const requestSequence = useRef(0);
+	const workspaceSequence = useRef(0);
+	const lifetime = useRef(0);
+	const busyRef = useRef(false);
+	const operationKeys = useRef(new Map<string, string>());
+	const editorHeading = useRef<HTMLHeadingElement>(null);
+	const confirmationDialog = useRef<HTMLDialogElement>(null);
+	const newProjectButton = useRef<HTMLButtonElement>(null);
+	const queryKey = `${organizationId}:${search}:${includeDeleted}`;
+	const currentQuery = useRef(queryKey);
+	currentQuery.current = queryKey;
 	const api = useCallback(
 		() => createApiClient(`${window.location.origin}/api/rpc`),
 		[],
 	);
-	const errorMessage = useCallback(
-		(error: unknown) => {
+	const errorFeedback = useCallback(
+		(error: unknown, workspace = false): Feedback => {
 			const failure = error as { code?: string; message?: string };
-			return t(
-				failure.message === "CAPACITY"
-					? "capacity"
-					: failure.message === "DISABLED"
-						? "workspaceDisabled"
-						: failure.code === "CONFLICT"
-							? "conflict"
-							: failure.code === "FORBIDDEN" || failure.code === "NOT_FOUND"
-								? "permission"
-								: failure.code === "UNAUTHORIZED"
-									? "reauthenticate"
-									: "failed",
-			);
+			return {
+				failed: true,
+				signIn: failure.code === "UNAUTHORIZED",
+				message: t(
+					failure.message === "CAPACITY"
+						? "capacity"
+						: failure.message === "DISABLED"
+							? workspace
+								? "workspaceDisabled"
+								: "projectDisabled"
+							: failure.code === "CONFLICT"
+								? "conflict"
+								: failure.code === "FORBIDDEN" || failure.code === "NOT_FOUND"
+									? "permission"
+									: failure.code === "UNAUTHORIZED"
+										? "reauthenticate"
+										: "failed",
+				),
+			};
 		},
 		[t],
 	);
+	const notice = (target: string) => {
+		const value = feedback[target];
+		return value ? (
+			<div
+				className={`dashboard-notice projects-feedback${value.failed ? " projects-feedback-error" : ""}`}
+				role="status"
+				aria-live="polite"
+			>
+				{value.message}
+				{value.signIn && (
+					<a
+						href={`/${locale}/account#security`}
+						target="_blank"
+						rel="noreferrer"
+						className="projects-feedback-link"
+					>
+						{t("accountSecurity")}
+					</a>
+				)}
+			</div>
+		) : null;
+	};
 	const load = useCallback(
 		async (cursor?: string) => {
+			if (currentQuery.current !== queryKey) return;
 			const sequence = ++requestSequence.current;
 			setLoading(true);
+			setFeedback((previous) => ({ ...previous, list: undefined }));
+			if (!cursor) {
+				setProjects([]);
+				setNextCursor(null);
+			}
 			try {
 				const page = await api().projects.list({
 					organizationId,
@@ -62,43 +118,68 @@ export function Projects({ organizationId }: { organizationId: string }) {
 					limit: 20,
 					cursor,
 				});
-				if (sequence !== requestSequence.current) return;
+				if (
+					sequence !== requestSequence.current ||
+					currentQuery.current !== queryKey
+				)
+					return;
 				setProjects((previous) =>
 					cursor ? [...previous, ...page.items] : page.items,
 				);
 				setNextCursor(page.nextCursor);
 			} catch (error) {
-				if (sequence === requestSequence.current) {
-					setMessage(errorMessage(error));
-					if (!cursor) {
-						setProjects([]);
-						setNextCursor(null);
-					}
+				if (
+					sequence === requestSequence.current &&
+					currentQuery.current === queryKey
+				) {
+					setFeedback((previous) => ({
+						...previous,
+						list: errorFeedback(error),
+					}));
 				}
 			} finally {
-				if (sequence === requestSequence.current) setLoading(false);
+				if (
+					sequence === requestSequence.current &&
+					currentQuery.current === queryKey
+				)
+					setLoading(false);
 			}
 		},
-		[api, organizationId, search, includeDeleted, errorMessage],
+		[api, organizationId, search, includeDeleted, errorFeedback, queryKey],
 	);
 	const loadWorkspaces = useCallback(
 		async (cursor?: string) => {
+			const sequence = ++workspaceSequence.current;
+			setWorkspaceLoading(true);
 			try {
 				const page = await api().workspaces.list({
 					organizationId,
 					limit: 50,
 					cursor,
 				});
+				if (sequence !== workspaceSequence.current) return;
 				setWorkspaces((previous) =>
 					cursor ? [...previous, ...page.items] : page.items,
 				);
 				setWorkspaceCursor(page.nextCursor);
-				setWorkspaceMessage("");
+				setWorkspaceUnavailable(false);
+				setFeedback((previous) => ({ ...previous, workspaceList: undefined }));
 			} catch (error) {
-				setWorkspaceMessage(errorMessage(error));
+				if (sequence !== workspaceSequence.current) return;
+				if (!cursor) {
+					setWorkspaces([]);
+					setWorkspaceCursor(null);
+					setWorkspaceUnavailable(true);
+				}
+				setFeedback((previous) => ({
+					...previous,
+					workspaceList: errorFeedback(error, true),
+				}));
+			} finally {
+				if (sequence === workspaceSequence.current) setWorkspaceLoading(false);
 			}
 		},
-		[api, organizationId, errorMessage],
+		[api, organizationId, errorFeedback],
 	);
 	useEffect(() => {
 		void load();
@@ -108,326 +189,544 @@ export function Projects({ organizationId }: { organizationId: string }) {
 	}, [load]);
 	useEffect(() => {
 		void loadWorkspaces();
+		return () => {
+			workspaceSequence.current++;
+		};
 	}, [loadWorkspaces]);
-	async function mutate(work: () => Promise<unknown>) {
+	useEffect(
+		() => () => {
+			lifetime.current++;
+		},
+		[],
+	);
+	useEffect(() => {
+		if (editor) editorHeading.current?.focus();
+	}, [editor]);
+	useEffect(() => {
+		if (focusProjectAction && !busy) {
+			newProjectButton.current?.focus();
+			setFocusProjectAction(false);
+		}
+	}, [focusProjectAction, busy]);
+	useEffect(() => {
+		if (confirmation) confirmationDialog.current?.showModal();
+		else confirmationDialog.current?.close();
+	}, [confirmation]);
+	function operationKey(signature: string) {
+		const existing = operationKeys.current.get(signature);
+		if (existing) return existing;
+		const key = crypto.randomUUID();
+		operationKeys.current.set(signature, key);
+		return key;
+	}
+	async function mutate(
+		target: string,
+		work: () => Promise<unknown>,
+		options: {
+			workspace?: boolean;
+			signature?: string;
+			closeEditor?: boolean;
+		} = {},
+	) {
+		if (busyRef.current) return false;
+		const currentLifetime = lifetime.current;
+		busyRef.current = true;
 		setBusy(true);
-		setMessage("");
+		setFeedback((previous) => ({ ...previous, [target]: undefined }));
 		try {
 			await work();
-			setMessage(t("saved"));
-			setEditor(null);
-			await Promise.all([load(), loadWorkspaces()]);
+			if (currentLifetime !== lifetime.current) return false;
+			if (options.signature) operationKeys.current.delete(options.signature);
+			setFeedback((previous) => ({
+				...previous,
+				[target === "editor" ? "listAction" : target]: { message: t("saved") },
+			}));
+			if (options.closeEditor) {
+				setEditor(null);
+				setFocusProjectAction(true);
+			}
+			if (target === "confirmation" && !options.workspace)
+				setFocusProjectAction(true);
+			setConfirmation(null);
+			await (options.workspace ? loadWorkspaces() : load());
+			return true;
 		} catch (error) {
-			setMessage(errorMessage(error));
+			if (currentLifetime === lifetime.current)
+				setFeedback((previous) => ({
+					...previous,
+					[target]: errorFeedback(error, options.workspace),
+				}));
+			return false;
 		} finally {
-			setBusy(false);
+			if (currentLifetime === lifetime.current) {
+				busyRef.current = false;
+				setBusy(false);
+			}
 		}
 	}
 	async function save(value: ProjectFormValues) {
-		await mutate(() =>
-			editor && editor !== "create"
-				? api().projects.update({
-						organizationId,
-						id: editor.id,
-						version: editor.version,
-						name: value.name,
-						description: value.description,
-						status: value.status,
-					})
-				: api().projects.create({
-						organizationId,
-						name: value.name,
-						slug: value.slug,
-						description: value.description,
-						workspaceId: value.workspaceId || null,
-						operationKey: crypto.randomUUID(),
-					}),
+		const signature = `create:${JSON.stringify(value)}`;
+		await mutate(
+			"editor",
+			() =>
+				editor && editor !== "create"
+					? api().projects.update({
+							organizationId,
+							id: editor.id,
+							version: editor.version,
+							name: value.name,
+							description: value.description,
+							status: value.status,
+						})
+					: api().projects.create({
+							organizationId,
+							name: value.name,
+							slug: value.slug,
+							description: value.description,
+							workspaceId: value.workspaceId || null,
+							operationKey: operationKey(signature),
+						}),
+			{ signature, closeEditor: true },
 		);
 	}
+	function openEditor(value: ProjectDto | "create") {
+		if (value === "create" && editor !== "create") {
+			for (const signature of operationKeys.current.keys()) {
+				if (signature.startsWith("create:"))
+					operationKeys.current.delete(signature);
+			}
+		}
+		setFeedback((previous) => ({
+			...previous,
+			editor: undefined,
+			listAction: undefined,
+		}));
+		setEditor(value);
+	}
+	function closeEditor() {
+		setEditor(null);
+		newProjectButton.current?.focus();
+	}
+	function confirmAction() {
+		if (!confirmation) return;
+		if (confirmation.kind === "delete") {
+			const project = confirmation.project;
+			const signature = `delete:${project.id}:${project.version}`;
+			void mutate(
+				"confirmation",
+				() =>
+					api().projects.delete({
+						organizationId,
+						id: project.id,
+						version: project.version,
+						operationKey: operationKey(signature),
+					}),
+				{ signature },
+			);
+		} else {
+			const workspace = confirmation.workspace;
+			void mutate(
+				"confirmation",
+				() =>
+					api().workspaces.update({
+						organizationId,
+						id: workspace.id,
+						version: workspace.version,
+						archived: true,
+					}),
+				{ workspace: true },
+			);
+		}
+	}
+	const updatedDate = (value: string) =>
+		new Intl.DateTimeFormat(locale, {
+			month: "short",
+			day: "numeric",
+			year: "numeric",
+		}).format(new Date(value));
+
 	return (
-		<div
-			className={`${theme === "dark" ? "dark" : ""} min-h-screen bg-background text-foreground`}
-		>
-			<main className="mx-auto max-w-6xl space-y-8 p-6 sm:p-12">
-				<header className="flex flex-wrap items-start justify-between gap-4">
-					<div>
-						<a
-							className="text-sm underline"
-							href={`/${locale}/organizations/${organizationId}`}
-						>
-							{t("back")}
-						</a>
-						<h1 className="mt-4 text-3xl font-semibold">{t("title")}</h1>
-						<p className="mt-2 text-muted-foreground">{t("subtitle")}</p>
-					</div>
-					<div className="flex items-center gap-3">
-						<select
-							className="min-h-10 rounded border border-input bg-background p-2"
-							aria-label={t("language")}
-							value={locale}
-							onChange={(event) =>
-								window.location.assign(
-									`/${event.target.value}/organizations/${organizationId}/projects`,
-								)
-							}
-						>
-							<option value="en">English</option>
-							<option value="es">Español</option>
-						</select>
-						<Button
-							aria-label={t("theme")}
-							aria-pressed={theme === "dark"}
-							onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-						>
-							{theme === "dark" ? t("light") : t("dark")}
-						</Button>
-					</div>
-				</header>
-				<p role="status" aria-live="polite">
-					{message}
-				</p>
-				<section
-					className="space-y-5 rounded-xl border border-border bg-card p-6"
-					aria-label={t("title")}
+		<DashboardShell section="projects" organizationId={organizationId}>
+			<header className="dashboard-page-header">
+				<div>
+					<p className="dashboard-eyebrow">{t("eyebrow")}</p>
+					<h1>{t("title")}</h1>
+					<p className="dashboard-description">{t("subtitle")}</p>
+				</div>
+				<Button
+					ref={newProjectButton}
+					disabled={busy}
+					onClick={() => openEditor("create")}
 				>
-					<div className="flex flex-wrap items-end justify-between gap-4">
-						<form
-							className="flex flex-wrap items-end gap-3"
-							onSubmit={(event) => {
-								event.preventDefault();
-								setMessage("");
-								const data = new FormData(event.currentTarget);
-								setSearch(String(data.get("search") ?? ""));
-							}}
-						>
-							<div className="grid gap-2">
-								<label htmlFor="project-search">{t("search")}</label>
-								<Input
-									id="project-search"
-									name="search"
-									maxLength={120}
-									type="search"
-								/>
-							</div>
-							<Button type="submit" disabled={busy}>
-								{t("searchSubmit")}
-							</Button>
-							<label className="flex min-h-10 items-center gap-2">
-								<input
-									type="checkbox"
-									checked={includeDeleted}
-									onChange={(event) => setIncludeDeleted(event.target.checked)}
-								/>
-								{t("showDeleted")}
-							</label>
-						</form>
-						<div className="flex gap-3">
-							<Button
-								disabled={busy || loading}
-								onClick={() => {
-									setMessage("");
-									void load();
-								}}
-							>
-								{t("refresh")}
-							</Button>
-							<Button disabled={busy} onClick={() => setEditor("create")}>
-								{t("newProject")}
-							</Button>
-						</div>
-					</div>
-					{editor && (
-						<section
-							className="max-w-xl space-y-5 rounded-lg border border-border p-5"
-							aria-label={
-								editor === "create" ? t("newProject") : t("editProject")
-							}
-						>
-							<h2 className="text-xl font-semibold">
+					<span aria-hidden="true">＋</span> {t("newProject")}
+				</Button>
+			</header>
+			{editor && (
+				<section
+					className="projects-editor"
+					aria-label={editor === "create" ? t("newProject") : t("editProject")}
+				>
+					<div className="projects-editor-heading">
+						<div>
+							<h2 ref={editorHeading} tabIndex={-1}>
 								{editor === "create" ? t("newProject") : t("editProject")}
 							</h2>
-							<ProjectForm
-								key={
-									editor === "create" ? "new" : `${editor.id}:${editor.version}`
-								}
-								initial={
-									editor === "create"
-										? undefined
-										: {
-												name: editor.name,
-												slug: editor.slug,
-												description: editor.description,
-												status: editor.status,
-												workspaceId: editor.workspaceId ?? "",
-											}
-								}
-								workspaces={workspaces}
-								busy={busy}
-								onSave={save}
-								onCancel={() => setEditor(null)}
-							/>
-						</section>
+							<p>{editor === "create" ? t("createHint") : t("editHint")}</p>
+						</div>
+					</div>
+					{notice("editor")}
+					<ProjectForm
+						key={editor === "create" ? "new" : `${editor.id}:${editor.version}`}
+						initial={
+							editor === "create"
+								? undefined
+								: {
+										name: editor.name,
+										slug: editor.slug,
+										description: editor.description,
+										status: editor.status,
+										workspaceId: editor.workspaceId ?? "",
+									}
+						}
+						workspaces={workspaceUnavailable ? [] : workspaces}
+						busy={busy}
+						onSave={save}
+						onCancel={closeEditor}
+					/>
+					{editor === "create" && workspaceCursor && (
+						<Button
+							className="dashboard-secondary"
+							disabled={workspaceLoading || busy}
+							onClick={() => void loadWorkspaces(workspaceCursor)}
+						>
+							{t("workspaceMore")}
+						</Button>
 					)}
-					{loading && <p role="status">{t("loading")}</p>}
-					{!loading && projects.length === 0 && <p>{t("empty")}</p>}
-					<ul className="space-y-4" aria-busy={loading}>
-						{projects.map((project) => (
-							<li
-								key={project.id}
-								className="space-y-4 rounded-lg border border-border p-5"
+				</section>
+			)}
+			<section className="projects-section" aria-label={t("title")}>
+				<div className="projects-toolbar">
+					<form
+						className="projects-search"
+						onSubmit={(event) => {
+							event.preventDefault();
+							if (searchDraft.trim() === search) void load();
+							else setSearch(searchDraft.trim());
+						}}
+					>
+						<label className="sr-only" htmlFor="project-search">
+							{t("search")}
+						</label>
+						<Input
+							id="project-search"
+							name="search"
+							maxLength={120}
+							type="search"
+							value={searchDraft}
+							placeholder={t("search")}
+							onChange={(event) => setSearchDraft(event.target.value)}
+						/>
+						<Button
+							className="dashboard-secondary"
+							type="submit"
+							disabled={busy}
+						>
+							{t("searchSubmit")}
+						</Button>
+					</form>
+					<div className="projects-toolbar-options">
+						<label className="projects-checkbox">
+							<input
+								type="checkbox"
+								checked={includeDeleted}
+								disabled={busy}
+								onChange={(event) => setIncludeDeleted(event.target.checked)}
+							/>
+							{t("showDeleted")}
+						</label>
+						<Button
+							className="dashboard-secondary"
+							disabled={busy || loading}
+							onClick={() => void load()}
+						>
+							{t("refresh")}
+						</Button>
+					</div>
+				</div>
+				{notice("list")}
+				{notice("listAction")}
+				{loading && (
+					<p className="projects-loading" role="status">
+						{t("loading")}
+					</p>
+				)}
+				{!loading && !feedback.list && projects.length === 0 && (
+					<div className="dashboard-empty projects-empty">
+						<h2>{search ? t("noResults") : t("emptyTitle")}</h2>
+						<p>{search ? t("empty") : t("emptyHint")}</p>
+						{nextCursor && <p>{t("continuationHint")}</p>}
+						{search && (
+							<Button
+								className="dashboard-secondary"
+								onClick={() => {
+									setSearch("");
+									setSearchDraft("");
+								}}
 							>
-								<div className="flex flex-wrap justify-between gap-3">
+								{t("clearSearch")}
+							</Button>
+						)}
+					</div>
+				)}
+				{projects.length > 0 && (
+					<div className="projects-list-heading" aria-hidden="true">
+						<span>{t("project")}</span>
+						<span>{t("status")}</span>
+						<span>{t("updated")}</span>
+						<span />
+					</div>
+				)}
+				<ul className="projects-list" aria-busy={loading}>
+					{projects.map((project) => (
+						<li key={project.id} className="projects-item">
+							<div className="projects-item-main">
+								<div className="projects-item-identity">
+									<span className="projects-item-mark" aria-hidden="true">
+										{project.name.charAt(0).toUpperCase()}
+									</span>
 									<div>
-										<h2 className="text-lg font-semibold">{project.name}</h2>
-										<p className="mt-1 text-sm text-muted-foreground">
-											{project.deletedAt ? t("deleted") : t(project.status)} ·{" "}
-											{t("version")} {project.version}
+										<h2>{project.name}</h2>
+										<p
+											className={`projects-item-description${project.description.length > 160 ? " projects-description-preview" : ""}`}
+										>
+											{project.description || t("noDescription")}
 										</p>
-										<p className="mt-3 whitespace-pre-wrap break-words">
-											{project.description}
+										{project.description.length > 160 && (
+											<details className="projects-description-disclosure">
+												<summary>{t("readDescription")}</summary>
+												<p>{project.description}</p>
+											</details>
+										)}
+										<p className="projects-workspace-name">
+											{project.workspaceId
+												? (workspaces.find(
+														(workspace) => workspace.id === project.workspaceId,
+													)?.name ?? t("assignedWorkspace"))
+												: t("noWorkspace")}
 										</p>
 									</div>
-									<div className="flex flex-wrap items-start gap-2">
-										{project.deletedAt ? (
-											<Button
-												disabled={busy}
-												onClick={() =>
-													void mutate(() =>
+								</div>
+								<span
+									className={`dashboard-badge projects-status projects-status-${project.deletedAt ? "deleted" : project.status}`}
+								>
+									<span aria-hidden="true" />
+									{project.deletedAt ? t("deleted") : t(project.status)}
+								</span>
+								<time className="projects-updated" dateTime={project.updatedAt}>
+									{updatedDate(project.updatedAt)}
+								</time>
+								<div className="projects-item-actions">
+									{project.deletedAt ? (
+										<Button
+											className="dashboard-secondary"
+											disabled={busy}
+											onClick={() => {
+												const signature = `restore:${project.id}:${project.version}`;
+												void mutate(
+													project.id,
+													() =>
 														api().projects.restore({
 															organizationId,
 															id: project.id,
 															version: project.version,
-															operationKey: crypto.randomUUID(),
+															operationKey: operationKey(signature),
 														}),
-													)
-												}
-											>
-												{t("restore")}
-											</Button>
-										) : (
-											<>
-												<Button
-													disabled={busy}
-													onClick={() => setEditor(project)}
-												>
-													{t("edit")}
-												</Button>
-												<Button
-													disabled={busy}
-													onClick={() =>
-														void mutate(() =>
-															api().projects.delete({
-																organizationId,
-																id: project.id,
-																version: project.version,
-																operationKey: crypto.randomUUID(),
-															}),
-														)
-													}
-												>
-													{t("delete")}
-												</Button>
-											</>
-										)}
-									</div>
-								</div>
-								{!project.deletedAt && !workspaceMessage && (
-									<form
-										className="flex flex-wrap items-end gap-3"
-										onSubmit={(event) => {
-											event.preventDefault();
-											const data = new FormData(event.currentTarget);
-											void mutate(() =>
-												api().projects.move({
-													organizationId,
-													id: project.id,
-													version: project.version,
-													workspaceId:
-														String(data.get("workspaceId") ?? "") || null,
-												}),
-											);
-										}}
-									>
-										<div className="grid gap-2">
-											<label htmlFor={`move-${project.id}`}>
-												{t("moveDestination", { name: project.name })}
-											</label>
-											<select
-												key={`${project.workspaceId}:${project.version}`}
-												id={`move-${project.id}`}
-												name="workspaceId"
-												defaultValue={project.workspaceId ?? ""}
-												disabled={busy}
-												className="min-h-10 rounded border border-input bg-background p-2"
-											>
-												<option value="">{t("noWorkspace")}</option>
-												{workspaces
-													.filter(
-														(workspace) =>
-															!workspace.archivedAt ||
-															workspace.id === project.workspaceId,
-													)
-													.map((workspace) => (
-														<option
-															key={workspace.id}
-															value={workspace.id}
-															disabled={Boolean(workspace.archivedAt)}
-														>
-															{workspace.name}
-															{workspace.archivedAt
-																? ` (${t("archived")})`
-																: ""}
-														</option>
-													))}
-											</select>
-										</div>
-										<Button type="submit" disabled={busy}>
-											{t("move")}
+													{ signature },
+												);
+											}}
+										>
+											{t("restore")}
 										</Button>
-									</form>
-								)}
-							</li>
-						))}
-					</ul>
-					{nextCursor && (
+									) : (
+										<Button
+											className="dashboard-secondary"
+											disabled={busy}
+											onClick={() => openEditor(project)}
+										>
+											{t("edit")}
+										</Button>
+									)}
+								</div>
+							</div>
+							{!project.deletedAt && (
+								<details className="projects-context">
+									<summary>
+										{t("projectActions", { name: project.name })}
+									</summary>
+									<div className="projects-context-content">
+										{!workspaceUnavailable && (
+											<form
+												className="projects-move-form"
+												onSubmit={(event) => {
+													event.preventDefault();
+													const data = new FormData(event.currentTarget);
+													void mutate(project.id, () =>
+														api().projects.move({
+															organizationId,
+															id: project.id,
+															version: project.version,
+															workspaceId:
+																String(data.get("workspaceId") ?? "") || null,
+														}),
+													);
+												}}
+											>
+												<div className="dashboard-field">
+													<label htmlFor={`move-${project.id}`}>
+														{t("moveDestination", { name: project.name })}
+													</label>
+													<select
+														key={`${project.workspaceId}:${project.version}`}
+														id={`move-${project.id}`}
+														name="workspaceId"
+														defaultValue={project.workspaceId ?? ""}
+														disabled={busy || workspaceLoading}
+													>
+														<option value="">{t("noWorkspace")}</option>
+														{project.workspaceId &&
+															!workspaces.some(
+																(workspace) =>
+																	workspace.id === project.workspaceId,
+															) && (
+																<option value={project.workspaceId} disabled>
+																	{t("assignedWorkspace")}
+																</option>
+															)}
+														{workspaces
+															.filter(
+																(workspace) =>
+																	!workspace.archivedAt ||
+																	workspace.id === project.workspaceId,
+															)
+															.map((workspace) => (
+																<option
+																	key={workspace.id}
+																	value={workspace.id}
+																	disabled={Boolean(workspace.archivedAt)}
+																>
+																	{workspace.name}
+																	{workspace.archivedAt
+																		? ` (${t("archived")})`
+																		: ""}
+																</option>
+															))}
+													</select>
+												</div>
+												<Button
+													className="dashboard-secondary"
+													type="submit"
+													disabled={busy || workspaceLoading}
+												>
+													{t("move")}
+												</Button>
+												{workspaceCursor && (
+													<Button
+														className="dashboard-secondary"
+														disabled={workspaceLoading || busy}
+														onClick={() => void loadWorkspaces(workspaceCursor)}
+													>
+														{t("workspaceMore")}
+													</Button>
+												)}
+											</form>
+										)}
+										<Button
+											className="dashboard-danger"
+											disabled={busy}
+											onClick={() => {
+												setFeedback((previous) => ({
+													...previous,
+													confirmation: undefined,
+												}));
+												setConfirmation({ kind: "delete", project });
+											}}
+										>
+											{t("delete")}
+										</Button>
+									</div>
+								</details>
+							)}
+							{notice(project.id)}
+						</li>
+					))}
+				</ul>
+				{nextCursor && (
+					<div className="projects-pagination">
 						<Button
+							className="dashboard-secondary"
 							disabled={busy || loading}
 							onClick={() => void load(nextCursor)}
 						>
 							{t("next")}
 						</Button>
-					)}
-				</section>
-				<section
-					className="space-y-5 rounded-xl border border-border bg-card p-6"
-					aria-labelledby="workspaces-title"
-				>
-					<h2 id="workspaces-title" className="text-xl font-semibold">
-						{t("workspaces")}
-					</h2>
-					<p className="text-sm text-muted-foreground">
-						{t("workspaceArchived")}
+						<p>{t("paginationHint")}</p>
+					</div>
+				)}
+			</section>
+			<section
+				className="dashboard-section projects-workspaces"
+				aria-labelledby="workspaces-title"
+			>
+				<div className="dashboard-section-heading projects-workspace-heading">
+					<div>
+						<h2 id="workspaces-title">{t("workspaces")}</h2>
+						<p>{t("workspaceHint")}</p>
+					</div>
+					<Button
+						className="dashboard-secondary"
+						disabled={busy || workspaceLoading}
+						onClick={() => void loadWorkspaces()}
+					>
+						{t("workspaceRefresh")}
+					</Button>
+				</div>
+				{notice("workspaceList")}
+				{notice("workspaceCreate")}
+				{workspaceLoading && (
+					<p role="status" className="projects-loading">
+						{t("workspaceLoading")}
 					</p>
-					{workspaceMessage ? (
-						<p role="status">{workspaceMessage}</p>
-					) : (
-						<>
+				)}
+				{!workspaceUnavailable && (
+					<>
+						<details className="projects-workspace-create">
+							<summary>{t("workspaceCreate")}</summary>
 							<form
-								className="flex flex-wrap items-end gap-3"
-								onSubmit={(event) => {
+								className="projects-workspace-form"
+								onSubmit={async (event) => {
 									event.preventDefault();
-									const data = new FormData(event.currentTarget);
-									void mutate(() =>
-										api().workspaces.create({
-											organizationId,
-											name: String(data.get("name")),
-											slug: String(data.get("slug")),
-											operationKey: crypto.randomUUID(),
-										}),
-									);
+									const form = event.currentTarget;
+									const data = new FormData(form);
+									const name = String(data.get("name")).trim();
+									const slug = String(data.get("slug"));
+									const signature = `workspace:${name}:${slug}`;
+									if (
+										await mutate(
+											"workspaceCreate",
+											() =>
+												api().workspaces.create({
+													organizationId,
+													name,
+													slug,
+													operationKey: operationKey(signature),
+												}),
+											{ workspace: true, signature },
+										)
+									)
+										form.reset();
 								}}
 							>
-								<div className="grid gap-2">
+								<div className="dashboard-field">
 									<label htmlFor="workspace-name">{t("name")}</label>
 									<Input
 										id="workspace-name"
@@ -438,12 +737,13 @@ export function Projects({ organizationId }: { organizationId: string }) {
 										disabled={busy}
 									/>
 								</div>
-								<div className="grid gap-2">
+								<div className="dashboard-field">
 									<label htmlFor="workspace-slug">{t("slug")}</label>
 									<Input
 										id="workspace-slug"
 										name="slug"
 										pattern="[a-z0-9][a-z0-9-]{1,62}"
+										aria-describedby="workspace-slug-hint"
 										required
 										disabled={busy}
 									/>
@@ -451,77 +751,170 @@ export function Projects({ organizationId }: { organizationId: string }) {
 								<Button type="submit" disabled={busy}>
 									{t("workspaceCreate")}
 								</Button>
+								<p
+									id="workspace-slug-hint"
+									className="projects-workspace-slug-hint"
+								>
+									{t("slugHint")}
+								</p>
 							</form>
-							<ul className="space-y-3">
-								{workspaces.map((workspace) => (
-									<li
-										key={workspace.id}
-										className="flex flex-wrap items-center justify-between gap-3 rounded border border-border p-3"
-									>
-										<form
-											className="flex flex-wrap items-center gap-3"
-											onSubmit={(event) => {
-												event.preventDefault();
-												const data = new FormData(event.currentTarget);
-												void mutate(() =>
-													api().workspaces.update({
-														organizationId,
-														id: workspace.id,
-														version: workspace.version,
-														name: String(data.get("name")),
-													}),
-												);
-											}}
-										>
-											<Input
-												key={`${workspace.id}:${workspace.version}`}
-												name="name"
-												aria-label={`${t("name")} ${workspace.name}`}
-												defaultValue={workspace.name}
-												minLength={2}
-												maxLength={80}
-												required
-												disabled={busy}
-											/>
-											<Button type="submit" disabled={busy}>
-												{t("workspaceRename")}
-											</Button>
-										</form>
-										<span>
+						</details>
+						{!workspaceLoading && !workspaces.length && (
+							<p className="projects-workspace-empty">{t("workspaceEmpty")}</p>
+						)}
+						<ul className="projects-workspace-list">
+							{workspaces.map((workspace) => (
+								<li key={workspace.id} className="projects-workspace-item">
+									<div className="projects-workspace-row">
+										<div>
+											<h3>{workspace.name}</h3>
+											<p>
+												{workspace.archivedAt
+													? t("workspaceArchived")
+													: t("workspaceActive")}
+											</p>
+										</div>
+										<span className="dashboard-badge">
 											{workspace.archivedAt ? t("archived") : t("active")}
 										</span>
 										<Button
+											className="dashboard-secondary"
 											disabled={busy}
-											onClick={() =>
-												void mutate(() =>
-													api().workspaces.update({
-														organizationId,
-														id: workspace.id,
-														version: workspace.version,
-														archived: !workspace.archivedAt,
-													}),
-												)
-											}
+											onClick={() => {
+												if (workspace.archivedAt)
+													void mutate(
+														workspace.id,
+														() =>
+															api().workspaces.update({
+																organizationId,
+																id: workspace.id,
+																version: workspace.version,
+																archived: false,
+															}),
+														{ workspace: true },
+													);
+												else {
+													setFeedback((previous) => ({
+														...previous,
+														confirmation: undefined,
+													}));
+													setConfirmation({ kind: "archive", workspace });
+												}
+											}}
 										>
 											{workspace.archivedAt
 												? t("workspaceRestore")
 												: t("workspaceArchive")}
 										</Button>
-									</li>
-								))}
-							</ul>
-							{workspaceCursor && (
-								<Button
-									disabled={busy}
-									onClick={() => void loadWorkspaces(workspaceCursor)}
-								>
-									{t("workspaceMore")}
-								</Button>
-							)}
-						</>
-					)}
-				</section>
-			</main>
-		</div>
+									</div>
+									<details className="projects-context">
+										<summary>
+											{t("renameWorkspace", { name: workspace.name })}
+										</summary>
+										<form
+											className="projects-workspace-rename"
+											onSubmit={(event) => {
+												event.preventDefault();
+												const data = new FormData(event.currentTarget);
+												void mutate(
+													workspace.id,
+													() =>
+														api().workspaces.update({
+															organizationId,
+															id: workspace.id,
+															version: workspace.version,
+															name: String(data.get("name")).trim(),
+														}),
+													{ workspace: true },
+												);
+											}}
+										>
+											<div className="dashboard-field">
+												<label htmlFor={`rename-${workspace.id}`}>
+													{t("name")}
+												</label>
+												<Input
+													key={`${workspace.id}:${workspace.version}`}
+													id={`rename-${workspace.id}`}
+													name="name"
+													defaultValue={workspace.name}
+													minLength={2}
+													maxLength={80}
+													required
+													disabled={busy}
+												/>
+											</div>
+											<Button
+												className="dashboard-secondary"
+												type="submit"
+												disabled={busy}
+											>
+												{t("workspaceRename")}
+											</Button>
+										</form>
+									</details>
+									{notice(workspace.id)}
+								</li>
+							))}
+						</ul>
+						{workspaceCursor && (
+							<Button
+								className="dashboard-secondary"
+								disabled={busy || workspaceLoading}
+								onClick={() => void loadWorkspaces(workspaceCursor)}
+							>
+								{t("workspaceMore")}
+							</Button>
+						)}
+					</>
+				)}
+			</section>
+			<dialog
+				ref={confirmationDialog}
+				className="projects-confirmation"
+				aria-labelledby="project-confirm-title"
+				aria-describedby="project-confirm-description"
+				onCancel={(event) => {
+					if (busy) event.preventDefault();
+					else setConfirmation(null);
+				}}
+			>
+				{confirmation && (
+					<>
+						<h2 id="project-confirm-title">
+							{confirmation.kind === "delete"
+								? t("deleteTitle", { name: confirmation.project.name })
+								: t("archiveTitle", { name: confirmation.workspace.name })}
+						</h2>
+						<p id="project-confirm-description">
+							{confirmation.kind === "delete"
+								? t("deleteHint")
+								: t("workspaceArchived")}
+						</p>
+						{notice("confirmation")}
+						<div className="projects-confirmation-actions">
+							<Button
+								className="dashboard-secondary"
+								disabled={busy}
+								onClick={() => setConfirmation(null)}
+							>
+								{t("cancel")}
+							</Button>
+							<Button
+								className="dashboard-danger"
+								disabled={busy}
+								onClick={confirmAction}
+							>
+								{busy
+									? t("saving")
+									: confirmation.kind === "delete"
+										? t("confirmDelete")
+										: t("confirmArchive")}
+							</Button>
+						</div>
+					</>
+				)}
+			</dialog>
+		</DashboardShell>
 	);
 }

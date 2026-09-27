@@ -37,7 +37,7 @@
 		"hooks:install": "node node_modules/lefthook/bin/index.js install",
 		"test:unit": "node node_modules/vitest/vitest.mjs run --project unit",
 		"test:integration": "node --env-file-if-exists=.env node_modules/vitest/vitest.mjs run --project integration",
-		"test:e2e": "node node_modules/@playwright/test/cli.js test",
+		"test:e2e": "node --import tsx scripts/phase1/browser-tests.ts",
 		"storybook": "node node_modules/storybook/dist/bin/dispatcher.js dev --port 6006 --config-dir apps/web/.storybook",
 		"storybook:build": "node node_modules/storybook/dist/bin/dispatcher.js build --config-dir apps/web/.storybook --output-dir artifacts/storybook --disable-telemetry",
 		"authz:validate": "node --env-file-if-exists=.env --import tsx scripts/phase1/authz-validate.ts",

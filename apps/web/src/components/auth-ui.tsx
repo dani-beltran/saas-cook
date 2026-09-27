@@ -1,13 +1,9 @@
 "use client";
 
 import { Button } from "@common-saas/ui";
-import {
-	type ComponentProps,
-	type ReactNode,
-	useEffect,
-	useState,
-} from "react";
+import type { ComponentProps, ReactNode } from "react";
 import { accountMessages } from "../i18n/account";
+import { useAppearance } from "./appearance";
 import "./auth-ui.css";
 
 export function AuthFrame({
@@ -22,16 +18,7 @@ export function AuthFrame({
 	localeMode?: "password" | "register" | "link" | "reset" | "recover";
 }) {
 	const labels = accountMessages[locale];
-	const [systemDark, setSystemDark] = useState(false);
-	const [theme, setTheme] = useState<boolean | null>(null);
-	useEffect(() => {
-		const media = window.matchMedia("(prefers-color-scheme: dark)");
-		setSystemDark(media.matches);
-		const change = () => setSystemDark(media.matches);
-		media.addEventListener("change", change);
-		return () => media.removeEventListener("change", change);
-	}, []);
-	const dark = theme ?? systemDark;
+	const { dark, toggleTheme } = useAppearance();
 	return (
 		<div className={`${dark ? "dark " : ""}auth-page`} lang={locale}>
 			<div className="auth-tools">
@@ -49,7 +36,7 @@ export function AuthFrame({
 					className="auth-theme"
 					aria-label={labels.toggleTheme}
 					aria-pressed={dark}
-					onClick={() => setTheme(!dark)}
+					onClick={toggleTheme}
 				>
 					<svg
 						width="18"

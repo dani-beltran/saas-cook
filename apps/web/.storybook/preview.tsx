@@ -28,8 +28,18 @@ export default {
 						lang={locale}
 						className={context.globals.theme === "dark" ? "dark" : ""}
 					>
-						<div className="min-h-[360px] bg-background p-8 text-foreground">
-							<div className="max-w-lg">
+						<div
+							className={
+								context.parameters.dashboard
+									? "bg-background text-foreground"
+									: "min-h-[360px] bg-background p-8 text-foreground"
+							}
+						>
+							<div
+								className={
+									context.parameters.dashboard ? undefined : "max-w-lg"
+								}
+							>
 								<Story />
 							</div>
 						</div>

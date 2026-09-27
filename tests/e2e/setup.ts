@@ -41,8 +41,10 @@ export default async function setup(config: FullConfig) {
 					clearTimeout(deadline);
 				}
 			}
-			await mkdir("artifacts/playwright-results", { recursive: true });
-			await writeFile("artifacts/playwright-results/server.log", logs);
+			const output =
+				config.projects[0]?.outputDir ?? "artifacts/playwright-results";
+			await mkdir(output, { recursive: true });
+			await writeFile(`${output}/server.log`, logs);
 		} finally {
 			for (const [key, value] of Object.entries(previousEnv)) {
 				if (value === undefined) delete process.env[key];

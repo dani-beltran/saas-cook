@@ -1,10 +1,12 @@
 import "@common-saas/ui/styles.css";
+import { publicConfig } from "@common-saas/config/client";
 import { messages } from "@common-saas/ui/messages";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import type { ReactNode } from "react";
+import { DashboardBrand } from "../../components/dashboard-shell";
 import { accountMessages } from "../../i18n/account";
 
 export const metadata: Metadata = {
@@ -30,7 +32,9 @@ export default async function LocaleLayout({
 					messages={{ ...messages[locale], Account: accountMessages[locale] }}
 					timeZone="UTC"
 				>
-					{children}
+					<DashboardBrand name={publicConfig(process.env).appName}>
+						{children}
+					</DashboardBrand>
 				</NextIntlClientProvider>
 			</body>
 		</html>
