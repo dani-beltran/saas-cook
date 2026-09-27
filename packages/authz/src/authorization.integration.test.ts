@@ -13,6 +13,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { runOwnerCommand } from "../../../scripts/phase2/owner-command";
 import { runMigrations } from "../../db/src/migrate";
 import { enqueueIdentityEmail } from "../../email/src/delivery";
+import { dropTestDatabase } from "../../testing/src/database";
 import { bootstrap, publishAuthorization } from "./commands";
 import { getPublication } from "./control";
 import { fgaRequest } from "./fga";
@@ -73,8 +74,8 @@ async function fixture(ready = true) {
 		`CREATE DATABASE ${name} OWNER common_saas_control_admin`,
 	);
 	cleanup.push(async () => {
-		await admin.query(`DROP DATABASE ${name} WITH (FORCE)`);
-		await controlAdmin.query(`DROP DATABASE ${name} WITH (FORCE)`);
+		await dropTestDatabase(admin, name);
+		await dropTestDatabase(controlAdmin, name);
 		await admin.end();
 		await controlAdmin.end();
 	});
