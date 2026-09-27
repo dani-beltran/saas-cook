@@ -7,7 +7,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
 	readFreshReport,
-	verifyPlaywrightReport,
+	verifyPlaywrightReports,
 	verifyVitestReport,
 } from "./reports.ts";
 
@@ -62,14 +62,19 @@ async function vitest(group, argv, extraEnv = {}) {
 	console.log(`VERIFIED_SUITE=${group}:${cases.length}`);
 }
 
-async function browser(group, argv, reportRoot = candidate) {
-	const reportFile = path.join(output, `${group}.json`);
-	const startedAt = Date.now();
-	run([...argv, "--reporter=list,json"], {
-		PLAYWRIGHT_JSON_OUTPUT_FILE: reportFile,
-	});
-	const cases = verifyPlaywrightReport(
-		await readFreshReport(reportFile, startedAt),
+async function browser(group, commands, reportRoot = candidate) {
+	const reports = [];
+	for (const [index, argv] of commands.entries()) {
+		const reportFile = path.join(output, `${group}-${index}.json`);
+		const startedAt = Date.now();
+		run([...argv, "--reporter=list,json"], {
+			PLAYWRIGHT_JSON_OUTPUT_FILE: reportFile,
+			E2E_REPORT_GROUP: `${path.basename(output)}-${group}-${index}`,
+		});
+		reports.push(await readFreshReport(reportFile, startedAt));
+	}
+	const cases = verifyPlaywrightReports(
+		reports,
 		reportRoot,
 		baseline.groups[group],
 	);
@@ -247,7 +252,22 @@ try {
 	}
 	if (taskId === "task-09") {
 		await heldout();
-		await browser("browser", ["bun", "run", "test:e2e", "--retries=0"]);
+		// Each spec needs its own disposable installation, as in the application
+		// browser runner. CLI reporter/retry options otherwise bypass that split
+		// and spend one shared authentication throttle budget across all specs.
+		const specs = (await readdir(path.join(candidate, "tests/e2e")))
+			.filter((file) => file.endsWith(".spec.ts"))
+			.sort();
+		await browser(
+			"browser",
+			specs.map((spec) => [
+				"bun",
+				"run",
+				"test:e2e",
+				`tests/e2e/${spec}`,
+				"--retries=0",
+			]),
+		);
 		await cp(
 			path.join(evaluator, "directory.spec.ts"),
 			path.join(output, "directory.spec.ts"),
@@ -260,12 +280,14 @@ try {
 		await browser(
 			"directory",
 			[
-				process.execPath,
-				"node_modules/@playwright/test/cli.js",
-				"test",
-				"--config",
-				config,
-				"--retries=0",
+				[
+					process.execPath,
+					"node_modules/@playwright/test/cli.js",
+					"test",
+					"--config",
+					config,
+					"--retries=0",
+				],
 			],
 			output,
 		);

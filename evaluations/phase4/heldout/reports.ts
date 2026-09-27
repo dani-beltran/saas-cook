@@ -104,11 +104,7 @@ type BrowserSuite = {
 	}[];
 };
 
-export function verifyPlaywrightReport(
-	value: unknown,
-	root: string,
-	required: CaseIdentity[],
-) {
+function readPlaywrightCases(value: unknown, root: string) {
 	const report = value as {
 		config: { rootDir: string };
 		errors: unknown[];
@@ -159,5 +155,26 @@ export function verifyPlaywrightReport(
 		for (const child of suite.suites ?? []) visit(child, names, false);
 	}
 	for (const suite of report.suites) visit(suite, [], true);
-	return verifyRequiredCases(actual, required);
+	assert.ok(actual.length, "The browser suite must execute cases");
+	return actual;
+}
+
+export function verifyPlaywrightReports(
+	values: unknown[],
+	root: string,
+	required: CaseIdentity[],
+) {
+	assert.ok(values.length, "Missing Playwright reports");
+	return verifyRequiredCases(
+		values.flatMap((value) => readPlaywrightCases(value, root)),
+		required,
+	);
+}
+
+export function verifyPlaywrightReport(
+	value: unknown,
+	root: string,
+	required: CaseIdentity[],
+) {
+	return verifyPlaywrightReports([value], root, required);
 }

@@ -20,7 +20,7 @@ const taskIds = Array.from(
 	(_, i) => `task-${String(i + 1).padStart(2, "0")}`,
 );
 const requirements: Record<string, string[]> = {
-	"task-01": ["R-SKILLS", "R-TENANCY", "R-AUTHZ", "R-POLICY", "R-WORKSPACES"],
+	"task-01": ["R-SKILLS", "R-TENANCY", "R-AUTHZ", "R-POLICY"],
 	"task-02": ["R-SKILLS", "R-TENANCY", "R-AUTHZ", "R-LIFECYCLE"],
 	"task-03": ["R-SKILLS", "R-TENANCY", "R-AUTHZ", "R-KEYS"],
 	"task-04": ["R-SKILLS", "R-AUTHZ", "R-LIFECYCLE"],
