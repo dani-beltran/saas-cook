@@ -10,14 +10,16 @@
 		"./tenancy": "./src/tenancy.ts",
 		"./tenancy-schema": "./src/tenancy-schema.ts",
 		"./resources": "./src/resources.ts",
-		"./resource-schema": "./src/resource-schema.ts"
+		"./resource-schema": "./src/resource-schema.ts",
+		"./example-customers": "./src/example-customers/service.ts"
 	},
 	"scripts": {
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
 		"drizzle-orm": "0.45.3",
-		"pg": "8.23.0"
+		"pg": "8.23.0",
+		"@common-saas/api-contracts": "workspace:*"
 	},
 	"devDependencies": {
 		"typescript": "7.0.2",

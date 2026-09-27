@@ -91,3 +91,15 @@ Generate from the repository root with
 `node node_modules/drizzle-kit/bin.cjs generate --config packages/db/drizzle.config.ts`.
 Review grants, lock impact and the generated snapshot before applying. Do not edit
 applied migrations. Use the explicit `db:migrate` command and a migration-only URL.
+
+`0008_example_customers` adds the example business-contact directory and its scoped
+command receipts. It changes no existing rows, policy source revisions or model.
+Both tables force tenant RLS; receipts have a composite same-organization customer
+foreign key. Only the restricted web role receives SELECT/INSERT and the precise
+mutable customer columns. No runtime role can physically delete contacts or update
+their ID, organization or creation timestamp. Timestamp precision is milliseconds
+so serialized cursor positions round-trip exactly. Name/company ordering indexes
+use the same expressions/collation as the feature service; empty companies sort last.
+The feature upgrade test preserves populated `0007` Projects, organizations,
+audit/outbox and closed readiness state, then replays the journal. Removing this
+sample from a deployed product requires a new migration; this history remains.

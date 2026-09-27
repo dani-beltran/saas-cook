@@ -22,7 +22,7 @@ export async function resourceOperation<T>(
 		const request = context.request;
 		if (!request) throw failure("UNAUTHORIZED");
 		const authorization = request.headers.get("authorization");
-		if (authorization && !capability.serviceAccounts)
+		if (request.headers.has("authorization") && !capability.serviceAccounts)
 			throw failure("FORBIDDEN");
 		if (!authorization && !request.headers.get("cookie"))
 			throw failure("UNAUTHORIZED");

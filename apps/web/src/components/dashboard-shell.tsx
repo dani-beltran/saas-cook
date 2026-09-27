@@ -28,7 +28,7 @@ export function DashboardBrand({
 function NavigationIcon({
 	kind,
 }: {
-	kind: "account" | "organization" | "projects";
+	kind: "account" | "organization" | "projects" | "customers";
 }) {
 	return (
 		<svg
@@ -40,7 +40,7 @@ function NavigationIcon({
 			strokeWidth="1.5"
 			aria-hidden="true"
 		>
-			{kind === "account" ? (
+			{kind === "account" || kind === "customers" ? (
 				<>
 					<circle cx="12" cy="8" r="3.5" />
 					<path d="M5 21v-3a7 7 0 0 1 14 0v3" />
@@ -65,7 +65,7 @@ export function DashboardShell({
 	children,
 	onLocaleChange,
 }: {
-	section: "account" | "organization" | "projects";
+	section: "account" | "organization" | "projects" | "customers";
 	organizationId?: string;
 	children: ReactNode;
 	onLocaleChange?: (locale: "en" | "es") => void;
@@ -133,7 +133,7 @@ export function DashboardFrame({
 	onRetry,
 	onLocaleChange,
 }: {
-	section: "account" | "organization" | "projects";
+	section: "account" | "organization" | "projects" | "customers";
 	organizationId?: string;
 	children: ReactNode;
 	organizations: Array<{ id: string; name: string }>;
@@ -228,7 +228,7 @@ export function DashboardFrame({
 						onChange={(event) => {
 							if (event.target.value)
 								window.location.assign(
-									`/${locale}/organizations/${event.target.value}${section === "projects" ? "/projects" : ""}`,
+									`/${locale}/organizations/${event.target.value}${section === "projects" ? "/projects" : section === "customers" ? "/customers" : ""}`,
 								);
 						}}
 					>
@@ -258,6 +258,11 @@ export function DashboardFrame({
 						<>
 							<p className="dashboard-nav-label">{copy.work}</p>
 							{link("projects", copy.projects, `${organizationPath}/projects`)}
+							{link(
+								"customers",
+								copy.customers,
+								`${organizationPath}/customers`,
+							)}
 							{link("organization", copy.settings, organizationPath)}
 						</>
 					)}

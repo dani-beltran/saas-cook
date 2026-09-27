@@ -5,6 +5,7 @@ import {
 	getPublication,
 } from "@common-saas/authz";
 import { readWebEnv } from "@common-saas/config/server";
+import { createExampleCustomersService } from "@common-saas/db/example-customers";
 import { createResourceService } from "@common-saas/db/resources";
 import { createTenancyService } from "@common-saas/db/tenancy";
 import { enqueueIdentityEmail } from "@common-saas/email";
@@ -76,6 +77,14 @@ function createRuntime() {
 	);
 	const keys = createApiKeyService({ pool: applicationPool, authorization });
 	return {
+		exampleCustomers: createExampleCustomersService(
+			applicationPool,
+			{
+				authorize: authorization.authorizeResource,
+				correlation: getOperationContext,
+			},
+			{ cursorSecret: env.AUTH_SECRET },
+		),
 		resources,
 		keys,
 		identity,

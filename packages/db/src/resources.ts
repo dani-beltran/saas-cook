@@ -6,7 +6,11 @@ import {
 	randomUUID,
 } from "node:crypto";
 import type { Pool, PoolClient } from "pg";
-import { type TenantActor, withTenantTransaction } from "./tenancy";
+import {
+	assertAuthorizationCurrent,
+	type TenantActor,
+	withTenantTransaction,
+} from "./tenancy";
 export type ResourceActor =
 	| TenantActor
 	| {
@@ -306,10 +310,7 @@ export function createResourceService(
 					throw new ResourceError("DENIED");
 				const value = await work(client);
 				// Earlier allows must remain live through later FGA calls and all domain work.
-				const validity = await client.query<{ valid: boolean }>(
-					"SELECT coalesce(nullif(current_setting('app.authorization_expires_at',true),'')::timestamptz>clock_timestamp(),true) AS valid",
-				);
-				if (validity.rows[0]?.valid !== true) throw new ResourceError("DENIED");
+				await assertAuthorizationCurrent(client);
 				return value;
 			},
 			options.onFenceWait,

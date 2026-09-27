@@ -132,6 +132,14 @@ function organizationDto(row: OrganizationRow) {
 	};
 }
 
+/** Final guard for every allow accumulated on this lock-bearing transaction. */
+export async function assertAuthorizationCurrent(client: PoolClient) {
+	const validity = await client.query<{ valid: boolean }>(
+		"SELECT coalesce(nullif(current_setting('app.authorization_expires_at',true),'')::timestamptz>clock_timestamp(),true) AS valid",
+	);
+	if (validity.rows[0]?.valid !== true) throw new TenancyError("DENIED");
+}
+
 /** One live connection, transaction-local tenant context, canonical user -> organization lock order. */
 export async function withTenantTransaction<T>(
 	pool: Pool,
@@ -260,7 +268,7 @@ function control(
 	)
 		throw new TenancyError("DENIED");
 }
-async function appendAudit(
+export async function appendTenantAudit(
 	client: PoolClient,
 	org: string,
 	actor: string,
@@ -309,7 +317,7 @@ export function createTenancyService(
 		target: string,
 		changes: Record<string, unknown>,
 	) {
-		return appendAudit(
+		return appendTenantAudit(
 			client,
 			org,
 			actor,

@@ -5,6 +5,7 @@ export default {
 	stories: [
 		"../../../packages/ui/src/**/*.stories.tsx",
 		"../src/components/**/*.stories.tsx",
+		"../src/features/**/*.stories.tsx",
 	],
 	core: { disableTelemetry: true },
 } satisfies StorybookConfig;

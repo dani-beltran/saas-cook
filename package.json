@@ -57,7 +57,8 @@
 		"authz:upgrade": "node --env-file-if-exists=.env --import tsx scripts/phase1/command.ts authz-upgrade",
 		"authz:publish": "node --env-file-if-exists=.env --import tsx scripts/phase1/command.ts authz-publish",
 		"owner:recover": "node --env-file-if-exists=.env --import tsx scripts/phase1/command.ts owner-recovery",
-		"security:deactivate": "node --env-file-if-exists=.env --import tsx scripts/phase1/command.ts security-deactivate"
+		"security:deactivate": "node --env-file-if-exists=.env --import tsx scripts/phase1/command.ts security-deactivate",
+		"example-customers:fixture": "node --import tsx scripts/example-customers/fixture.ts"
 	},
 	"devDependencies": {
 		"next": "16.3.5",

@@ -173,6 +173,7 @@
       "name": "@common-saas/db",
       "version": "0.1.0",
       "dependencies": {
+        "@common-saas/api-contracts": "workspace:*",
         "drizzle-orm": "0.45.3",
         "pg": "8.23.0",
       },

@@ -1,5 +1,6 @@
 import { contract } from "@common-saas/api-contracts";
 import { implement } from "@orpc/server";
+import { exampleCustomerHandlers } from "./example-customers/handlers";
 import { humanOperation, resourceOperation } from "./resource-boundary";
 import { echoDiagnostic, type RequestContext } from "./service";
 import {
@@ -142,6 +143,73 @@ export const router = api.router({
 				await runtime.keys.revoke(actor, input.organizationId, input.keyId);
 				return { ok: true as const };
 			}),
+		),
+	},
+	exampleCustomers: {
+		list: api.exampleCustomers.list.handler(
+			({ context, input: { organizationId, ...input } }) =>
+				resourceOperation(
+					context,
+					organizationId,
+					{ mutate: false, serviceAccounts: false },
+					(runtime, actor) =>
+						exampleCustomerHandlers.list(runtime, actor, organizationId, input),
+				),
+		),
+		get: api.exampleCustomers.get.handler(
+			({ context, input: { organizationId, ...input } }) =>
+				resourceOperation(
+					context,
+					organizationId,
+					{ mutate: false, serviceAccounts: false },
+					(runtime, actor) =>
+						exampleCustomerHandlers.get(runtime, actor, organizationId, input),
+				),
+		),
+		create: api.exampleCustomers.create.handler(
+			({ context, input: { organizationId, ...input } }) =>
+				resourceOperation(
+					context,
+					organizationId,
+					{ mutate: true, serviceAccounts: false },
+					(runtime, actor) =>
+						exampleCustomerHandlers.create(
+							runtime,
+							actor,
+							organizationId,
+							input,
+						),
+				),
+		),
+		update: api.exampleCustomers.update.handler(
+			({ context, input: { organizationId, ...input } }) =>
+				resourceOperation(
+					context,
+					organizationId,
+					{ mutate: true, serviceAccounts: false },
+					(runtime, actor) =>
+						exampleCustomerHandlers.update(
+							runtime,
+							actor,
+							organizationId,
+							input,
+						),
+				),
+		),
+		delete: api.exampleCustomers.delete.handler(
+			({ context, input: { organizationId, ...input } }) =>
+				resourceOperation(
+					context,
+					organizationId,
+					{ mutate: true, serviceAccounts: false },
+					(runtime, actor) =>
+						exampleCustomerHandlers.delete(
+							runtime,
+							actor,
+							organizationId,
+							input,
+						),
+				),
 		),
 	},
 	diagnostics: {

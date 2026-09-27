@@ -57,6 +57,13 @@
 			"when": 1790468842162,
 			"tag": "0007_organization_projects",
 			"breakpoints": true
+		},
+		{
+			"idx": 8,
+			"version": "7",
+			"when": 1790471047923,
+			"tag": "0008_example_customers",
+			"breakpoints": true
 		}
 	]
 }
