@@ -7,4 +7,4 @@ CREATE TABLE tenancy.review_widgets (
  internal_note text NOT NULL,
  FOREIGN KEY (organization_id,project_id) REFERENCES tenancy.projects(organization_id,id)
 );
-GRANT SELECT ON tenancy.review_widgets TO common_saas_web;
+GRANT SELECT ON tenancy.review_widgets TO saas_cook_web;

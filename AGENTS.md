@@ -1,6 +1,6 @@
 # Working in this repository
 
-This is the Common SaaS foundation with Phase 4 repository-local authoring skills. `docs/06-delivery-roadmap.md` is the acceptance register. Read the relevant architecture and data-model contracts before changing a boundary. Phase 0 evidence is retained in `spikes/phase0` and `docs/phase0`; its benchmark and fixtures are not production application code.
+This is the SaaS Cook foundation with Phase 4 repository-local authoring skills. `docs/06-delivery-roadmap.md` is the acceptance register. Read the relevant architecture and data-model contracts before changing a boundary. Phase 0 evidence is retained in `spikes/phase0` and `docs/phase0`; its benchmark and fixtures are not production application code.
 
 ## Stack and layout
 
@@ -40,7 +40,7 @@ Run commands from the repository root. Copy `.env.example` for the documented lo
 | Isolated skill behavior evaluation | `bun run skills:evaluate` (see `docs/phase4/evaluation.md`) |
 | Production build | `bun run build` |
 | Image acceptance | `bun run image:build`, then `bun run test:image` |
-| Vulnerability checks | `bun run security:scan dependencies` / `bun run security:scan image common-sass:phase2` |
+| Vulnerability checks | `bun run security:scan dependencies` / `bun run security:scan image saas-cook:phase2` |
 | Historical Phase 0 tests | `bun run phase0:test` / `bun run phase0:test:integration` |
 
 Vitest uses separate `unit` and `integration` projects. Integration tests require running local services and fail rather than silently skipping missing services. `TEST_DATABASE_ADMIN_URL` is only for creating isolated test databases. Production runtime processes must use distinct restricted web/worker roles; migration credentials belong only to the migration command. Test reports and build/scan evidence go under ignored `artifacts/`.

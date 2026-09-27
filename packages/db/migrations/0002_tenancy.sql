@@ -1,7 +1,7 @@
 CREATE SCHEMA tenancy;
 --> statement-breakpoint
 REVOKE ALL ON SCHEMA tenancy FROM PUBLIC;
-GRANT USAGE ON SCHEMA tenancy TO common_saas_web, common_saas_worker;
+GRANT USAGE ON SCHEMA tenancy TO saas_cook_web, saas_cook_worker;
 CREATE TABLE tenancy.organizations (
  id uuid PRIMARY KEY, slug text NOT NULL UNIQUE CHECK (slug ~ '^[a-z0-9][a-z0-9-]{1,62}$'),
  name text NOT NULL CHECK (length(name) BETWEEN 1 AND 120),
@@ -95,8 +95,8 @@ ALTER TABLE tenancy.organizations FORCE ROW LEVEL SECURITY;
 CREATE POLICY tenant_isolation ON tenancy.organizations
  USING (id=nullif(current_setting('app.organization_id',true),'')::uuid)
  WITH CHECK (id=nullif(current_setting('app.organization_id',true),'')::uuid);
-CREATE POLICY migration_control ON tenancy.organizations TO common_saas_migrator USING (true) WITH CHECK (true);
-GRANT SELECT, INSERT, UPDATE ON tenancy.organizations TO common_saas_web, common_saas_worker;
+CREATE POLICY migration_control ON tenancy.organizations TO saas_cook_migrator USING (true) WITH CHECK (true);
+GRANT SELECT, INSERT, UPDATE ON tenancy.organizations TO saas_cook_web, saas_cook_worker;
 DO $$
 DECLARE target text;
 BEGIN
@@ -105,12 +105,12 @@ BEGIN
   EXECUTE format('ALTER TABLE tenancy.%I FORCE ROW LEVEL SECURITY',target);
   EXECUTE format('CREATE POLICY tenant_isolation ON tenancy.%I USING (organization_id = nullif(current_setting(''app.organization_id'',true),'''')::uuid) WITH CHECK (organization_id = nullif(current_setting(''app.organization_id'',true),'''')::uuid)',target);
   -- Only dedicated migration-owned, fixed-query control-plane functions use this policy.
-  EXECUTE format('CREATE POLICY migration_control ON tenancy.%I TO common_saas_migrator USING (true) WITH CHECK (true)',target);
+  EXECUTE format('CREATE POLICY migration_control ON tenancy.%I TO saas_cook_migrator USING (true) WITH CHECK (true)',target);
  END LOOP;
 END $$;
-GRANT SELECT, INSERT, UPDATE ON tenancy.memberships, tenancy.seat_capacities, tenancy.invitations, tenancy.ownership_transfers TO common_saas_web,common_saas_worker;
-GRANT SELECT, INSERT ON tenancy.membership_transitions, tenancy.audit_events, tenancy.outbox_events, tenancy.owner_recovery_cases TO common_saas_web,common_saas_worker;
-GRANT SELECT, INSERT, UPDATE, DELETE ON tenancy.teams, tenancy.team_members TO common_saas_web,common_saas_worker;
+GRANT SELECT, INSERT, UPDATE ON tenancy.memberships, tenancy.seat_capacities, tenancy.invitations, tenancy.ownership_transfers TO saas_cook_web,saas_cook_worker;
+GRANT SELECT, INSERT ON tenancy.membership_transitions, tenancy.audit_events, tenancy.outbox_events, tenancy.owner_recovery_cases TO saas_cook_web,saas_cook_worker;
+GRANT SELECT, INSERT, UPDATE, DELETE ON tenancy.teams, tenancy.team_members TO saas_cook_web,saas_cook_worker;
 --> statement-breakpoint
 CREATE FUNCTION tenancy.organizations_for_user(subject text)
 RETURNS TABLE(id uuid,slug text,name text,status text,role text)
@@ -121,4 +121,4 @@ LANGUAGE sql SECURITY DEFINER SET search_path=pg_catalog AS $$
  ORDER BY o.name,o.id
 $$;
 REVOKE ALL ON FUNCTION tenancy.organizations_for_user(text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION tenancy.organizations_for_user(text) TO common_saas_web,common_saas_worker;
+GRANT EXECUTE ON FUNCTION tenancy.organizations_for_user(text) TO saas_cook_web,saas_cook_worker;

@@ -1,6 +1,6 @@
-import "@common-saas/ui/styles.css";
-import { publicConfig } from "@common-saas/config/client";
-import { messages } from "@common-saas/ui/messages";
+import "@saas-cook/ui/styles.css";
+import { publicConfig } from "@saas-cook/config/client";
+import { messages } from "@saas-cook/ui/messages";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
@@ -11,7 +11,7 @@ import { ThemeDocument } from "../../components/theme-document";
 import { accountMessages } from "../../i18n/account";
 
 export const metadata: Metadata = {
-	title: "Common SaaS · Foundation",
+	title: "SaaS Cook · Foundation",
 	description: "Manage your account, organizations, members and security.",
 };
 

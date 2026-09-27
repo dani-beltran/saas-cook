@@ -19,9 +19,9 @@ export async function runMigrations(options: {
 		const role = await client.query<{ current_user: string }>(
 			"SELECT current_user",
 		);
-		if (role.rows[0]?.current_user !== "common_saas_migrator")
+		if (role.rows[0]?.current_user !== "saas_cook_migrator")
 			throw new Error(
-				"Migrations require the dedicated common_saas_migrator role",
+				"Migrations require the dedicated saas_cook_migrator role",
 			);
 		// A bounded lock prevents competing deployment commands from applying DDL.
 		await client.query("SET lock_timeout = '30s'");

@@ -1,6 +1,6 @@
 "use client";
-import { Button } from "@common-saas/ui";
-import type { ThemeConfig } from "@common-saas/ui/theme";
+import { Button } from "@saas-cook/ui";
+import type { ThemeConfig } from "@saas-cook/ui/theme";
 import { useLocale } from "next-intl";
 import { useRef, useState } from "react";
 import { personalSettingsMessages } from "../i18n/personal-settings";

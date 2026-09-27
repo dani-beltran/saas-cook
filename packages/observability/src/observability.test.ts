@@ -12,7 +12,7 @@ import {
 
 it("redacts credentials, authentication URLs, nested payloads and interpolated messages", () => {
 	const record: LogRecord = {
-		category: ["common-saas"],
+		category: ["saas-cook"],
 		level: "info",
 		timestamp: 0,
 		rawMessage: "https://app.test/magic?token=secret",

@@ -56,7 +56,7 @@ Exclude `.git`, local dependencies, `.env*`, credentials and generated test outp
 Direct build command from the repository root (use `bun run image:build` to also attach the implementation fingerprint required by the acceptance suite):
 
 ```sh
-docker build --file infra/docker/Dockerfile --target app --tag common-sass:local .
+docker build --file infra/docker/Dockerfile --target app --tag saas-cook:local .
 ```
 
 Record the source commit, base image digest, Node/Bun versions, target architecture, image identity and verification results with the build artifact. Test each claimed architecture. CI builds locally without requiring a registry or cloud account.

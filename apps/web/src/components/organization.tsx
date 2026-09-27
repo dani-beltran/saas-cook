@@ -1,12 +1,12 @@
 "use client";
 
-import { createApiClient } from "@common-saas/api/client";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { createApiClient } from "@saas-cook/api/client";
 import type {
 	OrganizationCommand,
 	OrganizationSnapshotDto,
-} from "@common-saas/api-contracts";
-import { Button, Input } from "@common-saas/ui";
-import { zodResolver } from "@hookform/resolvers/zod";
+} from "@saas-cook/api-contracts";
+import { Button, Input } from "@saas-cook/ui";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useForm } from "react-hook-form";

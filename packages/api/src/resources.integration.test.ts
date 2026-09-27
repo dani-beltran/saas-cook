@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
-import { createApiKeyService } from "@common-saas/authz";
-import type { TenantActor } from "@common-saas/db/tenancy";
+import { createApiKeyService } from "@saas-cook/authz";
+import type { TenantActor } from "@saas-cook/db/tenancy";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { resourceFixture } from "../../../scripts/phase3/fixture";
 import { handleApi } from "./handlers";

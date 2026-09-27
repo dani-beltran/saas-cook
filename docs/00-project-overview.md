@@ -4,7 +4,7 @@ An implementation plan for a reusable enterprise SaaS template built with **Next
 
 **Status:** Phase 0 validation and Phase 1 repository/runtime implementation are complete for their documented scope. The [Phase 1 guide](phase1/README.md) covers the runnable shell, worker, API skeleton, combined image and local acceptance evidence. Identity, tenant access and production authorization are Phase 2 work.
 
-The folder name intentionally follows the requested spelling, `common-sass`. It lives inside the existing `common-saas` workspace.
+The project is named **SaaS Cook**, with root package `saas-cook` and workspace package namespace `@saas-cook`. See the [rename brief](../feature-briefs/saas-cook-rename.md) for retained compatibility identifiers.
 
 ## Read the plan
 

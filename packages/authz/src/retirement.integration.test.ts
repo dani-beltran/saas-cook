@@ -37,7 +37,7 @@ describe("published predecessor access retirement", () => {
 				process.env.TEST_DATABASE_ADMIN_URL ??
 				"postgres://postgres:local_phase1@127.0.0.1:55433/postgres",
 		});
-		await admin.query(`CREATE DATABASE ${name} OWNER common_saas_migrator`);
+		await admin.query(`CREATE DATABASE ${name} OWNER saas_cook_migrator`);
 		cleanup.push(async () => {
 			await dropTestDatabase(admin, name);
 			await admin.end();

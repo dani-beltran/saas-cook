@@ -1,6 +1,6 @@
 import { createHmac, randomUUID } from "node:crypto";
-import { runMigrations } from "@common-saas/db/migrate";
-import { deliverIdentityEmails } from "@common-saas/email";
+import { runMigrations } from "@saas-cook/db/migrate";
+import { deliverIdentityEmails } from "@saas-cook/email";
 import { Pool } from "pg";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { createIdentityRuntime } from "./index";
@@ -70,11 +70,11 @@ describe("email/password identity with real PostgreSQL", () => {
 		return target.toString();
 	};
 	beforeAll(async () => {
-		await admin.query(`CREATE DATABASE ${dbName} OWNER common_saas_migrator`);
-		await runMigrations({ databaseUrl: url("common_saas_migrator") });
-		pool = new Pool({ connectionString: url("common_saas_identity"), max: 10 });
-		worker = new Pool({ connectionString: url("common_saas_worker") });
-		migrator = new Pool({ connectionString: url("common_saas_migrator") });
+		await admin.query(`CREATE DATABASE ${dbName} OWNER saas_cook_migrator`);
+		await runMigrations({ databaseUrl: url("saas_cook_migrator") });
+		pool = new Pool({ connectionString: url("saas_cook_identity"), max: 10 });
+		worker = new Pool({ connectionString: url("saas_cook_worker") });
+		migrator = new Pool({ connectionString: url("saas_cook_migrator") });
 		await migrator.query(
 			"INSERT INTO foundation.installation(installation_id,binding_id,recovery_epoch) VALUES($1,$2,$3)",
 			[publication.installationId, publication.bindingId, publication.epoch],

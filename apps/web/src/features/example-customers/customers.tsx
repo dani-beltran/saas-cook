@@ -2,8 +2,8 @@
 import type {
 	CustomerDto,
 	CustomerQuery,
-} from "@common-saas/api-contracts/example-customers";
-import { Button, Input } from "@common-saas/ui";
+} from "@saas-cook/api-contracts/example-customers";
+import { Button, Input } from "@saas-cook/ui";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useLocale } from "next-intl";
 import { useEffect, useRef, useState } from "react";

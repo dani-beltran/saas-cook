@@ -1,12 +1,12 @@
 import { spawn } from "node:child_process";
 import { createHmac, randomUUID } from "node:crypto";
-import { runMigrations } from "@common-saas/db/migrate";
+import { runMigrations } from "@saas-cook/db/migrate";
 import {
 	createSmtpTransport,
 	deliverIdentityEmails,
 	enqueueIdentityEmail,
-} from "@common-saas/email";
-import { logEvent } from "@common-saas/observability";
+} from "@saas-cook/email";
+import { logEvent } from "@saas-cook/observability";
 import { Pool } from "pg";
 import sharp from "sharp";
 import {
@@ -21,8 +21,8 @@ import {
 import { createIdentityRuntime } from "./index";
 import { testAuthenticator } from "./testing/webauthn";
 
-vi.mock("@common-saas/observability", async (original) => ({
-	...(await original<typeof import("@common-saas/observability")>()),
+vi.mock("@saas-cook/observability", async (original) => ({
+	...(await original<typeof import("@saas-cook/observability")>()),
 	logEvent: vi.fn(),
 }));
 
@@ -69,11 +69,11 @@ describe("production identity with real PostgreSQL and SMTP", () => {
 		return target.toString();
 	};
 	beforeAll(async () => {
-		await admin.query(`CREATE DATABASE ${dbName} OWNER common_saas_migrator`);
-		await runMigrations({ databaseUrl: url("common_saas_migrator") });
-		pool = new Pool({ connectionString: url("common_saas_identity"), max: 10 });
-		worker = new Pool({ connectionString: url("common_saas_worker") });
-		migrator = new Pool({ connectionString: url("common_saas_migrator") });
+		await admin.query(`CREATE DATABASE ${dbName} OWNER saas_cook_migrator`);
+		await runMigrations({ databaseUrl: url("saas_cook_migrator") });
+		pool = new Pool({ connectionString: url("saas_cook_identity"), max: 10 });
+		worker = new Pool({ connectionString: url("saas_cook_worker") });
+		migrator = new Pool({ connectionString: url("saas_cook_migrator") });
 		await migrator.query(
 			"INSERT INTO foundation.installation(installation_id,binding_id,recovery_epoch) VALUES($1,$2,$3)",
 			[publication.installationId, publication.bindingId, publication.epoch],
@@ -658,7 +658,7 @@ CREATE TRIGGER test_rate_limit_delay BEFORE INSERT ON identity.rate_limit FOR EA
 								resolve({ result });
 							});
 							child.send({
-								databaseUrl: url("common_saas_identity"),
+								databaseUrl: url("saas_cook_identity"),
 								publication,
 								secret,
 								origin,

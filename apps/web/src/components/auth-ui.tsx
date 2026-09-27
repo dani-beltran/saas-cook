@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@common-saas/ui";
+import { Button } from "@saas-cook/ui";
 import type { ComponentProps, ReactNode } from "react";
 import { accountMessages } from "../i18n/account";
 import "./auth-ui.css";

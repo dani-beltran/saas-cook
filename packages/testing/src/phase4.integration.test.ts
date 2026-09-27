@@ -13,12 +13,12 @@ const name = `phase4_test_${randomUUID().replaceAll("-", "")}`;
 let database: Pool;
 let created = false;
 beforeAll(async () => {
-	await admin.query(`CREATE DATABASE ${name} OWNER common_saas_migrator`);
+	await admin.query(`CREATE DATABASE ${name} OWNER saas_cook_migrator`);
 	created = true;
 	const url = new URL(adminUrl);
 	url.pathname = `/${name}`;
 	database = new Pool({ connectionString: url.toString() });
-	url.username = "common_saas_migrator";
+	url.username = "saas_cook_migrator";
 	url.password = "local_phase1";
 	await runMigrations({ databaseUrl: url.toString() });
 });
@@ -46,15 +46,15 @@ describe("Phase 4 discovered tenant-table enforcement", () => {
 	});
 	it("detects permissive policies behaviorally even when ENABLE/FORCE flags are present", async () => {
 		await database.query(
-			"CREATE POLICY seeded_permission_bypass ON tenancy.projects TO common_saas_web USING (true) WITH CHECK (true)",
+			"CREATE POLICY seeded_permission_bypass ON tenancy.projects TO saas_cook_web USING (true) WITH CHECK (true)",
 		);
 		try {
 			const failures = await checkTenantCatalog(database);
 			expect(failures).toContain(
-				"tenancy.projects: common_saas_web policy exposes rows without tenant context",
+				"tenancy.projects: saas_cook_web policy exposes rows without tenant context",
 			);
 			expect(failures).toContain(
-				"tenancy.projects: common_saas_web can insert into another tenant",
+				"tenancy.projects: saas_cook_web can insert into another tenant",
 			);
 		} finally {
 			await database.query(

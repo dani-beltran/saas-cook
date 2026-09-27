@@ -6,7 +6,7 @@ The [personal settings feature](personal-settings.md) supersedes the original ex
 
 ## Request and decisions
 
-Unify the existing Common SaaS appearance while preserving the current teal identity, localized authentication/dashboard flows, responsive layouts and developer-owned components. This is a presentation-only extension to the Foundation UI-01 shared theme/locale acceptance boundary in `docs/06-delivery-roadmap.md`.
+Unify the existing SaaS Cook appearance while preserving the current teal identity, localized authentication/dashboard flows, responsive layouts and developer-owned components. This is a presentation-only extension to the Foundation UI-01 shared theme/locale acceptance boundary in `docs/06-delivery-roadmap.md`.
 
 - Product configuration lives in `apps/web/src/product-theme.ts`; visual values live only in `packages/ui/src/theme.css`. Zod validates a bounded set of choices and falls back per field. The app's environment and authorization boundaries remain unchanged.
 - Teal is the default; Blue and Violet are additional presets. Color mode is independent, defaults to System and supports fixed Light/Dark. Native CSS color-scheme and light-dark resolve before hydration and follow OS changes without extra production client JavaScript.

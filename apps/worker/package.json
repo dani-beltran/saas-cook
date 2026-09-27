@@ -1,18 +1,18 @@
 {
-	"name": "@common-saas/worker",
+	"name": "@saas-cook/worker",
 	"private": true,
 	"type": "module",
 	"scripts": {
 		"build": "node --import tsx ../../scripts/phase1/build-runtime.ts"
 	},
 	"dependencies": {
-		"@common-saas/config": "workspace:*",
-		"@common-saas/db": "workspace:*",
-		"@common-saas/observability": "workspace:*",
+		"@saas-cook/config": "workspace:*",
+		"@saas-cook/db": "workspace:*",
+		"@saas-cook/observability": "workspace:*",
 		"pg": "8.23.0",
 		"pg-boss": "12.33.4",
 		"zod": "4.6.5",
-		"@common-saas/authz": "workspace:*",
-		"@common-saas/email": "workspace:*"
+		"@saas-cook/authz": "workspace:*",
+		"@saas-cook/email": "workspace:*"
 	}
 }

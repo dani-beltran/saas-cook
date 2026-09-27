@@ -1,6 +1,6 @@
 "use client";
-import type { PersonalSettings } from "@common-saas/api/runtime";
-import type { ThemeConfig } from "@common-saas/ui/theme";
+import type { PersonalSettings } from "@saas-cook/api/runtime";
+import type { ThemeConfig } from "@saas-cook/ui/theme";
 import {
 	createContext,
 	type ReactNode,
@@ -138,7 +138,7 @@ export function PersonalSettingsProvider({
 		document.addEventListener("visibilitychange", onVisible);
 		const interval = window.setInterval(onVisible, 30000);
 		if (typeof BroadcastChannel !== "undefined") {
-			channel.current = new BroadcastChannel("common-saas-personal-settings");
+			channel.current = new BroadcastChannel("saas-cook-personal-settings");
 			// Only invalidations cross tabs. Values and user IDs are never trusted caches.
 			channel.current.onmessage = reload;
 		}

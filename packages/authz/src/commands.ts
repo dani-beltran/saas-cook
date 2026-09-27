@@ -30,7 +30,7 @@ export async function bootstrap(
 		]);
 		await app.query("SELECT pg_advisory_lock(1849202603)");
 		const role = await app.query("SELECT current_user");
-		if (role.rows[0].current_user !== "common_saas_migrator")
+		if (role.rows[0].current_user !== "saas_cook_migrator")
 			throw new Error("Bootstrap requires dedicated application migrator");
 		const found = await control.query(
 			"SELECT * FROM control.installations WHERE installation_id=$1",
@@ -96,7 +96,7 @@ export async function bootstrap(
 			const store = await fgaRequest<{ id: string }>(
 				options.openfgaUrl,
 				"/stores",
-				{ name: `common-saas-${options.installationId}` },
+				{ name: `saas-cook-${options.installationId}` },
 			);
 			if (!/^[A-Z0-9]{26}$/.test(store.id))
 				throw new Error("Invalid authorization store receipt");
@@ -158,7 +158,7 @@ export async function publishAuthorization(
 	const client = await options.applicationPool.connect();
 	try {
 		const role = await client.query("SELECT current_user");
-		if (role.rows[0].current_user !== "common_saas_migrator")
+		if (role.rows[0].current_user !== "saas_cook_migrator")
 			throw new Error("Publication requires dedicated application migrator");
 		await client.query("BEGIN");
 		await assertBinding(client, publication);
@@ -202,7 +202,7 @@ export async function upgradeAuthorization(
 		await app.query("SELECT pg_advisory_lock(1849202603)");
 		if (
 			(await app.query("SELECT current_user")).rows[0].current_user !==
-			"common_saas_migrator"
+			"saas_cook_migrator"
 		)
 			throw new Error("Model upgrade requires dedicated application migrator");
 		const state = (

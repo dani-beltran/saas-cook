@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
-import { authorizationModel, compileContext } from "@common-saas/authz/model";
+import { authorizationModel, compileContext } from "@saas-cook/authz/model";
 import { validateModel } from "../../packages/authz/src/fga";
 
 // Validate the production compiler and pinned model without modifying application readiness.

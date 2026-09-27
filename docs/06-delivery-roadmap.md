@@ -179,7 +179,7 @@ These defaults guide implementation, subject to the mandatory Phase 0 authorizat
 
 | Topic | Template default | Product-specific decision |
 | --- | --- | --- |
-| Naming | `common-sass` | Name/branding/package namespace for each bootstrapped product |
+| Naming | `saas-cook` | Name/branding/package namespace for each bootstrapped product |
 | Tenant/billing boundary | One organization, one billing account | Consolidated billing across several organizations? |
 | Content administration | Org admins manage all tenant content | Need private content hidden even from tenant administrators? |
 | Guests | Explicit limited membership, disabled until E | Are guests billable and how long may grants last? |
@@ -218,7 +218,7 @@ These defaults guide implementation, subject to the mandatory Phase 0 authorizat
 
 ## 6.7 Backoffice planned delivery and acceptance
 
-The [product brief](../feature-briefs/backoffice.md), [architecture/source inventory](backoffice/architecture.md) and [development plan](backoffice/development-plan.md) define a separate optional `apps/backoffice` with its own hostname, staff identity/session boundary, restricted network, credentials, build/start/deploy/version and `common-sass-backoffice` image. The default customer `common-sass` image retains its combined web/worker contract. This section schedules the planned extension to the existing single-application-image documentation; it does not claim that extension is implemented.
+The [product brief](../feature-briefs/backoffice.md), [architecture/source inventory](backoffice/architecture.md) and [development plan](backoffice/development-plan.md) define a separate optional `apps/backoffice` with its own hostname, staff identity/session boundary, restricted network, credentials, build/start/deploy/version and `saas-cook-backoffice` image. The default customer `saas-cook` image retains its combined web/worker contract. This section schedules the planned extension to the existing single-application-image documentation; it does not claim that extension is implemented.
 
 Recommendation: reuse reviewed domain services and initially the application database with separate operator schemas/roles, preserving the independent recovery/control store. Customer operation has no synchronous Backoffice dependency. Customer organization roles never grant operator authority; no generic superuser, fabricated customer session, migration role or BYPASSRLS solution is permitted. Existing signed recovery/deactivation authority remains independent.
 

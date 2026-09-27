@@ -40,9 +40,9 @@ const config: KnipConfig = {
 			entry: [".storybook/*.{ts,tsx}"],
 			project: ["src/**/*.{ts,tsx,css}", "*.{ts,mjs}", ".storybook/*.{ts,tsx}"],
 			// The PostCSS plugin loads Tailwind's compiler; the shared stylesheet
-			// that imports it lives in @common-saas/ui. Sharp is a required direct
+			// that imports it lives in @saas-cook/ui. Sharp is a required direct
 			// dependency for Next serverExternalPackages/standalone tracing from the
-			// web root; the actual decoder import lives in @common-saas/auth.
+			// web root; the actual decoder import lives in @saas-cook/auth.
 			ignoreDependencies: ["tailwindcss", "sharp"],
 		},
 		"apps/worker": { project: ["src/**/*.ts"] },

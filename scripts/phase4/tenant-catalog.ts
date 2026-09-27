@@ -40,7 +40,7 @@ export async function checkTenantCatalog(admin: Pool): Promise<string[]> {
 			failures.push("No tenant tables found in the migrated database");
 		await client.query(`CREATE SCHEMA ${quote(probeSchema)}`);
 		await client.query(
-			`GRANT USAGE ON SCHEMA ${quote(probeSchema)} TO common_saas_web,common_saas_worker`,
+			`GRANT USAGE ON SCHEMA ${quote(probeSchema)} TO saas_cook_web,saas_cook_worker`,
 		);
 		for (const table of tables) {
 			const label = `${table.schema}.${table.name}`;
@@ -107,7 +107,7 @@ export async function checkTenantCatalog(admin: Pool): Promise<string[]> {
 					`CREATE POLICY ${quote(policy.polname)} ON ${probe} AS ${policy.polpermissive ? "PERMISSIVE" : "RESTRICTIVE"} FOR ${command} TO ${policy.roles.map((role) => (role === "PUBLIC" ? role : quote(role))).join(",")}${policy.using_expression ? ` USING (${policy.using_expression})` : ""}${policy.check_expression ? ` WITH CHECK (${policy.check_expression})` : ""}`,
 				);
 			}
-			for (const role of ["common_saas_web", "common_saas_worker"]) {
+			for (const role of ["saas_cook_web", "saas_cook_worker"]) {
 				const privileges = (
 					await client.query<{
 						select: boolean;

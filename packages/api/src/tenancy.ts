@@ -1,9 +1,9 @@
+import { ORPCError } from "@orpc/server";
 import type {
 	OrganizationCommand,
 	OrganizationSnapshotDto,
-} from "@common-saas/api-contracts";
-import { TenancyError } from "@common-saas/db/tenancy";
-import { ORPCError } from "@orpc/server";
+} from "@saas-cook/api-contracts";
+import { TenancyError } from "@saas-cook/db/tenancy";
 import { applicationRuntime } from "./runtime";
 import type { RequestContext } from "./service";
 

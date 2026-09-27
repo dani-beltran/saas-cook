@@ -13,7 +13,7 @@ export async function initializeControlStore(pool: Pool): Promise<void> {
 	const client = await pool.connect();
 	try {
 		const role = await client.query("SELECT current_user");
-		if (role.rows[0].current_user !== "common_saas_control_admin")
+		if (role.rows[0].current_user !== "saas_cook_control_admin")
 			throw new Error("Dedicated control administrator required");
 		await client.query("BEGIN");
 		await client.query("SELECT pg_advisory_xact_lock(1849202602)");
@@ -52,8 +52,8 @@ export async function initializeControlStore(pool: Pool): Promise<void> {
           ALTER TABLE control.model_upgrades ADD PRIMARY KEY (installation_id,to_model_hash);
         END IF;
       END $migration$;
-      GRANT USAGE ON SCHEMA control TO common_saas_control_reader;
-      GRANT SELECT ON control.installations TO common_saas_control_reader;`);
+      GRANT USAGE ON SCHEMA control TO saas_cook_control_reader;
+      GRANT SELECT ON control.installations TO saas_cook_control_reader;`);
 		await client.query("COMMIT");
 	} catch (error) {
 		await client.query("ROLLBACK").catch(() => {});

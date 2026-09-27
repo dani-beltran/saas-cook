@@ -1,4 +1,4 @@
-import { publicConfig } from "@common-saas/config/client";
+import { publicConfig } from "@saas-cook/config/client";
 import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";

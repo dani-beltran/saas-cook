@@ -1,6 +1,6 @@
 "use client";
-import { Button, Input } from "@common-saas/ui";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Button, Input } from "@saas-cook/ui";
 import { useId } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";

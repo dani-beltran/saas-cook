@@ -2,7 +2,7 @@ import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { channel } from "node:diagnostics_channel";
 import type { Pool, PoolClient } from "pg";
 
-const authorizationFenceWait = channel("common-saas.authorization.fence-wait");
+const authorizationFenceWait = channel("saas-cook.authorization.fence-wait");
 
 export type MembershipRole = "owner" | "admin" | "member" | "billing";
 export interface TenantActor {

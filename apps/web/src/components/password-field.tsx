@@ -1,6 +1,6 @@
 "use client";
 
-import { Input } from "@common-saas/ui";
+import { Input } from "@saas-cook/ui";
 import { type ComponentProps, useState } from "react";
 
 export function PasswordField({

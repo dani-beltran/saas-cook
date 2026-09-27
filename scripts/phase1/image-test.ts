@@ -7,8 +7,8 @@ import { promisify } from "node:util";
 import { sourceFingerprint } from "./source-fingerprint";
 
 const exec = promisify(execFile);
-const image = process.env.TEST_IMAGE ?? "common-sass:phase2";
-const network = "common-saas-phase1_default";
+const image = process.env.TEST_IMAGE ?? "saas-cook:phase2";
+const network = "saas-cook-phase1_default";
 const databaseName = `image_phase2_${randomUUID().replaceAll("-", "")}`;
 const restoredDatabase = `${databaseName}_restored`;
 const installationId = randomUUID();
@@ -18,7 +18,7 @@ const ingressSecret = `synthetic-image-ingress-${randomUUID()}`;
 const database = (role: string, name = databaseName) =>
 	`postgres://${role}:local_phase1@postgres:5432/${name}`;
 const controlDatabase = (role: string) =>
-	`postgres://${role}:local_phase2_control@control-postgres:5432/common_saas_control`;
+	`postgres://${role}:local_phase2_control@control-postgres:5432/saas_cook_control`;
 const containers: string[] = [];
 const checks: string[] = [];
 let createdDatabase = false;
@@ -75,9 +75,9 @@ function command(
 		"--network",
 		network,
 		"-e",
-		`MIGRATION_DATABASE_URL=${database("common_saas_migrator", options.database)}`,
+		`MIGRATION_DATABASE_URL=${database("saas_cook_migrator", options.database)}`,
 		"-e",
-		`CONTROL_ADMIN_DATABASE_URL=${controlDatabase("common_saas_control_admin")}`,
+		`CONTROL_ADMIN_DATABASE_URL=${controlDatabase("saas_cook_control_admin")}`,
 		"-e",
 		`INSTALLATION_ID=${options.installationId ?? installationId}`,
 		"-e",
@@ -95,17 +95,17 @@ async function start() {
 		"-p",
 		"127.0.0.1::3000",
 		"-e",
-		`DATABASE_URL=${database("common_saas_web")}`,
+		`DATABASE_URL=${database("saas_cook_web")}`,
 		"-e",
-		`WORKER_DATABASE_URL=${database("common_saas_worker")}`,
+		`WORKER_DATABASE_URL=${database("saas_cook_worker")}`,
 		"-e",
-		`IDENTITY_DATABASE_URL=${database("common_saas_identity")}`,
+		`IDENTITY_DATABASE_URL=${database("saas_cook_identity")}`,
 		"-e",
 		`AUTH_SECRET=${authSecret}`,
 		"-e",
 		`AUTH_INGRESS_SECRET=${ingressSecret}`,
 		"-e",
-		`CONTROL_DATABASE_URL=${controlDatabase("common_saas_control_reader")}`,
+		`CONTROL_DATABASE_URL=${controlDatabase("saas_cook_control_reader")}`,
 		"-e",
 		`INSTALLATION_ID=${installationId}`,
 		"-e",
@@ -148,7 +148,7 @@ await mkdir("artifacts/image", { recursive: true });
 try {
 	const identity = JSON.parse(await docker(["image", "inspect", image]))[0];
 	assert.equal(
-		identity.Config.Labels["dev.common-saas.source-fingerprint"],
+		identity.Config.Labels["dev.saas-cook.source-fingerprint"],
 		await sourceFingerprint(),
 		"Rebuild the image after implementation changes",
 	);
@@ -186,7 +186,7 @@ try {
 	await sql(
 		"postgres",
 		"postgres",
-		`CREATE DATABASE ${databaseName} OWNER common_saas_migrator`,
+		`CREATE DATABASE ${databaseName} OWNER saas_cook_migrator`,
 	);
 	createdDatabase = true;
 	for (let attempt = 0; attempt < 2; attempt++)
@@ -196,7 +196,7 @@ try {
 			"--network",
 			network,
 			"-e",
-			`MIGRATION_DATABASE_URL=${database("common_saas_migrator")}`,
+			`MIGRATION_DATABASE_URL=${database("saas_cook_migrator")}`,
 			image,
 			"migrate",
 		]);
@@ -205,20 +205,20 @@ try {
 	await rejected(command("bootstrap", { openfgaUrl: "http://127.0.0.1:1" }));
 	const pending = await sql(
 		"control-postgres",
-		"common_saas_control",
+		"saas_cook_control",
 		`SELECT epoch||':'||binding_id||':'||state FROM control.installations WHERE installation_id='${installationId}'`,
 	);
 	assert(pending.endsWith(":initializing"));
 	await docker(command("bootstrap"));
 	const ready = await sql(
 		"control-postgres",
-		"common_saas_control",
+		"saas_cook_control",
 		`SELECT epoch||':'||binding_id||':'||state FROM control.installations WHERE installation_id='${installationId}'`,
 	);
 	assert.equal(ready, pending.replace(/:initializing$/, ":ready"));
 	storeId = await sql(
 		"control-postgres",
-		"common_saas_control",
+		"saas_cook_control",
 		`SELECT store_id FROM control.installations WHERE installation_id='${installationId}'`,
 	);
 	await docker(command("authz-publish"));
@@ -240,7 +240,7 @@ try {
 	await sql(
 		"postgres",
 		"postgres",
-		`CREATE DATABASE ${restoredDatabase} TEMPLATE ${databaseName} OWNER common_saas_migrator`,
+		`CREATE DATABASE ${restoredDatabase} TEMPLATE ${databaseName} OWNER saas_cook_migrator`,
 	);
 	createdRestore = true;
 	await rejected(
@@ -302,12 +302,12 @@ try {
 	checks.push("startup-static-public-assets-and-combined-health");
 	await node(
 		id,
-		"const fs=require('node:fs');const web=fs.readFileSync('/tmp/common-saas-web.pid','utf8');const worker=fs.readFileSync('/tmp/common-saas-worker.pid','utf8');const w=fs.readFileSync('/proc/'+web+'/environ','utf8');const j=fs.readFileSync('/proc/'+worker+'/environ','utf8');if(w.includes('WORKER_DATABASE_URL=')||j.includes('DATABASE_URL=postgres://common_saas_web')||j.includes('IDENTITY_DATABASE_URL=')||j.includes('AUTH_INGRESS_SECRET=')||!w.includes('AUTH_INGRESS_SECRET=')||w.includes('CONTROL_ADMIN_DATABASE_URL=')||j.includes('CONTROL_ADMIN_DATABASE_URL='))process.exit(1)",
+		"const fs=require('node:fs');const web=fs.readFileSync('/tmp/saas-cook-web.pid','utf8');const worker=fs.readFileSync('/tmp/saas-cook-worker.pid','utf8');const w=fs.readFileSync('/proc/'+web+'/environ','utf8');const j=fs.readFileSync('/proc/'+worker+'/environ','utf8');if(w.includes('WORKER_DATABASE_URL=')||j.includes('DATABASE_URL=postgres://saas_cook_web')||j.includes('IDENTITY_DATABASE_URL=')||j.includes('AUTH_INGRESS_SECRET=')||!w.includes('AUTH_INGRESS_SECRET=')||w.includes('CONTROL_ADMIN_DATABASE_URL=')||j.includes('CONTROL_ADMIN_DATABASE_URL='))process.exit(1)",
 	);
 	checks.push("child-identity-database-and-control-credential-separation");
 	await node(
 		id,
-		"const fs=require('node:fs');const p='/tmp/common-saas-worker.json';const data=JSON.parse(fs.readFileSync(p));process.kill(data.pid,'SIGSTOP');data.at=0;fs.writeFileSync(p,JSON.stringify(data));",
+		"const fs=require('node:fs');const p='/tmp/saas-cook-worker.json';const data=JSON.parse(fs.readFileSync(p));process.kill(data.pid,'SIGSTOP');data.at=0;fs.writeFileSync(p,JSON.stringify(data));",
 	);
 	await rejected([
 		"exec",
@@ -317,7 +317,7 @@ try {
 	]);
 	await node(
 		id,
-		"process.kill(Number(require('node:fs').readFileSync('/tmp/common-saas-worker.pid','utf8')),'SIGCONT')",
+		"process.kill(Number(require('node:fs').readFileSync('/tmp/saas-cook-worker.pid','utf8')),'SIGCONT')",
 	);
 	checks.push("stale-heartbeat-is-unhealthy");
 	await docker(["stop", "--time", "20", id]);
@@ -336,7 +336,7 @@ try {
 		const testId = await start();
 		await node(
 			testId,
-			`process.kill(Number(require('node:fs').readFileSync('/tmp/common-saas-${child}.pid','utf8')),'SIGKILL')`,
+			`process.kill(Number(require('node:fs').readFileSync('/tmp/saas-cook-${child}.pid','utf8')),'SIGKILL')`,
 		);
 		assert.notEqual(await awaitExit(testId), 0);
 		checks.push(`${child}-failure-stops-container`);
@@ -348,11 +348,11 @@ try {
 	// Keep the worker paused briefly so the health endpoint can report the mismatch before supervision exits.
 	await node(
 		recoveryId,
-		"process.kill(Number(require('node:fs').readFileSync('/tmp/common-saas-worker.pid','utf8')),'SIGSTOP')",
+		"process.kill(Number(require('node:fs').readFileSync('/tmp/saas-cook-worker.pid','utf8')),'SIGSTOP')",
 	);
 	await sql(
 		"control-postgres",
-		"common_saas_control",
+		"saas_cook_control",
 		`UPDATE control.installations SET epoch='${randomUUID()}' WHERE installation_id='${installationId}'`,
 	);
 	assert.equal(
@@ -368,7 +368,7 @@ try {
 	await rejected(command("authz-publish"));
 	await node(
 		recoveryId,
-		"process.kill(Number(require('node:fs').readFileSync('/tmp/common-saas-worker.pid','utf8')),'SIGCONT')",
+		"process.kill(Number(require('node:fs').readFileSync('/tmp/saas-cook-worker.pid','utf8')),'SIGCONT')",
 	);
 	assert.notEqual(await awaitExit(recoveryId), 0);
 	checks.push(
@@ -384,7 +384,7 @@ try {
 			(await exec("git", ["status", "--porcelain"])).stdout.trim(),
 		),
 		implementationSha256:
-			identity.Config.Labels["dev.common-saas.source-fingerprint"],
+			identity.Config.Labels["dev.saas-cook.source-fingerprint"],
 		image: identity.Id,
 		architecture: identity.Architecture,
 		os: identity.Os,
@@ -433,7 +433,7 @@ try {
 		).catch(() => {});
 	await sql(
 		"control-postgres",
-		"common_saas_control",
+		"saas_cook_control",
 		`DELETE FROM control.operator_approvals WHERE installation_id IN ('${installationId}','${restoredInstallationId}'); DELETE FROM control.security_events WHERE installation_id IN ('${installationId}','${restoredInstallationId}'); DELETE FROM control.installations WHERE installation_id IN ('${installationId}','${restoredInstallationId}')`,
 	).catch(() => {});
 }

@@ -1,6 +1,6 @@
-import type { ResourceActor } from "@common-saas/db/resources";
-import { ResourceError } from "@common-saas/db/resources";
-import type { TenantActor } from "@common-saas/db/tenancy";
+import type { ResourceActor } from "@saas-cook/db/resources";
+import { ResourceError } from "@saas-cook/db/resources";
+import type { TenantActor } from "@saas-cook/db/tenancy";
 import type { applicationRuntime } from "../runtime";
 
 type Runtime = ReturnType<typeof applicationRuntime>;

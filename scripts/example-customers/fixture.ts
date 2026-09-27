@@ -69,7 +69,7 @@ try {
 		...receipt.env,
 		NODE_ENV: "development",
 		APP_ORIGIN: origin,
-		APP_NAME: "Common SaaS",
+		APP_NAME: "SaaS Cook",
 		DEFAULT_LOCALE: "en",
 		PORT: "3103",
 	};

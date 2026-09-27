@@ -24,9 +24,5 @@ export default withNextIntl({
 	// Keep native bindings outside webpack and trace them into the standalone image.
 	serverExternalPackages: ["sharp"],
 	outputFileTracingRoot: resolve(import.meta.dirname, "../.."),
-	transpilePackages: [
-		"@common-saas/api",
-		"@common-saas/config",
-		"@common-saas/ui",
-	],
+	transpilePackages: ["@saas-cook/api", "@saas-cook/config", "@saas-cook/ui"],
 } satisfies NextConfig);

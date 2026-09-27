@@ -1,9 +1,17 @@
 import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
+import historyReset from "./saas-cook-history-reset.json";
 
 type Journal = { entries: { idx: number; when: number; tag: string }[] };
 const directory = "packages/db/migrations";
+// Explicit disposable reset, documented in feature-briefs/saas-cook-rename.md.
+// Exact content pairs permit only that reviewed transition, never later edits.
+const reviewedReset: Record<string, { before: string; after: string }> =
+	historyReset;
+const digest = (content: string) =>
+	createHash("sha256").update(content).digest("hex");
 
 export async function checkMigrations(
 	root: string,
@@ -79,7 +87,16 @@ export async function checkMigrations(
 			const current = await readFile(path.join(folder, relative), "utf8").catch(
 				() => null,
 			);
-			if (current !== oldContent)
+			const reset = reviewedReset[relative];
+			if (
+				current !== oldContent &&
+				!(
+					reset &&
+					current !== null &&
+					digest(oldContent) === reset.before &&
+					digest(current) === reset.after
+				)
+			)
 				failures.push(
 					`${relative}: applied migration history changed since ${base}`,
 				);

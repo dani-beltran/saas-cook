@@ -1,13 +1,13 @@
 "use client";
 
-import { createApiClient } from "@common-saas/api/client";
-import type { ProjectDto } from "@common-saas/api-contracts";
+import { createApiClient } from "@saas-cook/api/client";
+import type { ProjectDto } from "@saas-cook/api-contracts";
 import {
 	Button,
 	Input,
 	ProjectForm,
 	type ProjectFormValues,
-} from "@common-saas/ui";
+} from "@saas-cook/ui";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DashboardShell } from "./dashboard-shell";

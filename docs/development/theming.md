@@ -26,7 +26,7 @@ export const productTheme = resolveThemeConfig({
 
 ## Token contract
 
-`packages/ui/src/theme.css` is the only source of visual values. `theme.ts` defines option names and validation, not a second palette. `styles.css` exposes semantic tokens through Tailwind v4 `@theme inline` and supplies shared base/accessibility rules. Import `@common-saas/ui/styles.css` once per root. The owned Button supports typed `primary`, `secondary` and `destructive` variants; use these instead of competing background utilities. Components use literal utilities (`bg-primary text-primary-foreground`) or CSS variables, never computed Tailwind class names.
+`packages/ui/src/theme.css` is the only source of visual values. `theme.ts` defines option names and validation, not a second palette. `styles.css` exposes semantic tokens through Tailwind v4 `@theme inline` and supplies shared base/accessibility rules. Import `@saas-cook/ui/styles.css` once per root. The owned Button supports typed `primary`, `secondary` and `destructive` variants; use these instead of competing background utilities. Components use literal utilities (`bg-primary text-primary-foreground`) or CSS variables, never computed Tailwind class names.
 
 Account mode previews resolve the shared `background`, `muted`, `primary` and `border` light/dark pairs within each preview. This preserves their independent color schemes when the CSS compiler resolves inherited semantic tokens at the root. Light and Dark stay fixed; System follows the device even when the page uses a fixed mode.
 

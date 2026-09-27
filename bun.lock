@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "common-sass",
+      "name": "saas-cook",
       "devDependencies": {
         "@aws-sdk/client-s3": "3.1137.0",
         "@aws-sdk/s3-request-presigner": "3.1137.0",
@@ -13,11 +13,6 @@
         "@biomejs/biome": "2.5.14",
         "@commitlint/cli": "21.2.3",
         "@commitlint/config-conventional": "21.2.3",
-        "@common-saas/authz": "workspace:*",
-        "@common-saas/config": "workspace:*",
-        "@common-saas/db": "workspace:*",
-        "@common-saas/email": "workspace:*",
-        "@common-saas/observability": "workspace:*",
         "@hookform/resolvers": "5.9.1",
         "@openfga/sdk": "0.9.7",
         "@orpc/client": "1.15.3",
@@ -25,6 +20,11 @@
         "@playwright/test": "1.63.0",
         "@react-email/components": "1.0.12",
         "@react-email/render": "2.1.0",
+        "@saas-cook/authz": "workspace:*",
+        "@saas-cook/config": "workspace:*",
+        "@saas-cook/db": "workspace:*",
+        "@saas-cook/email": "workspace:*",
+        "@saas-cook/observability": "workspace:*",
         "@storybook/nextjs-vite": "10.6.0",
         "@t3-oss/env-core": "0.13.11",
         "@t3-oss/env-nextjs": "0.13.11",
@@ -59,16 +59,16 @@
       },
     },
     "apps/web": {
-      "name": "@common-saas/web",
+      "name": "@saas-cook/web",
       "dependencies": {
         "@better-auth/passkey": "1.7.5",
-        "@common-saas/api": "workspace:*",
-        "@common-saas/api-contracts": "workspace:*",
-        "@common-saas/config": "workspace:*",
-        "@common-saas/db": "workspace:*",
-        "@common-saas/observability": "workspace:*",
-        "@common-saas/ui": "workspace:*",
         "@hookform/resolvers": "5.9.1",
+        "@saas-cook/api": "workspace:*",
+        "@saas-cook/api-contracts": "workspace:*",
+        "@saas-cook/config": "workspace:*",
+        "@saas-cook/db": "workspace:*",
+        "@saas-cook/observability": "workspace:*",
+        "@saas-cook/ui": "workspace:*",
         "better-auth": "1.7.5",
         "next": "16.3.5",
         "next-intl": "4.14.6",
@@ -89,34 +89,34 @@
       },
     },
     "apps/worker": {
-      "name": "@common-saas/worker",
+      "name": "@saas-cook/worker",
       "dependencies": {
-        "@common-saas/authz": "workspace:*",
-        "@common-saas/config": "workspace:*",
-        "@common-saas/db": "workspace:*",
-        "@common-saas/email": "workspace:*",
-        "@common-saas/observability": "workspace:*",
+        "@saas-cook/authz": "workspace:*",
+        "@saas-cook/config": "workspace:*",
+        "@saas-cook/db": "workspace:*",
+        "@saas-cook/email": "workspace:*",
+        "@saas-cook/observability": "workspace:*",
         "pg": "8.23.0",
         "pg-boss": "12.33.4",
         "zod": "4.6.5",
       },
     },
     "packages/api": {
-      "name": "@common-saas/api",
+      "name": "@saas-cook/api",
       "version": "0.1.0",
       "dependencies": {
-        "@common-saas/api-contracts": "workspace:*",
-        "@common-saas/auth": "workspace:*",
-        "@common-saas/authz": "workspace:*",
-        "@common-saas/config": "workspace:*",
-        "@common-saas/db": "workspace:*",
-        "@common-saas/email": "workspace:*",
-        "@common-saas/observability": "workspace:*",
         "@orpc/client": "1.15.3",
         "@orpc/contract": "1.15.3",
         "@orpc/openapi": "1.15.3",
         "@orpc/server": "1.15.3",
         "@orpc/zod": "1.15.3",
+        "@saas-cook/api-contracts": "workspace:*",
+        "@saas-cook/auth": "workspace:*",
+        "@saas-cook/authz": "workspace:*",
+        "@saas-cook/config": "workspace:*",
+        "@saas-cook/db": "workspace:*",
+        "@saas-cook/email": "workspace:*",
+        "@saas-cook/observability": "workspace:*",
         "pg": "8.23.0",
       },
       "devDependencies": {
@@ -124,7 +124,7 @@
       },
     },
     "packages/api-contracts": {
-      "name": "@common-saas/api-contracts",
+      "name": "@saas-cook/api-contracts",
       "version": "0.1.0",
       "dependencies": {
         "@orpc/contract": "1.15.3",
@@ -135,13 +135,13 @@
       },
     },
     "packages/auth": {
-      "name": "@common-saas/auth",
+      "name": "@saas-cook/auth",
       "version": "0.1.0",
       "dependencies": {
         "@better-auth/passkey": "1.7.5",
-        "@common-saas/db": "workspace:*",
-        "@common-saas/email": "workspace:*",
-        "@common-saas/observability": "workspace:*",
+        "@saas-cook/db": "workspace:*",
+        "@saas-cook/email": "workspace:*",
+        "@saas-cook/observability": "workspace:*",
         "better-auth": "1.7.5",
         "drizzle-orm": "0.45.3",
         "pg": "8.23.0",
@@ -154,7 +154,7 @@
       },
     },
     "packages/authz": {
-      "name": "@common-saas/authz",
+      "name": "@saas-cook/authz",
       "version": "0.1.0",
       "dependencies": {
         "pg": "8.23.0",
@@ -165,29 +165,29 @@
       },
     },
     "packages/config": {
-      "name": "@common-saas/config",
+      "name": "@saas-cook/config",
       "dependencies": {
         "@t3-oss/env-core": "0.13.11",
         "zod": "4.6.5",
       },
     },
     "packages/db": {
-      "name": "@common-saas/db",
+      "name": "@saas-cook/db",
       "version": "0.1.0",
       "dependencies": {
-        "@common-saas/api-contracts": "workspace:*",
+        "@saas-cook/api-contracts": "workspace:*",
         "drizzle-orm": "0.45.3",
         "pg": "8.23.0",
       },
       "devDependencies": {
-        "@common-saas/testing": "workspace:*",
+        "@saas-cook/testing": "workspace:*",
         "@types/pg": "8.23.1",
         "drizzle-kit": "0.31.11",
         "typescript": "7.0.2",
       },
     },
     "packages/email": {
-      "name": "@common-saas/email",
+      "name": "@saas-cook/email",
       "version": "0.1.0",
       "dependencies": {
         "@react-email/components": "1.0.12",
@@ -203,7 +203,7 @@
       },
     },
     "packages/observability": {
-      "name": "@common-saas/observability",
+      "name": "@saas-cook/observability",
       "dependencies": {
         "@logtape/logtape": "2.3.7",
         "@opentelemetry/api": "1.9.1",
@@ -211,7 +211,7 @@
       },
     },
     "packages/testing": {
-      "name": "@common-saas/testing",
+      "name": "@saas-cook/testing",
       "version": "0.1.0",
       "devDependencies": {
         "@aws-sdk/client-s3": "3.1137.0",
@@ -220,7 +220,7 @@
       },
     },
     "packages/ui": {
-      "name": "@common-saas/ui",
+      "name": "@saas-cook/ui",
       "dependencies": {
         "@hookform/resolvers": "5.9.1",
         "next-intl": "4.14.6",
@@ -449,30 +449,6 @@
     "@commitlint/top-level": ["@commitlint/top-level@21.2.0", "", { "dependencies": { "escalade": "^3.2.0" } }, "sha512-Y5gmQ+KxzqCrBFJfLvFEPvvwD3LDiNZoTT2yeFBm96M8qhmqSzQc5DvX3rheAaAMjyIvMXOCLS/mWfdpONsjyQ=="],
 
     "@commitlint/types": ["@commitlint/types@21.2.3", "", { "dependencies": { "conventional-commits-parser": "^7.0.0", "picocolors": "^1.1.1" } }, "sha512-sGEA473TlCvhCGNoTBY9OXZVWdscIXdGt0dm8EpB+2MRfmt8LNh/X56P/T3nCtEB+eH5qGEa3odphSAoUxSfSQ=="],
-
-    "@common-saas/api": ["@common-saas/api@workspace:packages/api"],
-
-    "@common-saas/api-contracts": ["@common-saas/api-contracts@workspace:packages/api-contracts"],
-
-    "@common-saas/auth": ["@common-saas/auth@workspace:packages/auth"],
-
-    "@common-saas/authz": ["@common-saas/authz@workspace:packages/authz"],
-
-    "@common-saas/config": ["@common-saas/config@workspace:packages/config"],
-
-    "@common-saas/db": ["@common-saas/db@workspace:packages/db"],
-
-    "@common-saas/email": ["@common-saas/email@workspace:packages/email"],
-
-    "@common-saas/observability": ["@common-saas/observability@workspace:packages/observability"],
-
-    "@common-saas/testing": ["@common-saas/testing@workspace:packages/testing"],
-
-    "@common-saas/ui": ["@common-saas/ui@workspace:packages/ui"],
-
-    "@common-saas/web": ["@common-saas/web@workspace:apps/web"],
-
-    "@common-saas/worker": ["@common-saas/worker@workspace:apps/worker"],
 
     "@common-sass/phase0-api": ["@common-sass/phase0-api@workspace:spikes/phase0/api-next"],
 
@@ -935,6 +911,30 @@
     "@rolldown/pluginutils": ["@rolldown/pluginutils@1.0.1", "", {}, "sha512-2j9bGt5Jh8hj+vPtgzPtl72j0yRxHAyumoo6TNfAjsLB04UtpSvPbPcDcBMxz7n+9CYB0c1GxQFxYRg2jimqGw=="],
 
     "@rollup/pluginutils": ["@rollup/pluginutils@5.4.0", "", { "dependencies": { "@types/estree": "^1.0.0", "estree-walker": "^2.0.2", "picomatch": "^4.0.2" }, "peerDependencies": { "rollup": "^1.20.0||^2.0.0||^3.0.0||^4.0.0" }, "optionalPeers": ["rollup"] }, "sha512-MfPp06CjRLfXQ3wY0R8vJDYBy/MvVcc9OulEfR0B8Iv9ko+GCNaRZ+EpJYFl27LhKsZK0o420sYCRHCjfCgeUg=="],
+
+    "@saas-cook/api": ["@saas-cook/api@workspace:packages/api"],
+
+    "@saas-cook/api-contracts": ["@saas-cook/api-contracts@workspace:packages/api-contracts"],
+
+    "@saas-cook/auth": ["@saas-cook/auth@workspace:packages/auth"],
+
+    "@saas-cook/authz": ["@saas-cook/authz@workspace:packages/authz"],
+
+    "@saas-cook/config": ["@saas-cook/config@workspace:packages/config"],
+
+    "@saas-cook/db": ["@saas-cook/db@workspace:packages/db"],
+
+    "@saas-cook/email": ["@saas-cook/email@workspace:packages/email"],
+
+    "@saas-cook/observability": ["@saas-cook/observability@workspace:packages/observability"],
+
+    "@saas-cook/testing": ["@saas-cook/testing@workspace:packages/testing"],
+
+    "@saas-cook/ui": ["@saas-cook/ui@workspace:packages/ui"],
+
+    "@saas-cook/web": ["@saas-cook/web@workspace:apps/web"],
+
+    "@saas-cook/worker": ["@saas-cook/worker@workspace:apps/worker"],
 
     "@schummar/icu-type-parser": ["@schummar/icu-type-parser@1.21.5", "", {}, "sha512-bXHSaW5jRTmke9Vd0h5P7BtWZG9Znqb8gSDxZnxaGSJnGwPLDPfS+3g0BKzeWqzgZPsIVZkM7m2tbo18cm5HBw=="],
 

@@ -1,7 +1,4 @@
-import type {
-	DiagnosticDto,
-	DiagnosticInput,
-} from "@common-saas/api-contracts";
+import type { DiagnosticDto, DiagnosticInput } from "@saas-cook/api-contracts";
 
 export type RequestContext = { requestId: string; request?: Request };
 /** Public, stateless scaffolding. Tenant features must introduce an authenticated

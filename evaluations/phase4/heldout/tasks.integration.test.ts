@@ -512,7 +512,7 @@ it("task-07 predecessor migration retains real rows through rename and required-
 	const name = `phase4_heldout_${randomUUID().replaceAll("-", "")}`;
 	const url = new URL(adminUrl);
 	url.pathname = `/${name}`;
-	url.username = "common_saas_migrator";
+	url.username = "saas_cook_migrator";
 	url.password = "local_phase1";
 	let db: InstanceType<typeof Pool> | undefined;
 	try {
@@ -529,7 +529,7 @@ it("task-07 predecessor migration retains real rows through rename and required-
 				path.join(folder, `${entry.tag}.sql`),
 				path.join(previous, `${entry.tag}.sql`),
 			);
-		await admin.query(`CREATE DATABASE ${name} OWNER common_saas_migrator`);
+		await admin.query(`CREATE DATABASE ${name} OWNER saas_cook_migrator`);
 		await runMigrations({ databaseUrl: url.href, migrationsFolder: previous });
 		db = new Pool({ connectionString: url.href });
 		const tenant = randomUUID(),

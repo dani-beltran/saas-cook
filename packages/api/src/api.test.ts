@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
-import type { DiagnosticDto } from "@common-saas/api-contracts";
 import { createORPCClient } from "@orpc/client";
 import { RPCLink } from "@orpc/client/fetch";
+import type { DiagnosticDto } from "@saas-cook/api-contracts";
 import { describe, expect, it } from "vitest";
 import { type ApiClient, createApiClient } from "./client";
 import { handleApi, specification } from "./handlers";

@@ -1,6 +1,6 @@
 # Renamed Foundation product evaluation brief
 
-Use `saas-bootstrap` in a disposable candidate checkout to adopt this template as **Northstar Work**, package namespace `@northstar-work`, root package `northstar-work`. This is synthetic evaluation branding, not a requested rename of the Common SaaS repository. Record a Markdown product manifest with Foundation enabled, English/Spanish supported, Projects enabled directly under Organizations, local capacity enforced, and billing/analytics/Commercial/Enterprise modules disabled or unavailable.
+Use `saas-bootstrap` in a disposable candidate checkout to adopt this template as **Northstar Work**, package namespace `@northstar-work`, root package `northstar-work`. This is synthetic evaluation branding, not a requested rename of the SaaS Cook repository. Record a Markdown product manifest with Foundation enabled, English/Spanish supported, Projects enabled directly under Organizations, local capacity enforced, and billing/analytics/Commercial/Enterprise modules disabled or unavailable.
 
 Inventory active manifests/imports, runtime branding defaults, app metadata, UI/email examples, developer-facing examples and build/image references. Update the active product consistently. Preserve historical Phase 0 material, applied SQL/model history, database role names and existing installation identifiers. Document any retained infrastructure identifier instead of changing credentials/schema implicitly. Preserve custom source edits and the Bun lockfile format.
 

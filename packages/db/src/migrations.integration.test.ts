@@ -10,7 +10,7 @@ import {
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { organizations } from "@common-saas/testing";
+import { organizations } from "@saas-cook/testing";
 import { Pool } from "pg";
 import { afterEach, describe, expect, it } from "vitest";
 import { dropTestDatabase } from "../../testing/src/database";
@@ -36,7 +36,7 @@ afterEach(async () => {
 async function fixture() {
 	const admin = new Pool({ connectionString: adminUrl });
 	const name = `phase1_test_${randomUUID().replaceAll("-", "")}`;
-	await admin.query(`CREATE DATABASE ${name} OWNER common_saas_migrator`);
+	await admin.query(`CREATE DATABASE ${name} OWNER saas_cook_migrator`);
 	cleanup.push(async () => {
 		await dropTestDatabase(admin, name);
 		await admin.end();
@@ -48,10 +48,10 @@ async function fixture() {
 		result.password = "local_phase1";
 		return result.toString();
 	}
-	const migrator = url("common_saas_migrator");
-	const web = createDatabase(url("common_saas_web"));
-	const worker = createDatabase(url("common_saas_worker"));
-	const identity = createDatabase(url("common_saas_identity"));
+	const migrator = url("saas_cook_migrator");
+	const web = createDatabase(url("saas_cook_web"));
+	const worker = createDatabase(url("saas_cook_worker"));
+	const identity = createDatabase(url("saas_cook_identity"));
 	cleanup.push(async () => {
 		await Promise.all([web.pool.end(), worker.pool.end(), identity.pool.end()]);
 	});
@@ -59,7 +59,7 @@ async function fixture() {
 }
 
 async function precedingSchema(databaseUrl: string, count: number) {
-	const previous = await mkdtemp(path.join(tmpdir(), "common-saas-upgrade-"));
+	const previous = await mkdtemp(path.join(tmpdir(), "saas-cook-upgrade-"));
 	cleanup.push(() => rm(previous, { recursive: true, force: true }));
 	await mkdir(path.join(previous, "meta"));
 	const journal = JSON.parse(
@@ -481,7 +481,7 @@ describe("real PostgreSQL migration and runtime role boundary", () => {
 	});
 	it("upgrades Phase 2 to resource tables while preserving tenant and identity history", async () => {
 		const f = await fixture();
-		const previous = await mkdtemp(path.join(tmpdir(), "common-saas-phase2-"));
+		const previous = await mkdtemp(path.join(tmpdir(), "saas-cook-phase2-"));
 		cleanup.push(() => rm(previous, { recursive: true, force: true }));
 		await mkdir(path.join(previous, "meta"));
 		const journal = JSON.parse(
@@ -587,9 +587,7 @@ describe("real PostgreSQL migration and runtime role boundary", () => {
 	});
 	it("upgrades the previous synthetic baseline and preserves existing rows", async () => {
 		const f = await fixture();
-		const previous = await mkdtemp(
-			path.join(tmpdir(), "common-saas-previous-"),
-		);
+		const previous = await mkdtemp(path.join(tmpdir(), "saas-cook-previous-"));
 		cleanup.push(() => rm(previous, { recursive: true, force: true }));
 		await mkdir(path.join(previous, "meta"));
 		const journal = JSON.parse(
@@ -651,14 +649,14 @@ describe("real PostgreSQL migration and runtime role boundary", () => {
 			f.identity.pool.query('SELECT * FROM identity."user"'),
 		).resolves.toMatchObject({ rows: [] });
 		const runtimeUrl = new URL(f.migrator);
-		runtimeUrl.username = "common_saas_web";
+		runtimeUrl.username = "saas_cook_web";
 		await expect(
 			runMigrations({ databaseUrl: runtimeUrl.toString() }),
-		).rejects.toThrow("dedicated common_saas_migrator");
+		).rejects.toThrow("dedicated saas_cook_migrator");
 	});
 	it("upgrades the complete Phase 1 schema without treating retained identities as a ready installation", async () => {
 		const f = await fixture();
-		const previous = await mkdtemp(path.join(tmpdir(), "common-saas-phase1-"));
+		const previous = await mkdtemp(path.join(tmpdir(), "saas-cook-phase1-"));
 		cleanup.push(() => rm(previous, { recursive: true, force: true }));
 		await mkdir(path.join(previous, "meta"));
 		const journal = JSON.parse(

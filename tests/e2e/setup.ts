@@ -64,7 +64,7 @@ export default async function setup(config: FullConfig) {
 					HOSTNAME: "127.0.0.1",
 					PORT: port,
 					APP_ORIGIN: baseURL,
-					APP_NAME: "Common SaaS",
+					APP_NAME: "SaaS Cook",
 					DEFAULT_LOCALE: "en",
 					DATABASE_URL: installation.env.DATABASE_URL,
 					IDENTITY_DATABASE_URL: installation.env.IDENTITY_DATABASE_URL,

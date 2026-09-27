@@ -3,5 +3,5 @@ CREATE TABLE "foundation"."runtime_probes" (
 	"processed_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-GRANT SELECT ON foundation.runtime_probes TO common_saas_web, common_saas_worker;
-GRANT INSERT ON foundation.runtime_probes TO common_saas_worker;
+GRANT SELECT ON foundation.runtime_probes TO saas_cook_web, saas_cook_worker;
+GRANT INSERT ON foundation.runtime_probes TO saas_cook_worker;

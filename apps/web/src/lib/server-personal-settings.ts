@@ -1,4 +1,4 @@
-import { applicationRuntime } from "@common-saas/api/runtime";
+import { applicationRuntime } from "@saas-cook/api/runtime";
 import { headers } from "next/headers";
 import { cache } from "react";
 import { productTheme } from "../product-theme";

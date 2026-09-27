@@ -154,7 +154,7 @@ const failureStatuses: Record<string, number> = {};
 const contextualTupleCounts: number[] = [];
 let measuredFgaChecks = 0;
 let measuredFgaWrites = 0;
-const fenceChannel = channel("common-saas.authorization.fence-wait");
+const fenceChannel = channel("saas-cook.authorization.fence-wait");
 const fenceListener = (message: unknown) => {
 	const milliseconds = (message as { milliseconds?: unknown }).milliseconds;
 	if (!measuring || typeof milliseconds !== "number") return;

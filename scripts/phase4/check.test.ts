@@ -146,6 +146,67 @@ describe("Phase 4 executable contract and route guards", () => {
 });
 
 describe("Phase 4 migration history guard", () => {
+	it("accepts only the exact approved database rename from its original history", async () => {
+		const root = await mkdtemp(path.join(tmpdir(), "phase4-rename-"));
+		cleanup.push(root);
+		const directory = "packages/db/migrations";
+		await cp(directory, path.join(root, directory), { recursive: true });
+		const transitions = JSON.parse(
+			await readFile("scripts/phase4/saas-cook-history-reset.json", "utf8"),
+		);
+		for (const file of Object.keys(transitions)) {
+			const target = path.join(root, directory, file);
+			await writeFile(
+				target,
+				(await readFile(target, "utf8")).replaceAll("saas_cook", "common_saas"),
+			);
+		}
+		const git = (args: string[]) =>
+			execFileSync("git", args, { cwd: root, stdio: "ignore" });
+		git(["init"]);
+		git(["add", "."]);
+		git([
+			"-c",
+			"user.name=Phase 4 fixture",
+			"-c",
+			"user.email=fixture@example.test",
+			"commit",
+			"-m",
+			"test: capture pre-rename migration history",
+		]);
+		await cp(directory, path.join(root, directory), { recursive: true });
+		expect(await checkMigrations(root)).toEqual([]);
+		for (const file of ["0006_resources.sql", "meta/0006_snapshot.json"]) {
+			const target = path.join(root, directory, file);
+			const content = await readFile(target, "utf8");
+			await writeFile(target, `${content}\n`);
+			expect(await checkMigrations(root)).toContain(
+				`${file}: applied migration history changed since HEAD`,
+			);
+			await writeFile(target, content);
+		}
+		// A lookalike rename from any other baseline must still be rejected.
+		const file = "0006_resources.sql";
+		const original = await readFile(path.join(directory, file), "utf8");
+		await writeFile(
+			path.join(root, directory, file),
+			`${original.replaceAll("saas_cook", "common_saas")}\n`,
+		);
+		git(["add", "."]);
+		git([
+			"-c",
+			"user.name=Phase 4 fixture",
+			"-c",
+			"user.email=fixture@example.test",
+			"commit",
+			"-m",
+			"test: capture unapproved history",
+		]);
+		await writeFile(path.join(root, directory, file), `${original}\n`);
+		expect(await checkMigrations(root)).toContain(
+			`${file}: applied migration history changed since HEAD`,
+		);
+	});
 	it("accepts the reviewed chain and rejects a changed applied SQL migration", async () => {
 		const root = await mkdtemp(path.join(tmpdir(), "phase4-history-"));
 		cleanup.push(root);

@@ -1,4 +1,4 @@
-import { themeAttributes } from "@common-saas/ui/theme";
+import { themeAttributes } from "@saas-cook/ui/theme";
 import type { ReactNode } from "react";
 import { serverPersonalSettings } from "../lib/server-personal-settings";
 import { productTheme } from "../product-theme";

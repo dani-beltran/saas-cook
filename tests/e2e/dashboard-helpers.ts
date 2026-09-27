@@ -1,5 +1,5 @@
-import { createSmtpTransport, deliverIdentityEmails } from "@common-saas/email";
 import { expect, type Page } from "@playwright/test";
+import { createSmtpTransport, deliverIdentityEmails } from "@saas-cook/email";
 import { Pool } from "pg";
 
 const password = "Browser test password 2026!";
@@ -11,7 +11,7 @@ export async function emailLink(
 	const worker = new Pool({
 		connectionString:
 			process.env.WORKER_DATABASE_URL ??
-			"postgres://common_saas_worker:local_phase1@127.0.0.1:55433/common_saas",
+			"postgres://saas_cook_worker:local_phase1@127.0.0.1:55433/saas_cook",
 		max: 1,
 	});
 	try {

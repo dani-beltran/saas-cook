@@ -1,5 +1,5 @@
 "use client";
-import { Input } from "@common-saas/ui";
+import { Input } from "@saas-cook/ui";
 import { useLocale, useTranslations } from "next-intl";
 import { type MouseEvent, useEffect, useRef, useState } from "react";
 import { IdentityRequestError, identityRequest } from "../lib/identity-request";

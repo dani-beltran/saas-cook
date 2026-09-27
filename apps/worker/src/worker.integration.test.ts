@@ -2,12 +2,12 @@ import { type ChildProcess, execFile, spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { once } from "node:events";
 import { setTimeout as delay } from "node:timers/promises";
-import { hasProbe } from "@common-saas/db";
+import { hasProbe } from "@saas-cook/db";
 import {
 	initializeObservability,
 	traceCarrier,
 	withOperation,
-} from "@common-saas/observability";
+} from "@saas-cook/observability";
 import { Pool } from "pg";
 import { PgBoss } from "pg-boss";
 import { expect, it } from "vitest";
@@ -16,7 +16,7 @@ import { createTestInstallation } from "../../../packages/testing/src/installati
 it("explains missing bootstrap and stale database targets without leaking connection details", async () => {
 	const installation = await createTestInstallation();
 	const controlUrl = new URL(installation.env.CONTROL_DATABASE_URL);
-	controlUrl.username = "common_saas_control_admin";
+	controlUrl.username = "saas_cook_control_admin";
 	const control = new Pool({ connectionString: controlUrl.toString() });
 	const missingDatabase = `missing_private_database_${randomUUID().replaceAll("-", "")}`;
 	const workerUrl = new URL(installation.env.WORKER_DATABASE_URL);

@@ -1,4 +1,4 @@
-import "@common-saas/ui/styles.css";
+import "@saas-cook/ui/styles.css";
 import type { ReactNode } from "react";
 import { ThemeDocument } from "../../components/theme-document";
 

@@ -28,9 +28,9 @@ async function fixture(capacity = 5) {
 	const admin = new Pool({ connectionString: adminUrl }),
 		controlAdmin = new Pool({ connectionString: controlAdminUrl });
 	const name = `phase2_tenant_${randomUUID().replaceAll("-", "")}`;
-	await admin.query(`CREATE DATABASE ${name} OWNER common_saas_migrator`);
+	await admin.query(`CREATE DATABASE ${name} OWNER saas_cook_migrator`);
 	await controlAdmin.query(
-		`CREATE DATABASE ${name} OWNER common_saas_control_admin`,
+		`CREATE DATABASE ${name} OWNER saas_cook_control_admin`,
 	);
 	cleanup.push(async () => {
 		await dropTestDatabase(admin, name);
@@ -45,27 +45,27 @@ async function fixture(capacity = 5) {
 		u.password = password;
 		return u.toString();
 	}
-	const migrateUrl = url(adminUrl, "common_saas_migrator", "local_phase1");
+	const migrateUrl = url(adminUrl, "saas_cook_migrator", "local_phase1");
 	await runMigrations({ databaseUrl: migrateUrl });
 	const app = new Pool({ connectionString: migrateUrl }),
 		web = new Pool({
-			connectionString: url(adminUrl, "common_saas_web", "local_phase1"),
+			connectionString: url(adminUrl, "saas_cook_web", "local_phase1"),
 			max: 8,
 		}),
 		worker = new Pool({
-			connectionString: url(adminUrl, "common_saas_worker", "local_phase1"),
+			connectionString: url(adminUrl, "saas_cook_worker", "local_phase1"),
 		});
 	const control = new Pool({
 			connectionString: url(
 				controlAdminUrl,
-				"common_saas_control_admin",
+				"saas_cook_control_admin",
 				"local_phase2_control",
 			),
 		}),
 		reader = new Pool({
 			connectionString: url(
 				controlAdminUrl,
-				"common_saas_control_reader",
+				"saas_cook_control_reader",
 				"local_phase2_control",
 			),
 		});

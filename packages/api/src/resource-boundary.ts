@@ -1,7 +1,7 @@
-import { ApiKeyError, ResourceAuthorizationDenied } from "@common-saas/authz";
-import { type ResourceActor, ResourceError } from "@common-saas/db/resources";
-import { TenancyError, type TenantActor } from "@common-saas/db/tenancy";
 import { ORPCError } from "@orpc/server";
+import { ApiKeyError, ResourceAuthorizationDenied } from "@saas-cook/authz";
+import { type ResourceActor, ResourceError } from "@saas-cook/db/resources";
+import { TenancyError, type TenantActor } from "@saas-cook/db/tenancy";
 import { applicationRuntime } from "./runtime";
 import type { RequestContext } from "./service";
 

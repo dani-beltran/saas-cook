@@ -1,5 +1,5 @@
 {
-	"name": "@common-saas/config",
+	"name": "@saas-cook/config",
 	"private": true,
 	"type": "module",
 	"exports": {

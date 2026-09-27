@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { readServeEnv } from "@common-saas/config/server";
+import { readServeEnv } from "@saas-cook/config/server";
 
 const env = { ...process.env };
 delete env.MIGRATION_DATABASE_URL;

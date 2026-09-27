@@ -1,4 +1,4 @@
-# common-sass
+# SaaS Cook
 
 A reusable SaaS template designed to give you a foundation to build your own SaaS product on. It brings together the platform features that SaaS products commonly need, so you can focus on your product’s domain, workflows, and customer experience.
 
@@ -7,6 +7,8 @@ The implemented foundation uses **Next.js, React 19, TypeScript, shadcn/ui, Tail
 The [required stack](docs/02-architecture-and-security.md#21-stack-decisions) also includes next-intl, React Email, Zod, React Hook Form, Vitest, Playwright, Storybook, Biome, Commitlint, Lefthook, Knip, T3 Env, GitHub Actions, LogTape, and `AGENTS.md` for AI coding context.
 
 The template is intended to be source code you own and customize. You supply your product-specific features, business rules, branding, and pricing.
+
+The root package is `saas-cook`, and active workspace packages use `@saas-cook`. The [rename brief](feature-briefs/saas-cook-rename.md) records compatibility identifiers retained from the original foundation.
 
 The template builds one Docker image containing the web app and background worker, with external data services configured at runtime.
 
@@ -41,7 +43,7 @@ For subsequent sign-ins, use your verified email and password. Email sign-in lin
 
 Local services use disposable synthetic credentials. See the [runtime guide](docs/phase2/README.md) for tests, stories, image commands and implementation boundaries.
 
-Local service data is stored in memory and is lost when the containers stop or are recreated, including registered accounts. After a reset, repeat `services:up`, `db:migrate` and `bootstrap` before `dev`, then register again. Keep the database targets in `.env` consistent with `.env.example`; Compose creates `common_saas` and `common_saas_control`, not temporary test databases. See [startup troubleshooting](docs/phase2/README.md#local-startup-troubleshooting) for worker failures.
+Local service data is stored in memory and is lost when the containers stop or are recreated, including registered accounts. After a reset, repeat `services:up`, `db:migrate` and `bootstrap` before `dev`, then register again. Keep the database targets in `.env` consistent with `.env.example`; Compose creates `saas_cook` and `saas_cook_control`, not temporary test databases. See [startup troubleshooting](docs/phase2/README.md#local-startup-troubleshooting) for worker failures.
 
 ## Planning and design
 

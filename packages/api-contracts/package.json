@@ -1,5 +1,5 @@
 {
-	"name": "@common-saas/api-contracts",
+	"name": "@saas-cook/api-contracts",
 	"version": "0.1.0",
 	"private": true,
 	"type": "module",

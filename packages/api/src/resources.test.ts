@@ -1,5 +1,5 @@
-import { ApiKeyError, ResourceAuthorizationDenied } from "@common-saas/authz";
-import { ResourceError } from "@common-saas/db/resources";
+import { ApiKeyError, ResourceAuthorizationDenied } from "@saas-cook/authz";
+import { ResourceError } from "@saas-cook/db/resources";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { handleApi, specification } from "./handlers";
 

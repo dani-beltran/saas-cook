@@ -3,10 +3,10 @@ export async function register() {
 		process.env.NEXT_RUNTIME === "nodejs" &&
 		process.env.NEXT_PHASE !== "phase-production-build"
 	) {
-		const { readWebEnv } = await import("@common-saas/config/server");
+		const { readWebEnv } = await import("@saas-cook/config/server");
 		readWebEnv();
 		const { initializeObservability } = await import(
-			"@common-saas/observability"
+			"@saas-cook/observability"
 		);
 		initializeObservability("web");
 	}

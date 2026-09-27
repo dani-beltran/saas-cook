@@ -34,23 +34,19 @@ export async function createTestInstallation() {
 		value.password = password;
 		return value.toString();
 	}
-	const migrationUrl = url(adminUrl, "common_saas_migrator", "local_phase1");
+	const migrationUrl = url(adminUrl, "saas_cook_migrator", "local_phase1");
 	const controlUrl = url(
 		controlAdminUrl,
-		"common_saas_control_admin",
+		"saas_cook_control_admin",
 		"local_phase2_control",
 	);
 	const env = {
-		DATABASE_URL: url(adminUrl, "common_saas_web", "local_phase1"),
-		IDENTITY_DATABASE_URL: url(
-			adminUrl,
-			"common_saas_identity",
-			"local_phase1",
-		),
-		WORKER_DATABASE_URL: url(adminUrl, "common_saas_worker", "local_phase1"),
+		DATABASE_URL: url(adminUrl, "saas_cook_web", "local_phase1"),
+		IDENTITY_DATABASE_URL: url(adminUrl, "saas_cook_identity", "local_phase1"),
+		WORKER_DATABASE_URL: url(adminUrl, "saas_cook_worker", "local_phase1"),
 		CONTROL_DATABASE_URL: url(
 			controlAdminUrl,
-			"common_saas_control_reader",
+			"saas_cook_control_reader",
 			"local_phase2_control",
 		),
 		INSTALLATION_ID: installationId,
@@ -113,10 +109,10 @@ export async function createTestInstallation() {
 			);
 	}
 	try {
-		await admin.query(`CREATE DATABASE ${name} OWNER common_saas_migrator`);
+		await admin.query(`CREATE DATABASE ${name} OWNER saas_cook_migrator`);
 		appCreated = true;
 		await controlAdmin.query(
-			`CREATE DATABASE ${name} OWNER common_saas_control_admin`,
+			`CREATE DATABASE ${name} OWNER saas_cook_control_admin`,
 		);
 		controlCreated = true;
 		const commandEnv: NodeJS.ProcessEnv = {

@@ -1,4 +1,4 @@
-import { resolveThemeConfig, type ThemeConfig } from "@common-saas/ui/theme";
+import { resolveThemeConfig, type ThemeConfig } from "@saas-cook/ui/theme";
 
 /** Developer-owned product appearance. Rebuild after editing; see docs/development/theming.md. */
 export const productTheme = resolveThemeConfig({

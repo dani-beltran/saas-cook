@@ -1,4 +1,4 @@
-import { handleApi } from "@common-saas/api";
+import { handleApi } from "@saas-cook/api";
 export const runtime = "nodejs";
 const handler = (request: Request) => handleApi(request, "rest");
 

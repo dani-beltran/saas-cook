@@ -94,7 +94,7 @@ Next.js documentation treats Server Actions and Route Handlers as entry points t
 ## 2.3 Planned repository structure
 
 ```text
-common-sass/
+saas-cook/
   apps/
     web/
       src/app/(public)/

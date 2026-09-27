@@ -1,4 +1,4 @@
-import { messages } from "@common-saas/ui/messages";
+import { messages } from "@saas-cook/ui/messages";
 import { getRequestConfig } from "next-intl/server";
 
 export default getRequestConfig(async ({ requestLocale }) => {

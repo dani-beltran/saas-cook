@@ -1,5 +1,5 @@
 {
-	"name": "@common-saas/observability",
+	"name": "@saas-cook/observability",
 	"private": true,
 	"type": "module",
 	"exports": {

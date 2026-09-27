@@ -34,7 +34,7 @@ The development command supervises both Next.js and the worker. If the worker ex
 
 | Status | What to check |
 | --- | --- |
-| `database_missing` | Check the database targets in `.env`. Compose creates `common_saas` for all four application roles and `common_saas_control` for both control roles. Temporary test database names will not survive a service reset. |
+| `database_missing` | Check the database targets in `.env`. Compose creates `saas_cook` for all four application roles and `saas_cook_control` for both control roles. Temporary test database names will not survive a service reset. |
 | `schema_missing` | On a fresh local installation, run `bun run db:migrate` and `bun run bootstrap`. A missing control schema means bootstrap has not initialized that control database. |
 | `connection_failed` | Run `bun run services:up` and check the configured local hosts/ports. |
 | `access_denied` | Check the configured role credentials and, for a heartbeat operation, filesystem permissions. |
@@ -115,7 +115,7 @@ bun run storybook:build
 bun run image:build
 bun run test:image
 bun run security:scan dependencies
-bun run security:scan image common-sass:phase2
+bun run security:scan image saas-cook:phase2
 ```
 
 Integration tests use isolated databases, actual restricted roles, real OpenFGA and local SMTP. Browser tests use a dedicated port 3102 and create a fresh migrated application/control installation for real registration, explicit confirmation and Chromium WebAuthn credentials; teardown removes only that run's fixture. The worker integration test also owns its database rather than relying on the current local application's state. The built image tests create disposable databases and verify fresh/interrupted/existing/restored initialization, readiness, process supervision and shutdown. Reports live under ignored `artifacts/`; selected evidence is retained beside the acceptance record. Hosted CI still requires a repository push and is not implied by local results.

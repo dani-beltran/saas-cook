@@ -1,9 +1,9 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import { createHash, createHmac, randomBytes, randomUUID } from "node:crypto";
 import { passkey } from "@better-auth/passkey";
-import { identitySchema } from "@common-saas/db/schema";
-import { enqueueIdentityEmail } from "@common-saas/email";
-import { logEvent } from "@common-saas/observability";
+import { identitySchema } from "@saas-cook/db/schema";
+import { enqueueIdentityEmail } from "@saas-cook/email";
+import { logEvent } from "@saas-cook/observability";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError } from "better-auth/api";
@@ -322,7 +322,7 @@ SELECT id FROM identity.rate_limit WHERE last_request<$1 ORDER BY last_request F
 			}),
 			passkey({
 				rpID: new URL(options.origin).hostname,
-				rpName: input.rpName ?? "Common SaaS",
+				rpName: input.rpName ?? "SaaS Cook",
 				origin: options.origin,
 				authenticatorSelection: { userVerification: "required" },
 				registration: {
@@ -358,7 +358,7 @@ SELECT id FROM identity.rate_limit WHERE last_request<$1 ORDER BY last_request F
 			}),
 			{
 				...twoFactor({
-					issuer: input.rpName ?? "Common SaaS",
+					issuer: input.rpName ?? "SaaS Cook",
 					allowPasswordless: true,
 					skipVerificationOnEnable: false,
 				}),

@@ -1,11 +1,11 @@
 import { randomUUID } from "node:crypto";
-import { contract } from "@common-saas/api-contracts";
-import { logEvent, withOperation } from "@common-saas/observability";
 import { OpenAPIGenerator } from "@orpc/openapi";
 import { OpenAPIHandler } from "@orpc/openapi/fetch";
 import { ORPCError, onError, ValidationError } from "@orpc/server";
 import { RPCHandler, type RPCHandlerOptions } from "@orpc/server/fetch";
 import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
+import { contract } from "@saas-cook/api-contracts";
+import { logEvent, withOperation } from "@saas-cook/observability";
 import { router } from "./router";
 import type { RequestContext } from "./service";
 
@@ -124,7 +124,7 @@ export function specification() {
 		schemaConverters: [new ZodToJsonSchemaConverter()],
 	}).generate(contract, {
 		info: {
-			title: "Common SaaS API",
+			title: "SaaS Cook API",
 			version: "0.1.0",
 			description:
 				"Identity-backed organization lifecycle, scoped Project resources, and API-key provisioning. Cookie mutations require the configured same-origin Origin header; cross-origin API access is disabled. Keys are scoped to one organization. Request bodies are limited to 64 KiB.",

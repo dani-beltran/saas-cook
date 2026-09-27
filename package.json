@@ -1,5 +1,5 @@
 {
-	"name": "common-sass",
+	"name": "saas-cook",
 	"private": true,
 	"type": "module",
 	"packageManager": "bun@1.4.2",
@@ -28,7 +28,7 @@
 		"phase0:authz:contextual": "node --import tsx spikes/phase0/authz/benchmark.ts --contextual",
 		"phase0:authz:legacy": "node --import tsx spikes/phase0/authz/benchmark.ts",
 		"dev": "node --env-file-if-exists=.env --import tsx scripts/phase1/dev.ts",
-		"build": "node node_modules/turbo/bin/turbo run build --filter=@common-saas/web && node --import tsx scripts/phase1/build-runtime.ts",
+		"build": "node node_modules/turbo/bin/turbo run build --filter=@saas-cook/web && node --import tsx scripts/phase1/build-runtime.ts",
 		"check": "node node_modules/@biomejs/biome/bin/biome ci .",
 		"format": "node node_modules/@biomejs/biome/bin/biome check --write .",
 		"typecheck": "node node_modules/typescript/bin/tsc --noEmit && node node_modules/typescript/bin/tsc --noEmit -p apps/web/tsconfig.json",
@@ -108,11 +108,11 @@
 		"@better-auth/scim": "1.7.5",
 		"@better-auth/sso": "1.7.5",
 		"esbuild": "0.28.2",
-		"@common-saas/config": "workspace:*",
-		"@common-saas/db": "workspace:*",
-		"@common-saas/observability": "workspace:*",
-		"@common-saas/authz": "workspace:*",
-		"@common-saas/email": "workspace:*"
+		"@saas-cook/config": "workspace:*",
+		"@saas-cook/db": "workspace:*",
+		"@saas-cook/observability": "workspace:*",
+		"@saas-cook/authz": "workspace:*",
+		"@saas-cook/email": "workspace:*"
 	},
 	"trustedDependencies": [
 		"esbuild",

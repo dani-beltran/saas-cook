@@ -37,14 +37,14 @@ ALTER TABLE "tenancy"."example_customers" ADD CONSTRAINT "example_customers_orga
 CREATE INDEX "example_customers_created" ON "tenancy"."example_customers" USING btree ("organization_id","created_at","id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "example_customers_name_order" ON "tenancy"."example_customers" USING btree ("organization_id",lower(name) COLLATE "C","id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "example_customers_company_order" ON "tenancy"."example_customers" USING btree ("organization_id",(company IS NULL),coalesce(lower(company),'') COLLATE "C","id") WHERE deleted_at IS NULL;--> statement-breakpoint
-CREATE POLICY "migration_control" ON "tenancy"."example_customer_operations" AS PERMISSIVE FOR ALL TO "common_saas_migrator" USING (true) WITH CHECK (true);--> statement-breakpoint
+CREATE POLICY "migration_control" ON "tenancy"."example_customer_operations" AS PERMISSIVE FOR ALL TO "saas_cook_migrator" USING (true) WITH CHECK (true);--> statement-breakpoint
 CREATE POLICY "tenant_isolation" ON "tenancy"."example_customer_operations" AS PERMISSIVE FOR ALL TO public USING (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid) WITH CHECK (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid);--> statement-breakpoint
-CREATE POLICY "migration_control" ON "tenancy"."example_customers" AS PERMISSIVE FOR ALL TO "common_saas_migrator" USING (true) WITH CHECK (true);--> statement-breakpoint
+CREATE POLICY "migration_control" ON "tenancy"."example_customers" AS PERMISSIVE FOR ALL TO "saas_cook_migrator" USING (true) WITH CHECK (true);--> statement-breakpoint
 CREATE POLICY "tenant_isolation" ON "tenancy"."example_customers" AS PERMISSIVE FOR ALL TO public USING (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid) WITH CHECK (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid);
 --> statement-breakpoint
 ALTER TABLE tenancy.example_customers FORCE ROW LEVEL SECURITY;
 ALTER TABLE tenancy.example_customer_operations FORCE ROW LEVEL SECURITY;
-GRANT SELECT, INSERT ON tenancy.example_customers TO common_saas_web;
-GRANT UPDATE (name,email,company,status,version,updated_at,deleted_at) ON tenancy.example_customers TO common_saas_web;
-GRANT SELECT, INSERT ON tenancy.example_customer_operations TO common_saas_web;
+GRANT SELECT, INSERT ON tenancy.example_customers TO saas_cook_web;
+GRANT UPDATE (name,email,company,status,version,updated_at,deleted_at) ON tenancy.example_customers TO saas_cook_web;
+GRANT SELECT, INSERT ON tenancy.example_customer_operations TO saas_cook_web;
 -- No DELETE, tenant/ID/timestamp rewrite, identity-role or worker access.

@@ -1,5 +1,13 @@
 # Reviewed application migrations
 
+The explicitly requested SaaS Cook disposable reset on 2026-09-27 changed the
+database role prefix throughout SQL and snapshots to `saas_cook`. It preserves
+journal ordering, snapshot ancestry and schema behavior, but requires a fresh
+installation; it is not an upgrade path for databases using the former roles.
+The [rename brief](../../../feature-briefs/saas-cook-rename.md#database-reset)
+records this one-time exception to immutable history. The history guard pins its
+exact before/after hashes and continues to reject all other historical edits.
+
 `0000_foundation` creates runtime heartbeat and isolated Better Auth adapter tables.
 `0001_durable_probes` adds durable receipts for the synthetic worker smoke test.
 Both are additive transactional migrations. The integration suite applies the first
@@ -33,8 +41,8 @@ provider availability.
 hierarchy is Organization → Projects. Its generated cumulative snapshot removes
 the Workspace table, Project parent column, registry parent relationship and their
 constraints/indexes; reviewed SQL orders these changes explicitly without
-`CASCADE`. Migrations `0000`–`0006` and their snapshots remain immutable historical
-schema evidence.
+`CASCADE`. Apart from the explicitly approved role-prefix reset above, migrations
+`0000`–`0006` and their snapshots remain immutable historical schema evidence.
 
 The approved access policy retires all inherited Workspace access, including
 Workspace positive and denied grants. It creates no replacement grants. Every

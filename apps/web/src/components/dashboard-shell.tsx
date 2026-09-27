@@ -1,6 +1,6 @@
 "use client";
 
-import { createApiClient } from "@common-saas/api/client";
+import { createApiClient } from "@saas-cook/api/client";
 import { useLocale } from "next-intl";
 import {
 	createContext,
@@ -14,7 +14,7 @@ import { identityClient } from "../lib/identity-client";
 import "./dashboard.css";
 import { UserAvatar } from "./user-avatar";
 
-const AppName = createContext("Common SaaS");
+const AppName = createContext("SaaS Cook");
 export function DashboardBrand({
 	name,
 	children,

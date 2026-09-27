@@ -1,4 +1,4 @@
-import { publicConfig } from "@common-saas/config/client";
+import { publicConfig } from "@saas-cook/config/client";
 import { Shell } from "../../../components/shell";
 export const dynamic = "force-dynamic";
 export default function PatternsPage() {

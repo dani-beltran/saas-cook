@@ -10,7 +10,7 @@ import {
 	customerQuery,
 	customerReference,
 	customerUpdate,
-} from "@common-saas/api-contracts/example-customers";
+} from "@saas-cook/api-contracts/example-customers";
 import type { Pool, PoolClient } from "pg";
 import { ResourceError, type ResourceHooks } from "../resources";
 import {

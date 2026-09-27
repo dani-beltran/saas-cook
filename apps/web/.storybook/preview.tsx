@@ -1,10 +1,10 @@
-import "@common-saas/ui/styles.css";
-import { messages } from "@common-saas/ui/messages";
+import "@saas-cook/ui/styles.css";
+import { messages } from "@saas-cook/ui/messages";
 import {
 	resolveThemeConfig,
 	themeAttributes,
 	themeOptions,
-} from "@common-saas/ui/theme";
+} from "@saas-cook/ui/theme";
 import type { Preview } from "@storybook/nextjs-vite";
 import { NextIntlClientProvider } from "next-intl";
 import { type ReactNode, useLayoutEffect } from "react";

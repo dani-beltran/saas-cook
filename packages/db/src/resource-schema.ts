@@ -25,7 +25,7 @@ const dates = () => ({
 const policies = () => [
 	pgPolicy("migration_control", {
 		for: "all",
-		to: ["common_saas_migrator"],
+		to: ["saas_cook_migrator"],
 		using: sql`true`,
 		withCheck: sql`true`,
 	}),

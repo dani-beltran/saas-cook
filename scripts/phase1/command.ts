@@ -2,15 +2,15 @@ import {
 	bootstrap,
 	publishAuthorization,
 	upgradeAuthorization,
-} from "@common-saas/authz/commands";
+} from "@saas-cook/authz/commands";
 import {
 	readAuthorizationCommandEnv,
 	readMigrationEnv,
 	readOperatorCommandEnv,
-} from "@common-saas/config/server";
-import { runMigrations } from "@common-saas/db/migrate";
-import { enqueueIdentityEmail } from "@common-saas/email";
-import { initializeObservability, logEvent } from "@common-saas/observability";
+} from "@saas-cook/config/server";
+import { runMigrations } from "@saas-cook/db/migrate";
+import { enqueueIdentityEmail } from "@saas-cook/email";
+import { initializeObservability, logEvent } from "@saas-cook/observability";
 import { Pool } from "pg";
 import { PgBoss } from "pg-boss";
 import { runOwnerCommand } from "../phase2/owner-command";

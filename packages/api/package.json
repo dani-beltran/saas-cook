@@ -1,5 +1,5 @@
 {
-	"name": "@common-saas/api",
+	"name": "@saas-cook/api",
 	"version": "0.1.0",
 	"private": true,
 	"type": "module",
@@ -12,18 +12,18 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
-		"@common-saas/api-contracts": "workspace:*",
+		"@saas-cook/api-contracts": "workspace:*",
 		"@orpc/client": "1.15.3",
 		"@orpc/server": "1.15.3",
 		"@orpc/openapi": "1.15.3",
 		"@orpc/zod": "1.15.3",
 		"@orpc/contract": "1.15.3",
-		"@common-saas/observability": "workspace:*",
-		"@common-saas/auth": "workspace:*",
-		"@common-saas/authz": "workspace:*",
-		"@common-saas/db": "workspace:*",
-		"@common-saas/email": "workspace:*",
-		"@common-saas/config": "workspace:*",
+		"@saas-cook/observability": "workspace:*",
+		"@saas-cook/auth": "workspace:*",
+		"@saas-cook/authz": "workspace:*",
+		"@saas-cook/db": "workspace:*",
+		"@saas-cook/email": "workspace:*",
+		"@saas-cook/config": "workspace:*",
 		"pg": "8.23.0"
 	},
 	"devDependencies": {

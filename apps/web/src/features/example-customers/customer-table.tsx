@@ -2,7 +2,7 @@
 import type {
 	CustomerDto,
 	CustomerQuery,
-} from "@common-saas/api-contracts/example-customers";
+} from "@saas-cook/api-contracts/example-customers";
 import type { CustomerCopy } from "./messages";
 
 export function CustomerTable({

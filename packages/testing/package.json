@@ -1,5 +1,5 @@
 {
-	"name": "@common-saas/testing",
+	"name": "@saas-cook/testing",
 	"version": "0.1.0",
 	"private": true,
 	"type": "module",

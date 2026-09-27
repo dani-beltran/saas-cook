@@ -1,9 +1,9 @@
 "use client";
-import { createApiClient } from "@common-saas/api/client";
+import { createApiClient } from "@saas-cook/api/client";
 import type {
 	CustomerDto,
 	CustomerQuery,
-} from "@common-saas/api-contracts/example-customers";
+} from "@saas-cook/api-contracts/example-customers";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export const customersApi = () =>

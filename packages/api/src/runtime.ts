@@ -1,15 +1,15 @@
-import { createIdentityRuntime } from "@common-saas/auth";
+import { createIdentityRuntime } from "@saas-cook/auth";
 import {
 	createApiKeyService,
 	createAuthorizationService,
 	getPublication,
-} from "@common-saas/authz";
-import { readWebEnv } from "@common-saas/config/server";
-import { createExampleCustomersService } from "@common-saas/db/example-customers";
-import { createResourceService } from "@common-saas/db/resources";
-import { createTenancyService } from "@common-saas/db/tenancy";
-import { enqueueIdentityEmail } from "@common-saas/email";
-import { getOperationContext } from "@common-saas/observability";
+} from "@saas-cook/authz";
+import { readWebEnv } from "@saas-cook/config/server";
+import { createExampleCustomersService } from "@saas-cook/db/example-customers";
+import { createResourceService } from "@saas-cook/db/resources";
+import { createTenancyService } from "@saas-cook/db/tenancy";
+import { enqueueIdentityEmail } from "@saas-cook/email";
+import { getOperationContext } from "@saas-cook/observability";
 import { Pool } from "pg";
 
 function createRuntime() {
@@ -122,4 +122,4 @@ export async function shutdownApplicationRuntime() {
 	await current?.close();
 }
 
-export type { PersonalSettings } from "@common-saas/auth";
+export type { PersonalSettings } from "@saas-cook/auth";

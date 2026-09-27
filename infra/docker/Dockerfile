@@ -10,8 +10,8 @@ FROM gcr.io/distroless/nodejs24-debian13:nonroot@sha256:bb6b03d81066993293a10fed
 ARG SOURCE_COMMIT=unknown
 ARG SOURCE_FINGERPRINT=unknown
 LABEL org.opencontainers.image.revision=$SOURCE_COMMIT
-LABEL dev.common-saas.source-fingerprint=$SOURCE_FINGERPRINT
-LABEL org.opencontainers.image.title="common-sass"
+LABEL dev.saas-cook.source-fingerprint=$SOURCE_FINGERPRINT
+LABEL org.opencontainers.image.title="saas-cook"
 WORKDIR /app
 ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 HOSTNAME=0.0.0.0 PORT=3000 MIGRATIONS_DIR=/app/migrations
 COPY --from=build --chown=65532:65532 /source/apps/web/.next/standalone ./

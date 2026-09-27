@@ -92,11 +92,11 @@ jobs:
       - run: bun run services:up
       - run: bun run db:migrate
         env:
-          MIGRATION_DATABASE_URL: postgresql://common_saas_migrator:local_phase1@127.0.0.1:55433/common_saas
+          MIGRATION_DATABASE_URL: postgresql://saas_cook_migrator:local_phase1@127.0.0.1:55433/saas_cook
       - run: bun run bootstrap
         env:
-          MIGRATION_DATABASE_URL: postgresql://common_saas_migrator:local_phase1@127.0.0.1:55433/common_saas
-          CONTROL_ADMIN_DATABASE_URL: postgresql://common_saas_control_admin:local_phase2_control@127.0.0.1:55434/common_saas_control
+          MIGRATION_DATABASE_URL: postgresql://saas_cook_migrator:local_phase1@127.0.0.1:55433/saas_cook
+          CONTROL_ADMIN_DATABASE_URL: postgresql://saas_cook_control_admin:local_phase2_control@127.0.0.1:55434/saas_cook_control
           INSTALLATION_ID: 10000000-0000-4000-8000-000000000001
           OPENFGA_API_URL: http://127.0.0.1:18081
       # The migration integration suite exercises empty, 0000 previous-schema,
@@ -123,7 +123,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     env:
-      DATABASE_URL: postgresql://common_saas_web:local_phase1@127.0.0.1:55433/common_saas
+      DATABASE_URL: postgresql://saas_cook_web:local_phase1@127.0.0.1:55433/saas_cook
       APP_ORIGIN: http://127.0.0.1:3000
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -134,11 +134,11 @@ jobs:
       - run: bun run services:up
       - run: bun run db:migrate
         env:
-          MIGRATION_DATABASE_URL: postgresql://common_saas_migrator:local_phase1@127.0.0.1:55433/common_saas
+          MIGRATION_DATABASE_URL: postgresql://saas_cook_migrator:local_phase1@127.0.0.1:55433/saas_cook
       - run: bun run bootstrap
         env:
-          MIGRATION_DATABASE_URL: postgresql://common_saas_migrator:local_phase1@127.0.0.1:55433/common_saas
-          CONTROL_ADMIN_DATABASE_URL: postgresql://common_saas_control_admin:local_phase2_control@127.0.0.1:55434/common_saas_control
+          MIGRATION_DATABASE_URL: postgresql://saas_cook_migrator:local_phase1@127.0.0.1:55433/saas_cook
+          CONTROL_ADMIN_DATABASE_URL: postgresql://saas_cook_control_admin:local_phase2_control@127.0.0.1:55434/saas_cook_control
           INSTALLATION_ID: 10000000-0000-4000-8000-000000000001
           OPENFGA_API_URL: http://127.0.0.1:18081
       - run: bun run build
@@ -192,12 +192,12 @@ jobs:
         run: bun run image:build
       - run: bun run services:up
       - run: bun run test:image
-      - run: bun run security:scan image common-sass:phase2
+      - run: bun run security:scan image saas-cook:phase2
       - name: Record image identity
         if: always()
         run: |
           mkdir -p artifacts/image
-          docker image inspect common-sass:phase2 > artifacts/image/inspect.json
+          docker image inspect saas-cook:phase2 > artifacts/image/inspect.json
           docker compose -f infra/compose.yaml logs --no-color > artifacts/image/services.log
       - run: docker compose -f infra/compose.yaml down --volumes
         if: always()

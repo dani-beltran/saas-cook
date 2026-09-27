@@ -1,10 +1,10 @@
-# A junior developer’s guide to common-sass
+# A junior developer’s guide to SaaS Cook
 
 This guide explains what we are building, what its features mean, and the order in which we plan to implement them. It summarizes the repository’s design documents as of **23 September 2026**. The [delivery roadmap](06-delivery-roadmap.md) owns the detailed acceptance criteria; this guide is an introduction.
 
 ## 1. What is this project?
 
-**common-sass is a reusable starting point for business SaaS products.** SaaS means “software as a service”: an application customers use online, often through a subscription. The repository lives in the `common-saas` directory; its package and planning documents use the name `common-sass`.
+**SaaS Cook is a reusable starting point for business SaaS products.** SaaS means “software as a service”: an application customers use online, often through a subscription. The root package is `saas-cook`; application and shared packages use the `@saas-cook` namespace.
 
 Many products need the same supporting features: sign-in, company accounts, permissions, billing, dashboards, email, and background processing. This template will provide that shared foundation. A team adopting it will own the source code and add its own branding, pricing, business rules, and product features.
 

@@ -71,7 +71,7 @@ export function createSmtpTransport(options: {
 		}
 		try {
 			await read(220);
-			await command("EHLO common-saas", 250);
+			await command("EHLO saas-cook", 250);
 			if (options.username)
 				await command(
 					`AUTH PLAIN ${Buffer.from(`\0${options.username}\0${options.password ?? ""}`).toString("base64")}`,
@@ -80,7 +80,7 @@ export function createSmtpTransport(options: {
 			await command(`MAIL FROM:<${options.from}>`, 250);
 			await command(`RCPT TO:<${message.to}>`, 250);
 			await command("DATA", 354);
-			const boundary = `common-saas-${message.id}`;
+			const boundary = `saas-cook-${message.id}`;
 			const encode = (value: string) =>
 				Buffer.from(value)
 					.toString("base64")
@@ -90,7 +90,7 @@ export function createSmtpTransport(options: {
 				`From: <${options.from}>`,
 				`To: <${message.to}>`,
 				`Subject: =?UTF-8?B?${Buffer.from(message.subject).toString("base64")}?=`,
-				`Message-ID: <${message.id}@common-saas>`,
+				`Message-ID: <${message.id}@saas-cook>`,
 				`MIME-Version: 1.0`,
 				`Content-Type: multipart/alternative; boundary="${boundary}"`,
 				"",

@@ -22,12 +22,12 @@ it("upgrades populated 0008 identity without rewriting users or history, replays
 	const database = `personal_test_${randomUUID().replaceAll("-", "")}`;
 	const url = new URL(adminUrl);
 	url.pathname = `/${database}`;
-	url.username = "common_saas_migrator";
+	url.username = "saas_cook_migrator";
 	url.password = "local_phase1";
 	const folder = await mkdtemp(join(tmpdir(), "personal-upgrade-"));
 	let migrator: Pool | undefined;
 	try {
-		await admin.query(`CREATE DATABASE ${database} OWNER common_saas_migrator`);
+		await admin.query(`CREATE DATABASE ${database} OWNER saas_cook_migrator`);
 		await mkdir(join(folder, "meta"));
 		const journal = JSON.parse(
 			await readFile("packages/db/migrations/meta/_journal.json", "utf8"),
@@ -64,7 +64,7 @@ it("upgrades populated 0008 identity without rewriting users or history, replays
 		expect(
 			(await migrator.query("SELECT * FROM identity.security_audit")).rows,
 		).toEqual(history);
-		for (const role of ["common_saas_web", "common_saas_worker"]) {
+		for (const role of ["saas_cook_web", "saas_cook_worker"]) {
 			const roleUrl = new URL(url);
 			roleUrl.username = role;
 			const restricted = new Pool({ connectionString: roleUrl.href });

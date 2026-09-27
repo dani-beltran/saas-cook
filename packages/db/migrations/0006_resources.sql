@@ -171,41 +171,41 @@ CREATE INDEX "resource_grants_target" ON "tenancy"."resource_grants" USING btree
 CREATE INDEX "resource_grants_member" ON "tenancy"."resource_grants" USING btree ("organization_id","membership_id","resource_id");--> statement-breakpoint
 CREATE INDEX "resource_registry_parent" ON "tenancy"."resource_registry" USING btree ("organization_id","parent_id","id");--> statement-breakpoint
 CREATE INDEX "workspaces_list" ON "tenancy"."workspaces" USING btree ("organization_id","created_at" DESC NULLS LAST,"id" DESC NULLS LAST);--> statement-breakpoint
-CREATE POLICY "migration_control" ON "tenancy"."api_keys" AS PERMISSIVE FOR ALL TO "common_saas_migrator" USING (true) WITH CHECK (true);--> statement-breakpoint
+CREATE POLICY "migration_control" ON "tenancy"."api_keys" AS PERMISSIVE FOR ALL TO "saas_cook_migrator" USING (true) WITH CHECK (true);--> statement-breakpoint
 CREATE POLICY "tenant_isolation" ON "tenancy"."api_keys" AS PERMISSIVE FOR ALL TO public USING (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid) WITH CHECK (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid);--> statement-breakpoint
-CREATE POLICY "migration_control" ON "tenancy"."capacity_buckets" AS PERMISSIVE FOR ALL TO "common_saas_migrator" USING (true) WITH CHECK (true);--> statement-breakpoint
+CREATE POLICY "migration_control" ON "tenancy"."capacity_buckets" AS PERMISSIVE FOR ALL TO "saas_cook_migrator" USING (true) WITH CHECK (true);--> statement-breakpoint
 CREATE POLICY "tenant_isolation" ON "tenancy"."capacity_buckets" AS PERMISSIVE FOR ALL TO public USING (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid) WITH CHECK (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid);--> statement-breakpoint
-CREATE POLICY "migration_control" ON "tenancy"."capacity_reservations" AS PERMISSIVE FOR ALL TO "common_saas_migrator" USING (true) WITH CHECK (true);--> statement-breakpoint
+CREATE POLICY "migration_control" ON "tenancy"."capacity_reservations" AS PERMISSIVE FOR ALL TO "saas_cook_migrator" USING (true) WITH CHECK (true);--> statement-breakpoint
 CREATE POLICY "tenant_isolation" ON "tenancy"."capacity_reservations" AS PERMISSIVE FOR ALL TO public USING (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid) WITH CHECK (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid);--> statement-breakpoint
-CREATE POLICY "migration_control" ON "tenancy"."projects" AS PERMISSIVE FOR ALL TO "common_saas_migrator" USING (true) WITH CHECK (true);--> statement-breakpoint
+CREATE POLICY "migration_control" ON "tenancy"."projects" AS PERMISSIVE FOR ALL TO "saas_cook_migrator" USING (true) WITH CHECK (true);--> statement-breakpoint
 CREATE POLICY "tenant_isolation" ON "tenancy"."projects" AS PERMISSIVE FOR ALL TO public USING (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid) WITH CHECK (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid);--> statement-breakpoint
-CREATE POLICY "migration_control" ON "tenancy"."resource_grants" AS PERMISSIVE FOR ALL TO "common_saas_migrator" USING (true) WITH CHECK (true);--> statement-breakpoint
+CREATE POLICY "migration_control" ON "tenancy"."resource_grants" AS PERMISSIVE FOR ALL TO "saas_cook_migrator" USING (true) WITH CHECK (true);--> statement-breakpoint
 CREATE POLICY "tenant_isolation" ON "tenancy"."resource_grants" AS PERMISSIVE FOR ALL TO public USING (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid) WITH CHECK (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid);--> statement-breakpoint
-CREATE POLICY "migration_control" ON "tenancy"."resource_operations" AS PERMISSIVE FOR ALL TO "common_saas_migrator" USING (true) WITH CHECK (true);--> statement-breakpoint
+CREATE POLICY "migration_control" ON "tenancy"."resource_operations" AS PERMISSIVE FOR ALL TO "saas_cook_migrator" USING (true) WITH CHECK (true);--> statement-breakpoint
 CREATE POLICY "tenant_isolation" ON "tenancy"."resource_operations" AS PERMISSIVE FOR ALL TO public USING (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid) WITH CHECK (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid);--> statement-breakpoint
-CREATE POLICY "migration_control" ON "tenancy"."resource_registry" AS PERMISSIVE FOR ALL TO "common_saas_migrator" USING (true) WITH CHECK (true);--> statement-breakpoint
+CREATE POLICY "migration_control" ON "tenancy"."resource_registry" AS PERMISSIVE FOR ALL TO "saas_cook_migrator" USING (true) WITH CHECK (true);--> statement-breakpoint
 CREATE POLICY "tenant_isolation" ON "tenancy"."resource_registry" AS PERMISSIVE FOR ALL TO public USING (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid) WITH CHECK (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid);--> statement-breakpoint
-CREATE POLICY "migration_control" ON "tenancy"."service_accounts" AS PERMISSIVE FOR ALL TO "common_saas_migrator" USING (true) WITH CHECK (true);--> statement-breakpoint
+CREATE POLICY "migration_control" ON "tenancy"."service_accounts" AS PERMISSIVE FOR ALL TO "saas_cook_migrator" USING (true) WITH CHECK (true);--> statement-breakpoint
 CREATE POLICY "tenant_isolation" ON "tenancy"."service_accounts" AS PERMISSIVE FOR ALL TO public USING (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid) WITH CHECK (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid);--> statement-breakpoint
-CREATE POLICY "migration_control" ON "tenancy"."workspaces" AS PERMISSIVE FOR ALL TO "common_saas_migrator" USING (true) WITH CHECK (true);--> statement-breakpoint
+CREATE POLICY "migration_control" ON "tenancy"."workspaces" AS PERMISSIVE FOR ALL TO "saas_cook_migrator" USING (true) WITH CHECK (true);--> statement-breakpoint
 CREATE POLICY "tenant_isolation" ON "tenancy"."workspaces" AS PERMISSIVE FOR ALL TO public USING (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid) WITH CHECK (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid);
 --> statement-breakpoint
 ALTER TABLE tenancy.api_keys FORCE ROW LEVEL SECURITY;
-GRANT SELECT, INSERT, UPDATE ON tenancy.api_keys TO common_saas_web, common_saas_worker;
+GRANT SELECT, INSERT, UPDATE ON tenancy.api_keys TO saas_cook_web, saas_cook_worker;
 ALTER TABLE tenancy.capacity_buckets FORCE ROW LEVEL SECURITY;
-GRANT SELECT, INSERT, UPDATE ON tenancy.capacity_buckets TO common_saas_web, common_saas_worker;
+GRANT SELECT, INSERT, UPDATE ON tenancy.capacity_buckets TO saas_cook_web, saas_cook_worker;
 ALTER TABLE tenancy.capacity_reservations FORCE ROW LEVEL SECURITY;
-GRANT SELECT, INSERT, UPDATE ON tenancy.capacity_reservations TO common_saas_web, common_saas_worker;
+GRANT SELECT, INSERT, UPDATE ON tenancy.capacity_reservations TO saas_cook_web, saas_cook_worker;
 ALTER TABLE tenancy.projects FORCE ROW LEVEL SECURITY;
-GRANT SELECT, INSERT, UPDATE ON tenancy.projects TO common_saas_web, common_saas_worker;
+GRANT SELECT, INSERT, UPDATE ON tenancy.projects TO saas_cook_web, saas_cook_worker;
 ALTER TABLE tenancy.resource_grants FORCE ROW LEVEL SECURITY;
-GRANT SELECT, INSERT, UPDATE ON tenancy.resource_grants TO common_saas_web, common_saas_worker;
+GRANT SELECT, INSERT, UPDATE ON tenancy.resource_grants TO saas_cook_web, saas_cook_worker;
 ALTER TABLE tenancy.resource_operations FORCE ROW LEVEL SECURITY;
-GRANT SELECT, INSERT, UPDATE ON tenancy.resource_operations TO common_saas_web, common_saas_worker;
+GRANT SELECT, INSERT, UPDATE ON tenancy.resource_operations TO saas_cook_web, saas_cook_worker;
 ALTER TABLE tenancy.resource_registry FORCE ROW LEVEL SECURITY;
-GRANT SELECT, INSERT, UPDATE ON tenancy.resource_registry TO common_saas_web, common_saas_worker;
+GRANT SELECT, INSERT, UPDATE ON tenancy.resource_registry TO saas_cook_web, saas_cook_worker;
 ALTER TABLE tenancy.service_accounts FORCE ROW LEVEL SECURITY;
-GRANT SELECT, INSERT, UPDATE ON tenancy.service_accounts TO common_saas_web, common_saas_worker;
+GRANT SELECT, INSERT, UPDATE ON tenancy.service_accounts TO saas_cook_web, saas_cook_worker;
 ALTER TABLE tenancy.workspaces FORCE ROW LEVEL SECURITY;
-GRANT SELECT, INSERT, UPDATE ON tenancy.workspaces TO common_saas_web, common_saas_worker;
-GRANT DELETE ON tenancy.resource_grants TO common_saas_web, common_saas_worker;
+GRANT SELECT, INSERT, UPDATE ON tenancy.workspaces TO saas_cook_web, saas_cook_worker;
+GRANT DELETE ON tenancy.resource_grants TO saas_cook_web, saas_cook_worker;

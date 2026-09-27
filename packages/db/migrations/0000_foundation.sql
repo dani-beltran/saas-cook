@@ -59,16 +59,16 @@ ALTER TABLE "identity"."account" ADD CONSTRAINT "account_user_id_user_id_fk" FOR
 ALTER TABLE "identity"."session" ADD CONSTRAINT "session_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "identity"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 -- Reviewed grants: runtime roles never own tables or run migrations.
 REVOKE ALL ON SCHEMA foundation, identity FROM PUBLIC;
-GRANT USAGE ON SCHEMA foundation TO common_saas_web, common_saas_worker;
-GRANT SELECT ON foundation.runtime_heartbeats TO common_saas_web, common_saas_worker;
-GRANT INSERT, UPDATE ON foundation.runtime_heartbeats TO common_saas_worker;
-GRANT USAGE ON SCHEMA identity TO common_saas_identity;
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA identity TO common_saas_identity;
+GRANT USAGE ON SCHEMA foundation TO saas_cook_web, saas_cook_worker;
+GRANT SELECT ON foundation.runtime_heartbeats TO saas_cook_web, saas_cook_worker;
+GRANT INSERT, UPDATE ON foundation.runtime_heartbeats TO saas_cook_worker;
+GRANT USAGE ON SCHEMA identity TO saas_cook_identity;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA identity TO saas_cook_identity;
 --> statement-breakpoint
 CREATE SCHEMA pgboss;
 REVOKE ALL ON SCHEMA pgboss FROM PUBLIC;
-GRANT USAGE ON SCHEMA pgboss TO common_saas_worker;
-ALTER DEFAULT PRIVILEGES IN SCHEMA pgboss GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO common_saas_worker;
-ALTER DEFAULT PRIVILEGES IN SCHEMA pgboss GRANT USAGE, SELECT ON SEQUENCES TO common_saas_worker;
+GRANT USAGE ON SCHEMA pgboss TO saas_cook_worker;
+ALTER DEFAULT PRIVILEGES IN SCHEMA pgboss GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO saas_cook_worker;
+ALTER DEFAULT PRIVILEGES IN SCHEMA pgboss GRANT USAGE, SELECT ON SEQUENCES TO saas_cook_worker;
 ALTER DEFAULT PRIVILEGES IN SCHEMA pgboss REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC;
-ALTER DEFAULT PRIVILEGES IN SCHEMA pgboss GRANT EXECUTE ON FUNCTIONS TO common_saas_worker;
+ALTER DEFAULT PRIVILEGES IN SCHEMA pgboss GRANT EXECUTE ON FUNCTIONS TO saas_cook_worker;

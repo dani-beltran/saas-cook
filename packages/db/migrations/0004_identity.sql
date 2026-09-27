@@ -28,11 +28,11 @@ CREATE TABLE identity.email_delivery (
  attempts integer NOT NULL DEFAULT 0, delivered_at timestamptz, failed_at timestamptz
 );
 CREATE INDEX identity_email_pending ON identity.email_delivery(available_at) WHERE delivered_at IS NULL AND failed_at IS NULL;
-GRANT SELECT, INSERT, UPDATE, DELETE ON identity.passkey,identity.two_factor,identity.rate_limit,identity.ingress_limit,identity.security_audit TO common_saas_identity;
-GRANT SELECT, INSERT, UPDATE, DELETE ON identity.email_delivery TO common_saas_identity;
-GRANT USAGE ON SCHEMA identity TO common_saas_web, common_saas_worker;
-GRANT INSERT ON identity.email_delivery TO common_saas_web;
-GRANT SELECT, INSERT, UPDATE, DELETE ON identity.email_delivery TO common_saas_worker;
+GRANT SELECT, INSERT, UPDATE, DELETE ON identity.passkey,identity.two_factor,identity.rate_limit,identity.ingress_limit,identity.security_audit TO saas_cook_identity;
+GRANT SELECT, INSERT, UPDATE, DELETE ON identity.email_delivery TO saas_cook_identity;
+GRANT USAGE ON SCHEMA identity TO saas_cook_web, saas_cook_worker;
+GRANT INSERT ON identity.email_delivery TO saas_cook_web;
+GRANT SELECT, INSERT, UPDATE, DELETE ON identity.email_delivery TO saas_cook_worker;
 --> statement-breakpoint
 CREATE FUNCTION identity.lookup_user(requested_id text)
  RETURNS TABLE(id text,email text,email_verified boolean,lifecycle_status text,credential_epoch bigint)
@@ -40,7 +40,7 @@ CREATE FUNCTION identity.lookup_user(requested_id text)
  SELECT u.id,u.email,u.email_verified,u.lifecycle_status,u.credential_epoch FROM identity."user" u WHERE u.id=requested_id
 $$;
 REVOKE ALL ON FUNCTION identity.lookup_user(text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION identity.lookup_user(text) TO common_saas_web, common_saas_worker;
+GRANT EXECUTE ON FUNCTION identity.lookup_user(text) TO saas_cook_web, saas_cook_worker;
 -- Lock and recheck inside the actual INSERT transaction, including independent provider pools.
 CREATE FUNCTION identity.validate_session_creation() RETURNS trigger LANGUAGE plpgsql SET search_path = pg_catalog AS $$
 DECLARE current_identity identity."user"%ROWTYPE;

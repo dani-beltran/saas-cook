@@ -1,7 +1,7 @@
 "use client";
-import { createApiClient } from "@common-saas/api/client";
-import { Button, Input } from "@common-saas/ui";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { createApiClient } from "@saas-cook/api/client";
+import { Button, Input } from "@saas-cook/ui";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";

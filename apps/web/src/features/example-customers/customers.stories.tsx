@@ -1,7 +1,7 @@
 import type {
 	CustomerDto,
 	CustomerQuery,
-} from "@common-saas/api-contracts/example-customers";
+} from "@saas-cook/api-contracts/example-customers";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { useLocale } from "next-intl";
 import { useState } from "react";

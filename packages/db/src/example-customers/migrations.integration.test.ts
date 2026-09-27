@@ -22,12 +22,12 @@ it("upgrades a populated 0007 predecessor without changing identity, Project, hi
 	const database = `phase2_test_${randomUUID().replaceAll("-", "")}`;
 	const url = new URL(adminUrl);
 	url.pathname = `/${database}`;
-	url.username = "common_saas_migrator";
+	url.username = "saas_cook_migrator";
 	url.password = "local_phase1";
 	const folder = await mkdtemp(join(tmpdir(), "customer-upgrade-"));
 	let migrator: Pool | undefined;
 	try {
-		await admin.query(`CREATE DATABASE ${database} OWNER common_saas_migrator`);
+		await admin.query(`CREATE DATABASE ${database} OWNER saas_cook_migrator`);
 		await mkdir(join(folder, "meta"));
 		const journal = JSON.parse(
 			await readFile("packages/db/migrations/meta/_journal.json", "utf8"),
@@ -101,7 +101,7 @@ it("upgrades a populated 0007 predecessor without changing identity, Project, hi
 		expect(
 			(
 				await migrator.query(
-					"SELECT has_table_privilege('common_saas_web','tenancy.example_customers','DELETE') AS remove,has_column_privilege('common_saas_web','tenancy.example_customers','organization_id','UPDATE') AS move,has_table_privilege('common_saas_worker','tenancy.example_customers','SELECT') AS worker",
+					"SELECT has_table_privilege('saas_cook_web','tenancy.example_customers','DELETE') AS remove,has_column_privilege('saas_cook_web','tenancy.example_customers','organization_id','UPDATE') AS move,has_table_privilege('saas_cook_worker','tenancy.example_customers','SELECT') AS worker",
 				)
 			).rows[0],
 		).toEqual({ remove: false, move: false, worker: false });

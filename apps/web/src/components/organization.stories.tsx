@@ -1,4 +1,4 @@
-import type { OrganizationSnapshotDto } from "@common-saas/api-contracts";
+import type { OrganizationSnapshotDto } from "@saas-cook/api-contracts";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { NextIntlClientProvider, useLocale, useTranslations } from "next-intl";
 import { useState } from "react";

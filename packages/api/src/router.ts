@@ -1,5 +1,5 @@
-import { contract } from "@common-saas/api-contracts";
 import { implement } from "@orpc/server";
+import { contract } from "@saas-cook/api-contracts";
 import { exampleCustomerHandlers } from "./example-customers/handlers";
 import { humanOperation, resourceOperation } from "./resource-boundary";
 import { echoDiagnostic, type RequestContext } from "./service";

@@ -13,4 +13,4 @@ ALTER TABLE "identity"."user" ADD CONSTRAINT "user_theme_mode_check" CHECK ("ide
 ALTER TABLE "identity"."user" ADD CONSTRAINT "user_theme_version_check" CHECK ("identity"."user"."theme_version">=0);
 --> statement-breakpoint
 -- Personal identity storage is deliberately unavailable to tenant web/worker roles.
-GRANT SELECT, INSERT, UPDATE, DELETE ON identity.user_avatar TO common_saas_identity;
+GRANT SELECT, INSERT, UPDATE, DELETE ON identity.user_avatar TO saas_cook_identity;

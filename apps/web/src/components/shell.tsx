@@ -1,6 +1,6 @@
 "use client";
 
-import { SampleForm } from "@common-saas/ui";
+import { SampleForm } from "@saas-cook/ui";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 

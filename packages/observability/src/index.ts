@@ -53,7 +53,7 @@ export function initializeObservability(service: "web" | "worker" | "command") {
 				stdout: (record) => process.stdout.write(`${serializeLog(record)}\n`),
 			},
 			loggers: [
-				{ category: ["common-saas"], lowestLevel: "info", sinks: ["stdout"] },
+				{ category: ["saas-cook"], lowestLevel: "info", sinks: ["stdout"] },
 				{
 					category: ["logtape", "meta"],
 					lowestLevel: "warning",
@@ -92,7 +92,7 @@ export function logEvent(
 	properties: Record<string, unknown> = {},
 ) {
 	const active = trace.getActiveSpan()?.spanContext();
-	getLogger(["common-saas"]).info(event, {
+	getLogger(["saas-cook"]).info(event, {
 		...properties,
 		...correlations.getStore(),
 		...(active ? { traceId: active.traceId, spanId: active.spanId } : {}),
@@ -106,7 +106,7 @@ export async function withOperation<T>(
 ) {
 	const parent = propagation.extract(context.active(), carrier);
 	return context.with(parent, () =>
-		trace.getTracer("common-saas").startActiveSpan(operation, async (span) => {
+		trace.getTracer("saas-cook").startActiveSpan(operation, async (span) => {
 			try {
 				return await correlations.run(
 					Object.fromEntries(

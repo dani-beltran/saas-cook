@@ -42,7 +42,7 @@ export const organizations = tenancy
 			pgPolicy("migration_control", {
 				as: "permissive",
 				for: "all",
-				to: ["common_saas_migrator"],
+				to: ["saas_cook_migrator"],
 				using: sql`true`,
 				withCheck: sql`true`,
 			}),
@@ -115,7 +115,7 @@ export const memberships = tenancy
 			pgPolicy("migration_control", {
 				as: "permissive",
 				for: "all",
-				to: ["common_saas_migrator"],
+				to: ["saas_cook_migrator"],
 				using: sql`true`,
 				withCheck: sql`true`,
 			}),
@@ -160,7 +160,7 @@ export const seatCapacities = tenancy
 			pgPolicy("migration_control", {
 				as: "permissive",
 				for: "all",
-				to: ["common_saas_migrator"],
+				to: ["saas_cook_migrator"],
 				using: sql`true`,
 				withCheck: sql`true`,
 			}),
@@ -226,7 +226,7 @@ export const invitations = tenancy
 			pgPolicy("migration_control", {
 				as: "permissive",
 				for: "all",
-				to: ["common_saas_migrator"],
+				to: ["saas_cook_migrator"],
 				using: sql`true`,
 				withCheck: sql`true`,
 			}),
@@ -300,7 +300,7 @@ export const ownershipTransfers = tenancy
 			pgPolicy("migration_control", {
 				as: "permissive",
 				for: "all",
-				to: ["common_saas_migrator"],
+				to: ["saas_cook_migrator"],
 				using: sql`true`,
 				withCheck: sql`true`,
 			}),
@@ -366,7 +366,7 @@ export const auditEvents = tenancy
 			pgPolicy("migration_control", {
 				as: "permissive",
 				for: "all",
-				to: ["common_saas_migrator"],
+				to: ["saas_cook_migrator"],
 				using: sql`true`,
 				withCheck: sql`true`,
 			}),
@@ -408,7 +408,7 @@ export const outboxEvents = tenancy
 			pgPolicy("migration_control", {
 				as: "permissive",
 				for: "all",
-				to: ["common_saas_migrator"],
+				to: ["saas_cook_migrator"],
 				using: sql`true`,
 				withCheck: sql`true`,
 			}),
@@ -451,7 +451,7 @@ export const ownerRecoveryCases = tenancy
 			pgPolicy("migration_control", {
 				as: "permissive",
 				for: "all",
-				to: ["common_saas_migrator"],
+				to: ["saas_cook_migrator"],
 				using: sql`true`,
 				withCheck: sql`true`,
 			}),
@@ -493,7 +493,7 @@ export const teams = tenancy
 			pgPolicy("migration_control", {
 				as: "permissive",
 				for: "all",
-				to: ["common_saas_migrator"],
+				to: ["saas_cook_migrator"],
 				using: sql`true`,
 				withCheck: sql`true`,
 			}),
@@ -559,7 +559,7 @@ export const authorizationRevisions = tenancy
 			pgPolicy("migration_control", {
 				as: "permissive",
 				for: "all",
-				to: ["common_saas_migrator"],
+				to: ["saas_cook_migrator"],
 				using: sql`true`,
 				withCheck: sql`true`,
 			}),
@@ -612,7 +612,7 @@ export const teamMembers = tenancy
 			pgPolicy("migration_control", {
 				as: "permissive",
 				for: "all",
-				to: ["common_saas_migrator"],
+				to: ["saas_cook_migrator"],
 				using: sql`true`,
 				withCheck: sql`true`,
 			}),
@@ -658,7 +658,7 @@ export const membershipTransitions = tenancy
 			pgPolicy("migration_control", {
 				as: "permissive",
 				for: "all",
-				to: ["common_saas_migrator"],
+				to: ["saas_cook_migrator"],
 				using: sql`true`,
 				withCheck: sql`true`,
 			}),

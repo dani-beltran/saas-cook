@@ -1,7 +1,7 @@
 import {
 	type CustomerQuery,
 	customerQuery,
-} from "@common-saas/api-contracts/example-customers";
+} from "@saas-cook/api-contracts/example-customers";
 export function queryFromUrl(params: {
 	get: (key: string) => string | null;
 }): CustomerQuery {

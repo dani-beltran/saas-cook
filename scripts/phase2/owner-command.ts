@@ -1,12 +1,9 @@
 import { randomUUID } from "node:crypto";
 import { readFile, stat } from "node:fs/promises";
-import { createAuthorizationService, getPublication } from "@common-saas/authz";
-import { initializeControlStore } from "@common-saas/authz/control";
-import { verifyOperatorApproval } from "@common-saas/authz/operator";
-import {
-	createTenancyService,
-	type TenancyHooks,
-} from "@common-saas/db/tenancy";
+import { createAuthorizationService, getPublication } from "@saas-cook/authz";
+import { initializeControlStore } from "@saas-cook/authz/control";
+import { verifyOperatorApproval } from "@saas-cook/authz/operator";
+import { createTenancyService, type TenancyHooks } from "@saas-cook/db/tenancy";
 import type { Pool } from "pg";
 
 /** Privileged one-off entry, never mounted as a public tenant endpoint. */
@@ -82,7 +79,7 @@ export async function runOwnerCommand(options: {
 			try {
 				const role = (await client.query("SELECT current_user")).rows[0]
 					.current_user;
-				if (role !== "common_saas_web")
+				if (role !== "saas_cook_web")
 					throw new Error(
 						"Operator command requires restricted application web role",
 					);

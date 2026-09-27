@@ -1,7 +1,7 @@
-import type { contract } from "@common-saas/api-contracts";
 import { createORPCClient } from "@orpc/client";
 import { RPCLink } from "@orpc/client/fetch";
 import type { ContractRouterClient } from "@orpc/contract";
+import type { contract } from "@saas-cook/api-contracts";
 
 export type ApiClient = ContractRouterClient<typeof contract>;
 /** Browser entry point imports contracts only; server implementations stay out of bundles. */

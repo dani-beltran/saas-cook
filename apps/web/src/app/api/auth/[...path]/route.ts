@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
-import { applicationRuntime } from "@common-saas/api/runtime";
-import { logEvent, withOperation } from "@common-saas/observability";
+import { applicationRuntime } from "@saas-cook/api/runtime";
+import { logEvent, withOperation } from "@saas-cook/observability";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 async function handler(request: Request) {
