@@ -4,6 +4,9 @@
 .account-dashboard .dashboard-section {
 	scroll-margin-top: 28px;
 }
+.account-dashboard > .dashboard-section[role="tabpanel"] {
+	border-top: 0;
+}
 .account-section-intro {
 	display: flex;
 	align-items: start;
