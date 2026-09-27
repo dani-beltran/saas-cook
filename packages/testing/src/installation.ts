@@ -2,6 +2,7 @@ import { execFile } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { promisify } from "node:util";
 import { Pool } from "pg";
+import { dropTestDatabase } from "./database";
 
 const exec = promisify(execFile);
 
@@ -98,7 +99,7 @@ export async function createTestInstallation() {
 			[controlAdmin, controlCreated],
 		] as const) {
 			try {
-				if (created) await pool.query(`DROP DATABASE ${name} WITH (FORCE)`);
+				if (created) await dropTestDatabase(pool, name);
 			} catch (error) {
 				failures.push(error);
 			} finally {

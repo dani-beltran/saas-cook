@@ -14,6 +14,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
 	readFreshReport,
 	verifyPlaywrightReport,
+	verifyPlaywrightReports,
 	verifyVitestReport,
 } from "../../evaluations/phase4/heldout/reports.ts";
 import {
@@ -369,6 +370,64 @@ describe("Phase 4 reused-suite report enforcement", () => {
 		await expect(readFreshReport(file, Date.now())).rejects.toThrow(
 			"Stale structured report",
 		);
+	});
+	it("requires every split browser report and rejects failures or retries in later specs", () => {
+		const report = (file: string) => ({
+			config: { rootDir: "/candidate" },
+			errors: [],
+			stats: { unexpected: 0, skipped: 0, flaky: 0 },
+			suites: [
+				{
+					title: file,
+					specs: [
+						{
+							title: "required behavior",
+							file,
+							ok: true,
+							tests: [
+								{
+									expectedStatus: "passed",
+									status: "expected",
+									results: [{ status: "passed", errors: [] }],
+								},
+							],
+						},
+					],
+				},
+			],
+		});
+		const first = report("first.spec.ts");
+		const second = report("second.spec.ts");
+		const required = ["first.spec.ts", "second.spec.ts"].map((file) => ({
+			file,
+			name: "required behavior",
+		}));
+		expect(
+			verifyPlaywrightReports([first, second], "/candidate", required),
+		).toHaveLength(2);
+		expect(() =>
+			verifyPlaywrightReports([first], "/candidate", required),
+		).toThrow("Required case missing");
+		expect(() => verifyPlaywrightReports([], "/candidate", required)).toThrow(
+			"Missing Playwright reports",
+		);
+		expect(() =>
+			verifyPlaywrightReports(
+				[first, { ...second, suites: [] }],
+				"/candidate",
+				required,
+			),
+		).toThrow("must execute cases");
+		for (const change of ["failed", "skipped", "retry"] as const) {
+			const altered = structuredClone(second);
+			const test = altered.suites[0].specs[0].tests[0];
+			if (change === "retry")
+				test.results.push({ status: "passed", errors: [] });
+			else test.results[0].status = change;
+			expect(() =>
+				verifyPlaywrightReports([first, altered], "/candidate", required),
+			).toThrow();
+		}
 	});
 	it("rejects skipped, expected-failing, retried and missing browser baseline cases", () => {
 		const report = {

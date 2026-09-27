@@ -11,6 +11,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Pool } from "pg";
 import { expect, it } from "vitest";
+import { dropTestDatabase } from "../../../testing/src/database";
 import { runMigrations } from "../migrate";
 
 it("upgrades a populated 0007 predecessor without changing identity, Project, history or readiness; replays safely", async () => {
@@ -106,7 +107,7 @@ it("upgrades a populated 0007 predecessor without changing identity, Project, hi
 		).toEqual({ remove: false, move: false, worker: false });
 	} finally {
 		await migrator?.end();
-		await admin.query(`DROP DATABASE IF EXISTS ${database} WITH (FORCE)`);
+		await dropTestDatabase(admin, database);
 		await admin.end();
 		await rm(folder, { recursive: true, force: true });
 	}

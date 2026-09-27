@@ -12,5 +12,11 @@
 	"packages/db/migrations/meta/0001_snapshot.json": "64c766026901553e96057aa9641811185577b6b15e1e8c3cae9920969123c004",
 	"packages/db/migrations/meta/0005_snapshot.json": "32883518ee0347d1f5bc1550c88f7593b06efdfbee8a049aee3a4f0e566a4089",
 	"packages/db/migrations/meta/0002_snapshot.json": "66effc21f8d8e64d22a95c17c7cf93cfc80ac8a7beaca93f04de7714b1a183e9",
-	"packages/db/migrations/meta/0006_snapshot.json": "a433bbd5b998fab8f35d9e76848cd778252f7be39e91988c2de5094dd58cffcc"
+	"packages/db/migrations/meta/0006_snapshot.json": "a433bbd5b998fab8f35d9e76848cd778252f7be39e91988c2de5094dd58cffcc",
+	"packages/db/migrations/0007_organization_projects.sql": "a21a03bc05cd9b29bb227799b69f86004cec64a459e28ab90f96d440690eb789",
+	"packages/db/migrations/meta/0007_snapshot.json": "06a3978c71f8ed14b9b0edfed52cd120d39d2c135c51a10113d136c108253ff8",
+	"packages/db/migrations/0008_example_customers.sql": "f126d1e77012a63bedd745631f3938aba37eb52239f2c3e482ef0d98915c7f13",
+	"packages/db/migrations/meta/0008_snapshot.json": "e2d2a07a4ac29d821fa8acd06236f7d82d12385765111386ac44512af6ef1573",
+	"packages/db/migrations/0009_personal_settings.sql": "af6adbb9318bcdc7ac6320936eadb4c507c54167fe103f4b497e9ae1e221471b",
+	"packages/db/migrations/meta/0009_snapshot.json": "6e8d992ffe66eb3548361048e4d8c9991cc56bc8a8f54f66b848f42244f42951"
 }

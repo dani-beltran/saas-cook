@@ -28,5 +28,15 @@ reports in unique attempt directories and reject missing, skipped, failed,
 expected-failing or retried required cases. The independent directory case and
 all focused held-out cases have explicit identities as well.
 
+Browser evaluation runs each discovered spec in its own disposable installation,
+matching the application's authentication-throttle isolation. Every invocation
+keeps a fresh JSON report and diagnostic directory, uses zero retries, and must
+execute passing cases. The combined reports must satisfy the complete frozen
+case multiset; added specs are checked too. The current inventory follows the
+reviewed Organization-to-Projects contract and includes the newer dashboard,
+example-customer and personal-settings cases. Applied migrations and snapshots
+through `0009` are frozen without changing any predecessor digest; retained
+Phase 0 fault source hashes and cases remain unchanged.
+
 The historical Phase 3 performance gate is excluded by the implementation
 request. Neither a short smoke nor an ordinary regression suite replaces it.

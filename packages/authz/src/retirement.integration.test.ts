@@ -16,6 +16,7 @@ import { resourceFixture } from "../../../scripts/phase3/fixture";
 import { runMigrations } from "../../db/src/migrate";
 import { createResourceService } from "../../db/src/resources";
 import type { TenantActor } from "../../db/src/tenancy";
+import { dropTestDatabase } from "../../testing/src/database";
 import { upgradeAuthorization } from "./commands";
 import { fgaRequest } from "./fga";
 import { createAuthorizationService } from "./index";
@@ -38,7 +39,7 @@ describe("published predecessor access retirement", () => {
 		});
 		await admin.query(`CREATE DATABASE ${name} OWNER common_saas_migrator`);
 		cleanup.push(async () => {
-			await admin.query(`DROP DATABASE ${name} WITH (FORCE)`);
+			await dropTestDatabase(admin, name);
 			await admin.end();
 		});
 		const url = (source: string) => {

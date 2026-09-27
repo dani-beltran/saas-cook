@@ -6,9 +6,11 @@ requested repository skills; no delegation. Exact model ID/reasoning metadata wa
 not exposed, so it is not inferred. This is application verification, not a
 `skills:evaluate` live-agent evaluation or a universal skill-reliability claim.
 
-The [source manifest](../artifacts/example-customers/source-manifest.json) records
+The local source manifest `artifacts/example-customers/source-manifest.json` records
 SHA-256 for the 45 changed/new source files and each skill/reference read, with the
-[complete source patch](../artifacts/example-customers/source.patch). Source digest:
+complete source patch at `artifacts/example-customers/source.patch`. These ignored
+evidence files are available in the original local verification bundle, not a clean
+checkout. Source digest:
 `c432ce7eaf229c75ca4a7e5b8cca1ba53a106176d2ac1e65ec0f5bc390ae0720`.
 The manifest excludes this verification record and ignored artifacts to avoid a
 self-referential hash. The [feature brief](example-customers.md) owns decisions;
@@ -88,10 +90,10 @@ is retained as `artifacts/example-customers-browser-final.log`.
 
 ## Screenshots and limits
 
-[Desktop](../artifacts/example-customers/screenshots/customers-desktop.png),
-[Spanish dark](../artifacts/example-customers/screenshots/customers-spanish-dark.png),
-[mobile](../artifacts/example-customers/screenshots/customers-mobile.png),
-[stale edit with preserved draft](../artifacts/example-customers/screenshots/customers-stale-edit.png).
+The ignored local screenshot directory `artifacts/example-customers/screenshots/`
+contains `customers-desktop.png`, `customers-spanish-dark.png`,
+`customers-mobile.png` and `customers-stale-edit.png` (preserved draft after a
+stale edit). These images are not shipped in a clean checkout.
 
 Not run: the full pre-existing browser suite, image build/acceptance, dependency/image
 security scans, live-agent evaluation or Phase 3 performance benchmark. No claims

@@ -8,9 +8,9 @@ This is an overlay on existing Phases 5–8, not a replacement roadmap or a seco
 
 | Dependency | Verified repository state | Required action |
 | --- | --- | --- |
-| Foundation M1 | Open; Phase 4 recorded local `R-SKILLS` under a specific exception | BO-00.2 obtains current evidence and resolves outstanding applicable gates before the production-capable BO-01 implementation track. This plan grants no new exception |
-| `R-AUTHZ-PERF` | Real-feature gate passed in the [manual 2026-09-27 run](../phase3/acceptance.md#accepted-direct-project-performance-result): full stable `direct-project-v1`, 524,149/524,149 operations over 1,800.678 seconds | Retain this report/fingerprint; measure changed workloads and the later image gate separately. Remaining M1 prerequisites still require BO-00.2 evidence |
-| Current images/security | Historical results precede later changes; no new results claimed | Rebuild/scan/test affected current customer image with BO-01; previous image digest does not validate the new pair |
+| Foundation M1 | Accepted through Phase 4; see [current Foundation evidence](../foundation/acceptance.md) | BO-00.2 checks applicability to the proposed Backoffice changes and records any new prerequisites before BO-01 |
+| `R-AUTHZ-PERF` | Real-feature gate passed in the [manual 2026-09-27 run](../phase3/acceptance.md#accepted-direct-project-performance-result): full stable `direct-project-v1`, 524,149/524,149 operations over 1,800.678 seconds | Retain this report/fingerprint; measure changed workloads and the later image gate separately. BO-00.2 verifies applicability to its proposed workload |
+| Current images/security | Current customer image and scan policies pass in the [Foundation record](../foundation/acceptance.md) | Rebuild/scan/test affected current customer image with BO-01; previous image digest does not validate the new pair |
 | Platform operator primitives | Only independent signed CLI recovery/deactivation implemented | New principals, roles, identity tables, scoped query/command entry points, audit and operator model are BO-01–03 work |
 | Billing/provider/usage | Phase 5 planned | BO-04 depends on real Phase 5 billing ledger/commands/inbox/reconciliation; no facade over installed Stripe package |
 | Export/deletion/restore | Phase 6 planned; independent readiness alone exists | BO-05 jointly implements/reuses Phase 6 services and passes existing lifecycle gates before exposing execution |
@@ -37,7 +37,7 @@ flowchart LR
   H -. separate justification .-> X[BO-X01 optional delegated support]
 ```
 
-BO-00 design and source inventory can proceed while the performance prerequisite is unresolved. Its architecture gate can be reviewed independently; its prerequisite work item remains open until evidenced. BO-01 does not inherit Phase 4's historical bypass. If a future owner wants a development-only exception, it must be separately documented with scope/expiry and cannot mark M1 or any performance gate passed.
+Foundation and its real-feature performance gate are accepted. BO-00 architecture decisions and the applicability of that evidence to a separate operator application remain planned work. New workloads, principals and images require their own evidence before BO-01 acceptance.
 
 The earliest useful internal release is BO-00–02: private sign-in, masked global organization/account directories, current local seats/entitlements and audit/diagnostic history. No Stripe/help desk/analytics credentials are needed. BO-03 security operations and BO-06 flags/messages can also arrive before commercial modules if their own shared services pass. Financial panels stay absent until BO-04; privacy intake may be piloted manually, but export/deletion fulfillment cannot pass BO-05 without the actual services.
 
@@ -60,7 +60,7 @@ Objective: agree scope, trust boundaries and delivery changes before adding priv
 | Work ID | Work package / likely locations | Deliverable |
 | --- | --- | --- |
 | BO-00.1 | `feature-briefs/backoffice.md`, `docs/backoffice/architecture.md`; product/security workshop | Ratify ADRs, role/action matrix, operator schema versus private API choice, threat owners and initial release scope |
-| BO-00.2 | Existing Phase 3/4 acceptance, accepted manual performance report and `scripts/phase3/benchmark.ts` | Preserve accepted real-feature performance evidence and close remaining applicable Foundation prerequisites with current evidence; M1 remains open until then |
+| BO-00.2 | Existing Phase 3/4 acceptance, accepted manual performance report and `scripts/phase3/benchmark.ts` | Preserve accepted Foundation/performance evidence, review its applicability to the new operator scope, and record any additional prerequisites before BO-01 |
 | BO-00.3 | Contract-amendment table in architecture; later edits to docs 00/01/02/03/04/07 and AGENTS | Review exact two-image, principal/model, operator-fence and queue/version compatibility changes |
 | BO-00.4 | `docs/backoffice` evidence/decision records | Ratify numeric budgets, staff enrollment/offboarding and emergency authority, data inventory classification, release/retention owners |
 
@@ -281,7 +281,7 @@ Requirement `C-*` definitions are in the [brief](../../feature-briefs/backoffice
 | Least privilege, service reuse, lifecycle/seat/idempotency/version/final expiry/atomic events | BO-01.2, BO-03.1/.2 and every domain integration | R-BO-ACCESS, R-BO-LIFECYCLE; R-AUTHZ, R-LIFECYCLE, R-SEATS, R-POLICY |
 | Separate control ownership and unchanged signed recovery authority | BO-01.2, BO-03.3, BO-05.4 | R-BO-LIFECYCLE; R-OWNER, R-RECOVERY |
 | Separate worker/queue/webhook ownership and independent image compatibility/rollback | BO-01.5/.6, BO-04.4, BO-05.5, BO-06, BO-07.3 | R-BO-COMPAT, R-BO-IMAGE, R-BO-OPS |
-| Historical IDs/evidence, Foundation and scoped performance acceptance preserved | BO-00.2/.3 | Phase 3 real-feature R-AUTHZ-PERF passed independently on 2026-09-27; remaining M1 and later image/workload gates need their own evidence |
+| Historical IDs/evidence, Foundation and scoped performance acceptance preserved | BO-00.2/.3 | M1 and Phase 3 real-feature R-AUTHZ-PERF accepted on 2026-09-27; later operator/image/workload gates require their own evidence |
 
 ## Concrete first implementation ticket
 

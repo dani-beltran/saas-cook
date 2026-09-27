@@ -1,6 +1,6 @@
 # Phase 3 acceptance record
 
-**Status: the Phase 3 real-feature `R-AUTHZ-PERF` gate passes for Projects directly under Organizations.** The manual run on 2026-09-27 completed the full `direct-project-v1` workload on stable source and met every latency and first-attempt availability target. The [removal brief](../../feature-briefs/remove-workspaces.md) records the successor's correctness checks. Current-image acceptance/security scans and the remaining M1 release sign-off are separate; this benchmark does not establish them.
+**Status: the Phase 3 real-feature `R-AUTHZ-PERF` gate passes for Projects directly under Organizations.** The manual run on 2026-09-27 completed the full `direct-project-v1` workload on stable source and met every latency and first-attempt availability target. The [removal brief](../../feature-briefs/remove-workspaces.md) records the successor's correctness checks. Current-image/security checks and M1 release sign-off now pass separately in the [Foundation acceptance record](../foundation/acceptance.md). Its source-delta audit carries this benchmark forward across test-only cleanup changes; this report remains unchanged and does not establish the later sustained-image gate.
 
 ## Accepted direct-Project performance result
 

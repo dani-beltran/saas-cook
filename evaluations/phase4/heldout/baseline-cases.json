@@ -19,6 +19,10 @@
 				"name": "reports database setup failures without copying sensitive driver details"
 			},
 			{
+				"file": "packages/api-contracts/src/example-customers/contracts.test.ts",
+				"name": "strict example-customers allowlists rejects hidden fields and invalid field/query values"
+			},
+			{
 				"file": "packages/api/src/api.test.ts",
 				"name": "creates a browser-safe inferred client"
 			},
@@ -84,6 +88,10 @@
 			},
 			{
 				"file": "packages/api/src/resources.test.ts",
+				"name": "publishes only the remaining Project operations and scopes"
+			},
+			{
+				"file": "packages/api/src/resources.test.ts",
 				"name": "rest resource boundary authenticates a key for the path organization and passes its live credential for fenced revalidation"
 			},
 			{
@@ -96,6 +104,22 @@
 			},
 			{
 				"file": "packages/api/src/resources.test.ts",
+				"name": "rest resource boundary has removed the projects/move endpoint"
+			},
+			{
+				"file": "packages/api/src/resources.test.ts",
+				"name": "rest resource boundary has removed the workspaces/create endpoint"
+			},
+			{
+				"file": "packages/api/src/resources.test.ts",
+				"name": "rest resource boundary has removed the workspaces/list endpoint"
+			},
+			{
+				"file": "packages/api/src/resources.test.ts",
+				"name": "rest resource boundary has removed the workspaces/update endpoint"
+			},
+			{
+				"file": "packages/api/src/resources.test.ts",
 				"name": "rest resource boundary rejects bodies over the streaming limit before authentication"
 			},
 			{
@@ -104,7 +128,39 @@
 			},
 			{
 				"file": "packages/api/src/resources.test.ts",
+				"name": "rest resource boundary rejects obsolete Project assignment input 60000000-0000-4000-8000-000000000006"
+			},
+			{
+				"file": "packages/api/src/resources.test.ts",
+				"name": "rest resource boundary rejects obsolete Project assignment input null"
+			},
+			{
+				"file": "packages/api/src/resources.test.ts",
+				"name": "rest resource boundary rejects removed scope project:move before credential provisioning"
+			},
+			{
+				"file": "packages/api/src/resources.test.ts",
+				"name": "rest resource boundary rejects removed scope workspace:create before credential provisioning"
+			},
+			{
+				"file": "packages/api/src/resources.test.ts",
+				"name": "rest resource boundary rejects removed scope workspace:manage before credential provisioning"
+			},
+			{
+				"file": "packages/api/src/resources.test.ts",
+				"name": "rest resource boundary rejects removed scope workspace:read before credential provisioning"
+			},
+			{
+				"file": "packages/api/src/resources.test.ts",
+				"name": "rest resource boundary rejects removed scope workspace:update before credential provisioning"
+			},
+			{
+				"file": "packages/api/src/resources.test.ts",
 				"name": "rest resource boundary rejects service principals for sharing and key provisioning"
+			},
+			{
+				"file": "packages/api/src/resources.test.ts",
+				"name": "rest resource boundary rejects the obsolete Project list filter"
 			},
 			{
 				"file": "packages/api/src/resources.test.ts",
@@ -132,6 +188,22 @@
 			},
 			{
 				"file": "packages/api/src/resources.test.ts",
+				"name": "rpc resource boundary has removed the projects/move endpoint"
+			},
+			{
+				"file": "packages/api/src/resources.test.ts",
+				"name": "rpc resource boundary has removed the workspaces/create endpoint"
+			},
+			{
+				"file": "packages/api/src/resources.test.ts",
+				"name": "rpc resource boundary has removed the workspaces/list endpoint"
+			},
+			{
+				"file": "packages/api/src/resources.test.ts",
+				"name": "rpc resource boundary has removed the workspaces/update endpoint"
+			},
+			{
+				"file": "packages/api/src/resources.test.ts",
 				"name": "rpc resource boundary rejects bodies over the streaming limit before authentication"
 			},
 			{
@@ -140,7 +212,39 @@
 			},
 			{
 				"file": "packages/api/src/resources.test.ts",
+				"name": "rpc resource boundary rejects obsolete Project assignment input 60000000-0000-4000-8000-000000000006"
+			},
+			{
+				"file": "packages/api/src/resources.test.ts",
+				"name": "rpc resource boundary rejects obsolete Project assignment input null"
+			},
+			{
+				"file": "packages/api/src/resources.test.ts",
+				"name": "rpc resource boundary rejects removed scope project:move before credential provisioning"
+			},
+			{
+				"file": "packages/api/src/resources.test.ts",
+				"name": "rpc resource boundary rejects removed scope workspace:create before credential provisioning"
+			},
+			{
+				"file": "packages/api/src/resources.test.ts",
+				"name": "rpc resource boundary rejects removed scope workspace:manage before credential provisioning"
+			},
+			{
+				"file": "packages/api/src/resources.test.ts",
+				"name": "rpc resource boundary rejects removed scope workspace:read before credential provisioning"
+			},
+			{
+				"file": "packages/api/src/resources.test.ts",
+				"name": "rpc resource boundary rejects removed scope workspace:update before credential provisioning"
+			},
+			{
+				"file": "packages/api/src/resources.test.ts",
 				"name": "rpc resource boundary rejects service principals for sharing and key provisioning"
+			},
+			{
+				"file": "packages/api/src/resources.test.ts",
+				"name": "rpc resource boundary rejects the obsolete Project list filter"
 			},
 			{
 				"file": "packages/api/src/resources.test.ts",
@@ -167,12 +271,56 @@
 				"name": "isolated identity adapter setup rejects missing secrets and noncanonical/untrusted origins before connecting"
 			},
 			{
+				"file": "packages/auth/src/avatar.test.ts",
+				"name": "bounded avatar decoding applies EXIF rotation to pixels and refuses PNG animation controls"
+			},
+			{
+				"file": "packages/auth/src/avatar.test.ts",
+				"name": "bounded avatar decoding counts streamed bodies regardless of missing/lying Content-Length"
+			},
+			{
+				"file": "packages/auth/src/avatar.test.ts",
+				"name": "bounded avatar decoding decodes jpeg contents, normalizes orientation, resizes and strips metadata"
+			},
+			{
+				"file": "packages/auth/src/avatar.test.ts",
+				"name": "bounded avatar decoding decodes png contents, normalizes orientation, resizes and strips metadata"
+			},
+			{
+				"file": "packages/auth/src/avatar.test.ts",
+				"name": "bounded avatar decoding decodes webp contents, normalizes orientation, resizes and strips metadata"
+			},
+			{
+				"file": "packages/auth/src/avatar.test.ts",
+				"name": "bounded avatar decoding enforces decoded dimensions and pixel limits"
+			},
+			{
+				"file": "packages/auth/src/avatar.test.ts",
+				"name": "bounded avatar decoding rejects disguised SVG, malformed/truncated raster data and excess bytes"
+			},
+			{
 				"file": "packages/auth/src/ingress.test.ts",
 				"name": "authenticated ingress source accepts only fresh canonical IP claims bound to the request method and route"
 			},
 			{
 				"file": "packages/auth/src/ingress.test.ts",
 				"name": "authenticated ingress source ignores spoofed forwarding headers and fails closed on missing or forged attestations"
+			},
+			{
+				"file": "packages/authz/src/model.test.ts",
+				"name": "direct Project model compatibility publishes no retired resource, relation or move permission"
+			},
+			{
+				"file": "packages/authz/src/model.test.ts",
+				"name": "direct Project model compatibility rejects retired targets and parent inputs instead of ignoring them"
+			},
+			{
+				"file": "packages/authz/src/model.test.ts",
+				"name": "direct Project model compatibility retains the immutable published phase2 model"
+			},
+			{
+				"file": "packages/authz/src/model.test.ts",
+				"name": "direct Project model compatibility retains the immutable published phase3 model"
 			},
 			{
 				"file": "packages/authz/src/operator.test.ts",
@@ -244,7 +392,11 @@
 			},
 			{
 				"file": "packages/config/src/config.test.ts",
-				"name": "validates the server-only resource module and explicit capacity preset"
+				"name": "validates the server-only Project capacity preset"
+			},
+			{
+				"file": "packages/db/src/example-customers/cursor.test.ts",
+				"name": "encrypts sort values, authenticates tokens and expires old cursors"
 			},
 			{
 				"file": "packages/email/src/email.test.ts",
@@ -303,6 +455,38 @@
 				"name": "provides distinct organizations and one synthetic user with both memberships"
 			},
 			{
+				"file": "packages/ui/src/theme.test.ts",
+				"name": "developer theme configuration accepts every supported option without browser globals"
+			},
+			{
+				"file": "packages/ui/src/theme.test.ts",
+				"name": "developer theme configuration defaults to the existing palette, System and Comfortable"
+			},
+			{
+				"file": "packages/ui/src/theme.test.ts",
+				"name": "developer theme configuration falls back per field without accepting CSS, HTML, URLs or unknown keys"
+			},
+			{
+				"file": "packages/ui/src/theme.test.ts",
+				"name": "developer theme configuration falls back safely for malformed configuration: \"dark\""
+			},
+			{
+				"file": "packages/ui/src/theme.test.ts",
+				"name": "developer theme configuration falls back safely for malformed configuration: 1"
+			},
+			{
+				"file": "packages/ui/src/theme.test.ts",
+				"name": "developer theme configuration falls back safely for malformed configuration: null"
+			},
+			{
+				"file": "packages/ui/src/theme.test.ts",
+				"name": "developer theme configuration falls back safely for malformed configuration: undefined"
+			},
+			{
+				"file": "packages/ui/src/theme.test.ts",
+				"name": "developer theme configuration falls back safely for malformed configuration: undefined"
+			},
+			{
 				"file": "scripts/phase1/scan-policy.test.ts",
 				"name": "vulnerability policy blocks CRITICAL findings even without an available fix"
 			},
@@ -321,34 +505,6 @@
 			{
 				"file": "scripts/phase1/scan-policy.test.ts",
 				"name": "vulnerability policy rejects expired and excessively long exceptions"
-			},
-			{
-				"file": "scripts/phase3/parent-moves.test.ts",
-				"name": "benchmark parent changes carries warm-up parents into measurement without counting warm-up moves"
-			},
-			{
-				"file": "scripts/phase3/parent-moves.test.ts",
-				"name": "benchmark parent changes changes parents on repeated moves with the 50-client operation schedule"
-			},
-			{
-				"file": "scripts/phase3/parent-moves.test.ts",
-				"name": "benchmark parent changes does not accept an empty workload or initial assignments alone"
-			},
-			{
-				"file": "scripts/phase3/parent-moves.test.ts",
-				"name": "benchmark parent changes does not advance or count a failed API operation"
-			},
-			{
-				"file": "scripts/phase3/parent-moves.test.ts",
-				"name": "benchmark parent changes invalidates a run after a bad warm-up response: {\"id\":\"project\",\"workspaceId\":\"first\"}"
-			},
-			{
-				"file": "scripts/phase3/parent-moves.test.ts",
-				"name": "benchmark parent changes invalidates a run after a bad warm-up response: {\"id\":\"wrong-project\",\"workspaceId\":\"second\"}"
-			},
-			{
-				"file": "scripts/phase3/parent-moves.test.ts",
-				"name": "benchmark parent changes rejects identical workspace fixtures before calling the API"
 			}
 		],
 		"project": [
@@ -366,7 +522,11 @@
 			},
 			{
 				"file": "packages/api/src/resources.integration.test.ts",
-				"name": "rest real Project policy and concurrency uses workspace inheritance and rejects archived destinations"
+				"name": "rest real Project policy and concurrency rejects obsolete Project assignment and filters on real services"
+			},
+			{
+				"file": "packages/api/src/resources.integration.test.ts",
+				"name": "rest real Project policy and concurrency shares a Project directly and revokes access immediately"
 			},
 			{
 				"file": "packages/api/src/resources.integration.test.ts",
@@ -382,7 +542,11 @@
 			},
 			{
 				"file": "packages/api/src/resources.integration.test.ts",
-				"name": "rpc real Project policy and concurrency uses workspace inheritance and rejects archived destinations"
+				"name": "rpc real Project policy and concurrency rejects obsolete Project assignment and filters on real services"
+			},
+			{
+				"file": "packages/api/src/resources.integration.test.ts",
+				"name": "rpc real Project policy and concurrency shares a Project directly and revokes access immediately"
 			},
 			{
 				"file": "packages/db/src/migrations.integration.test.ts",
@@ -391,6 +555,14 @@
 			{
 				"file": "packages/db/src/migrations.integration.test.ts",
 				"name": "real PostgreSQL migration and runtime role boundary migrates fresh, safely replays and processes durable two-organization synthetic probes"
+			},
+			{
+				"file": "packages/db/src/migrations.integration.test.ts",
+				"name": "real PostgreSQL migration and runtime role boundary retires populated Workspace access while preserving Projects, direct grants, receipts and historical payloads"
+			},
+			{
+				"file": "packages/db/src/migrations.integration.test.ts",
+				"name": "real PostgreSQL migration and runtime role boundary rolls back retirement when a custom dependency prevents the reviewed drop and resumes safely"
 			},
 			{
 				"file": "packages/db/src/migrations.integration.test.ts",
@@ -492,55 +664,71 @@
 			},
 			{
 				"file": "packages/authz/src/keys.integration.test.ts",
-				"name": "Phase 3 service accounts and scoped credentials admits one status transition at the expected version under concurrent commands"
+				"name": "Project service accounts and scoped credentials admits one status transition at the expected version under concurrent commands"
 			},
 			{
 				"file": "packages/authz/src/keys.integration.test.ts",
-				"name": "Phase 3 service accounts and scoped credentials enforces current human administration, recent authentication, policy and nonsecret audit"
+				"name": "Project service accounts and scoped credentials enforces current human administration, recent authentication, policy and nonsecret audit"
 			},
 			{
 				"file": "packages/authz/src/keys.integration.test.ts",
-				"name": "Phase 3 service accounts and scoped credentials rejects fabricated scopes, missing create capabilities, inactive accounts and obsolete epochs"
+				"name": "Project service accounts and scoped credentials fails closed on obsolete or malformed persisted credential scopes and capabilities"
 			},
 			{
 				"file": "packages/authz/src/keys.integration.test.ts",
-				"name": "Phase 3 service accounts and scoped credentials rejects wrong tenant, expiry, revocation and rotation even for already-authenticated actors"
+				"name": "Project service accounts and scoped credentials rejects fabricated scopes, missing create capabilities, inactive accounts and obsolete epochs"
 			},
 			{
 				"file": "packages/authz/src/keys.integration.test.ts",
-				"name": "Phase 3 service accounts and scoped credentials replays account creation exactly and never replays an issued secret"
+				"name": "Project service accounts and scoped credentials rejects retired scopes at account provisioning and key issuance"
 			},
 			{
 				"file": "packages/authz/src/keys.integration.test.ts",
-				"name": "Phase 3 service accounts and scoped credentials requires current read scope to return a current DTO on a create retry"
+				"name": "Project service accounts and scoped credentials rejects wrong tenant, expiry, revocation and rotation even for already-authenticated actors"
 			},
 			{
 				"file": "packages/authz/src/keys.integration.test.ts",
-				"name": "Phase 3 service accounts and scoped credentials stores only a hash, declares capabilities, and intersects resource grants with key scopes"
+				"name": "Project service accounts and scoped credentials replays account creation exactly and never replays an issued secret"
+			},
+			{
+				"file": "packages/authz/src/keys.integration.test.ts",
+				"name": "Project service accounts and scoped credentials requires current read scope to return a current DTO on a create retry"
+			},
+			{
+				"file": "packages/authz/src/keys.integration.test.ts",
+				"name": "Project service accounts and scoped credentials stores only a hash, declares capabilities, and intersects resource grants with key scopes"
 			},
 			{
 				"file": "packages/authz/src/parity.integration.test.ts",
-				"name": "Phase 3 stored policy parity matches an independently materialized complete graph for direct, team, inherited, denied and service paths"
+				"name": "Project stored policy parity matches an independently materialized complete graph for direct, team, denied and service paths"
 			},
 			{
 				"file": "packages/authz/src/resources.integration.test.ts",
-				"name": "Phase 3 resource fault and model boundaries denies malformed/unavailable FGA without turning errors into empty authorized lists"
+				"name": "Project resource fault and model boundaries denies malformed/unavailable FGA without turning errors into empty authorized lists"
 			},
 			{
 				"file": "packages/authz/src/resources.integration.test.ts",
-				"name": "Phase 3 resource fault and model boundaries explicitly upgrades the reviewed ready predecessor without changing epoch and safely resumes"
+				"name": "Project resource fault and model boundaries explicitly upgrades phase2 without changing epoch and safely resumes"
 			},
 			{
 				"file": "packages/authz/src/resources.integration.test.ts",
-				"name": "Phase 3 resource fault and model boundaries rechecks expiry after a real delayed OpenFGA allow on the protected resource"
+				"name": "Project resource fault and model boundaries explicitly upgrades phase3 without changing epoch and safely resumes"
 			},
 			{
 				"file": "packages/authz/src/resources.integration.test.ts",
-				"name": "Phase 3 resource fault and model boundaries rejects a late remote allow after the fence connection is terminated and leaves no domain write"
+				"name": "Project resource fault and model boundaries rechecks expiry after a real delayed OpenFGA allow on the protected resource"
 			},
 			{
 				"file": "packages/authz/src/resources.integration.test.ts",
-				"name": "Phase 3 resource fault and model boundaries uses fresh qualified resource/team/parent namespaces and rejects oversized contexts"
+				"name": "Project resource fault and model boundaries rejects a late remote allow after the fence connection is terminated and leaves no domain write"
+			},
+			{
+				"file": "packages/authz/src/resources.integration.test.ts",
+				"name": "Project resource fault and model boundaries uses fresh qualified resource/team namespaces and rejects oversized contexts"
+			},
+			{
+				"file": "packages/authz/src/retirement.integration.test.ts",
+				"name": "published predecessor access retirement preserves organization/direct/team/deny behavior and retires inherited-only access after schema and model upgrades"
 			},
 			{
 				"file": "packages/authz/src/session-expiry.integration.test.ts",
@@ -652,11 +840,15 @@
 		"capacity": [
 			{
 				"file": "packages/db/src/resources.integration.test.ts",
-				"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA applies direct and inherited denials and restores only the remaining current grant paths"
+				"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA applies Project denials over direct and team grants while retaining organization administration"
 			},
 			{
 				"file": "packages/db/src/resources.integration.test.ts",
 				"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA checks viewer/editor/manager grants, revocation, and expired membership"
+			},
+			{
+				"file": "packages/db/src/resources.integration.test.ts",
+				"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA conflicts with pre-retirement create hashes without duplicating an unassigned Project"
 			},
 			{
 				"file": "packages/db/src/resources.integration.test.ts",
@@ -680,15 +872,7 @@
 			},
 			{
 				"file": "packages/db/src/resources.integration.test.ts",
-				"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA fails closed when a populated workspace module is disabled"
-			},
-			{
-				"file": "packages/db/src/resources.integration.test.ts",
-				"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA inherits workspace access, rejects archived assignments, and permits managed moves out"
-			},
-			{
-				"file": "packages/db/src/resources.integration.test.ts",
-				"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA isolates tenant rows with RLS, missing context, and cross-tenant parents"
+				"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA isolates tenant rows with RLS, missing context, and cross-tenant ownership"
 			},
 			{
 				"file": "packages/db/src/resources.integration.test.ts",
@@ -708,15 +892,11 @@
 			},
 			{
 				"file": "packages/db/src/resources.integration.test.ts",
+				"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA rejects removed assignment and filter fields before writing or reading Projects"
+			},
+			{
+				"file": "packages/db/src/resources.integration.test.ts",
 				"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA rejects stale edits and atomically admits only one winner at the final capacity slot"
-			},
-			{
-				"file": "packages/db/src/resources.integration.test.ts",
-				"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA renames and paginates only authorized workspaces with optimistic versions"
-			},
-			{
-				"file": "packages/db/src/resources.integration.test.ts",
-				"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA requires source and destination authority for a parent move"
 			},
 			{
 				"file": "packages/db/src/resources.integration.test.ts",
@@ -732,6 +912,90 @@
 			}
 		],
 		"browser": [
+			{
+				"file": "tests/e2e/account-dashboard.spec.ts",
+				"name": "account tabs show one section, support keyboard navigation and preserve drafts and deep links"
+			},
+			{
+				"file": "tests/e2e/account-dashboard.spec.ts",
+				"name": "an older sign-in keeps account settings available and asks for confirmation only for sessions"
+			},
+			{
+				"file": "tests/e2e/account-dashboard.spec.ts",
+				"name": "organization creation retains values and its operation key after a committed response is lost"
+			},
+			{
+				"file": "tests/e2e/account-dashboard.spec.ts",
+				"name": "session revocation confirms consequences, keeps the current session and signs out another device"
+			},
+			{
+				"file": "tests/e2e/account-dashboard.spec.ts",
+				"name": "unexpected account loading failures remain visible and can be retried"
+			},
+			{
+				"file": "tests/e2e/appearance-previews.spec.ts",
+				"name": "appearance previews retain their own modes across account and OS changes"
+			},
+			{
+				"file": "tests/e2e/auth-experience.spec.ts",
+				"name": "en dark authentication is responsive and localized"
+			},
+			{
+				"file": "tests/e2e/auth-experience.spec.ts",
+				"name": "en light authentication is responsive and localized"
+			},
+			{
+				"file": "tests/e2e/auth-experience.spec.ts",
+				"name": "es dark authentication is responsive and localized"
+			},
+			{
+				"file": "tests/e2e/auth-experience.spec.ts",
+				"name": "es light authentication is responsive and localized"
+			},
+			{
+				"file": "tests/e2e/auth-experience.spec.ts",
+				"name": "language switching preserves the auth view and carries only an allowed mode"
+			},
+			{
+				"file": "tests/e2e/auth-experience.spec.ts",
+				"name": "link email request gives generic confirmation and an editable next step"
+			},
+			{
+				"file": "tests/e2e/auth-experience.spec.ts",
+				"name": "missing-token reset and confirmation pages offer a localized way back"
+			},
+			{
+				"file": "tests/e2e/auth-experience.spec.ts",
+				"name": "mode changes retain email and a background session refresh preserves the form"
+			},
+			{
+				"file": "tests/e2e/auth-experience.spec.ts",
+				"name": "password visibility is keyboard accessible and confirmation blocks mismatched registration"
+			},
+			{
+				"file": "tests/e2e/auth-experience.spec.ts",
+				"name": "recover email request gives generic confirmation and an editable next step"
+			},
+			{
+				"file": "tests/e2e/auth-experience.spec.ts",
+				"name": "reset email request gives generic confirmation and an editable next step"
+			},
+			{
+				"file": "tests/e2e/dashboard-visual.spec.ts",
+				"name": "authenticated pages: desktop/mobile, English/Spanish, light/dark and shell keyboard navigation"
+			},
+			{
+				"file": "tests/e2e/example-customers.spec.ts",
+				"name": "last-row deletion returns to previous page and conflict/failure preserves drafts"
+			},
+			{
+				"file": "tests/e2e/example-customers.spec.ts",
+				"name": "member can read, denied mutations keep values, and obsolete query responses are ignored"
+			},
+			{
+				"file": "tests/e2e/example-customers.spec.ts",
+				"name": "real CRUD, URL queries, cursor navigation, keyboard dialogs and both locale layouts"
+			},
 			{
 				"file": "tests/e2e/foundation.spec.ts",
 				"name": "localized validation, keyboard focus and synthetic organization state"
@@ -758,7 +1022,7 @@
 			},
 			{
 				"file": "tests/e2e/identity.spec.ts",
-				"name": "Project dashboard validates, edits, detects conflicts, moves and restores localized resources"
+				"name": "Project dashboard validates, edits, detects conflicts and restores localized resources"
 			},
 			{
 				"file": "tests/e2e/identity.spec.ts",
@@ -775,6 +1039,54 @@
 			{
 				"file": "tests/e2e/identity.spec.ts",
 				"name": "signup explains service outages and keeps the form available for retry"
+			},
+			{
+				"file": "tests/e2e/organization-dashboard.spec.ts",
+				"name": "organization tabs, retry keys, sensitive denial, and localized member acceptance use real services"
+			},
+			{
+				"file": "tests/e2e/personal-settings.spec.ts",
+				"name": "personal appearance persists across devices, SSR, tabs and account switches; System follows the OS"
+			},
+			{
+				"file": "tests/e2e/personal-settings.spec.ts",
+				"name": "theme saves recover from failure and superseded choices, with keyboard selection"
+			},
+			{
+				"file": "tests/e2e/personal-settings.spec.ts",
+				"name": "upload, replacement, validation, lost responses, fallback and removal update Account and sidebar"
+			},
+			{
+				"file": "tests/e2e/projects-dashboard.spec.ts",
+				"name": "project actions honor a different organization's denial and keep the rejected draft"
+			},
+			{
+				"file": "tests/e2e/projects-dashboard.spec.ts",
+				"name": "project submissions survive a lost committed response and ignore an older search response"
+			},
+			{
+				"file": "tests/e2e/projects-dashboard.spec.ts",
+				"name": "Projects belong directly to their Organization and obsolete requests are rejected"
+			},
+			{
+				"file": "tests/e2e/theme.spec.ts",
+				"name": "authentication pages use all palettes at desktop and mobile widths"
+			},
+			{
+				"file": "tests/e2e/theme.spec.ts",
+				"name": "dark: server roots have the correct appearance with JavaScript disabled"
+			},
+			{
+				"file": "tests/e2e/theme.spec.ts",
+				"name": "fixed developer modes and every palette stay stable when the OS changes"
+			},
+			{
+				"file": "tests/e2e/theme.spec.ts",
+				"name": "light: server roots have the correct appearance with JavaScript disabled"
+			},
+			{
+				"file": "tests/e2e/theme.spec.ts",
+				"name": "System follows OS changes across root layouts, ignores old storage, and hydrates without mutation"
 			}
 		],
 		"directory": [

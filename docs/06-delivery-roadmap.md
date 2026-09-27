@@ -10,11 +10,11 @@ The [September 23 authorization rerun](phase0/authorization.md#rerun-with-increa
 
 Phase 1 repository/runtime implementation and its verification record are documented in [the Phase 1 guide](phase1/README.md). Phase 2 adds production identity, tenancy, contextual authorization and initialization; its [acceptance record](phase2/acceptance.md) maps the implemented services and executed checks to the Phase 2 gates. The [Phase 3 implementation and acceptance record](phase3/acceptance.md) tracks the accepted direct-Project performance gate alongside historical resource authorization, Workspace, service-key and capacity evidence.
 
-Phase 3's real-feature `R-AUTHZ-PERF` gate **passed** in the [manual 2026-09-27 run](phase3/acceptance.md#accepted-direct-project-performance-result): **524,149/524,149 operations**, zero retries, **1,800.678 measured seconds**, **291.08 operations/second**, and all latency targets met on stable source. The `direct-project-v1` workload retains the 60/20/10/10 read/update/create-delete/share-revoke mix, 100,000 Projects and 50 clients; 27,238 shares confirmed allowed reads and 25,163 revocations confirmed denial. The [direct-Organization Project design](../feature-briefs/remove-workspaces.md) retires Workspace parent moves; earlier results remain predecessor evidence. Current-image acceptance/security scans and the remaining M1 release sign-off are still open; the benchmark excludes TCP/Next wrappers and the later sustained-image performance gate.
+Phase 3's real-feature `R-AUTHZ-PERF` gate **passed** in the [manual 2026-09-27 run](phase3/acceptance.md#accepted-direct-project-performance-result): **524,149/524,149 operations**, zero retries, **1,800.678 measured seconds**, **291.08 operations/second**, and all latency targets met on stable source. The `direct-project-v1` workload retains the 60/20/10/10 read/update/create-delete/share-revoke mix, 100,000 Projects and 50 clients; 27,238 shares confirmed allowed reads and 25,163 revocations confirmed denial. The [direct-Organization Project design](../feature-briefs/remove-workspaces.md) retires Workspace parent moves; earlier results remain predecessor evidence. Current-image/security checks, refreshed skill evaluations and hosted CI now pass in the [M1 Foundation acceptance record](foundation/acceptance.md). The benchmark excludes TCP/Next wrappers and the later sustained-image performance gate.
 
-Phase 4's [authoring skills and deterministic checks](phase4/README.md) pass the local `R-SKILLS` gate: all ten required behavior tasks pass in both independently authored candidates, with source preservation, real-service checks and application validation. Its [acceptance record](phase4/acceptance.md) links the repeat evidence and limitations. That execution used an explicit user exception to the then-missing Phase 3 benchmark prerequisite and ran neither the benchmark nor a smoke substitute. The separate manual run now closes the real-feature performance gate; it does not refresh the historical skill evaluation or accept the complete Foundation milestone.
+Phase 4's [authoring skills and deterministic checks](phase4/README.md) pass the refreshed `R-SKILLS` gate: all ten tasks pass in both independently authored candidates, including real-service checks, captured interruption/resume, source-preserving repeated requests and separate security review. The [current acceptance record](phase4/acceptance.md) preserves the earlier exception and failed attempts as historical evidence. The full Phase 3 benchmark was already accepted before these new trials.
 
-The optional [independent Backoffice plan](backoffice/development-plan.md) adds a separate application/image and an operator delivery track across Phases 5–8; see [§6.7](#67-backoffice-planned-delivery-and-acceptance). All Backoffice behavior is **planned**, with no implementation or Backoffice acceptance evidence from the documentation task. Its prerequisites now reference the accepted full `direct-project-v1` report. BO-00 must still resolve the remaining applicable Foundation prerequisites; neither the benchmark nor the historical Phase 4 exception accepts M1 or grants an exception for new Backoffice work.
+**M1 Foundation (Phases 0–4) is accepted**, with the [due-only sign-off below](#m1-foundation-sign-off-2026-09-27). The optional [Backoffice plan](backoffice/development-plan.md) remains a separate, unimplemented Phases 5–8 track. BO-00 must assess current Foundation evidence for its proposed changes and ratify its architecture; Foundation acceptance does not accept Backoffice behavior.
 
 ## 6.2 Phases and acceptance gates
 
@@ -129,6 +129,19 @@ Implement security primitives before extracting agent skills. Add optional UI co
 ## 6.4 Release checklist
 
 Attach evidence for each applicable requirement ID in the [acceptance matrix](#capability-to-phase-and-acceptance-matrix), recording template commit, enabled preset/modules, image identity, suite version and result. The matrix and linked contracts own the test cases; this checklist owns release sign-off. An optional disabled module is explicitly out of scope, never reported as a passed test. All F/C/E requirements due by the selected milestone must pass.
+
+### M1 Foundation sign-off 2026-09-27
+
+The [Foundation record](foundation/acceptance.md) and its versioned evidence indexes accept the implemented Foundation preset through Phase 4. All requirements due for M1 pass:
+
+- [x] Required stack, frozen install, source/types/unused-code checks, commit conventions, production and Storybook builds, and all eight hosted CI jobs.
+- [x] `R-TENANCY`, `R-LIFECYCLE`, `R-AUTHZ`, `R-PASSWORD`, `R-MAGIC`, `R-PASSKEY`, `R-EMAIL`, `R-OWNER`, `R-TRANSFER` and `R-KEYS` on the enabled Foundation paths.
+- [x] `R-POLICY` and `R-SEATS` with real local policy/capacity; billing remains disabled. Direct-Organization Projects preserve data/grants/history and retire `R-WORKSPACES` explicitly.
+- [x] Phase 0 decision and Phase 3 real-feature `R-AUTHZ-PERF`, with unchanged production behavior and an explicit source-delta audit for test-only cleanup changes.
+- [x] Current `R-IMAGE`, exact-image and dependency vulnerability policies, runtime configuration, logs/redaction, synthetic setup and packaged commands.
+- [x] Foundation dashboard/browser behavior and `R-SKILLS`: six canonical skills, all ten tasks in both refreshed trials, independent security reviews, real migrations, customization preservation and source-identical repeats.
+
+The general checklist below remains for later milestone scope. Unchecked combined items include Commercial/Enterprise behavior, released-product upgrades and the Phase 8 sustained-image gate; they are not outstanding M1 requirements. Backoffice is not enabled.
 
 ### Security and identity
 

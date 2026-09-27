@@ -52,21 +52,28 @@ test("task-09 directory uses current tenant services, navigation, keyboard and b
 		const id = organization.id;
 		expect(id).toEqual(expect.any(String));
 		await page.goto(`/en/organizations/${id}`);
-		const link = page.locator(`a[href="/en/organizations/${id}/directory"]`);
+		const main = page.getByRole("main");
+		const link = page
+			.locator(`a[href="/en/organizations/${id}/directory"]`)
+			.first();
 		await expect(link).toBeVisible();
 		await link.focus();
+		await expect(link).toBeFocused();
 		await page.keyboard.press("Enter");
 		await expect(page).toHaveURL(new RegExp(`/organizations/${id}/directory$`));
-		await expect(page.getByRole("main")).toBeVisible();
-		await expect(page.getByText(email, { exact: true })).toBeVisible();
-		const english = await page.getByRole("heading", { level: 1 }).textContent();
+		await expect(main).toBeVisible();
+		// The shared shell also shows the signed-in email. Only directory content
+		// proves tenant data was loaded, or that a denied directory disclosed it.
+		await expect(main.getByText(email, { exact: true })).toBeVisible();
+		const english = await main.getByRole("heading", { level: 1 }).textContent();
 		await page.goto(`/es/organizations/${id}/directory`);
 		await expect(page.locator("html")).toHaveAttribute("lang", "es");
-		await expect(page.getByText(email, { exact: true })).toBeVisible();
-		const spanish = await page.getByRole("heading", { level: 1 }).textContent();
+		await expect(main.getByText(email, { exact: true })).toBeVisible();
+		const spanish = await main.getByRole("heading", { level: 1 }).textContent();
 		expect(spanish).not.toBe(english);
 		await page.goto(`/en/organizations/${randomUUID()}/directory`);
-		await expect(page.getByText(email, { exact: true })).toHaveCount(0);
+		await expect(main.getByRole("alert")).toBeVisible();
+		await expect(main.getByText(email, { exact: true })).toHaveCount(0);
 	} finally {
 		await Promise.all([identity.end(), web.end()]);
 	}

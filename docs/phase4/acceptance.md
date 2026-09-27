@@ -1,5 +1,19 @@
 # Phase 4 acceptance record
 
+## Current acceptance — 2026-09-27
+
+The refreshed `R-SKILLS` gate passes all ten tasks in each of two independently authored candidates. The [versioned evidence index](evidence/release-2026-09-27.json) records exact starting source, six skill hashes, references, newly frozen controls, actual agent sessions, final checks, interruption/resume, source-identical repeats, independent seeded-defect reviews and retained failures. The [Foundation acceptance record](../foundation/acceptance.md) also closes current image/security and hosted CI sign-off for M1.
+
+The authors started from the captured `acc43c8aa12cfc27174f0a41e280b50aba47486a` source plus two declared customization fixtures. Actual host metadata is OpenAI `gpt-6-astra`, reasoning `xhigh`, runtime `0.158.0-alpha.2.1`. Candidates have separate source/dependency copies; the shared host does not enforce per-agent filesystem isolation. Both final candidates pass typecheck, unit and production build checks plus all required behavior cases. These supervised trials include repairs and do not claim first-attempt success or universal agent reliability.
+
+The independent controller refresh replaces obsolete Workspace expectations with direct-Project checks and retains immutable migration history through `0009`. The later directory correction scopes content to `main`, supports multiple legitimate navigation links and waits for a denied state. Negative browser variants still fail for missing directory data or tenant disclosure. Email sample URLs match the actual producers’ credential-free account security route; unchanged transactional assertions reject autocommit delivery and commit-instead-of-rollback faults. The original frozen controls and failed attempts remain intact; both unchanged final candidates were rerun against the new snapshot. Post-baseline root changes concern test teardown, evaluator controls, evidence references and status documentation, without changing production contracts or the six skills.
+
+The accepted Phase 3 full benchmark preceded these new trials. Task/product/directory/email code remains disposable evaluation output. Current root evidence is 145 unit, 150 integration and 44 browser cases in hosted CI, plus 63 focused unit and 106 integration cases in local `skills:check`.
+
+## Historical acceptance — 2026-09-26
+
+The following record and [original index](evidence/release.json) are preserved as predecessor evidence. Counts, model settings, source fingerprints and the benchmark exception below describe that execution only.
+
 Phase 4 passes its local `R-SKILLS` behavior gate: all ten tasks pass in each of
 two independently authored candidates, alongside their application checks. The
 six skills, shared references, four example briefs, deterministic guards and

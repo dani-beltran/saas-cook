@@ -3,6 +3,7 @@ import { Pool } from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { checkTenantCatalog } from "../../../scripts/phase4/tenant-catalog";
 import { runMigrations } from "../../db/src/migrate";
+import { dropTestDatabase } from "./database";
 
 const adminUrl =
 	process.env.TEST_DATABASE_ADMIN_URL ??
@@ -23,7 +24,7 @@ beforeAll(async () => {
 });
 afterAll(async () => {
 	await database?.end();
-	if (created) await admin.query(`DROP DATABASE ${name} WITH (FORCE)`);
+	if (created) await dropTestDatabase(admin, name);
 	await admin.end();
 });
 

@@ -1,0 +1,160 @@
+{
+	"schemaVersion": 1,
+	"accepted": true,
+	"scope": "M1 Foundation, Phases 0\u20134; disabled Commercial/Enterprise/Backoffice modules and Phase 8 image performance are out of scope",
+	"capturedAt": "2026-09-27T13:20:19.609Z",
+	"source": {
+		"branchHead": "c06ba912955091e38ee287fe86b3a45434b6e241",
+		"testedMerge": "770d42613f814a1d96df6d6cdf709f315e012720",
+		"implementationSha256": "63a20c792be31ec6236a83939624685a31334bbe864451d08a241813d4fecbbd",
+		"laterChanges": "Directory evaluator locator, security-email fixture URLs and acceptance/onboarding documentation only; production runtime/model/migration/build inputs unchanged."
+	},
+	"hostedCI": {
+		"url": "https://github.com/dani-beltran/saas-cook/actions/runs/36319257546",
+		"event": "pull_request",
+		"jobs": [
+			{
+				"name": "production",
+				"conclusion": "success"
+			},
+			{
+				"name": "storybook",
+				"conclusion": "success"
+			},
+			{
+				"name": "image",
+				"conclusion": "success"
+			},
+			{
+				"name": "integration",
+				"conclusion": "success"
+			},
+			{
+				"name": "browser",
+				"conclusion": "success"
+			},
+			{
+				"name": "source",
+				"conclusion": "success"
+			},
+			{
+				"name": "unit",
+				"conclusion": "success"
+			},
+			{
+				"name": "required",
+				"conclusion": "success"
+			}
+		],
+		"unitCases": 145,
+		"integrationCases": 150,
+		"browser": {
+			"reports": 11,
+			"counts": {
+				"passed": 44,
+				"unexpected": 0,
+				"flaky": 0,
+				"skipped": 0
+			},
+			"retryResults": 0
+		},
+		"metadata": {
+			"path": "artifacts/foundation-closeout/ci-c06ba91-result.json",
+			"sha256": "1d8e7e0b11ab86b9a786aea9bdeb5c81febec510ac34f754350123b3c665eac6"
+		},
+		"artifactIndex": {
+			"path": "artifacts/foundation-closeout/hosted-c06ba91-evidence-index.json",
+			"sha256": "1fa3dec825a3bfd7fcb903204503f42510965c54458ff78e35d8589f8078448e"
+		},
+		"reports": [
+			{
+				"path": "artifacts/foundation-closeout/hosted-c06ba91/unit-770d42613f814a1d96df6d6cdf709f315e012720/results.xml",
+				"sha256": "3b646a73d86dd9966d4869eab8a07b33156213693c4abad93a5ee454e278a640"
+			},
+			{
+				"path": "artifacts/foundation-closeout/hosted-c06ba91/dependency-scan-770d42613f814a1d96df6d6cdf709f315e012720/security/dependencies-policy.json",
+				"sha256": "fd8739303295446ea715950ded3e79d8e21830f050744f38bf35d2c7efc66b91"
+			},
+			{
+				"path": "artifacts/foundation-closeout/hosted-c06ba91/integration-770d42613f814a1d96df6d6cdf709f315e012720/vitest/integration.xml",
+				"sha256": "fad9de977d82cabedf062a67bec276619c20bdb13cc3cf7185433a4f4a4a910c"
+			},
+			{
+				"path": "artifacts/foundation-closeout/hosted-c06ba91/integration-770d42613f814a1d96df6d6cdf709f315e012720/authz/model-validation.json",
+				"sha256": "841993a5ae748bd5ae8b7076656009d59d8034f6502af73c24fcbed653327a84"
+			},
+			{
+				"path": "artifacts/foundation-closeout/hosted-c06ba91/image-770d42613f814a1d96df6d6cdf709f315e012720/security/image-policy.json",
+				"sha256": "486a86066d487baf98f8307e0593fa4be13141c6652491fb1c215b7bab7fb245"
+			},
+			{
+				"path": "artifacts/foundation-closeout/hosted-c06ba91/image-770d42613f814a1d96df6d6cdf709f315e012720/image/acceptance.json",
+				"sha256": "3acb349d5d02ab89ff78edc5b0908eaf393e9f7bdc6715d4b0905327c554b866"
+			}
+		],
+		"branchProtection": {
+			"configured": false,
+			"repositoryVisibility": "private",
+			"reason": "GitHub API returns HTTP 403: compatible plan or public repository required. CI execution passes independently; no enforced branch protection is claimed."
+		}
+	},
+	"image": {
+		"id": "sha256:ef0a9413dc2b558ab34ebda95740ebd793f2dc784322911fdc6f83f7b3d583c3",
+		"architecture": "amd64",
+		"runtime": "Node.js 24.21.0",
+		"checksPassed": 16,
+		"dependencyPolicy": "passed",
+		"imagePolicy": "passed",
+		"blockingFindings": 0,
+		"exceptions": 0
+	},
+	"skills": {
+		"index": {
+			"path": "docs/phase4/evidence/release-2026-09-27.json",
+			"sha256": "c7cfbdcb57e755685f1fd6c97677f45d0947c262833e84b36fb87c851e3c99bd"
+		},
+		"focusedUnitCases": 63,
+		"integrationCases": 106,
+		"localReport": {
+			"path": "artifacts/phase4/checks/1790512444214-31c1807c-6cfd-49ac-a21d-a32126c178db/report.json",
+			"sha256": "97c15b55ffb070382ae9cdb892830e66cd8628787360e9a37c6c3f6787b3c646"
+		},
+		"emailReview": {
+			"path": "artifacts/phase4-evaluator-refresh-2026-09-27/email-review/review.md",
+			"sha256": "af3f3fd97a67fbb4a70c93ec3a2fcef25a1408a030655ce9bc8514ac5ba334cf"
+		},
+		"emailValidation": {
+			"path": "artifacts/phase4-evaluator-refresh-2026-09-27/email-review/attempt-1790514621940/verified-summary.json",
+			"sha256": "fa8e4b93b034ed6f7fb645c5995abb7f3a08775a51bde12f0ae47c983f9ef7e6"
+		},
+		"directoryReview": {
+			"path": "artifacts/phase4-evaluator-refresh-2026-09-27/directory-review/review.md",
+			"sha256": "cabd9572c82fedaf1f0dcbf6442670878bbe0af12e7e6dfacc1d5de6561bdc54"
+		},
+		"directoryValidation": {
+			"path": "artifacts/phase4-evaluator-refresh-2026-09-27/directory-review/attempt-1790514002608/verified-summary.json",
+			"sha256": "4a96181e1e3ab1044fabf05d2945e853275682973c3f39320b069149c4f31dca"
+		}
+	},
+	"performance": {
+		"report": {
+			"path": "docs/phase3/evidence/authorization-benchmark-2026-09-27T11-03-09-677Z.json",
+			"sha256": "f19721b687364ae28edc421d4c89d91bf90f8119077cbd6cb20fc76069b0fea1"
+		},
+		"sourceDelta": {
+			"path": "artifacts/foundation-closeout/acceptance-source-delta.json",
+			"sha256": "8b543866eb9c6f74a00852c65805b78d9ba8bd08e97b76d3430ddea7710b5179"
+		},
+		"result": "passed",
+		"workload": "direct-project-v1",
+		"operations": 524149,
+		"retries": 0,
+		"measuredSeconds": 1800.678,
+		"carryForward": "Explicit source-delta review: only test fixture teardown changes affect the broad fingerprint, outside the measured workload. No new benchmark claimed."
+	},
+	"limitations": [
+		"Full local transcripts, source snapshots and failed attempts are retained in ignored artifacts; only concise indexes are versioned.",
+		"Hosted run and exact image above identify executable acceptance before the final evidence-only commit; final branch/main checks are verified separately in GitHub.",
+		"No production provisioning, published tagged template, later recovery journal or sustained-image performance acceptance is claimed."
+	]
+}

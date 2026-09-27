@@ -13,6 +13,7 @@ import { fileURLToPath } from "node:url";
 import { organizations } from "@common-saas/testing";
 import { Pool } from "pg";
 import { afterEach, describe, expect, it } from "vitest";
+import { dropTestDatabase } from "../../testing/src/database";
 import {
 	createDatabase,
 	hasProbe,
@@ -37,7 +38,7 @@ async function fixture() {
 	const name = `phase1_test_${randomUUID().replaceAll("-", "")}`;
 	await admin.query(`CREATE DATABASE ${name} OWNER common_saas_migrator`);
 	cleanup.push(async () => {
-		await admin.query(`DROP DATABASE ${name} WITH (FORCE)`);
+		await dropTestDatabase(admin, name);
 		await admin.end();
 	});
 	function url(role: string) {

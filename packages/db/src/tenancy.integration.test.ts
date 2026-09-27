@@ -3,6 +3,7 @@ import { Pool } from "pg";
 import { afterEach, describe, expect, it } from "vitest";
 import { bootstrap } from "../../authz/src/commands";
 import { createAuthorizationService } from "../../authz/src/index";
+import { dropTestDatabase } from "../../testing/src/database";
 import { runMigrations } from "./migrate";
 import {
 	type ControlPrincipal,
@@ -32,8 +33,8 @@ async function fixture(capacity = 5) {
 		`CREATE DATABASE ${name} OWNER common_saas_control_admin`,
 	);
 	cleanup.push(async () => {
-		await admin.query(`DROP DATABASE ${name} WITH (FORCE)`);
-		await controlAdmin.query(`DROP DATABASE ${name} WITH (FORCE)`);
+		await dropTestDatabase(admin, name);
+		await dropTestDatabase(controlAdmin, name);
 		await admin.end();
 		await controlAdmin.end();
 	});
