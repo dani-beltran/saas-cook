@@ -21,7 +21,6 @@ erDiagram
     ORGANIZATION ||--o{ TEAM : owns
     MEMBERSHIP ||--o{ TEAM_MEMBER : participates
     TEAM ||--o{ TEAM_MEMBER : includes
-    ORGANIZATION ||--o{ WORKSPACE : groups
     ORGANIZATION ||--o{ PROJECT : owns
     PROJECT ||--o{ TASK : contains
     ORGANIZATION ||--o| BILLING_ACCOUNT : pays
@@ -47,7 +46,6 @@ The diagram shows logical relationships, not exhaustive SQL constraints. Polymor
 | `memberships` | Organization, user, status, baseline role, billable classification, joined/suspended timestamps; unique `(organization_id, user_id)` |
 | `invitations` | Organization, normalized destination identity, token hash, requested membership, inviter, expiry, acceptance/cancellation; single-use atomic acceptance |
 | `teams`, `team_members` | Organization, team name/slug; membership references with same-tenant constraints; no nested teams in first release |
-| `workspaces` | Organization, name/tenant-unique slug, archived state and version; optional Phase 3 subdivision module; registered target for inherited grants |
 | `organization_settings`, `security_policies` | Typed settings and security requirements, policy version; organization-wide changes audited |
 | `verified_domains` | Organization, hostname, verification challenge/status/expiry; uniqueness and takeover protection |
 | `sso_connections`, `directory_connections`, `directory_subjects` | Organization-scoped provider mappings, encrypted credentials, external stable subjects, sync state, source ownership |
@@ -69,17 +67,17 @@ Password reset uses the existing identity verification store with a separate has
 
 | Table | Essential data and rules |
 | --- | --- |
-| `resource_registry` | `(organization_id, resource_type, resource_id)`, parent pointer, lifecycle state; allows explicit grants to reference known resources |
+| `resource_registry` | `(organization_id, resource_type, id)`, Project lifecycle state; allows explicit grants to reference known resources |
 | `resource_grants` | Organization, registered target, subject membership/team/service account, relation, expiry, grantor; unique normalized edge; reject cross-tenant subjects/parents |
 | `roles`, `role_permissions`, `role_assignments` | Tenant custom-role definitions from a versioned platform permission catalogue; assignments to validated subjects and scopes |
 | `authorization_revisions` | One row per organization: source desired/applied revision, evaluation mode, pinned model/store, recovery epoch and verified readiness; contextual publication is the source commit, and restored equality alone cannot authorize access |
 | `authorization_projection_attempts` (historical spike only) | Retained for rejected full-copy regression evidence; contextual authorization creates no projection attempts or persisted graph snapshots |
-| `projects` | Organization, ID, name, tenant-unique slug, description, status, owner membership, optional workspace reference, version, timestamps; owner/workspace composite foreign keys include organization; optional soft deletion |
+| `projects` | Organization, ID, name, tenant-unique slug, description, status, owner membership, version, timestamps; owner composite foreign key includes organization; optional soft deletion |
 | `tasks` | Optional reference extension: organization, ID, required parent project, title, state, assignee membership, version/timestamps |
 
 Use dedicated nullable subject columns with a CHECK requiring exactly one of membership/team/service account, or introduce a typed principal registry. Do not rely on an unconstrained subject string. Register/unregister resources and create/remove their local grants in the same transaction as domain lifecycle changes; contextual authorization reads those committed source relationships directly. Audit/downstream events may still use an outbox; permission availability does not await it.
 
-Every resource table provides a unique `(organization_id, id)` target for child composite foreign keys. For example, `(organization_id, project_id)` in `tasks` references `(organization_id, id)` in `projects`. An owner field references a membership in the same organization. Parent moves require authorization on both locations and a graph revision change.
+Every resource table provides a unique `(organization_id, id)` target for child composite foreign keys. For example, `(organization_id, project_id)` in `tasks` references `(organization_id, id)` in `projects`. An owner field references a membership in the same organization. Projects have no mutable parent; their Organization is immutable.
 
 The actual OpenFGA tuple storage is in its own database and managed by OpenFGA migrations. Application code never writes its internal tables.
 

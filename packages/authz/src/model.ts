@@ -8,12 +8,6 @@ const intersection = (...child: unknown[]) => ({ intersection: { child } });
 const difference = (base: unknown, subtract: unknown) => ({
 	difference: { base, subtract },
 });
-const workspace = (name: string) => ({
-	tupleToUserset: {
-		tupleset: { relation: "workspace" },
-		computedUserset: { relation: name },
-	},
-});
 const parent = (name: string) => ({
 	tupleToUserset: {
 		tupleset: { relation: "organization" },
@@ -31,32 +25,19 @@ const metadata = (types: Record<string, unknown[]>) => ({
 const user = [{ type: "user" }];
 const principals = [{ type: "user" }, { type: "service_account" }];
 const subjects = [...principals, { type: "team", relation: "member" }];
-function resourceModel(type: "project" | "workspace") {
+function projectModel() {
 	const allowed = (...relations: string[]) =>
 		intersection(
 			parent("can_read"),
 			union(
 				parent("can_manage"),
-				difference(
-					union(
-						...relations.map(relation),
-						...(type === "project"
-							? [
-									workspace(
-										`can_${relations.includes("viewer") ? "read" : relations.includes("editor") ? "update" : "manage"}`,
-									),
-								]
-							: []),
-					),
-					relation("denied"),
-				),
+				difference(union(...relations.map(relation)), relation("denied")),
 			),
 		);
 	return {
-		type,
+		type: "project",
 		relations: {
 			organization: direct,
-			...(type === "project" ? { workspace: direct } : {}),
 			viewer: direct,
 			editor: direct,
 			manager: direct,
@@ -67,11 +48,9 @@ function resourceModel(type: "project" | "workspace") {
 			can_delete: relation("can_manage"),
 			can_restore: relation("can_manage"),
 			can_share: relation("can_manage"),
-			can_move: relation("can_manage"),
 		},
 		metadata: metadata({
 			organization: [{ type: "organization" }],
-			...(type === "project" ? { workspace: [{ type: "workspace" }] } : {}),
 			viewer: subjects,
 			editor: subjects,
 			manager: subjects,
@@ -82,6 +61,10 @@ function resourceModel(type: "project" | "workspace") {
 /** Immutable predecessor accepted only by the explicit model upgrade command. */
 export const phase2ModelHash =
 	"553182ddd6c5883b914ad576fd6f49adb3ddab38e7723802ac849066e3d15509";
+/** Immutable published Phase 3 predecessor; the matching JSON fixture is retained. */
+export const phase3ModelHash =
+	"4a09e8e1d40fc8cbe1332a3e59de86f55d533506e5b1678dad9757da471aec18";
+export const predecessorModelHashes = [phase2ModelHash, phase3ModelHash];
 /** Versioned production compiler; no custom-role or arbitrary parent traversal. */
 export const authorizationModel = {
 	schema_version: "1.1",
@@ -116,8 +99,7 @@ export const authorizationModel = {
 				billing: user,
 			}),
 		},
-		resourceModel("workspace"),
-		resourceModel("project"),
+		projectModel(),
 		{
 			type: "team",
 			relations: {
@@ -190,12 +172,11 @@ export type ResourcePermission =
 	| "delete"
 	| "restore"
 	| "manage"
-	| "share"
-	| "move";
+	| "share";
 export interface ResourceTarget {
-	type: "organization" | "project" | "workspace";
+	type: "organization" | "project";
 	id: string;
-	resourceType?: "project" | "workspace";
+	resourceType?: "project";
 }
 export interface ContextGrant {
 	resourceId: string;
@@ -210,9 +191,27 @@ export function compileResourceContext(input: {
 	role?: Role;
 	creator: boolean;
 	target: ResourceTarget;
-	workspaceId?: string;
 	grants: ContextGrant[];
 }) {
+	if (
+		!["organization", "project"].includes(input.target.type) ||
+		(input.target.resourceType !== undefined &&
+			input.target.resourceType !== "project") ||
+		Object.keys(input).some(
+			(key) =>
+				![
+					"organizationId",
+					"epoch",
+					"actorId",
+					"actorType",
+					"role",
+					"creator",
+					"target",
+					"grants",
+				].includes(key),
+		)
+	)
+		throw new Error("Unsupported authorization target");
 	const namespace = `${safeIdentifier(input.organizationId)}/${safeIdentifier(input.epoch)}/${randomUUID()}`;
 	const organization = `organization:${namespace}/root`;
 	const actor = `${input.actorType}:${safeIdentifier(input.actorId)}`;
@@ -229,26 +228,10 @@ export function compileResourceContext(input: {
 		tuples.push({ user: actor, relation: input.role, object: organization });
 	if (object !== organization)
 		tuples.push({ user: organization, relation: "organization", object });
-	const parentObject = input.workspaceId
-		? `workspace:${namespace}/${safeIdentifier(input.workspaceId)}`
-		: undefined;
-	if (parentObject) {
-		if (input.target.type !== "project")
-			throw new Error("Unsupported authorization parent");
-		tuples.push(
-			{ user: parentObject, relation: "workspace", object },
-			{ user: organization, relation: "organization", object: parentObject },
-		);
-	}
 	for (const grant of input.grants) {
 		if (!["viewer", "editor", "manager", "denied"].includes(grant.relation))
 			throw new Error("Unsupported grant relation");
-		const target =
-			grant.resourceId === input.target.id
-				? object
-				: grant.resourceId === input.workspaceId
-					? parentObject
-					: undefined;
+		const target = grant.resourceId === input.target.id ? object : undefined;
 		if (!target || target === organization)
 			throw new Error("Unsupported grant target");
 		let subject = actor;

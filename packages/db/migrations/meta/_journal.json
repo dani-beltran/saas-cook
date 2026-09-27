@@ -50,6 +50,13 @@
 			"when": 1790439479357,
 			"tag": "0006_resources",
 			"breakpoints": true
+		},
+		{
+			"idx": 7,
+			"version": "7",
+			"when": 1790468842162,
+			"tag": "0007_organization_projects",
+			"breakpoints": true
 		}
 	]
 }

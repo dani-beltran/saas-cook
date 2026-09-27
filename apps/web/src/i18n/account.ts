@@ -11,11 +11,12 @@ export const accountMessages = {
 		showConfirmPassword: "Show confirm password",
 		hideConfirmPassword: "Hide confirm password",
 		signInTitle: "Welcome back",
-		signInDescription: "Sign in to continue to your workspace.",
+		signInDescription:
+			"Sign in to continue to your organizations and projects.",
 		signInAction: "Sign in",
 		createAccountLink: "Create an account",
 		registerTitle: "Create your account",
-		registerDescription: "A few details to get started with your workspace.",
+		registerDescription: "A few details to get started with your organization.",
 		resetTitle: "Reset your password",
 		resetDescription: "We’ll email you a link to choose a new password.",
 		linkTitle: "Sign in with an email link",
@@ -112,7 +113,7 @@ export const accountMessages = {
 		unnamedPasskey: "Unnamed passkey",
 
 		title: "Your account",
-		welcome: "Sign in to your workspace",
+		welcome: "Sign in to your account",
 		email: "Email",
 		name: "Name",
 		signIn: "Email a sign-in link",
@@ -202,12 +203,12 @@ export const accountMessages = {
 		showConfirmPassword: "Mostrar confirmación de contraseña",
 		hideConfirmPassword: "Ocultar confirmación de contraseña",
 		signInTitle: "Te damos la bienvenida",
-		signInDescription: "Inicia sesión para acceder a tu espacio de trabajo.",
+		signInDescription:
+			"Inicia sesión para acceder a tus organizaciones y proyectos.",
 		signInAction: "Iniciar sesión",
 		createAccountLink: "Crear una cuenta",
 		registerTitle: "Crea tu cuenta",
-		registerDescription:
-			"Solo unos datos para empezar con tu espacio de trabajo.",
+		registerDescription: "Solo unos datos para empezar con tu organización.",
 		resetTitle: "Restablece tu contraseña",
 		resetDescription:
 			"Te enviaremos un enlace para elegir una nueva contraseña.",

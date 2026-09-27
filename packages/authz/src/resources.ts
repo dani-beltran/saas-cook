@@ -33,18 +33,15 @@ export class ResourceAuthorizationDenied extends Error {
 		super("Resource authorization denied");
 	}
 }
-export const keyScopes = ["project", "workspace"].flatMap((type) =>
-	[
-		"read",
-		"create",
-		"update",
-		"delete",
-		"restore",
-		"manage",
-		"share",
-		"move",
-	].map((action) => `${type}:${action}`),
-);
+export const keyScopes = [
+	"read",
+	"create",
+	"update",
+	"delete",
+	"restore",
+	"manage",
+	"share",
+].map((action) => `project:${action}`);
 export const hashKey = (token: string) =>
 	createHash("sha256").update(token).digest("hex");
 
@@ -71,7 +68,14 @@ export async function currentServiceKey(
 		[organizationId, hashKey(token), state.epoch],
 	);
 	const key = result.rows[0];
-	if (!key) throw new ResourceAuthorizationDenied();
+	if (
+		!key?.scopes.length ||
+		key.scopes.some((scope) => !keyScopes.includes(scope)) ||
+		key.capabilities.some(
+			(capability) => !["project:read", "project:create"].includes(capability),
+		)
+	)
+		throw new ResourceAuthorizationDenied();
 	return key;
 }
 
@@ -96,9 +100,9 @@ export function createResourceAuthorization(options: {
 				"restore",
 				"manage",
 				"share",
-				"move",
 			].includes(permission) ||
-			!["organization", "project", "workspace"].includes(target.type)
+			!["organization", "project"].includes(target.type) ||
+			(target.resourceType !== undefined && target.resourceType !== "project")
 		)
 			throw new ResourceAuthorizationDenied();
 		if (
@@ -138,24 +142,20 @@ export function createResourceAuthorization(options: {
 				role: Role | null;
 				membership_expires_at: Date | null;
 				resource_id: string | null;
-				parent_id: string | null;
 				deleted_at: Date | null;
-				parent_valid: boolean;
 				grants: SourceGrant[];
 			}>(
 				`SELECT o.require_mfa,o.accept_passkey_mfa,o.required_auth_method,u.lifecycle_status,u.email_verified,
 		 m.id AS membership_id,m.role,m.expires_at AS membership_expires_at,
-		 target.id AS resource_id,target.parent_id,target.deleted_at,
-		 (parent.id IS NOT NULL AND parent.resource_type='workspace' AND parent.parent_id IS NULL AND parent.deleted_at IS NULL) AS parent_valid,
+		 target.id AS resource_id,target.deleted_at,
 		 coalesce(grants.edges,'[]'::jsonb) AS grants
 		 FROM tenancy.organizations o JOIN tenancy.authorization_revisions revision ON revision.organization_id=o.id
 		 LEFT JOIN LATERAL identity.lookup_user($7::text) u ON $7::text IS NOT NULL
 		 LEFT JOIN tenancy.memberships m ON m.organization_id=o.id AND m.user_id=$7 AND m.status='active' AND (m.expires_at IS NULL OR m.expires_at>clock_timestamp())
 		 LEFT JOIN tenancy.resource_registry target ON target.organization_id=o.id AND target.id=$8 AND target.resource_type=$9
-		 LEFT JOIN tenancy.resource_registry parent ON parent.organization_id=o.id AND parent.id=target.parent_id
 		 LEFT JOIN LATERAL (SELECT jsonb_agg(edge) AS edges FROM (
 		  SELECT g.resource_id,g.relation,g.team_id,g.expires_at FROM tenancy.resource_grants g
-		  WHERE g.organization_id=o.id AND (g.resource_id=target.id OR g.resource_id=target.parent_id)
+		  WHERE g.organization_id=o.id AND g.resource_id=target.id
 		  AND (g.expires_at IS NULL OR g.expires_at>clock_timestamp())
 		  AND ((m.id IS NOT NULL AND (g.membership_id=m.id OR EXISTS(SELECT 1 FROM tenancy.team_members tm WHERE tm.organization_id=g.organization_id AND tm.team_id=g.team_id AND tm.membership_id=m.id))) OR ($10::uuid IS NOT NULL AND g.service_account_id=$10)) LIMIT 101
 		 ) edge) grants ON true
@@ -234,13 +234,11 @@ export function createResourceAuthorization(options: {
 			if (source.membership_expires_at)
 				expirations.push(source.membership_expires_at);
 		}
-		const workspaceId = source.parent_id ?? undefined;
 		const grants: ContextGrant[] = [];
 		if (target.type !== "organization") {
 			if (
 				!source.resource_id ||
-				(source.deleted_at && !["delete", "restore"].includes(permission)) ||
-				(workspaceId && (target.type !== "project" || !source.parent_valid))
+				(source.deleted_at && !["delete", "restore"].includes(permission))
 			)
 				throw new ResourceAuthorizationDenied();
 			if (source.grants.length > 100)
@@ -268,7 +266,6 @@ export function createResourceAuthorization(options: {
 			role,
 			creator,
 			target,
-			workspaceId,
 			grants,
 		});
 		return {
@@ -352,10 +349,9 @@ export function createResourceAuthorization(options: {
 		const records = await client.query<{
 			id: string;
 			resource_type: string;
-			parent_id: string | null;
 			deleted_at: Date | null;
 		}>(
-			`WITH requested AS (SELECT id,resource_type,parent_id,deleted_at FROM tenancy.resource_registry WHERE organization_id=$1 AND id=ANY($2::uuid[])) SELECT * FROM requested UNION SELECT r.id,r.resource_type,r.parent_id,r.deleted_at FROM tenancy.resource_registry r WHERE r.organization_id=$1 AND r.id IN (SELECT parent_id FROM requested)`,
+			`SELECT id,resource_type,deleted_at FROM tenancy.resource_registry WHERE organization_id=$1 AND id=ANY($2::uuid[])`,
 			[org, ids],
 		);
 		const registry = new Map(records.rows.map((row) => [row.id, row]));
@@ -388,20 +384,8 @@ export function createResourceAuthorization(options: {
 						!common.serviceScopes?.includes(`${target.type}:${permission}`))
 				)
 					return null;
-				const parent = row.parent_id ? registry.get(row.parent_id) : undefined;
-				if (
-					row.parent_id &&
-					(target.type !== "project" ||
-						!parent ||
-						parent.resource_type !== "workspace" ||
-						parent.deleted_at ||
-						parent.parent_id)
-				)
-					return null;
 				const source = rows.rows.filter(
-					(grant) =>
-						grant.resource_id === target.id ||
-						grant.resource_id === row.parent_id,
+					(grant) => grant.resource_id === target.id,
 				);
 				if (source.length > 100)
 					throw new Error("Authorization context too large");
@@ -424,7 +408,6 @@ export function createResourceAuthorization(options: {
 					role: common.role,
 					creator: common.creator,
 					target,
-					workspaceId: row.parent_id ?? undefined,
 					grants,
 				});
 				return {

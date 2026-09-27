@@ -116,7 +116,6 @@ export async function validateModel(
 		grants: ContextGrant[];
 		permission: ResourcePermission;
 		allowed: boolean;
-		workspaceId?: string;
 	}> = [
 		{ role: "owner", grants: [], permission: "read", allowed: true },
 		{
@@ -172,33 +171,29 @@ export async function validateModel(
 		},
 		{
 			role: "member",
-			grants: [{ resourceId: "workspace", relation: "editor", teamId: "team" }],
+			grants: [{ resourceId: "project", relation: "editor", teamId: "team" }],
 			permission: "update",
-			workspaceId: "workspace",
 			allowed: true,
 		},
 		{
 			role: "member",
-			grants: [{ resourceId: "workspace", relation: "viewer" }],
+			grants: [{ resourceId: "project", relation: "viewer" }],
 			permission: "delete",
-			workspaceId: "workspace",
 			allowed: false,
 		},
 		{
 			role: "member",
-			grants: [{ resourceId: "workspace", relation: "manager" }],
-			permission: "move",
-			workspaceId: "workspace",
+			grants: [{ resourceId: "project", relation: "manager" }],
+			permission: "manage",
 			allowed: true,
 		},
 		{
 			role: "member",
 			grants: [
-				{ resourceId: "workspace", relation: "manager" },
+				{ resourceId: "project", relation: "manager" },
 				{ resourceId: "project", relation: "denied" },
 			],
 			permission: "read",
-			workspaceId: "workspace",
 			allowed: false,
 		},
 		{
@@ -223,7 +218,6 @@ export async function validateModel(
 			role: entry.role,
 			creator: false,
 			target: { type: "project", id: "project" },
-			workspaceId: entry.workspaceId,
 			grants: entry.grants,
 		});
 		if (

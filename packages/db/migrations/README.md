@@ -29,6 +29,55 @@ API-key plaintext never enters the database. Capacity defaults are materialized
 on the first authorized create or explicit policy command, independently of billing
 provider availability.
 
+`0007_organization_projects` retires that optional Workspace domain. The active
+hierarchy is Organization → Projects. Its generated cumulative snapshot removes
+the Workspace table, Project parent column, registry parent relationship and their
+constraints/indexes; reviewed SQL orders these changes explicitly without
+`CASCADE`. Migrations `0000`–`0006` and their snapshots remain immutable historical
+schema evidence.
+
+The approved access policy retires all inherited Workspace access, including
+Workspace positive and denied grants. It creates no replacement grants. Every
+Project ID, organization, owner membership, business field, version, timestamp and
+soft-delete state survives unchanged, including Projects in archived Workspaces
+and Projects without a Workspace. Direct Project grants (including team, service
+account, expiry and denied relations) survive unchanged. Organization content
+administration remains available; members and service accounts that depended only
+on inherited access require explicit Project sharing afterward. See the
+[retirement decision](../../../feature-briefs/remove-workspaces.md).
+
+Only retired `workspace:*` and `project:move` capabilities/key scopes are removed;
+other Project scopes remain in their original order. An obsolete-only scope list
+becomes empty and authorizes no endpoint. Workspace capacity buckets in the
+`workspace`/`workspaces` feature namespace and their reservations are removed;
+Project and unrelated generic capacity are preserved. Retired Workspace commands,
+grant receipts targeting its deleted grants, and move receipts are removed.
+Project create/delete/restore and surviving direct-grant receipts remain intact.
+In particular, every old Project create input hash included `workspaceId` (even
+`null` for unassigned Projects): all pre-migration create retries using the new
+contract fail with a conflict rather than duplicating a Project or
+pretending the changed request is identical. Clients should refetch the existing
+Project and use new operation keys only for new commands.
+
+Historical audit and outbox records, including obsolete fields/action names in
+their payloads, remain byte-for-byte JSON-equivalent history; they must not be
+replayed as current commands. A new `migration.workspace_retired` audit/outbox event
+records per-organization counts of detached Projects, retired grants, commands and
+capacity, and changed service accounts/keys. Both source revisions advance in the
+same transaction without changing their difference, pinned model, readiness or
+recovery epoch. This migration cannot clear recovery state or establish readiness.
+
+Deploy under maintenance: drain/stop old web and worker processes, take the normal
+backup, apply the complete journal with the migrator role, run the explicit
+supported `authz:upgrade` using the new release, validate the model, then start the
+new processes and perform the documented Project access checks. Old/new binaries
+cannot overlap this contract migration. DDL and cleanup are one Drizzle
+transaction: a failure rolls back data changes and the journal entry, and a
+completed journal replay performs no duplicate cleanup or audit append. Unexpected
+custom dependencies fail rather than being cascade-dropped. The real PostgreSQL
+suite verifies a populated `0006` upgrade, archived/unassigned/deleted Projects,
+scopes/capacity/receipts/history preservation, fresh installation and journal replay.
+
 Drizzle declarations and cumulative snapshots mirror the reviewed SQL. Runtime
 privileges, `FORCE ROW LEVEL SECURITY`, immutable membership identity and identity
 adapter triggers/functions are explicit SQL contracts, and must be preserved by

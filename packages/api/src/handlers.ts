@@ -127,7 +127,7 @@ export function specification() {
 			title: "Common SaaS API",
 			version: "0.1.0",
 			description:
-				"Identity-backed organization lifecycle, scoped Project and workspace resources, and API-key provisioning. Cookie mutations require the configured same-origin Origin header; cross-origin API access is disabled. Keys are scoped to one organization. Request bodies are limited to 64 KiB.",
+				"Identity-backed organization lifecycle, scoped Project resources, and API-key provisioning. Cookie mutations require the configured same-origin Origin header; cross-origin API access is disabled. Keys are scoped to one organization. Request bodies are limited to 64 KiB.",
 		},
 		servers: [{ url: "/api/v1" }],
 	});

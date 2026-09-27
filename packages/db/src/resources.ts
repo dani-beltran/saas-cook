@@ -25,12 +25,11 @@ export type ResourcePermission =
 	| "delete"
 	| "restore"
 	| "manage"
-	| "share"
-	| "move";
+	| "share";
 export type ResourceTarget = {
-	type: "organization" | "project" | "workspace";
+	type: "organization" | "project";
 	id: string;
-	resourceType?: "project" | "workspace";
+	resourceType?: "project";
 };
 /** Authorization implementations must revalidate the actor, organization policy and
  * independent readiness on this exact lock-bearing connection before any allow. */
@@ -86,21 +85,10 @@ interface ProjectRow {
 	description: string;
 	status: ProjectStatus;
 	owner_membership_id: string | null;
-	workspace_id: string | null;
 	version: number;
 	created_at: Date;
 	updated_at: Date;
 	deleted_at: Date | null;
-}
-interface WorkspaceRow {
-	id: string;
-	organization_id: string;
-	name: string;
-	slug: string;
-	version: number;
-	archived_at: Date | null;
-	created_at: Date;
-	updated_at: Date;
 }
 const projectDto = (r: ProjectRow) => ({
 	id: r.id,
@@ -110,21 +98,10 @@ const projectDto = (r: ProjectRow) => ({
 	description: r.description,
 	status: r.status,
 	ownerMembershipId: r.owner_membership_id,
-	workspaceId: r.workspace_id,
 	version: r.version,
 	createdAt: r.created_at.toISOString(),
 	updatedAt: r.updated_at.toISOString(),
 	deletedAt: r.deleted_at?.toISOString() ?? null,
-});
-const workspaceDto = (r: WorkspaceRow) => ({
-	id: r.id,
-	organizationId: r.organization_id,
-	name: r.name,
-	slug: r.slug,
-	version: r.version,
-	archivedAt: r.archived_at?.toISOString() ?? null,
-	createdAt: r.created_at.toISOString(),
-	updatedAt: r.updated_at.toISOString(),
 });
 const actorId = (a: ResourceActor) =>
 	"userId" in a ? `user:${a.userId}` : `service:${a.serviceAccountId}`;
@@ -142,6 +119,10 @@ function validText(value: string, min: number, max: number) {
 		value.trim().length < min ||
 		value.length > max
 	)
+		throw new ResourceError("INVALID");
+}
+function validFields(input: object, allowed: readonly string[]) {
+	if (Object.keys(input).some((key) => !allowed.includes(key)))
 		throw new ResourceError("INVALID");
 }
 function validKey(key: string) {
@@ -288,7 +269,6 @@ export function createResourceService(
 	pool: Pool,
 	hooks: ResourceHooks,
 	options: {
-		workspacesEnabled?: boolean;
 		defaultProjectCapacity?: number | null;
 		cursorSecret?: string;
 		onFenceWait?: (milliseconds: number) => void;
@@ -306,10 +286,6 @@ export function createResourceService(
 	const cursorKey = options.cursorSecret
 		? createHash("sha256").update(options.cursorSecret).digest()
 		: cursorFallback;
-	function moduleEnabled() {
-		if (options.workspacesEnabled === false)
-			throw new ResourceError("DISABLED");
-	}
 	function transaction<T>(
 		actor: ResourceActor,
 		org: string,
@@ -405,17 +381,6 @@ export function createResourceService(
 		const row = (
 			await c.query<ProjectRow>(
 				"SELECT * FROM tenancy.projects WHERE organization_id=$1 AND id=$2",
-				[o, id],
-			)
-		).rows[0];
-		if (!row) throw new ResourceError("NOT_FOUND");
-		return row;
-	}
-	async function workspace(c: PoolClient, o: string, id: string) {
-		validId(id);
-		const row = (
-			await c.query<WorkspaceRow>(
-				"SELECT * FROM tenancy.workspaces WHERE organization_id=$1 AND id=$2",
 				[o, id],
 			)
 		).rows[0];
@@ -565,25 +530,28 @@ export function createResourceService(
 			throw new ResourceError("INVALID");
 		}
 	}
-	async function list<T extends ProjectRow | WorkspaceRow>(
+	async function list(
 		a: ResourceActor,
 		o: string,
-		kind: "project" | "workspace",
 		input: {
 			limit?: number;
 			cursor?: string;
 			search?: string;
-			workspaceId?: string;
 			status?: ProjectStatus;
 			includeDeleted?: boolean;
 		},
-		dto: (r: T) => unknown,
 	) {
+		validFields(input, [
+			"limit",
+			"cursor",
+			"search",
+			"status",
+			"includeDeleted",
+		]);
 		const limit = input.limit ?? 20;
 		if (!Number.isSafeInteger(limit) || limit < 1 || limit > 50)
 			throw new ResourceError("INVALID");
 		if (input.search !== undefined) validText(input.search, 0, 120);
-		if (input.workspaceId) validId(input.workspaceId);
 		if (
 			input.status &&
 			!["active", "completed", "archived"].includes(input.status)
@@ -593,9 +561,8 @@ export function createResourceService(
 			JSON.stringify({
 				org: o,
 				actor: actorId(a),
-				kind,
+				kind: "project",
 				search: input.search ?? "",
-				workspace: input.workspaceId ?? null,
 				status: input.status ?? null,
 				deleted: input.includeDeleted ?? false,
 			}),
@@ -606,7 +573,7 @@ export function createResourceService(
 				c,
 				a,
 				o,
-				{ type: "organization", id: o, resourceType: kind },
+				{ type: "organization", id: o, resourceType: "project" },
 				"read",
 			);
 			const items: unknown[] = [];
@@ -622,22 +589,16 @@ export function createResourceService(
 					"organization_id=$1",
 					"($2::timestamptz IS NULL OR (created_at,id)<($2::timestamptz,$3::uuid))",
 				];
-				if (kind === "project") {
-					if (!input.includeDeleted) clauses.push("deleted_at IS NULL");
-					if (input.search) {
-						params.push(`%${input.search.replace(/[\\%_]/g, "\\$&")}%`);
-						clauses.push(
-							`(name ILIKE $${params.length} OR description ILIKE $${params.length})`,
-						);
-					}
-					if (input.workspaceId) {
-						params.push(input.workspaceId);
-						clauses.push(`workspace_id=$${params.length}`);
-					}
-					if (input.status) {
-						params.push(input.status);
-						clauses.push(`status=$${params.length}`);
-					}
+				if (!input.includeDeleted) clauses.push("deleted_at IS NULL");
+				if (input.search) {
+					params.push(`%${input.search.replace(/[\\%_]/g, "\\$&")}%`);
+					clauses.push(
+						`(name ILIKE $${params.length} OR description ILIKE $${params.length})`,
+					);
+				}
+				if (input.status) {
+					params.push(input.status);
+					clauses.push(`status=$${params.length}`);
 				}
 				const batchSize = Math.min(
 					20,
@@ -646,8 +607,8 @@ export function createResourceService(
 				);
 				params.push(batchSize);
 				// Match the reviewed index ordering exactly; differing null order can force a full tenant sort.
-				const rows = await c.query<T & { cursor_created_at: string }>(
-					`SELECT *,created_at::text AS cursor_created_at FROM tenancy.${kind === "project" ? "projects" : "workspaces"} WHERE ${clauses.join(" AND ")} ORDER BY created_at DESC NULLS LAST,id DESC NULLS LAST LIMIT $${params.length}`,
+				const rows = await c.query<ProjectRow & { cursor_created_at: string }>(
+					`SELECT *,created_at::text AS cursor_created_at FROM tenancy.projects WHERE ${clauses.join(" AND ")} ORDER BY created_at DESC NULLS LAST,id DESC NULLS LAST LIMIT $${params.length}`,
 					params,
 				);
 				if (!rows.rowCount) {
@@ -655,7 +616,7 @@ export function createResourceService(
 					break;
 				}
 				const candidates = rows.rows.map((r) => ({
-					target: { type: kind, id: r.id },
+					target: { type: "project" as const, id: r.id },
 					permission: ("deleted_at" in r && r.deleted_at
 						? "restore"
 						: "read") as ResourcePermission,
@@ -682,7 +643,7 @@ export function createResourceService(
 					if (!r) continue;
 					scanned++;
 					position = { date: r.cursor_created_at, id: r.id };
-					if (checks[i]) items.push(dto(r));
+					if (checks[i]) items.push(projectDto(r));
 					if (items.length === limit) break;
 				}
 				more = rows.rows.length === batchSize || items.length === limit;
@@ -693,7 +654,7 @@ export function createResourceService(
 				}
 			}
 			return {
-				items: items as ReturnType<typeof dto>[],
+				items: items as ReturnType<typeof projectDto>[],
 				nextCursor:
 					more && position
 						? encodeCursor({
@@ -713,12 +674,11 @@ export function createResourceService(
 				limit?: number;
 				cursor?: string;
 				search?: string;
-				workspaceId?: string;
 				status?: ProjectStatus;
 				includeDeleted?: boolean;
 			} = {},
 		) {
-			return (await list<ProjectRow>(a, o, "project", input, projectDto)) as {
+			return (await list(a, o, input)) as {
 				items: ReturnType<typeof projectDto>[];
 				nextCursor: string | null;
 			};
@@ -739,13 +699,18 @@ export function createResourceService(
 				slug: string;
 				description?: string;
 				ownerMembershipId?: string | null;
-				workspaceId?: string | null;
 				operationKey: string;
 			},
 		) {
+			validFields(input, [
+				"name",
+				"slug",
+				"description",
+				"ownerMembershipId",
+				"operationKey",
+			]);
 			validNameSlug(input.name, input.slug);
 			validText(input.description ?? "", 0, 4000);
-			if (input.workspaceId) moduleEnabled();
 			return transaction(a, o, true, async (c) => {
 				await authorize(
 					c,
@@ -762,7 +727,6 @@ export function createResourceService(
 						input.ownerMembershipId === undefined
 							? "creator"
 							: input.ownerMembershipId,
-					workspaceId: input.workspaceId ?? null,
 				};
 				const replay = await receipt(
 					c,
@@ -775,17 +739,6 @@ export function createResourceService(
 				if (replay.id) {
 					await authorize(c, a, o, { type: "project", id: replay.id }, "read");
 					return projectDto(await project(c, o, replay.id));
-				}
-				if (input.workspaceId) {
-					await authorize(
-						c,
-						a,
-						o,
-						{ type: "workspace", id: input.workspaceId },
-						"update",
-					);
-					if ((await workspace(c, o, input.workspaceId)).archived_at)
-						throw new ResourceError("CONFLICT");
 				}
 				const currentMember =
 					"userId" in a
@@ -811,21 +764,13 @@ export function createResourceService(
 				);
 				const id = randomUUID();
 				await c.query(
-					"INSERT INTO tenancy.resource_registry(id,organization_id,resource_type,parent_id) VALUES($1,$2,'project',$3)",
-					[id, o, input.workspaceId ?? null],
+					"INSERT INTO tenancy.resource_registry(id,organization_id,resource_type) VALUES($1,$2,'project')",
+					[id, o],
 				);
 				const row = (
 					await c.query<ProjectRow>(
-						"INSERT INTO tenancy.projects(id,organization_id,name,slug,description,owner_membership_id,workspace_id) VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING *",
-						[
-							id,
-							o,
-							input.name,
-							input.slug,
-							input.description ?? "",
-							ownerId,
-							input.workspaceId ?? null,
-						],
+						"INSERT INTO tenancy.projects(id,organization_id,name,slug,description,owner_membership_id) VALUES($1,$2,$3,$4,$5,$6) RETURNING *",
+						[id, o, input.name, input.slug, input.description ?? "", ownerId],
 					)
 				).rows[0];
 				if (!row) throw new ResourceError("CONFLICT");
@@ -833,7 +778,6 @@ export function createResourceService(
 				await hooks.sourceCommit(c, o);
 				await audit(c, a, o, "project.created", id, {
 					version: 1,
-					workspaceId: input.workspaceId ?? null,
 				});
 				await record(
 					c,
@@ -858,6 +802,7 @@ export function createResourceService(
 				status?: ProjectStatus;
 			},
 		) {
+			validFields(input, ["id", "version", "name", "description", "status"]);
 			validVersion(input.version);
 			if (input.name !== undefined) validText(input.name, 1, 120);
 			if (input.description !== undefined)
@@ -913,184 +858,6 @@ export function createResourceService(
 		) {
 			return changeDeletion(a, o, input, false);
 		},
-		async moveProject(
-			a: ResourceActor,
-			o: string,
-			input: { id: string; version: number; workspaceId: string | null },
-		) {
-			validVersion(input.version);
-			moduleEnabled();
-			if (input.workspaceId) validId(input.workspaceId);
-			return transaction(a, o, true, async (c) => {
-				await authorize(c, a, o, { type: "project", id: input.id }, "move");
-				await projectEnabled(c, o);
-				const row = await project(c, o, input.id);
-				if (row.deleted_at || row.version !== input.version)
-					throw new ResourceError("CONFLICT");
-				if (row.workspace_id)
-					await authorize(
-						c,
-						a,
-						o,
-						{ type: "workspace", id: row.workspace_id },
-						"update",
-					);
-				else
-					await authorize(
-						c,
-						a,
-						o,
-						{ type: "organization", id: o, resourceType: "project" },
-						"create",
-					);
-				if (input.workspaceId) {
-					await authorize(
-						c,
-						a,
-						o,
-						{ type: "workspace", id: input.workspaceId },
-						"update",
-					);
-					if ((await workspace(c, o, input.workspaceId)).archived_at)
-						throw new ResourceError("CONFLICT");
-				} else
-					await authorize(
-						c,
-						a,
-						o,
-						{ type: "organization", id: o, resourceType: "project" },
-						"create",
-					);
-				const updated = (
-					await c.query<ProjectRow>(
-						"UPDATE tenancy.projects SET workspace_id=$3,version=version+1,updated_at=clock_timestamp() WHERE organization_id=$1 AND id=$2 RETURNING *",
-						[o, input.id, input.workspaceId],
-					)
-				).rows[0];
-				if (!updated) throw new ResourceError("CONFLICT");
-				await c.query(
-					"UPDATE tenancy.resource_registry SET parent_id=$3 WHERE organization_id=$1 AND id=$2",
-					[o, input.id, input.workspaceId],
-				);
-				await hooks.sourceCommit(c, o);
-				await audit(c, a, o, "project.moved", input.id, {
-					version: updated.version,
-					fromWorkspaceId: row.workspace_id,
-					toWorkspaceId: input.workspaceId,
-				});
-				return projectDto(updated);
-			});
-		},
-		async listWorkspaces(
-			a: ResourceActor,
-			o: string,
-			input: { limit?: number; cursor?: string } = {},
-		) {
-			moduleEnabled();
-			return (await list<WorkspaceRow>(
-				a,
-				o,
-				"workspace",
-				input,
-				workspaceDto,
-			)) as {
-				items: ReturnType<typeof workspaceDto>[];
-				nextCursor: string | null;
-			};
-		},
-		async createWorkspace(
-			a: ResourceActor,
-			o: string,
-			input: { name: string; slug: string; operationKey: string },
-		) {
-			moduleEnabled();
-			validNameSlug(input.name, input.slug);
-			return transaction(a, o, true, async (c) => {
-				await authorize(
-					c,
-					a,
-					o,
-					{ type: "organization", id: o, resourceType: "workspace" },
-					"create",
-				);
-				const replay = await receipt(
-					c,
-					a,
-					o,
-					"workspace.create",
-					input.operationKey,
-					{ name: input.name, slug: input.slug },
-				);
-				if (replay.id) {
-					await authorize(
-						c,
-						a,
-						o,
-						{ type: "workspace", id: replay.id },
-						"read",
-					);
-					return workspaceDto(await workspace(c, o, replay.id));
-				}
-				const id = randomUUID();
-				await c.query(
-					"INSERT INTO tenancy.resource_registry(id,organization_id,resource_type) VALUES($1,$2,'workspace')",
-					[id, o],
-				);
-				const row = (
-					await c.query<WorkspaceRow>(
-						"INSERT INTO tenancy.workspaces(id,organization_id,name,slug) VALUES($1,$2,$3,$4) RETURNING *",
-						[id, o, input.name, input.slug],
-					)
-				).rows[0];
-				if (!row) throw new ResourceError("CONFLICT");
-				await initialGrant(c, a, o, id);
-				await hooks.sourceCommit(c, o);
-				await audit(c, a, o, "workspace.created", id, { version: 1 });
-				await record(
-					c,
-					a,
-					o,
-					"workspace.create",
-					input.operationKey,
-					replay.inputHash,
-					id,
-				);
-				return workspaceDto(row);
-			});
-		},
-		async updateWorkspace(
-			a: ResourceActor,
-			o: string,
-			input: { id: string; version: number; name?: string; archived?: boolean },
-		) {
-			moduleEnabled();
-			validVersion(input.version);
-			if (input.name !== undefined) validText(input.name, 1, 120);
-			if (input.name === undefined && input.archived === undefined)
-				throw new ResourceError("INVALID");
-			return transaction(a, o, true, async (c) => {
-				await authorize(c, a, o, { type: "workspace", id: input.id }, "manage");
-				const row = (
-					await c.query<WorkspaceRow>(
-						"UPDATE tenancy.workspaces SET name=coalesce($4,name),archived_at=CASE WHEN $5::boolean IS NULL THEN archived_at WHEN $5 THEN coalesce(archived_at,clock_timestamp()) ELSE NULL END,version=version+1,updated_at=clock_timestamp() WHERE organization_id=$1 AND id=$2 AND version=$3 RETURNING *",
-						[
-							o,
-							input.id,
-							input.version,
-							input.name ?? null,
-							input.archived ?? null,
-						],
-					)
-				).rows[0];
-				if (!row) throw new ResourceError("CONFLICT");
-				await hooks.sourceCommit(c, o);
-				await audit(c, a, o, "workspace.updated", input.id, {
-					version: row.version,
-					archived: row.archived_at !== null,
-				});
-				return workspaceDto(row);
-			});
-		},
 		async grant(
 			a: ResourceActor,
 			o: string,
@@ -1135,8 +902,7 @@ export function createResourceService(
 				async (c) => {
 					const target = await registered(c, o, input.resourceId);
 					await authorize(c, a, o, target, "share");
-					if (target.type === "project" && input.relation !== "denied")
-						await projectEnabled(c, o);
+					if (input.relation !== "denied") await projectEnabled(c, o);
 					if (input.subject.kind === "membership")
 						await owner(c, o, input.subject.id);
 					if (input.subject.kind === "serviceAccount") {
@@ -1286,7 +1052,7 @@ export function createResourceService(
 	): Promise<ResourceTarget> {
 		const r = (
 			await c.query<{
-				resource_type: "project" | "workspace";
+				resource_type: "project";
 				deleted_at: Date | null;
 			}>(
 				"SELECT resource_type,deleted_at FROM tenancy.resource_registry WHERE organization_id=$1 AND id=$2",
@@ -1294,7 +1060,6 @@ export function createResourceService(
 			)
 		).rows[0];
 		if (!r || r.deleted_at) throw new ResourceError("NOT_FOUND");
-		if (r.resource_type === "workspace") moduleEnabled();
 		return { type: r.resource_type, id };
 	}
 	async function changeDeletion(
@@ -1323,10 +1088,6 @@ export function createResourceService(
 			if (row.version !== input.version || Boolean(row.deleted_at) === deleting)
 				throw new ResourceError("CONFLICT");
 			if (!deleting) {
-				if (row.workspace_id) {
-					if ((await workspace(c, o, row.workspace_id)).archived_at)
-						throw new ResourceError("CONFLICT");
-				}
 				await consume(
 					c,
 					o,

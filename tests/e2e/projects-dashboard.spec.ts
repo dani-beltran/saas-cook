@@ -195,95 +195,79 @@ test("project actions honor a different organization's denial and keep the rejec
 	}
 });
 
-test("archiving a selected workspace preserves a project draft and requires an explicit new destination", async ({
+test("Projects belong directly to their Organization and obsolete requests are rejected", async ({
 	page,
 	baseURL,
 }) => {
 	test.setTimeout(120_000);
 	const suffix = randomUUID().slice(0, 8);
-	await dashboardSignUp(page, `workspace-draft-${suffix}@example.test`);
+	await dashboardSignUp(page, `direct-project-${suffix}@example.test`);
 	const headers = { origin: baseURL ?? "" };
 	const organization = await page.request.post("/api/v1/organizations", {
 		headers,
 		data: {
-			name: "Draft studio",
-			slug: `draft-${suffix}`,
+			name: "Direct projects",
+			slug: `direct-${suffix}`,
 			operationKey: randomUUID(),
 		},
 	});
 	expect(organization.status()).toBe(200);
 	const { id: organizationId } = await organization.json();
 	const endpoint = `/api/v1/organizations/${organizationId}`;
-	const createdWorkspace = await page.request.post(`${endpoint}/workspaces`, {
-		headers,
-		data: {
-			name: "Design studio",
-			slug: `design-${suffix}`,
-			operationKey: randomUUID(),
-		},
-	});
-	expect(createdWorkspace.status()).toBe(200);
-	const workspace = await createdWorkspace.json();
+	expect((await page.request.get(`${endpoint}/workspaces`)).status()).toBe(404);
+	expect(
+		(
+			await page.request.post(`${endpoint}/projects`, {
+				headers,
+				data: {
+					name: "Obsolete assignment",
+					slug: `obsolete-${suffix}`,
+					operationKey: randomUUID(),
+					workspaceId: null,
+				},
+			})
+		).status(),
+	).toBe(422);
 	await page.goto(`/en/organizations/${organizationId}/projects`);
-	const workspaces = page.getByRole("region", {
-		name: "Workspaces",
-		exact: true,
-	});
 	await expect(
-		workspaces.getByRole("heading", { name: "Design studio", exact: true }),
-	).toBeVisible();
+		page.getByRole("region", { name: "Workspaces", exact: true }),
+	).toHaveCount(0);
 	await page.getByRole("button", { name: "New project", exact: true }).click();
 	const editor = page.getByRole("region", { name: "New project", exact: true });
-	await editor
-		.getByLabel("Name", { exact: true })
-		.fill("Preserved project draft");
-	await editor.getByLabel("Slug", { exact: true }).fill(`preserved-${suffix}`);
+	await expect(editor.getByLabel("Workspace", { exact: true })).toHaveCount(0);
+	await editor.getByLabel("Name", { exact: true }).fill("Organization project");
+	await editor.getByLabel("Slug", { exact: true }).fill(`project-${suffix}`);
 	await editor
 		.getByLabel("Description", { exact: true })
-		.fill("Keep these details while changing the destination.");
-	await editor
-		.getByLabel("Workspace", { exact: true })
-		.selectOption(workspace.id);
-	await workspaces
-		.getByRole("button", { name: "Archive", exact: true })
-		.click();
-	await page
-		.getByRole("dialog")
-		.getByRole("button", { name: "Archive workspace", exact: true })
-		.click();
-	await expect(
-		workspaces.getByRole("button", { name: "Unarchive", exact: true }),
-	).toBeVisible();
-	await expect(editor.getByLabel("Workspace", { exact: true })).toHaveValue(
-		workspace.id,
-	);
-	await expect(editor.locator("select option:checked")).toHaveText(
-		"Selected workspace is unavailable",
-	);
-	await editor
-		.getByRole("button", { name: "Create project", exact: true })
-		.click();
-	await expect(editor.getByRole("alert")).toHaveText(
-		"Choose an available workspace, or select No workspace.",
-	);
-	await expect(editor.getByLabel("Workspace", { exact: true })).toBeFocused();
-	await expect(editor.getByLabel("Name", { exact: true })).toHaveValue(
-		"Preserved project draft",
-	);
-	await expect(editor.getByLabel("Description", { exact: true })).toHaveValue(
-		"Keep these details while changing the destination.",
-	);
-	const beforeCreate = await page.request.get(`${endpoint}/projects`);
-	expect((await beforeCreate.json()).items).toHaveLength(0);
-	await editor.getByLabel("Workspace", { exact: true }).selectOption("");
+		.fill("A project in this organization.");
 	await editor
 		.getByRole("button", { name: "Create project", exact: true })
 		.click();
 	await expect(
-		page.getByRole("heading", { name: "Preserved project draft", exact: true }),
+		page.getByRole("heading", { name: "Organization project", exact: true }),
 	).toBeVisible();
-	const afterCreate = await page.request.get(`${endpoint}/projects`);
-	const created = (await afterCreate.json()).items;
-	expect(created).toHaveLength(1);
-	expect(created[0].workspaceId).toBeNull();
+	const rows = (await (await page.request.get(`${endpoint}/projects`)).json())
+		.items;
+	expect(rows).toHaveLength(1);
+	expect(rows[0]).toMatchObject({
+		organizationId,
+		name: "Organization project",
+		description: "A project in this organization.",
+	});
+	expect(rows[0]).not.toHaveProperty("workspaceId");
+	expect(
+		(
+			await page.request.post(`${endpoint}/projects/${rows[0].id}/move`, {
+				headers,
+				data: { version: 1, workspaceId: null },
+			})
+		).status(),
+	).toBe(404);
+	await page.goto(`/es/organizations/${organizationId}/projects`);
+	await expect(
+		page.getByRole("heading", { name: "Proyectos", exact: true }),
+	).toBeVisible();
+	await expect(
+		page.getByRole("region", { name: "Espacios de trabajo", exact: true }),
+	).toHaveCount(0);
 });

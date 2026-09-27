@@ -8,7 +8,7 @@ Initial assumptions:
 
 - One application serves many customer organizations. One organization is one tenant and initially one billing account.
 - A global user can join multiple organizations with different permissions in each.
-- A workspace is an optional subdivision of an organization, not a separate billing or isolation boundary.
+- Projects belong directly to their Organization. Teams group members for direct Project sharing.
 - The template is source code developers own and customize. It is not a runtime no-code application builder.
 - Products can disable optional modules. Tenant isolation, authorization, validation, and security audit cannot be disabled for convenience.
 - A demonstration Projects feature proves the architecture and agent-assisted development workflow; it is removable from products that do not need projects.
@@ -31,7 +31,7 @@ Release labels below are **F — foundation**, **C — commercial core**, **E �
 | Memberships | Invite, resend, expire, accept, remove, suspend, transfer ownership; voluntary changes preserve an active owner, security deprovisioning can enter owner recovery | F |
 | Organization ownership transfer | Nominate an eligible verified active member, recipient acceptance, atomic owner-role transition and seat checks, expiry/cancel, notifications, and audit; used by account deletion | F |
 | Organization onboarding | Checklist, profile, first resource, invitation, local foundation policy, completion tracking; paid plan/trial selection arrives in C | F/C |
-| Teams and workspaces | Team membership in Phase 2; optional workspace CRUD/archive and resource grouping/inherited access in Phase 3, with same-tenant move and revocation tests | F |
+| Teams | Non-nested organization teams, same-tenant membership and direct Project sharing with revocation tests | F |
 | Tenant isolation | Tenant-scoped database access, storage, caches, search, jobs, exports, and integrations | F |
 | ReBAC | Parent-child inheritance, direct sharing, team access, per-resource viewer/editor/manager relations | F |
 | Roles | Owner, administrator, member, billing manager, and resource viewer defaults; roles assign capabilities through the relationship model | F |
@@ -134,7 +134,6 @@ Proposed browser routes, with `[orgSlug]` resolved to an authorized immutable or
 /app/[orgSlug]/projects/new
 /app/[orgSlug]/projects/[id]
 /app/[orgSlug]/projects/[id]/edit
-/app/[orgSlug]/workspaces                # Optional Foundation workspace module
 /app/[orgSlug]/search                    # Commercial cross-resource search
 /app/[orgSlug]/settings/general
 /app/[orgSlug]/settings/members

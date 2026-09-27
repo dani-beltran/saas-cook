@@ -15,8 +15,8 @@ afterEach(async () => {
 	for (const action of cleanup.splice(0).reverse()) await action();
 });
 
-describe("Phase 3 stored policy parity", () => {
-	it("matches an independently materialized complete graph for direct, team, inherited, denied and service paths", async () => {
+describe("Project stored policy parity", () => {
+	it("matches an independently materialized complete graph for direct, team, denied and service paths", async () => {
 		const f = await resourceFixture();
 		cleanup.push(f.cleanup);
 		const publication = await getPublication(
@@ -25,7 +25,6 @@ describe("Phase 3 stored policy parity", () => {
 		);
 		const namespace = `parity/${randomUUID()}`;
 		const organization = `organization:${namespace}/root`,
-			workspace = `workspace:${namespace}/workspace`,
 			project = `project:${namespace}/project`,
 			team = `team:${namespace}/team`;
 		const cases: Array<{
@@ -102,45 +101,10 @@ describe("Phase 3 stored policy parity", () => {
 				manage: false,
 			},
 			{
-				id: "inherited-viewer",
-				role: "member",
-				grants: [{ resourceId: "workspace", relation: "viewer" }],
-				read: true,
-				update: false,
-				manage: false,
-			},
-			{
-				id: "inherited-editor",
-				role: "member",
-				grants: [{ resourceId: "workspace", relation: "editor" }],
-				read: true,
-				update: true,
-				manage: false,
-			},
-			{
-				id: "inherited-manager",
-				role: "member",
-				grants: [{ resourceId: "workspace", relation: "manager" }],
-				read: true,
-				update: true,
-				manage: true,
-			},
-			{
 				id: "denied-viewer",
 				role: "member",
 				grants: [
 					{ resourceId: "project", relation: "viewer" },
-					{ resourceId: "project", relation: "denied" },
-				],
-				read: false,
-				update: false,
-				manage: false,
-			},
-			{
-				id: "denied-inheritance",
-				role: "member",
-				grants: [
-					{ resourceId: "workspace", relation: "manager" },
 					{ resourceId: "project", relation: "denied" },
 				],
 				read: false,
@@ -158,7 +122,7 @@ describe("Phase 3 stored policy parity", () => {
 			{
 				id: "service-editor",
 				service: true,
-				grants: [{ resourceId: "workspace", relation: "editor" }],
+				grants: [{ resourceId: "project", relation: "editor" }],
 				read: true,
 				update: true,
 				manage: false,
@@ -174,9 +138,7 @@ describe("Phase 3 stored policy parity", () => {
 		];
 		// Independently materialize all principals and edges. This intentionally does not call the compiler.
 		const tuples: Tuple[] = [
-			{ user: organization, relation: "organization", object: workspace },
 			{ user: organization, relation: "organization", object: project },
-			{ user: workspace, relation: "workspace", object: project },
 			{ user: organization, relation: "organization", object: team },
 		];
 		for (const entry of cases) {
@@ -211,15 +173,10 @@ describe("Phase 3 stored policy parity", () => {
 			relation: "viewer",
 			object: project,
 		});
-		direct("inherited-viewer", "viewer", workspace);
-		direct("inherited-editor", "editor", workspace);
-		direct("inherited-manager", "manager", workspace);
 		direct("denied-viewer", "viewer");
 		direct("denied-viewer", "denied");
-		direct("denied-inheritance", "manager", workspace);
-		direct("denied-inheritance", "denied");
 		direct("service-reader", "viewer", project, true);
-		direct("service-editor", "editor", workspace, true);
+		direct("service-editor", "editor", project, true);
 		await fgaRequest(
 			f.installation.env.OPENFGA_API_URL,
 			`/stores/${publication.storeId}/write`,
@@ -238,7 +195,6 @@ describe("Phase 3 stored policy parity", () => {
 					role: entry.role,
 					creator: false,
 					target: { type: "project", id: "project" },
-					workspaceId: "workspace",
 					grants: entry.grants,
 				});
 				const stored = await fgaRequest<{ allowed: boolean }>(

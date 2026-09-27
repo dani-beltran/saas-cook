@@ -33,7 +33,62 @@ async function fixture() {
 		});
 	return { ...f, owner, org, keys, account, issue };
 }
-describe("Phase 3 service accounts and scoped credentials", () => {
+describe("Project service accounts and scoped credentials", () => {
+	it("rejects retired scopes at account provisioning and key issuance", async () => {
+		const f = await fixture();
+		for (const scope of [
+			"workspace:read",
+			"workspace:create",
+			"project:move",
+		]) {
+			await expect(
+				f.keys.createAccount(f.owner, f.org, {
+					name: "Retired capability",
+					capabilities: [scope],
+					operationKey: randomUUID(),
+				}),
+			).rejects.toMatchObject({ code: "INVALID" });
+			await expect(f.issue(["project:read", scope])).rejects.toMatchObject({
+				code: "INVALID",
+			});
+		}
+	});
+	it("fails closed on obsolete or malformed persisted credential scopes and capabilities", async () => {
+		const f = await fixture();
+		const key = await f.issue(["project:read"]);
+		for (const scopes of [
+			[],
+			["project:read", "workspace:read"],
+			["project:move"],
+			["project:unknown"],
+		]) {
+			await f.app.query("UPDATE tenancy.api_keys SET scopes=$2 WHERE id=$1", [
+				key.id,
+				scopes,
+			]);
+			await expect(
+				f.keys.authenticate(f.org, key.secret),
+			).rejects.toBeInstanceOf(ResourceAuthorizationDenied);
+		}
+		await f.app.query(
+			"UPDATE tenancy.api_keys SET scopes=ARRAY['project:read'] WHERE id=$1",
+			[key.id],
+		);
+		for (const capabilities of [
+			["project:read", "workspace:create"],
+			["project:move"],
+			["project:update"],
+			["project:unknown"],
+		]) {
+			await f.app.query(
+				"UPDATE tenancy.service_accounts SET capabilities=$2 WHERE id=$1",
+				[f.account.id, capabilities],
+			);
+			await expect(
+				f.keys.authenticate(f.org, key.secret),
+			).rejects.toBeInstanceOf(ResourceAuthorizationDenied);
+		}
+	});
 	it("admits one status transition at the expected version under concurrent commands", async () => {
 		const f = await fixture();
 		const key = await f.issue();

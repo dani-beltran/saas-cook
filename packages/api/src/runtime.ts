@@ -68,7 +68,6 @@ function createRuntime() {
 		},
 		{
 			cursorSecret: env.AUTH_SECRET,
-			workspacesEnabled: env.WORKSPACES_ENABLED === "true",
 			defaultProjectCapacity:
 				env.DEFAULT_PROJECT_CAPACITY === "unlimited"
 					? null

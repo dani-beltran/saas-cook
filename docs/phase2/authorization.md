@@ -1,6 +1,6 @@
 # Phase 2 authorization and privileged recovery
 
-Production authorization lives in `packages/authz`. It does not import Phase 0 fixture code. Its immutable model covers active organization members, owner/admin/member/billing roles and non-nested teams. Resource grants, arbitrary custom roles and workspace inheritance remain Phase 3 scope.
+Production authorization lives in `packages/authz`. It does not import Phase 0 fixture code. Its immutable model covers active organization members, owner/admin/member/billing roles and non-nested teams. This document describes the immutable Phase 2 predecessor. The active successor adds direct Project grants and service accounts; arbitrary custom roles remain unsupported. See the [current resource protocol](../phase3/README.md).
 
 Every positive tenant decision reaches OpenFGA with `HIGHER_CONSISTENCY`, the independently pinned store/model, and a fresh namespace containing organization, recovery epoch and a cryptographically random request ID. The compiler emits at most four contextual tuples for one organization or team. IDs containing graph syntax are rejected. There are no production tuple writes, reusable authorization capabilities, cached decisions or permission publication queues. Requests do not reuse preflight results: mutations evaluate their current inputs while holding the exclusive fence.
 

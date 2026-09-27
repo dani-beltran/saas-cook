@@ -1,0 +1,833 @@
+{
+	"schema_version": "1.1",
+	"type_definitions": [
+		{
+			"type": "user"
+		},
+		{
+			"type": "service_account"
+		},
+		{
+			"type": "organization",
+			"relations": {
+				"member": {
+					"this": {}
+				},
+				"owner": {
+					"this": {}
+				},
+				"admin": {
+					"this": {}
+				},
+				"billing": {
+					"this": {}
+				},
+				"creator": {
+					"this": {}
+				},
+				"can_create": {
+					"intersection": {
+						"child": [
+							{
+								"computedUserset": {
+									"relation": "member"
+								}
+							},
+							{
+								"computedUserset": {
+									"relation": "creator"
+								}
+							}
+						]
+					}
+				},
+				"can_read": {
+					"computedUserset": {
+						"relation": "member"
+					}
+				},
+				"can_manage": {
+					"intersection": {
+						"child": [
+							{
+								"computedUserset": {
+									"relation": "member"
+								}
+							},
+							{
+								"union": {
+									"child": [
+										{
+											"computedUserset": {
+												"relation": "owner"
+											}
+										},
+										{
+											"computedUserset": {
+												"relation": "admin"
+											}
+										}
+									]
+								}
+							}
+						]
+					}
+				},
+				"can_transfer": {
+					"intersection": {
+						"child": [
+							{
+								"computedUserset": {
+									"relation": "member"
+								}
+							},
+							{
+								"computedUserset": {
+									"relation": "owner"
+								}
+							}
+						]
+					}
+				},
+				"can_billing": {
+					"intersection": {
+						"child": [
+							{
+								"computedUserset": {
+									"relation": "member"
+								}
+							},
+							{
+								"union": {
+									"child": [
+										{
+											"computedUserset": {
+												"relation": "owner"
+											}
+										},
+										{
+											"computedUserset": {
+												"relation": "billing"
+											}
+										}
+									]
+								}
+							}
+						]
+					}
+				}
+			},
+			"metadata": {
+				"relations": {
+					"member": {
+						"directly_related_user_types": [
+							{
+								"type": "user"
+							},
+							{
+								"type": "service_account"
+							}
+						]
+					},
+					"creator": {
+						"directly_related_user_types": [
+							{
+								"type": "user"
+							},
+							{
+								"type": "service_account"
+							}
+						]
+					},
+					"owner": {
+						"directly_related_user_types": [
+							{
+								"type": "user"
+							}
+						]
+					},
+					"admin": {
+						"directly_related_user_types": [
+							{
+								"type": "user"
+							}
+						]
+					},
+					"billing": {
+						"directly_related_user_types": [
+							{
+								"type": "user"
+							}
+						]
+					}
+				}
+			}
+		},
+		{
+			"type": "workspace",
+			"relations": {
+				"organization": {
+					"this": {}
+				},
+				"viewer": {
+					"this": {}
+				},
+				"editor": {
+					"this": {}
+				},
+				"manager": {
+					"this": {}
+				},
+				"denied": {
+					"this": {}
+				},
+				"can_read": {
+					"intersection": {
+						"child": [
+							{
+								"tupleToUserset": {
+									"tupleset": {
+										"relation": "organization"
+									},
+									"computedUserset": {
+										"relation": "can_read"
+									}
+								}
+							},
+							{
+								"union": {
+									"child": [
+										{
+											"tupleToUserset": {
+												"tupleset": {
+													"relation": "organization"
+												},
+												"computedUserset": {
+													"relation": "can_manage"
+												}
+											}
+										},
+										{
+											"difference": {
+												"base": {
+													"union": {
+														"child": [
+															{
+																"computedUserset": {
+																	"relation": "viewer"
+																}
+															},
+															{
+																"computedUserset": {
+																	"relation": "editor"
+																}
+															},
+															{
+																"computedUserset": {
+																	"relation": "manager"
+																}
+															}
+														]
+													}
+												},
+												"subtract": {
+													"computedUserset": {
+														"relation": "denied"
+													}
+												}
+											}
+										}
+									]
+								}
+							}
+						]
+					}
+				},
+				"can_update": {
+					"intersection": {
+						"child": [
+							{
+								"tupleToUserset": {
+									"tupleset": {
+										"relation": "organization"
+									},
+									"computedUserset": {
+										"relation": "can_read"
+									}
+								}
+							},
+							{
+								"union": {
+									"child": [
+										{
+											"tupleToUserset": {
+												"tupleset": {
+													"relation": "organization"
+												},
+												"computedUserset": {
+													"relation": "can_manage"
+												}
+											}
+										},
+										{
+											"difference": {
+												"base": {
+													"union": {
+														"child": [
+															{
+																"computedUserset": {
+																	"relation": "editor"
+																}
+															},
+															{
+																"computedUserset": {
+																	"relation": "manager"
+																}
+															}
+														]
+													}
+												},
+												"subtract": {
+													"computedUserset": {
+														"relation": "denied"
+													}
+												}
+											}
+										}
+									]
+								}
+							}
+						]
+					}
+				},
+				"can_manage": {
+					"intersection": {
+						"child": [
+							{
+								"tupleToUserset": {
+									"tupleset": {
+										"relation": "organization"
+									},
+									"computedUserset": {
+										"relation": "can_read"
+									}
+								}
+							},
+							{
+								"union": {
+									"child": [
+										{
+											"tupleToUserset": {
+												"tupleset": {
+													"relation": "organization"
+												},
+												"computedUserset": {
+													"relation": "can_manage"
+												}
+											}
+										},
+										{
+											"difference": {
+												"base": {
+													"computedUserset": {
+														"relation": "manager"
+													}
+												},
+												"subtract": {
+													"computedUserset": {
+														"relation": "denied"
+													}
+												}
+											}
+										}
+									]
+								}
+							}
+						]
+					}
+				},
+				"can_delete": {
+					"computedUserset": {
+						"relation": "can_manage"
+					}
+				},
+				"can_restore": {
+					"computedUserset": {
+						"relation": "can_manage"
+					}
+				},
+				"can_share": {
+					"computedUserset": {
+						"relation": "can_manage"
+					}
+				},
+				"can_move": {
+					"computedUserset": {
+						"relation": "can_manage"
+					}
+				}
+			},
+			"metadata": {
+				"relations": {
+					"organization": {
+						"directly_related_user_types": [
+							{
+								"type": "organization"
+							}
+						]
+					},
+					"viewer": {
+						"directly_related_user_types": [
+							{
+								"type": "user"
+							},
+							{
+								"type": "service_account"
+							},
+							{
+								"type": "team",
+								"relation": "member"
+							}
+						]
+					},
+					"editor": {
+						"directly_related_user_types": [
+							{
+								"type": "user"
+							},
+							{
+								"type": "service_account"
+							},
+							{
+								"type": "team",
+								"relation": "member"
+							}
+						]
+					},
+					"manager": {
+						"directly_related_user_types": [
+							{
+								"type": "user"
+							},
+							{
+								"type": "service_account"
+							},
+							{
+								"type": "team",
+								"relation": "member"
+							}
+						]
+					},
+					"denied": {
+						"directly_related_user_types": [
+							{
+								"type": "user"
+							},
+							{
+								"type": "service_account"
+							},
+							{
+								"type": "team",
+								"relation": "member"
+							}
+						]
+					}
+				}
+			}
+		},
+		{
+			"type": "project",
+			"relations": {
+				"organization": {
+					"this": {}
+				},
+				"workspace": {
+					"this": {}
+				},
+				"viewer": {
+					"this": {}
+				},
+				"editor": {
+					"this": {}
+				},
+				"manager": {
+					"this": {}
+				},
+				"denied": {
+					"this": {}
+				},
+				"can_read": {
+					"intersection": {
+						"child": [
+							{
+								"tupleToUserset": {
+									"tupleset": {
+										"relation": "organization"
+									},
+									"computedUserset": {
+										"relation": "can_read"
+									}
+								}
+							},
+							{
+								"union": {
+									"child": [
+										{
+											"tupleToUserset": {
+												"tupleset": {
+													"relation": "organization"
+												},
+												"computedUserset": {
+													"relation": "can_manage"
+												}
+											}
+										},
+										{
+											"difference": {
+												"base": {
+													"union": {
+														"child": [
+															{
+																"computedUserset": {
+																	"relation": "viewer"
+																}
+															},
+															{
+																"computedUserset": {
+																	"relation": "editor"
+																}
+															},
+															{
+																"computedUserset": {
+																	"relation": "manager"
+																}
+															},
+															{
+																"tupleToUserset": {
+																	"tupleset": {
+																		"relation": "workspace"
+																	},
+																	"computedUserset": {
+																		"relation": "can_read"
+																	}
+																}
+															}
+														]
+													}
+												},
+												"subtract": {
+													"computedUserset": {
+														"relation": "denied"
+													}
+												}
+											}
+										}
+									]
+								}
+							}
+						]
+					}
+				},
+				"can_update": {
+					"intersection": {
+						"child": [
+							{
+								"tupleToUserset": {
+									"tupleset": {
+										"relation": "organization"
+									},
+									"computedUserset": {
+										"relation": "can_read"
+									}
+								}
+							},
+							{
+								"union": {
+									"child": [
+										{
+											"tupleToUserset": {
+												"tupleset": {
+													"relation": "organization"
+												},
+												"computedUserset": {
+													"relation": "can_manage"
+												}
+											}
+										},
+										{
+											"difference": {
+												"base": {
+													"union": {
+														"child": [
+															{
+																"computedUserset": {
+																	"relation": "editor"
+																}
+															},
+															{
+																"computedUserset": {
+																	"relation": "manager"
+																}
+															},
+															{
+																"tupleToUserset": {
+																	"tupleset": {
+																		"relation": "workspace"
+																	},
+																	"computedUserset": {
+																		"relation": "can_update"
+																	}
+																}
+															}
+														]
+													}
+												},
+												"subtract": {
+													"computedUserset": {
+														"relation": "denied"
+													}
+												}
+											}
+										}
+									]
+								}
+							}
+						]
+					}
+				},
+				"can_manage": {
+					"intersection": {
+						"child": [
+							{
+								"tupleToUserset": {
+									"tupleset": {
+										"relation": "organization"
+									},
+									"computedUserset": {
+										"relation": "can_read"
+									}
+								}
+							},
+							{
+								"union": {
+									"child": [
+										{
+											"tupleToUserset": {
+												"tupleset": {
+													"relation": "organization"
+												},
+												"computedUserset": {
+													"relation": "can_manage"
+												}
+											}
+										},
+										{
+											"difference": {
+												"base": {
+													"union": {
+														"child": [
+															{
+																"computedUserset": {
+																	"relation": "manager"
+																}
+															},
+															{
+																"tupleToUserset": {
+																	"tupleset": {
+																		"relation": "workspace"
+																	},
+																	"computedUserset": {
+																		"relation": "can_manage"
+																	}
+																}
+															}
+														]
+													}
+												},
+												"subtract": {
+													"computedUserset": {
+														"relation": "denied"
+													}
+												}
+											}
+										}
+									]
+								}
+							}
+						]
+					}
+				},
+				"can_delete": {
+					"computedUserset": {
+						"relation": "can_manage"
+					}
+				},
+				"can_restore": {
+					"computedUserset": {
+						"relation": "can_manage"
+					}
+				},
+				"can_share": {
+					"computedUserset": {
+						"relation": "can_manage"
+					}
+				},
+				"can_move": {
+					"computedUserset": {
+						"relation": "can_manage"
+					}
+				}
+			},
+			"metadata": {
+				"relations": {
+					"organization": {
+						"directly_related_user_types": [
+							{
+								"type": "organization"
+							}
+						]
+					},
+					"workspace": {
+						"directly_related_user_types": [
+							{
+								"type": "workspace"
+							}
+						]
+					},
+					"viewer": {
+						"directly_related_user_types": [
+							{
+								"type": "user"
+							},
+							{
+								"type": "service_account"
+							},
+							{
+								"type": "team",
+								"relation": "member"
+							}
+						]
+					},
+					"editor": {
+						"directly_related_user_types": [
+							{
+								"type": "user"
+							},
+							{
+								"type": "service_account"
+							},
+							{
+								"type": "team",
+								"relation": "member"
+							}
+						]
+					},
+					"manager": {
+						"directly_related_user_types": [
+							{
+								"type": "user"
+							},
+							{
+								"type": "service_account"
+							},
+							{
+								"type": "team",
+								"relation": "member"
+							}
+						]
+					},
+					"denied": {
+						"directly_related_user_types": [
+							{
+								"type": "user"
+							},
+							{
+								"type": "service_account"
+							},
+							{
+								"type": "team",
+								"relation": "member"
+							}
+						]
+					}
+				}
+			}
+		},
+		{
+			"type": "team",
+			"relations": {
+				"organization": {
+					"this": {}
+				},
+				"member": {
+					"this": {}
+				},
+				"can_read": {
+					"intersection": {
+						"child": [
+							{
+								"tupleToUserset": {
+									"tupleset": {
+										"relation": "organization"
+									},
+									"computedUserset": {
+										"relation": "can_read"
+									}
+								}
+							},
+							{
+								"union": {
+									"child": [
+										{
+											"tupleToUserset": {
+												"tupleset": {
+													"relation": "organization"
+												},
+												"computedUserset": {
+													"relation": "can_manage"
+												}
+											}
+										},
+										{
+											"computedUserset": {
+												"relation": "member"
+											}
+										}
+									]
+								}
+							}
+						]
+					}
+				},
+				"can_manage": {
+					"tupleToUserset": {
+						"tupleset": {
+							"relation": "organization"
+						},
+						"computedUserset": {
+							"relation": "can_manage"
+						}
+					}
+				}
+			},
+			"metadata": {
+				"relations": {
+					"organization": {
+						"directly_related_user_types": [
+							{
+								"type": "organization"
+							}
+						]
+					},
+					"member": {
+						"directly_related_user_types": [
+							{
+								"type": "user"
+							}
+						]
+					}
+				}
+			}
+		}
+	]
+}

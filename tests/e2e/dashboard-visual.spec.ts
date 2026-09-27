@@ -22,19 +22,6 @@ test("authenticated pages: desktop/mobile, English/Spanish, light/dark and shell
 	expect(organization.status()).toBe(200);
 	const { id: organizationId } = await organization.json();
 	const path = `/organizations/${organizationId}`;
-	const workspaceResponse = await page.request.post(
-		`/api/v1${path}/workspaces`,
-		{
-			headers,
-			data: {
-				name: "Product design",
-				slug: `design-${id}`,
-				operationKey: randomUUID(),
-			},
-		},
-	);
-	expect(workspaceResponse.status()).toBe(200);
-	const workspace = await workspaceResponse.json();
 	for (const [index, name] of [
 		"Website refresh",
 		"Design system",
@@ -52,7 +39,6 @@ test("authenticated pages: desktop/mobile, English/Spanish, light/dark and shell
 					"Make the first week simple, useful and welcoming.",
 					"Prepare the next release for our customers.",
 				][index],
-				workspaceId: index < 2 ? workspace.id : null,
 				operationKey: randomUUID(),
 			},
 		});

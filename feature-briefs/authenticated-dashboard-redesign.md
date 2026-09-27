@@ -1,5 +1,7 @@
 # Authenticated dashboard experience
 
+> Historical record: Workspace behavior and related verification below describe the predecessor. The [removal brief](remove-workspaces.md) supersedes that product design; these results do not verify the successor.
+
 ## Scope and decisions
 
 Redesign the existing Account, Organization and Projects routes as one localized, responsive experience. Preserve URLs, identity/tenancy/resource contracts, authorization, applied migrations and module availability. The existing authentication treatment and teal theme tokens remain the visual identity: system typography, quiet borders, restrained surfaces and clearly ranked actions.

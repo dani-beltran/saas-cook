@@ -45,9 +45,9 @@ export function Shell({ appName }: { appName: string }) {
 						{appName}
 					</a>
 					<p className="mt-10 hidden text-xs font-medium uppercase tracking-widest text-muted-foreground lg:block">
-						{t("workspace")}
+						{t("navigation")}
 					</p>
-					<nav className="mt-4" aria-label={t("workspace")}>
+					<nav className="mt-4" aria-label={t("navigation")}>
 						<a
 							aria-current="page"
 							href={`/${locale}`}

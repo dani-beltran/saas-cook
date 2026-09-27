@@ -36,7 +36,6 @@ Imagine two customers, **Acme** and **Orbit**, using the same application. Alice
 | --- | --- | --- |
 | Organization / tenant | A customer boundary that owns its data; initially also its billing account | Acme’s Projects belong to Acme |
 | User and membership | A user is a global account; a membership connects that user to one organization | Alice has separate memberships in Acme and Orbit |
-| Workspace | An optional grouping inside an organization | Acme groups Projects into “Marketing”; this does not create another tenant |
 | Authentication | Establishing who is making a request | Alice signs in with a passkey |
 | Authorization | Deciding whether that identity may perform an action on a resource | Alice may edit Acme’s Project but only view Orbit’s |
 | ReBAC | Relationship-based access control: permissions come from relationships among users, teams, and resources | Membership in a team can grant access to its Projects |
@@ -53,7 +52,7 @@ The plan groups delivery into three milestones. Features in this section are **p
 
 | Milestone | Main features | What it enables |
 | --- | --- | --- |
-| **Foundation — phases 0–4** | Email/password registration, sign-in and reset; magic links, passkeys, multi-factor authentication and recovery, sessions; organizations, invitations, teams and accepted ownership transfers; tenant isolation and resource permissions; dashboard, optional workspaces and Projects; durable jobs and security audit; local entitlements/quotas; service accounts and API-key enforcement; evaluated AI development skills | A reusable base with one complete example feature, usable without billing credentials |
+| **Foundation — phases 0–4** | Email/password registration, sign-in and reset; magic links, passkeys, multi-factor authentication and recovery, sessions; organizations, invitations, teams and accepted ownership transfers; tenant isolation and resource permissions; dashboard and Projects; durable jobs and security audit; local entitlements/quotas; service accounts and API-key enforcement; evaluated AI development skills | A reusable base with one complete example feature, usable without billing credentials |
 | **Commercial core — through phase 6** | Stripe subscriptions and seat billing; usage metering and dashboards; files, imports/exports, notifications and webhooks; customer API-key and audit interfaces; cross-resource search and activity feeds; product analytics; personal account and organization deletion; application recovery tests | Common paid-product workflows, after application acceptance gates pass |
 | **Enterprise baseline — through phase 8** | Enterprise single sign-on, directory provisioning, custom roles, guests, security policies, contract overrides, controlled support access, retention/legal-hold hooks, and expanded performance/recovery/upgrade validation | A template ready for the tested enterprise scope |
 
@@ -112,7 +111,7 @@ A phase is complete when its **exit gate** passes: the required evidence that it
 | **0. Validate decisions — complete** | Stack compatibility, identity/database/provider experiments, authorization correctness/performance and application recovery contracts | Synthetic gate passed; application implementation follows |
 | **1. Repository and runtime** | Workspace layout, UI shell, worker, configuration, local services, CI, logging and Docker image | A clean checkout builds reproducibly; image checks pass with synthetic data |
 | **2. Identity, tenancy, and authorization** | Real sign-in/security flows, organizations and memberships, invitations/teams, ownership transfer, tenant-aware transactions, selected permission protocol, audit/outbox, and local seat policies | Real services prove isolation, revocation, ownership, recovery boundaries, and race safety |
-| **3. Projects vertical slice** | Complete Project create/read/update/delete flow, optional workspaces, resource permissions, service identities, quotas, API contracts, pagination, search, and dashboard | One real feature works across all layers, with consistent checks through both API transports |
+| **3. Projects vertical slice** | Complete Project create/read/update/delete flow, resource permissions, service identities, quotas, API contracts, pagination, search, and dashboard | One real feature works across all layers, with consistent checks through both API transports |
 | **4. AI development skills** | Skills for bootstrap, add/evolve/verify feature, dashboard pages, and emails | Repeated evaluations prove they reuse the working platform and preserve custom code, existing data, and migration history |
 | **5. Monetization** | Plans, Stripe Checkout/portal, fixed and seat subscriptions, usage ledger, commercial entitlement sources, and reconciliation | Duplicate, missing, and out-of-order provider events converge to correct state |
 | **6. Commercial modules and recovery** | Files/search/activity, notifications/integrations, analytics, data export/deletion and application recovery tests | Applicable module and recovery suites pass |
@@ -127,7 +126,7 @@ The original estimate of **34–55 engineer-weeks**, plus **2–4** for recovery
 
 After the platform prerequisites pass, a complete feature should follow this workflow:
 
-1. **Describe behavior.** Decide who may create a Project, which fields are editable, which organization owns it, whether it belongs to a workspace, and what limit applies. Define successful and rejected cases.
+1. **Describe behavior.** Decide who may create a Project, which fields are editable, which organization owns it and what limit applies. Define successful and rejected cases.
 2. **Design persistence.** Add the schema and a reviewed migration, including tenant-aware relationships, constraints, indexes, and RLS. A migration is a versioned database change; preserve previously applied migration history.
 3. **Define input and output.** Use Zod contracts for accepted values and an explicit response object. This response is a **DTO** (data transfer object): only the fields the client is allowed to receive.
 4. **Implement the shared service.** Use trusted identity and tenant context, existing permission/lifecycle boundaries, and transactional capacity checks. Persist the Project and required audit/outbox records atomically. A transaction makes the grouped database changes succeed or fail together.

@@ -38,26 +38,14 @@ const projectDto = z.object({
 	description: z.string(),
 	status,
 	ownerMembershipId: z.uuid().nullable(),
-	workspaceId: z.uuid().nullable(),
 	version,
 	createdAt: z.string(),
 	updatedAt: z.string(),
 	deletedAt: z.string().nullable(),
 });
-const workspaceDto = z.object({
-	id: z.uuid(),
-	organizationId,
-	name: z.string(),
-	slug: z.string(),
-	version,
-	createdAt: z.string(),
-	updatedAt: z.string(),
-	archivedAt: z.string().nullable(),
-});
 const projectReference = { organizationId, id: z.uuid() };
 const projectVersion = { ...projectReference, version };
 const projectPath = "/organizations/{organizationId}/projects";
-const workspacePath = "/organizations/{organizationId}/workspaces";
 const grantSubject = z.strictObject({
 	kind: z.enum(["membership", "team"]),
 	id: z.uuid(),
@@ -76,7 +64,6 @@ export const resourcesContract = {
 					limit,
 					cursor,
 					search: z.string().trim().max(120).optional(),
-					workspaceId: z.uuid().optional(),
 					status: status.optional(),
 					includeDeleted: z
 						.union([z.boolean(), z.enum(["true", "false"])])
@@ -112,7 +99,6 @@ export const resourcesContract = {
 					name,
 					slug,
 					description: z.string().max(4000).optional(),
-					workspaceId: z.uuid().nullable().optional(),
 					operationKey,
 				}),
 			)
@@ -149,55 +135,6 @@ export const resourcesContract = {
 			})
 			.input(z.strictObject({ ...projectVersion, operationKey }))
 			.output(projectDto),
-		move: protectedOperation
-			.route({
-				method: "POST",
-				path: `${projectPath}/{id}/move`,
-				summary: "Move a Project after checking source and destination access",
-			})
-			.input(
-				z.strictObject({ ...projectVersion, workspaceId: z.uuid().nullable() }),
-			)
-			.output(projectDto),
-	},
-	workspaces: {
-		list: protectedOperation
-			.route({
-				method: "GET",
-				path: workspacePath,
-				summary: "List currently authorized workspaces",
-			})
-			.input(z.strictObject({ organizationId, limit, cursor }))
-			.output(
-				z.object({
-					items: z.array(workspaceDto),
-					nextCursor: z.string().nullable(),
-				}),
-			),
-		create: protectedOperation
-			.route({
-				method: "POST",
-				path: workspacePath,
-				summary: "Create a workspace when the optional module is enabled",
-			})
-			.input(z.strictObject({ organizationId, name, slug, operationKey }))
-			.output(workspaceDto),
-		update: protectedOperation
-			.route({
-				method: "PATCH",
-				path: `${workspacePath}/{id}`,
-				summary: "Rename or archive a workspace at an expected version",
-			})
-			.input(
-				z.strictObject({
-					organizationId,
-					id: z.uuid(),
-					version,
-					name: name.optional(),
-					archived: z.boolean().optional(),
-				}),
-			)
-			.output(workspaceDto),
 	},
 	grants: {
 		create: protectedOperation
@@ -234,13 +171,8 @@ const scope = z.enum([
 	"project:delete",
 	"project:restore",
 	"project:manage",
-	"project:move",
-	"workspace:read",
-	"workspace:create",
-	"workspace:update",
-	"workspace:manage",
 ]);
-const scopes = z.array(scope).min(1).max(11);
+const scopes = z.array(scope).min(1).max(6);
 const accountDto = z.object({
 	id: z.uuid(),
 	name: z.string(),
@@ -268,15 +200,8 @@ export const serviceAccountContract = {
 				name,
 				operationKey,
 				capabilities: z
-					.array(
-						z.enum([
-							"project:read",
-							"project:create",
-							"workspace:read",
-							"workspace:create",
-						]),
-					)
-					.max(4),
+					.array(z.enum(["project:read", "project:create"]))
+					.max(2),
 			}),
 		)
 		.output(accountDto),
@@ -336,4 +261,3 @@ export const serviceAccountContract = {
 		.output(z.object({ ok: z.literal(true) })),
 };
 export type ProjectDto = z.infer<typeof projectDto>;
-export type WorkspaceDto = z.infer<typeof workspaceDto>;

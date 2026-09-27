@@ -100,57 +100,11 @@ export const resourceRegistry = tenancy
 				.notNull()
 				.references(() => organizations.id),
 			resourceType: text("resource_type").notNull(),
-			parentId: uuid("parent_id"),
 			deletedAt: timestamp("deleted_at", { withTimezone: true }),
 		},
 		(t) => [
 			unique("resource_registry_org_id").on(t.organizationId, t.id),
-			foreignKey({
-				columns: [t.organizationId, t.parentId],
-				foreignColumns: [t.organizationId, t.id],
-			}),
-			index("resource_registry_parent").on(t.organizationId, t.parentId, t.id),
-			check(
-				"resource_registry_type",
-				sql`resource_type IN ('project','workspace')`,
-			),
-			check(
-				"resource_registry_parent_check",
-				sql`parent_id IS NULL OR (resource_type='project' AND parent_id<>id)`,
-			),
-			...policies(),
-		],
-	)
-	.enableRLS();
-export const workspaces = tenancy
-	.table(
-		"workspaces",
-		{
-			id: uuid().primaryKey(),
-			organizationId: uuid("organization_id")
-				.notNull()
-				.references(() => organizations.id),
-			name: text().notNull(),
-			slug: text().notNull(),
-			version: integer().notNull().default(1),
-			archivedAt: timestamp("archived_at", { withTimezone: true }),
-			...dates(),
-		},
-		(t) => [
-			unique("workspaces_org_id").on(t.organizationId, t.id),
-			unique("workspaces_org_slug").on(t.organizationId, t.slug),
-			foreignKey({
-				columns: [t.organizationId, t.id],
-				foreignColumns: [resourceRegistry.organizationId, resourceRegistry.id],
-			}),
-			index("workspaces_list").on(
-				t.organizationId,
-				t.createdAt.desc(),
-				t.id.desc(),
-			),
-			check("workspaces_name", sql`length(name) BETWEEN 1 AND 120`),
-			check("workspaces_slug", sql`slug ~ '^[a-z0-9][a-z0-9-]{1,62}$'`),
-			check("workspaces_version", sql`version > 0`),
+			check("resource_registry_type", sql`resource_type = 'project'`),
 			...policies(),
 		],
 	)
@@ -168,7 +122,6 @@ export const projects = tenancy
 			description: text().notNull().default(""),
 			status: text().notNull().default("active"),
 			ownerMembershipId: uuid("owner_membership_id"),
-			workspaceId: uuid("workspace_id"),
 			version: integer().notNull().default(1),
 			deletedAt: timestamp("deleted_at", { withTimezone: true }),
 			...dates(),
@@ -184,18 +137,8 @@ export const projects = tenancy
 				columns: [t.organizationId, t.ownerMembershipId],
 				foreignColumns: [memberships.organizationId, memberships.id],
 			}),
-			foreignKey({
-				columns: [t.organizationId, t.workspaceId],
-				foreignColumns: [workspaces.organizationId, workspaces.id],
-			}),
 			index("projects_list").on(
 				t.organizationId,
-				t.createdAt.desc(),
-				t.id.desc(),
-			),
-			index("projects_workspace").on(
-				t.organizationId,
-				t.workspaceId,
 				t.createdAt.desc(),
 				t.id.desc(),
 			),

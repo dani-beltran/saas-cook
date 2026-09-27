@@ -9,7 +9,12 @@ import { withTenantTransaction } from "../../db/src/tenancy";
 import { bootstrap, upgradeAuthorization } from "./commands";
 import { fgaRequest } from "./fga";
 import { createAuthorizationService } from "./index";
-import { compileResourceContext, modelHash, phase2ModelHash } from "./model";
+import {
+	compileResourceContext,
+	modelHash,
+	phase2ModelHash,
+	phase3ModelHash,
+} from "./model";
 
 const cleanup: Array<() => Promise<void>> = [];
 afterEach(async () => {
@@ -70,15 +75,14 @@ function context() {
 		role: "member" as const,
 		creator: true,
 		target: { type: "project" as const, id: "project" },
-		workspaceId: "workspace",
 		grants: [
-			{ resourceId: "workspace", relation: "viewer" as const, teamId: "team" },
+			{ resourceId: "project", relation: "viewer" as const, teamId: "team" },
 		],
 	};
 }
 
-describe("Phase 3 resource fault and model boundaries", () => {
-	it("uses fresh qualified resource/team/parent namespaces and rejects oversized contexts", () => {
+describe("Project resource fault and model boundaries", () => {
+	it("uses fresh qualified resource/team namespaces and rejects oversized contexts", () => {
 		const one = compileResourceContext(context()),
 			two = compileResourceContext(context());
 		expect(one.object).not.toBe(two.object);
@@ -253,98 +257,140 @@ describe("Phase 3 resource fault and model boundaries", () => {
 			resources.getProject(f.owner, f.org, { id: f.project.id }),
 		).rejects.toThrow();
 	});
-	it("explicitly upgrades the reviewed ready predecessor without changing epoch and safely resumes", async () => {
-		const f = await fixture();
-		const control = new Pool({ connectionString: f.installation.controlUrl });
-		cleanup.push(() => control.end());
-		const predecessor = JSON.parse(
-			await readFile(
-				new URL("./fixtures/phase2-model.json", import.meta.url),
-				"utf8",
-			),
-		);
-		expect(
-			createHash("sha256").update(JSON.stringify(predecessor)).digest("hex"),
-		).toBe(phase2ModelHash);
-		const before = (await control.query("SELECT * FROM control.installations"))
-			.rows[0];
-		const receipt = await fgaRequest<{ authorization_model_id: string }>(
-			f.installation.env.OPENFGA_API_URL,
-			`/stores/${before.store_id}/authorization-models`,
-			predecessor,
-		);
-		await control.query(
-			"UPDATE control.installations SET model_id=$1,model_hash=$2",
-			[receipt.authorization_model_id, phase2ModelHash],
-		);
-		await f.app.query(
-			"UPDATE tenancy.authorization_revisions SET model_id=$1,model_hash=$2",
-			[receipt.authorization_model_id, phase2ModelHash],
-		);
-		const options = {
-			applicationPool: f.app,
-			controlPool: control,
-			installationId: f.installation.env.INSTALLATION_ID,
-			openfgaUrl: f.installation.env.OPENFGA_API_URL,
-		};
-		await expect(bootstrap(options)).rejects.toThrow();
-		await upgradeAuthorization(options);
-		const after = (await control.query("SELECT * FROM control.installations"))
-			.rows[0];
-		expect(after.epoch).toBe(before.epoch);
-		expect(after.model_hash).toBe(modelHash);
-		await upgradeAuthorization(options);
-		expect(
-			(
-				await control.query(
-					"SELECT count(*)::integer AS count FROM control.security_events WHERE action='authorization.model_upgraded'",
-				)
-			).rows[0].count,
-		).toBe(1);
-
-		expect(
-			(await f.resources.getProject(f.owner, f.org, { id: f.project.id })).id,
-		).toBe(f.project.id);
-		await control.query(
-			"UPDATE control.installations SET model_id=$1,model_hash=$2",
-			[receipt.authorization_model_id, phase2ModelHash],
-		);
-		await upgradeAuthorization(options);
-		expect(
-			(
-				await control.query(
-					"SELECT epoch,model_hash FROM control.installations",
-				)
-			).rows[0],
-		).toEqual({ epoch: before.epoch, model_hash: modelHash });
-		await control.query(
-			"UPDATE control.installations SET model_id=$1,model_hash=$2",
-			[receipt.authorization_model_id, phase2ModelHash],
-		);
-		await control.query("UPDATE control.model_upgrades SET completed_at=NULL");
-		let changed = false;
-		const interrupted = await proxy(async (body, response) => {
-			if (!changed) {
-				changed = true;
-				await control.query(
-					"UPDATE control.installations SET state='recovery_required'",
-				);
-			}
-			const result = await fgaRequest(
-				f.installation.env.OPENFGA_API_URL,
-				`/stores/${before.store_id}/check`,
-				body,
+	it.each([
+		["phase2", phase2ModelHash],
+		["phase3", phase3ModelHash],
+	])(
+		"explicitly upgrades %s without changing epoch and safely resumes",
+		async (release, predecessorHash) => {
+			const f = await fixture();
+			const control = new Pool({ connectionString: f.installation.controlUrl });
+			cleanup.push(() => control.end());
+			const predecessor = JSON.parse(
+				await readFile(
+					new URL(`./fixtures/${release}-model.json`, import.meta.url),
+					"utf8",
+				),
 			);
-			response.setHeader("content-type", "application/json");
-			response.end(JSON.stringify(result));
-		});
-		await expect(
-			upgradeAuthorization({ ...options, openfgaUrl: interrupted }),
-		).rejects.toThrow("Independent publication changed");
-		expect(
-			(await control.query("SELECT completed_at FROM control.model_upgrades"))
-				.rows[0].completed_at,
-		).toBeNull();
-		await expect(upgradeAuthorization(options)).rejects.toThrow();
-	});
+			expect(
+				createHash("sha256").update(JSON.stringify(predecessor)).digest("hex"),
+			).toBe(predecessorHash);
+			const before = (
+				await control.query("SELECT * FROM control.installations")
+			).rows[0];
+			const receipt = await fgaRequest<{ authorization_model_id: string }>(
+				f.installation.env.OPENFGA_API_URL,
+				`/stores/${before.store_id}/authorization-models`,
+				predecessor,
+			);
+			await control.query(
+				"UPDATE control.installations SET model_id=$1,model_hash=$2",
+				[receipt.authorization_model_id, predecessorHash],
+			);
+			await f.app.query(
+				"UPDATE tenancy.authorization_revisions SET model_id=$1,model_hash=$2",
+				[receipt.authorization_model_id, predecessorHash],
+			);
+			const options = {
+				applicationPool: f.app,
+				controlPool: control,
+				installationId: f.installation.env.INSTALLATION_ID,
+				openfgaUrl: f.installation.env.OPENFGA_API_URL,
+			};
+			let historicalReceipt: Record<string, unknown> | undefined;
+			if (release === "phase3") {
+				// Reproduce the original one-receipt schema and its completed Phase 2 upgrade.
+				await control.query(
+					"ALTER TABLE control.model_upgrades DROP CONSTRAINT model_upgrades_pkey; ALTER TABLE control.model_upgrades ADD PRIMARY KEY (installation_id)",
+				);
+				historicalReceipt = (
+					await control.query(
+						"INSERT INTO control.model_upgrades(installation_id,epoch,from_model_id,from_model_hash,to_model_id,to_model_hash,completed_at) VALUES($1,$2,'phase2-model',$3,$4,$5,clock_timestamp()) RETURNING *",
+						[
+							before.installation_id,
+							before.epoch,
+							phase2ModelHash,
+							receipt.authorization_model_id,
+							phase3ModelHash,
+						],
+					)
+				).rows[0];
+			}
+			await expect(bootstrap(options)).rejects.toThrow();
+			await upgradeAuthorization(options);
+			const after = (await control.query("SELECT * FROM control.installations"))
+				.rows[0];
+			expect(after.epoch).toBe(before.epoch);
+			expect(after.model_hash).toBe(modelHash);
+			if (historicalReceipt)
+				expect(
+					(
+						await control.query(
+							"SELECT * FROM control.model_upgrades WHERE to_model_hash=$1",
+							[phase3ModelHash],
+						)
+					).rows[0],
+				).toEqual(historicalReceipt);
+			await upgradeAuthorization(options);
+			expect(
+				(
+					await control.query(
+						"SELECT count(*)::integer AS count FROM control.security_events WHERE action='authorization.model_upgraded'",
+					)
+				).rows[0].count,
+			).toBe(1);
+
+			expect(
+				(await f.resources.getProject(f.owner, f.org, { id: f.project.id })).id,
+			).toBe(f.project.id);
+			await control.query(
+				"UPDATE control.installations SET model_id=$1,model_hash=$2",
+				[receipt.authorization_model_id, predecessorHash],
+			);
+			await upgradeAuthorization(options);
+			expect(
+				(
+					await control.query(
+						"SELECT epoch,model_hash FROM control.installations",
+					)
+				).rows[0],
+			).toEqual({ epoch: before.epoch, model_hash: modelHash });
+			await control.query(
+				"UPDATE control.installations SET model_id=$1,model_hash=$2",
+				[receipt.authorization_model_id, predecessorHash],
+			);
+			await control.query(
+				"UPDATE control.model_upgrades SET completed_at=NULL WHERE to_model_hash=$1",
+				[modelHash],
+			);
+			let changed = false;
+			const interrupted = await proxy(async (body, response) => {
+				if (!changed) {
+					changed = true;
+					await control.query(
+						"UPDATE control.installations SET state='recovery_required'",
+					);
+				}
+				const result = await fgaRequest(
+					f.installation.env.OPENFGA_API_URL,
+					`/stores/${before.store_id}/check`,
+					body,
+				);
+				response.setHeader("content-type", "application/json");
+				response.end(JSON.stringify(result));
+			});
+			await expect(
+				upgradeAuthorization({ ...options, openfgaUrl: interrupted }),
+			).rejects.toThrow("Independent publication changed");
+			expect(
+				(
+					await control.query(
+						"SELECT completed_at FROM control.model_upgrades WHERE to_model_hash=$1",
+						[modelHash],
+					)
+				).rows[0].completed_at,
+			).toBeNull();
+			await expect(upgradeAuthorization(options)).rejects.toThrow();
+		},
+	);
 });

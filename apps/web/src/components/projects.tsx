@@ -1,7 +1,7 @@
 "use client";
 
 import { createApiClient } from "@common-saas/api/client";
-import type { ProjectDto, WorkspaceDto } from "@common-saas/api-contracts";
+import type { ProjectDto } from "@common-saas/api-contracts";
 import {
 	Button,
 	Input,
@@ -14,23 +14,17 @@ import { DashboardShell } from "./dashboard-shell";
 import "./projects-dashboard.css";
 
 type Feedback = { message: string; failed?: boolean; signIn?: boolean };
-type Confirmation =
-	| { kind: "delete"; project: ProjectDto }
-	| { kind: "archive"; workspace: WorkspaceDto };
+type Confirmation = { project: ProjectDto };
 
 export function Projects({ organizationId }: { organizationId: string }) {
 	const locale = useLocale();
 	const t = useTranslations("Projects");
 	const [projects, setProjects] = useState<ProjectDto[]>([]);
-	const [workspaces, setWorkspaces] = useState<WorkspaceDto[]>([]);
 	const [nextCursor, setNextCursor] = useState<string | null>(null);
-	const [workspaceCursor, setWorkspaceCursor] = useState<string | null>(null);
 	const [search, setSearch] = useState("");
 	const [searchDraft, setSearchDraft] = useState("");
 	const [includeDeleted, setIncludeDeleted] = useState(false);
 	const [loading, setLoading] = useState(true);
-	const [workspaceLoading, setWorkspaceLoading] = useState(true);
-	const [workspaceUnavailable, setWorkspaceUnavailable] = useState(false);
 	const [busy, setBusy] = useState(false);
 	const [focusProjectAction, setFocusProjectAction] = useState(false);
 	const [feedback, setFeedback] = useState<
@@ -39,7 +33,6 @@ export function Projects({ organizationId }: { organizationId: string }) {
 	const [editor, setEditor] = useState<ProjectDto | "create" | null>(null);
 	const [confirmation, setConfirmation] = useState<Confirmation | null>(null);
 	const requestSequence = useRef(0);
-	const workspaceSequence = useRef(0);
 	const lifetime = useRef(0);
 	const busyRef = useRef(false);
 	const operationKeys = useRef(new Map<string, string>());
@@ -54,7 +47,7 @@ export function Projects({ organizationId }: { organizationId: string }) {
 		[],
 	);
 	const errorFeedback = useCallback(
-		(error: unknown, workspace = false): Feedback => {
+		(error: unknown): Feedback => {
 			const failure = error as { code?: string; message?: string };
 			return {
 				failed: true,
@@ -63,9 +56,7 @@ export function Projects({ organizationId }: { organizationId: string }) {
 					failure.message === "CAPACITY"
 						? "capacity"
 						: failure.message === "DISABLED"
-							? workspace
-								? "workspaceDisabled"
-								: "projectDisabled"
+							? "projectDisabled"
 							: failure.code === "CONFLICT"
 								? "conflict"
 								: failure.code === "FORBIDDEN" || failure.code === "NOT_FOUND"
@@ -147,52 +138,12 @@ export function Projects({ organizationId }: { organizationId: string }) {
 		},
 		[api, organizationId, search, includeDeleted, errorFeedback, queryKey],
 	);
-	const loadWorkspaces = useCallback(
-		async (cursor?: string) => {
-			const sequence = ++workspaceSequence.current;
-			setWorkspaceLoading(true);
-			try {
-				const page = await api().workspaces.list({
-					organizationId,
-					limit: 50,
-					cursor,
-				});
-				if (sequence !== workspaceSequence.current) return;
-				setWorkspaces((previous) =>
-					cursor ? [...previous, ...page.items] : page.items,
-				);
-				setWorkspaceCursor(page.nextCursor);
-				setWorkspaceUnavailable(false);
-				setFeedback((previous) => ({ ...previous, workspaceList: undefined }));
-			} catch (error) {
-				if (sequence !== workspaceSequence.current) return;
-				if (!cursor) {
-					setWorkspaces([]);
-					setWorkspaceCursor(null);
-					setWorkspaceUnavailable(true);
-				}
-				setFeedback((previous) => ({
-					...previous,
-					workspaceList: errorFeedback(error, true),
-				}));
-			} finally {
-				if (sequence === workspaceSequence.current) setWorkspaceLoading(false);
-			}
-		},
-		[api, organizationId, errorFeedback],
-	);
 	useEffect(() => {
 		void load();
 		return () => {
 			requestSequence.current++;
 		};
 	}, [load]);
-	useEffect(() => {
-		void loadWorkspaces();
-		return () => {
-			workspaceSequence.current++;
-		};
-	}, [loadWorkspaces]);
 	useEffect(
 		() => () => {
 			lifetime.current++;
@@ -223,7 +174,6 @@ export function Projects({ organizationId }: { organizationId: string }) {
 		target: string,
 		work: () => Promise<unknown>,
 		options: {
-			workspace?: boolean;
 			signature?: string;
 			closeEditor?: boolean;
 		} = {},
@@ -245,16 +195,15 @@ export function Projects({ organizationId }: { organizationId: string }) {
 				setEditor(null);
 				setFocusProjectAction(true);
 			}
-			if (target === "confirmation" && !options.workspace)
-				setFocusProjectAction(true);
+			if (target === "confirmation") setFocusProjectAction(true);
 			setConfirmation(null);
-			await (options.workspace ? loadWorkspaces() : load());
+			await load();
 			return true;
 		} catch (error) {
 			if (currentLifetime === lifetime.current)
 				setFeedback((previous) => ({
 					...previous,
-					[target]: errorFeedback(error, options.workspace),
+					[target]: errorFeedback(error),
 				}));
 			return false;
 		} finally {
@@ -283,7 +232,6 @@ export function Projects({ organizationId }: { organizationId: string }) {
 							name: value.name,
 							slug: value.slug,
 							description: value.description,
-							workspaceId: value.workspaceId || null,
 							operationKey: operationKey(signature),
 						}),
 			{ signature, closeEditor: true },
@@ -309,34 +257,19 @@ export function Projects({ organizationId }: { organizationId: string }) {
 	}
 	function confirmAction() {
 		if (!confirmation) return;
-		if (confirmation.kind === "delete") {
-			const project = confirmation.project;
-			const signature = `delete:${project.id}:${project.version}`;
-			void mutate(
-				"confirmation",
-				() =>
-					api().projects.delete({
-						organizationId,
-						id: project.id,
-						version: project.version,
-						operationKey: operationKey(signature),
-					}),
-				{ signature },
-			);
-		} else {
-			const workspace = confirmation.workspace;
-			void mutate(
-				"confirmation",
-				() =>
-					api().workspaces.update({
-						organizationId,
-						id: workspace.id,
-						version: workspace.version,
-						archived: true,
-					}),
-				{ workspace: true },
-			);
-		}
+		const project = confirmation.project;
+		const signature = `delete:${project.id}:${project.version}`;
+		void mutate(
+			"confirmation",
+			() =>
+				api().projects.delete({
+					organizationId,
+					id: project.id,
+					version: project.version,
+					operationKey: operationKey(signature),
+				}),
+			{ signature },
+		);
 	}
 	const updatedDate = (value: string) =>
 		new Intl.DateTimeFormat(locale, {
@@ -385,23 +318,12 @@ export function Projects({ organizationId }: { organizationId: string }) {
 										slug: editor.slug,
 										description: editor.description,
 										status: editor.status,
-										workspaceId: editor.workspaceId ?? "",
 									}
 						}
-						workspaces={workspaceUnavailable ? [] : workspaces}
 						busy={busy}
 						onSave={save}
 						onCancel={closeEditor}
 					/>
-					{editor === "create" && workspaceCursor && (
-						<Button
-							className="dashboard-secondary"
-							disabled={workspaceLoading || busy}
-							onClick={() => void loadWorkspaces(workspaceCursor)}
-						>
-							{t("workspaceMore")}
-						</Button>
-					)}
 				</section>
 			)}
 			<section className="projects-section" aria-label={t("title")}>
@@ -507,13 +429,6 @@ export function Projects({ organizationId }: { organizationId: string }) {
 												<p>{project.description}</p>
 											</details>
 										)}
-										<p className="projects-workspace-name">
-											{project.workspaceId
-												? (workspaces.find(
-														(workspace) => workspace.id === project.workspaceId,
-													)?.name ?? t("assignedWorkspace"))
-												: t("noWorkspace")}
-										</p>
 									</div>
 								</div>
 								<span
@@ -564,82 +479,6 @@ export function Projects({ organizationId }: { organizationId: string }) {
 										{t("projectActions", { name: project.name })}
 									</summary>
 									<div className="projects-context-content">
-										{!workspaceUnavailable && (
-											<form
-												className="projects-move-form"
-												onSubmit={(event) => {
-													event.preventDefault();
-													const data = new FormData(event.currentTarget);
-													void mutate(project.id, () =>
-														api().projects.move({
-															organizationId,
-															id: project.id,
-															version: project.version,
-															workspaceId:
-																String(data.get("workspaceId") ?? "") || null,
-														}),
-													);
-												}}
-											>
-												<div className="dashboard-field">
-													<label htmlFor={`move-${project.id}`}>
-														{t("moveDestination", { name: project.name })}
-													</label>
-													<select
-														key={`${project.workspaceId}:${project.version}`}
-														id={`move-${project.id}`}
-														name="workspaceId"
-														defaultValue={project.workspaceId ?? ""}
-														disabled={busy || workspaceLoading}
-													>
-														<option value="">{t("noWorkspace")}</option>
-														{project.workspaceId &&
-															!workspaces.some(
-																(workspace) =>
-																	workspace.id === project.workspaceId,
-															) && (
-																<option value={project.workspaceId} disabled>
-																	{t("assignedWorkspace")}
-																</option>
-															)}
-														{workspaces
-															.filter(
-																(workspace) =>
-																	!workspace.archivedAt ||
-																	workspace.id === project.workspaceId,
-															)
-															.map((workspace) => (
-																<option
-																	key={workspace.id}
-																	value={workspace.id}
-																	disabled={Boolean(workspace.archivedAt)}
-																>
-																	{workspace.name}
-																	{workspace.archivedAt
-																		? ` (${t("archived")})`
-																		: ""}
-																</option>
-															))}
-													</select>
-												</div>
-												<Button
-													className="dashboard-secondary"
-													type="submit"
-													disabled={busy || workspaceLoading}
-												>
-													{t("move")}
-												</Button>
-												{workspaceCursor && (
-													<Button
-														className="dashboard-secondary"
-														disabled={workspaceLoading || busy}
-														onClick={() => void loadWorkspaces(workspaceCursor)}
-													>
-														{t("workspaceMore")}
-													</Button>
-												)}
-											</form>
-										)}
 										<Button
 											className="dashboard-danger"
 											disabled={busy}
@@ -648,7 +487,7 @@ export function Projects({ organizationId }: { organizationId: string }) {
 													...previous,
 													confirmation: undefined,
 												}));
-												setConfirmation({ kind: "delete", project });
+												setConfirmation({ project });
 											}}
 										>
 											{t("delete")}
@@ -673,202 +512,6 @@ export function Projects({ organizationId }: { organizationId: string }) {
 					</div>
 				)}
 			</section>
-			<section
-				className="dashboard-section projects-workspaces"
-				aria-labelledby="workspaces-title"
-			>
-				<div className="dashboard-section-heading projects-workspace-heading">
-					<div>
-						<h2 id="workspaces-title">{t("workspaces")}</h2>
-						<p>{t("workspaceHint")}</p>
-					</div>
-					<Button
-						className="dashboard-secondary"
-						disabled={busy || workspaceLoading}
-						onClick={() => void loadWorkspaces()}
-					>
-						{t("workspaceRefresh")}
-					</Button>
-				</div>
-				{notice("workspaceList")}
-				{notice("workspaceCreate")}
-				{workspaceLoading && (
-					<p role="status" className="projects-loading">
-						{t("workspaceLoading")}
-					</p>
-				)}
-				{!workspaceUnavailable && (
-					<>
-						<details className="projects-workspace-create">
-							<summary>{t("workspaceCreate")}</summary>
-							<form
-								className="projects-workspace-form"
-								onSubmit={async (event) => {
-									event.preventDefault();
-									const form = event.currentTarget;
-									const data = new FormData(form);
-									const name = String(data.get("name")).trim();
-									const slug = String(data.get("slug"));
-									const signature = `workspace:${name}:${slug}`;
-									if (
-										await mutate(
-											"workspaceCreate",
-											() =>
-												api().workspaces.create({
-													organizationId,
-													name,
-													slug,
-													operationKey: operationKey(signature),
-												}),
-											{ workspace: true, signature },
-										)
-									)
-										form.reset();
-								}}
-							>
-								<div className="dashboard-field">
-									<label htmlFor="workspace-name">{t("name")}</label>
-									<Input
-										id="workspace-name"
-										name="name"
-										minLength={2}
-										maxLength={80}
-										required
-										disabled={busy}
-									/>
-								</div>
-								<div className="dashboard-field">
-									<label htmlFor="workspace-slug">{t("slug")}</label>
-									<Input
-										id="workspace-slug"
-										name="slug"
-										pattern="[a-z0-9][a-z0-9-]{1,62}"
-										aria-describedby="workspace-slug-hint"
-										required
-										disabled={busy}
-									/>
-								</div>
-								<Button type="submit" disabled={busy}>
-									{t("workspaceCreate")}
-								</Button>
-								<p
-									id="workspace-slug-hint"
-									className="projects-workspace-slug-hint"
-								>
-									{t("slugHint")}
-								</p>
-							</form>
-						</details>
-						{!workspaceLoading && !workspaces.length && (
-							<p className="projects-workspace-empty">{t("workspaceEmpty")}</p>
-						)}
-						<ul className="projects-workspace-list">
-							{workspaces.map((workspace) => (
-								<li key={workspace.id} className="projects-workspace-item">
-									<div className="projects-workspace-row">
-										<div>
-											<h3>{workspace.name}</h3>
-											<p>
-												{workspace.archivedAt
-													? t("workspaceArchived")
-													: t("workspaceActive")}
-											</p>
-										</div>
-										<span className="dashboard-badge">
-											{workspace.archivedAt ? t("archived") : t("active")}
-										</span>
-										<Button
-											className="dashboard-secondary"
-											disabled={busy}
-											onClick={() => {
-												if (workspace.archivedAt)
-													void mutate(
-														workspace.id,
-														() =>
-															api().workspaces.update({
-																organizationId,
-																id: workspace.id,
-																version: workspace.version,
-																archived: false,
-															}),
-														{ workspace: true },
-													);
-												else {
-													setFeedback((previous) => ({
-														...previous,
-														confirmation: undefined,
-													}));
-													setConfirmation({ kind: "archive", workspace });
-												}
-											}}
-										>
-											{workspace.archivedAt
-												? t("workspaceRestore")
-												: t("workspaceArchive")}
-										</Button>
-									</div>
-									<details className="projects-context">
-										<summary>
-											{t("renameWorkspace", { name: workspace.name })}
-										</summary>
-										<form
-											className="projects-workspace-rename"
-											onSubmit={(event) => {
-												event.preventDefault();
-												const data = new FormData(event.currentTarget);
-												void mutate(
-													workspace.id,
-													() =>
-														api().workspaces.update({
-															organizationId,
-															id: workspace.id,
-															version: workspace.version,
-															name: String(data.get("name")).trim(),
-														}),
-													{ workspace: true },
-												);
-											}}
-										>
-											<div className="dashboard-field">
-												<label htmlFor={`rename-${workspace.id}`}>
-													{t("name")}
-												</label>
-												<Input
-													key={`${workspace.id}:${workspace.version}`}
-													id={`rename-${workspace.id}`}
-													name="name"
-													defaultValue={workspace.name}
-													minLength={2}
-													maxLength={80}
-													required
-													disabled={busy}
-												/>
-											</div>
-											<Button
-												className="dashboard-secondary"
-												type="submit"
-												disabled={busy}
-											>
-												{t("workspaceRename")}
-											</Button>
-										</form>
-									</details>
-									{notice(workspace.id)}
-								</li>
-							))}
-						</ul>
-						{workspaceCursor && (
-							<Button
-								className="dashboard-secondary"
-								disabled={busy || workspaceLoading}
-								onClick={() => void loadWorkspaces(workspaceCursor)}
-							>
-								{t("workspaceMore")}
-							</Button>
-						)}
-					</>
-				)}
-			</section>
 			<dialog
 				ref={confirmationDialog}
 				className="projects-confirmation"
@@ -882,15 +525,9 @@ export function Projects({ organizationId }: { organizationId: string }) {
 				{confirmation && (
 					<>
 						<h2 id="project-confirm-title">
-							{confirmation.kind === "delete"
-								? t("deleteTitle", { name: confirmation.project.name })
-								: t("archiveTitle", { name: confirmation.workspace.name })}
+							{t("deleteTitle", { name: confirmation.project.name })}
 						</h2>
-						<p id="project-confirm-description">
-							{confirmation.kind === "delete"
-								? t("deleteHint")
-								: t("workspaceArchived")}
-						</p>
+						<p id="project-confirm-description">{t("deleteHint")}</p>
 						{notice("confirmation")}
 						<div className="projects-confirmation-actions">
 							<Button
@@ -905,11 +542,7 @@ export function Projects({ organizationId }: { organizationId: string }) {
 								disabled={busy}
 								onClick={confirmAction}
 							>
-								{busy
-									? t("saving")
-									: confirmation.kind === "delete"
-										? t("confirmDelete")
-										: t("confirmArchive")}
+								{busy ? t("saving") : t("confirmDelete")}
 							</Button>
 						</div>
 					</>

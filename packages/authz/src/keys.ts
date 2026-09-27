@@ -102,7 +102,7 @@ export function createApiKeyService(options: {
 			values.some(
 				(value) =>
 					!keyScopes.includes(value) ||
-					(capabilities && !/^(project|workspace):(read|create)$/.test(value)),
+					(capabilities && !/^project:(read|create)$/.test(value)),
 			)
 		)
 			throw new ApiKeyError("INVALID");

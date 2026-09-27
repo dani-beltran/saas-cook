@@ -116,7 +116,7 @@ common-sass/
     authz/                                  # OpenFGA model, projection, checks, assertions
     core/                                   # Context, errors, IDs, events, module contracts
     modules/
-      organizations/ teams/ workspaces/ projects/
+      organizations/ teams/ projects/
       billing/ entitlements/ usage/ audit/
       files/ notifications/ integrations/ account-lifecycle/
     api-contracts/                          # oRPC contracts, Zod DTOs, OpenAPI metadata
@@ -243,7 +243,6 @@ Proposed graph:
 user ── active member/owner/admin/billing_manager ──> organization
 user ── member ──> team ── belongs_to ──> organization
 project ── organization ──> organization
-project ── optional workspace ──> workspace
 user OR team#member ── viewer/editor/manager ──> project
 task ── parent ──> project
 service_account ── explicit grants ──> organization/resource
@@ -263,7 +262,7 @@ task.read      = active_org_member AND (parent_project.read OR explicit_task_rea
 
 An ordinary member does not automatically read every private project. Owners/admins have the documented content-administration policy; the template can provide a stricter product variant. A viewer role is scoped to an explicitly assigned resource/container. Every grant target and group must belong to the same organization. Disable cross-organization sharing initially; guests receive explicit target-organization memberships.
 
-The optional Foundation workspace module ships in Phase 3. Workspace viewer/editor/manager grants are inherited by attached Projects under the same active-principal predicate. Create, rename, archive, list, attach and move operations use the shared policy boundary; moves require source/destination permission and advance the authorization revision. An archived workspace accepts no new assignments; existing resources remain accessible under current grants and can be moved out by an authorized manager. Disabling the module on a populated product requires an explicit migration/reparenting plan, never silent widening of access.
+Projects belong directly to their existing Organization. Project viewer/editor/manager and denied relations apply to same-tenant memberships, teams or service accounts. There is no intermediate container or assignment/move operation. The [removal brief](../feature-briefs/remove-workspaces.md) records the retired Workspace access policy and supported database/model upgrade; historical models remain immutable.
 
 The pseudocode above describes human membership; `active_org_member` includes an active global account and an active organization membership, checked under the lifecycle fences. Service accounts use an equivalent active, same-organization principal predicate and explicit resource grants; API-key scopes further restrict the result. The initial Project feature enables human/team sharing; service-account sharing is a separately declared policy capability. Register organization create/list permissions explicitly, and ensure listing permission never implies access to every listed resource.
 

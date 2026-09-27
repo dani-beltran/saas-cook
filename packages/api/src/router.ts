@@ -31,97 +31,65 @@ export const router = api.router({
 	},
 
 	projects: {
-		list: api.projects.list.handler(({ context, input }) =>
-			resourceOperation(
-				context,
-				input.organizationId,
-				{ mutate: false, serviceAccounts: true },
-				(runtime, actor) =>
-					runtime.resources.listProjects(actor, input.organizationId, input),
-			),
+		list: api.projects.list.handler(
+			({ context, input: { organizationId, ...input } }) =>
+				resourceOperation(
+					context,
+					organizationId,
+					{ mutate: false, serviceAccounts: true },
+					(runtime, actor) =>
+						runtime.resources.listProjects(actor, organizationId, input),
+				),
 		),
-		get: api.projects.get.handler(({ context, input }) =>
-			resourceOperation(
-				context,
-				input.organizationId,
-				{ mutate: false, serviceAccounts: true },
-				(runtime, actor) =>
-					runtime.resources.getProject(actor, input.organizationId, input),
-			),
+		get: api.projects.get.handler(
+			({ context, input: { organizationId, ...input } }) =>
+				resourceOperation(
+					context,
+					organizationId,
+					{ mutate: false, serviceAccounts: true },
+					(runtime, actor) =>
+						runtime.resources.getProject(actor, organizationId, input),
+				),
 		),
-		create: api.projects.create.handler(({ context, input }) =>
-			resourceOperation(
-				context,
-				input.organizationId,
-				{ mutate: true, serviceAccounts: true },
-				(runtime, actor) =>
-					runtime.resources.createProject(actor, input.organizationId, input),
-			),
+		create: api.projects.create.handler(
+			({ context, input: { organizationId, ...input } }) =>
+				resourceOperation(
+					context,
+					organizationId,
+					{ mutate: true, serviceAccounts: true },
+					(runtime, actor) =>
+						runtime.resources.createProject(actor, organizationId, input),
+				),
 		),
-		update: api.projects.update.handler(({ context, input }) =>
-			resourceOperation(
-				context,
-				input.organizationId,
-				{ mutate: true, serviceAccounts: true },
-				(runtime, actor) =>
-					runtime.resources.updateProject(actor, input.organizationId, input),
-			),
+		update: api.projects.update.handler(
+			({ context, input: { organizationId, ...input } }) =>
+				resourceOperation(
+					context,
+					organizationId,
+					{ mutate: true, serviceAccounts: true },
+					(runtime, actor) =>
+						runtime.resources.updateProject(actor, organizationId, input),
+				),
 		),
-		delete: api.projects.delete.handler(({ context, input }) =>
-			resourceOperation(
-				context,
-				input.organizationId,
-				{ mutate: true, serviceAccounts: true },
-				(runtime, actor) =>
-					runtime.resources.deleteProject(actor, input.organizationId, input),
-			),
+		delete: api.projects.delete.handler(
+			({ context, input: { organizationId, ...input } }) =>
+				resourceOperation(
+					context,
+					organizationId,
+					{ mutate: true, serviceAccounts: true },
+					(runtime, actor) =>
+						runtime.resources.deleteProject(actor, organizationId, input),
+				),
 		),
-		restore: api.projects.restore.handler(({ context, input }) =>
-			resourceOperation(
-				context,
-				input.organizationId,
-				{ mutate: true, serviceAccounts: true },
-				(runtime, actor) =>
-					runtime.resources.restoreProject(actor, input.organizationId, input),
-			),
-		),
-		move: api.projects.move.handler(({ context, input }) =>
-			resourceOperation(
-				context,
-				input.organizationId,
-				{ mutate: true, serviceAccounts: true },
-				(runtime, actor) =>
-					runtime.resources.moveProject(actor, input.organizationId, input),
-			),
-		),
-	},
-	workspaces: {
-		list: api.workspaces.list.handler(({ context, input }) =>
-			resourceOperation(
-				context,
-				input.organizationId,
-				{ mutate: false, serviceAccounts: true },
-				(runtime, actor) =>
-					runtime.resources.listWorkspaces(actor, input.organizationId, input),
-			),
-		),
-		create: api.workspaces.create.handler(({ context, input }) =>
-			resourceOperation(
-				context,
-				input.organizationId,
-				{ mutate: true, serviceAccounts: true },
-				(runtime, actor) =>
-					runtime.resources.createWorkspace(actor, input.organizationId, input),
-			),
-		),
-		update: api.workspaces.update.handler(({ context, input }) =>
-			resourceOperation(
-				context,
-				input.organizationId,
-				{ mutate: true, serviceAccounts: true },
-				(runtime, actor) =>
-					runtime.resources.updateWorkspace(actor, input.organizationId, input),
-			),
+		restore: api.projects.restore.handler(
+			({ context, input: { organizationId, ...input } }) =>
+				resourceOperation(
+					context,
+					organizationId,
+					{ mutate: true, serviceAccounts: true },
+					(runtime, actor) =>
+						runtime.resources.restoreProject(actor, organizationId, input),
+				),
 		),
 	},
 	grants: {

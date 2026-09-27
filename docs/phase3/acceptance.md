@@ -1,5 +1,7 @@
 # Phase 3 acceptance record
 
+> Historical record: Workspace behavior and related verification below describe the predecessor. The [removal brief](../../feature-briefs/remove-workspaces.md) supersedes that product design; these results do not verify the successor.
+
 **Status: Phase 3's Foundation exit gate is pending a corrected full performance run.** The 2026-09-26 benchmark met its numeric thresholds but did not sustain actual parent changes: its operation counter always selected workspace 0, so repeated moves kept the existing parent. The report's recorded `passed` status is retained as historical output, not valid `R-AUTHZ-PERF` sign-off.
 
 The historical image and benchmark ran against base commit `d9038e8beb56d28cb30b7039586ccc14dc03e8a7` plus the then-current working tree, sharing fingerprint `7544a6e608a7af9570755a5d77397559df05655047d41d00f8fa57d1444ba974`. That fingerprint was unchanged during that run, but does not cover the subsequent correctness and harness fixes. Documentation/evidence are excluded from fingerprints to avoid self-reference.

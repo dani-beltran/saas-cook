@@ -1,12 +1,11 @@
 export const messages = {
 	en: {
 		Projects: {
-			eyebrow: "Organization workspace",
+			eyebrow: "Organization projects",
 			project: "Project",
 			updated: "Updated",
 			noDescription: "No description yet.",
 			readDescription: "Read full description",
-			assignedWorkspace: "Assigned workspace",
 			noResults: "No matching projects",
 			emptyTitle: "A place for your next project",
 			emptyHint:
@@ -15,7 +14,7 @@ export const messages = {
 			continuationHint:
 				"More projects may be available. Continue to the next page.",
 			paginationHint: "Showing accessible projects as you load them.",
-			createHint: "Give your project a name and a place to belong.",
+			createHint: "Give your project a name and description.",
 			editHint: "Keep the details and status of your project up to date.",
 			projectActions: "Actions for {name}",
 			projectDisabled:
@@ -25,12 +24,6 @@ export const messages = {
 			deleteHint:
 				"This project will move to deleted projects and release its capacity. You can restore it later if capacity is available.",
 			confirmDelete: "Delete project",
-			archiveTitle: "Archive {name}?",
-			confirmArchive: "Archive workspace",
-			workspaceHint: "Group related projects and manage where work belongs.",
-			workspaceActive: "Available for new projects.",
-			workspaceRefresh: "Refresh workspaces",
-			renameWorkspace: "Rename {name}",
 			title: "Projects",
 			subtitle: "Create, organize and share work in this organization.",
 			back: "Organization settings",
@@ -38,11 +31,6 @@ export const messages = {
 			slug: "Slug",
 			slugHint: "Use 2–63 lowercase letters, numbers or hyphens.",
 			description: "Description",
-			workspace: "Workspace",
-			workspaceInvalid:
-				"Choose an available workspace, or select No workspace.",
-			workspaceUnavailableSelection: "Selected workspace is unavailable",
-			noWorkspace: "No workspace",
 			status: "Status",
 			active: "Active",
 			completed: "Completed",
@@ -64,7 +52,6 @@ export const messages = {
 			delete: "Delete",
 			restore: "Restore",
 			deleted: "Deleted",
-			move: "Move",
 			saved: "Changes saved.",
 			permission: "You do not have permission for this operation.",
 			reauthenticate: "Sign in again to continue.",
@@ -76,19 +63,6 @@ export const messages = {
 			refresh: "Refresh",
 			newProject: "New project",
 			editProject: "Edit project",
-			workspaces: "Workspaces",
-			workspaceCreate: "Create workspace",
-			workspaceRename: "Rename",
-			workspaceArchive: "Archive",
-			workspaceRestore: "Unarchive",
-			workspaceDisabled: "Workspaces are disabled for this installation.",
-			workspaceLoading: "Loading workspaces…",
-			workspaceMore: "Load more workspaces",
-			workspaceEmpty: "No accessible workspaces.",
-			workspaceFailed: "Workspaces could not be loaded.",
-			workspaceArchived:
-				"Archived workspaces retain existing access and accept no new projects.",
-			moveDestination: "Destination for {name}",
 			version: "Version",
 			openProjects: "Open projects",
 			theme: "Appearance",
@@ -97,9 +71,9 @@ export const messages = {
 			language: "Language",
 		},
 		Shell: {
+			navigation: "Navigation",
 			title: "A place to start.",
 			subtitle: "Your application foundation is ready to build on.",
-			workspace: "Workspace",
 			overview: "Overview",
 			organization: "Demo organization",
 			language: "Language",
@@ -136,7 +110,6 @@ export const messages = {
 			updated: "Actualizado",
 			noDescription: "Todavía no hay descripción.",
 			readDescription: "Leer descripción completa",
-			assignedWorkspace: "Espacio de trabajo asignado",
 			noResults: "No hay proyectos coincidentes",
 			emptyTitle: "Un lugar para tu próximo proyecto",
 			emptyHint:
@@ -146,7 +119,7 @@ export const messages = {
 				"Puede haber más proyectos disponibles. Continúa a la siguiente página.",
 			paginationHint:
 				"Se muestran los proyectos accesibles a medida que los cargas.",
-			createHint: "Dale un nombre a tu proyecto y elige dónde organizarlo.",
+			createHint: "Dale un nombre y una descripción a tu proyecto.",
 			editHint: "Mantén al día los detalles y el estado del proyecto.",
 			projectActions: "Acciones de {name}",
 			projectDisabled:
@@ -156,13 +129,6 @@ export const messages = {
 			deleteHint:
 				"El proyecto pasará a los proyectos eliminados y liberará capacidad. Podrás restaurarlo después si hay capacidad disponible.",
 			confirmDelete: "Eliminar proyecto",
-			archiveTitle: "¿Archivar {name}?",
-			confirmArchive: "Archivar espacio de trabajo",
-			workspaceHint:
-				"Agrupa proyectos relacionados y organiza los espacios de trabajo.",
-			workspaceActive: "Disponible para nuevos proyectos.",
-			workspaceRefresh: "Actualizar espacios de trabajo",
-			renameWorkspace: "Renombrar {name}",
 			title: "Proyectos",
 			subtitle: "Crea, organiza y comparte el trabajo en esta organización.",
 			back: "Configuración de la organización",
@@ -170,12 +136,6 @@ export const messages = {
 			slug: "Identificador",
 			slugHint: "Usa entre 2 y 63 letras minúsculas, números o guiones.",
 			description: "Descripción",
-			workspace: "Espacio de trabajo",
-			workspaceInvalid:
-				"Elige un espacio disponible o selecciona Sin espacio de trabajo.",
-			workspaceUnavailableSelection:
-				"El espacio seleccionado no está disponible",
-			noWorkspace: "Sin espacio de trabajo",
 			status: "Estado",
 			active: "Activo",
 			completed: "Completado",
@@ -198,7 +158,6 @@ export const messages = {
 			delete: "Eliminar",
 			restore: "Restaurar",
 			deleted: "Eliminado",
-			move: "Mover",
 			saved: "Cambios guardados.",
 			permission: "No tienes permiso para esta operación.",
 			reauthenticate: "Vuelve a iniciar sesión para continuar.",
@@ -210,20 +169,6 @@ export const messages = {
 			refresh: "Actualizar",
 			newProject: "Nuevo proyecto",
 			editProject: "Editar proyecto",
-			workspaces: "Espacios de trabajo",
-			workspaceCreate: "Crear espacio de trabajo",
-			workspaceRename: "Renombrar",
-			workspaceArchive: "Archivar",
-			workspaceRestore: "Desarchivar",
-			workspaceDisabled:
-				"Los espacios de trabajo están desactivados en esta instalación.",
-			workspaceLoading: "Cargando espacios de trabajo…",
-			workspaceMore: "Cargar más espacios de trabajo",
-			workspaceEmpty: "No hay espacios de trabajo accesibles.",
-			workspaceFailed: "No se pudieron cargar los espacios de trabajo.",
-			workspaceArchived:
-				"Los espacios archivados mantienen el acceso existente y no aceptan proyectos nuevos.",
-			moveDestination: "Destino para {name}",
 			version: "Versión",
 			openProjects: "Abrir proyectos",
 			theme: "Apariencia",
@@ -232,9 +177,9 @@ export const messages = {
 			language: "Idioma",
 		},
 		Shell: {
+			navigation: "Navegación",
 			title: "Un lugar para empezar.",
 			subtitle: "La base de tu aplicación está lista para construir.",
-			workspace: "Espacio de trabajo",
 			overview: "Resumen",
 			organization: "Organización de prueba",
 			language: "Idioma",

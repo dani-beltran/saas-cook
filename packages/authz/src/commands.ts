@@ -6,7 +6,7 @@ import {
 	initializeControlStore,
 } from "./control";
 import { fgaRequest, publishModel, validateModel } from "./fga";
-import { modelHash, phase2ModelHash, safeIdentifier } from "./model";
+import { modelHash, predecessorModelHashes, safeIdentifier } from "./model";
 
 type CommandOptions = {
 	applicationPool: Pool;
@@ -184,7 +184,7 @@ export async function publishAuthorization(
 	}
 }
 
-/** Explicit compiler migration of a ready Phase 2 installation, never a recovery operation.
+/** Explicit compiler migration of a reviewed ready predecessor installation, never a recovery operation.
  * Quiesce older application versions before running; interrupted upgrades fail closed and resume.
  */
 export async function upgradeAuthorization(
@@ -211,7 +211,10 @@ export async function upgradeAuthorization(
 				[options.installationId],
 			)
 		).rows[0];
-		if (!state || ![phase2ModelHash, modelHash].includes(state.model_hash))
+		if (
+			!state ||
+			![...predecessorModelHashes, modelHash].includes(state.model_hash)
+		)
 			throw new Error("Only the reviewed ready predecessor can upgrade");
 		await assertBinding(app, {
 			installationId: state.installation_id,
@@ -221,17 +224,25 @@ export async function upgradeAuthorization(
 			modelId: state.model_id,
 			modelHash: state.model_hash,
 		});
+		const interruptedPredecessor = await control.query(
+			"SELECT 1 FROM control.model_upgrades WHERE installation_id=$1 AND to_model_hash<>$2 AND completed_at IS NULL",
+			[options.installationId, modelHash],
+		);
+		if (interruptedPredecessor.rowCount)
+			throw new Error(
+				"Complete the interrupted predecessor model upgrade first",
+			);
 		let receipt = (
 			await control.query(
-				"SELECT * FROM control.model_upgrades WHERE installation_id=$1",
-				[options.installationId],
+				"SELECT * FROM control.model_upgrades WHERE installation_id=$1 AND to_model_hash=$2",
+				[options.installationId, modelHash],
 			)
 		).rows[0];
 		if (
 			receipt &&
 			(receipt.epoch !== state.epoch ||
 				receipt.to_model_hash !== modelHash ||
-				receipt.from_model_hash !== phase2ModelHash ||
+				!predecessorModelHashes.includes(receipt.from_model_hash) ||
 				![receipt.from_model_id, receipt.to_model_id].includes(state.model_id))
 		)
 			throw new Error(
@@ -269,7 +280,7 @@ export async function upgradeAuthorization(
 						options.installationId,
 						state.epoch,
 						state.model_id,
-						phase2ModelHash,
+						state.model_hash,
 						next,
 						modelHash,
 					],
@@ -295,7 +306,7 @@ export async function upgradeAuthorization(
 				state.epoch,
 				state.store_id,
 				receipt.from_model_id,
-				phase2ModelHash,
+				receipt.from_model_hash,
 				receipt.to_model_id,
 				modelHash,
 			],
@@ -306,7 +317,12 @@ export async function upgradeAuthorization(
 			);
 		await app.query(
 			"UPDATE tenancy.authorization_revisions SET model_id=$1,model_hash=$2,desired_revision=desired_revision+1,applied_revision=desired_revision+1,updated_at=clock_timestamp() WHERE model_id=$3 AND model_hash=$4",
-			[receipt.to_model_id, modelHash, receipt.from_model_id, phase2ModelHash],
+			[
+				receipt.to_model_id,
+				modelHash,
+				receipt.from_model_id,
+				receipt.from_model_hash,
+			],
 		);
 		await app.query("COMMIT");
 		await control.query("BEGIN");
@@ -325,8 +341,8 @@ export async function upgradeAuthorization(
 		if (published.rowCount !== 1)
 			throw new Error("Independent publication changed during model upgrade");
 		const completed = await control.query(
-			"UPDATE control.model_upgrades SET completed_at=clock_timestamp() WHERE installation_id=$1 AND completed_at IS NULL RETURNING installation_id",
-			[options.installationId],
+			"UPDATE control.model_upgrades SET completed_at=clock_timestamp() WHERE installation_id=$1 AND to_model_hash=$2 AND completed_at IS NULL RETURNING installation_id",
+			[options.installationId, modelHash],
 		);
 		if (completed.rowCount)
 			await control.query(

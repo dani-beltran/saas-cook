@@ -3,7 +3,7 @@ import { z } from "zod";
 import { resourcesContract, serviceAccountContract } from "./resources";
 import { tenancyContract } from "./tenancy";
 
-export type { ProjectDto, WorkspaceDto } from "./resources";
+export type { ProjectDto } from "./resources";
 
 export type { OrganizationCommand, OrganizationSnapshotDto } from "./tenancy";
 

@@ -1,10 +1,10 @@
 # Project and child Task evaluation brief
 
-This is a disposable Foundation evaluation task for `saas-add-feature`, not a generator schema or a request to install Tasks into the reference product. Evaluate an ordinary source diff with real PostgreSQL/OpenFGA, synthetic identity and no commercial credentials. Record `R-SKILLS`, `R-TENANCY`, `R-AUTHZ`, `R-LIFECYCLE`, `R-KEYS`, `R-POLICY`, `R-WORKSPACES` and relevant identity regressions. See [verification](../docs/development/verification.md).
+This is a disposable Foundation evaluation task for `saas-add-feature`, not a generator schema or a request to install Tasks into the reference product. Evaluate an ordinary source diff with real PostgreSQL/OpenFGA, synthetic identity and no commercial credentials. Record `R-SKILLS`, `R-TENANCY`, `R-AUTHZ`, `R-LIFECYCLE`, `R-KEYS`, `R-POLICY` and relevant identity regressions. See [verification](../docs/development/verification.md).
 
 ## Project baseline
 
-In a renamed product fixture, inspect and complete the existing Project slice rather than duplicating it. A member can create and immediately read their private Project, edit at an expected version, share with same-tenant members/teams, soft-delete and restore subject to capacity. Owners/admins retain content administration. A viewer cannot edit; a revoked/expired/denied principal cannot retain access. Exercise both RPC and REST and the localized dashboard. Optional workspaces retain the documented archive/disabled behavior. Validate bounded sparse lists without unrestricted totals and one resource/capacity effect/semantic event on a replay. Existing Project source is the example, not frozen generated output.
+In a renamed product fixture, inspect and complete the existing Project slice rather than duplicating it. A member can create and immediately read their private Project, edit at an expected version, share with same-tenant members/teams, soft-delete and restore subject to capacity. Owners/admins retain content administration. A viewer cannot edit; a revoked/expired/denied principal cannot retain access. Exercise both RPC and REST and the localized dashboard. Projects belong directly to their Organization; removed container fields and scopes must be rejected. Validate bounded sparse lists without unrestricted totals and one resource/capacity effect/semantic event on a replay. Existing Project source is the example, not frozen generated output.
 
 ## Child Task outcome and data
 

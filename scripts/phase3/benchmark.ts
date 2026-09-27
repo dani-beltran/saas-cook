@@ -17,7 +17,6 @@ import type { ProjectDto } from "../../packages/api-contracts/src/index";
 import type { TenantActor } from "../../packages/db/src/tenancy";
 import { sourceFingerprint } from "../phase1/source-fingerprint";
 import { resourceFixture } from "./fixture";
-import { ParentMoveWorkload } from "./parent-moves";
 
 const executeFile = promisify(execFile);
 const runId = new Date().toISOString().replace(/[:.]/g, "-");
@@ -26,7 +25,8 @@ let stage = "initialization";
 let measureStartedAt: number | undefined;
 const operationCounts: Record<string, number> = {};
 const failuresByOperation: Record<string, number> = {};
-const parentMoves = new ParentMoveWorkload();
+let warmupFailures = 0;
+let shareConfirmations = 0;
 const revocationFence = new AsyncLocalStorage<boolean>();
 const revocationFenceWait: number[] = [];
 for (const signal of ["SIGINT", "SIGTERM"] as const)
@@ -196,7 +196,6 @@ const environment = {
 	...f.installation.env,
 	APP_ORIGIN: benchmarkOrigin,
 	DEFAULT_PROJECT_CAPACITY: "unlimited",
-	WORKSPACES_ENABLED: "true",
 };
 const originalEnvironment = Object.fromEntries(
 	Object.keys(environment).map((key) => [key, process.env[key]]),
@@ -239,7 +238,7 @@ async function restCall<T>(
 ): Promise<T> {
 	const reference = resource === "resource-grants" ? input.grantId : input.id;
 	const url = new URL(
-		`/api/v1/organizations/${org}/${resource}${reference ? `/${reference}` : ""}${action === "move" ? "/move" : ""}`,
+		`/api/v1/organizations/${org}/${resource}${reference ? `/${reference}` : ""}`,
 		benchmarkOrigin,
 	);
 	const method =
@@ -314,14 +313,6 @@ function resourceApi(transport: "rpc" | "rest") {
 			transport === "rpc"
 				? rpcClient(actor).projects.delete({ organizationId: org, ...input })
 				: restCall<ProjectDto>(actor, org, "projects", "delete", input),
-		moveProject: (
-			actor: TenantActor,
-			org: string,
-			input: { id: string; version: number; workspaceId: string | null },
-		) =>
-			transport === "rpc"
-				? rpcClient(actor).projects.move({ organizationId: org, ...input })
-				: restCall<ProjectDto>(actor, org, "projects", "move", input),
 		grant: (
 			actor: TenantActor,
 			org: string,
@@ -435,9 +426,19 @@ function partialEvidence(status = "running") {
 		measuredFgaChecks,
 		measuredFgaWrites,
 		mix: operationCounts,
-		parentMoves: parentMoves.evidence(
-			(operationCounts.move ?? 0) - (failuresByOperation.move ?? 0),
-		),
+		authorizationChanges: {
+			shareConfirmations,
+			revocationDenials,
+			warmupFailures,
+			valid:
+				warmupFailures === 0 &&
+				shareConfirmations > 0 &&
+				revocationDenials > 0 &&
+				shareConfirmations ===
+					(operationCounts.share ?? 0) - (failuresByOperation.share ?? 0) &&
+				revocationDenials ===
+					(operationCounts.revoke ?? 0) - (failuresByOperation.revoke ?? 0),
+		},
 		firstAttemptSuccessRate: attempts ? successes / attempts : null,
 		durationSeconds: seconds,
 		requestedDurationMs: durationMs,
@@ -511,9 +512,6 @@ const users = organizations.map(() =>
 const memberships = organizations.map(() =>
 	Array.from({ length: 10 }, () => randomUUID()),
 );
-const workspaceIds = organizations.map(
-	() => [randomUUID(), randomUUID()] as const,
-);
 const projectIds: string[][] = [];
 const actors: TenantActor[][] = users.map((group) =>
 	group.map((userId) => ({
@@ -528,9 +526,7 @@ const started = new Date();
 try {
 	stage = "seeding";
 	await atomicReport(reportPath, partialEvidence());
-	console.log(
-		"Seeding 100 tenants, 1,000 memberships, 100,000 Projects and 200 workspace parents",
-	);
+	console.log("Seeding 100 tenants, 1,000 memberships, 100,000 Projects");
 	await source.query("BEGIN");
 	for (let index = 0; index < tenants; index++) {
 		if (interrupted) throw new Error("Benchmark interrupted while seeding");
@@ -552,14 +548,6 @@ try {
 			[org],
 		);
 		await f.authorization.initialize(source, org);
-		await source.query(
-			"INSERT INTO tenancy.resource_registry(id,organization_id,resource_type) SELECT id,$1,'workspace' FROM unnest($2::uuid[]) id",
-			[org, workspaceIds[index]],
-		);
-		await source.query(
-			"INSERT INTO tenancy.workspaces(id,organization_id,name,slug) SELECT id,$1,'Benchmark workspace','ws-'||id FROM unnest($2::uuid[]) id",
-			[org, workspaceIds[index]],
-		);
 		const count =
 			index === 0
 				? 50_000
@@ -767,21 +755,6 @@ try {
 								await resources.getProject(actor, org, { id: result.id });
 								if (measured) readable.push(performance.now() - begin);
 							}
-						} else if (sequence % 3 === 0) {
-							operation = "move";
-							const result = await parentMoves.move(
-								id,
-								workspaceIds[tenant],
-								measured,
-								(workspaceId) =>
-									resources.moveProject(actor, org, {
-										id,
-										version: versions.get(tenant) ?? 1,
-										workspaceId,
-									}),
-							);
-							versions.set(tenant, result.version);
-							if (measured) readiness.push(performance.now() - begin);
 						} else {
 							const grant = grants.get(tenant);
 							if (grant) {
@@ -810,11 +783,19 @@ try {
 									operationKey: randomUUID(),
 								});
 								grants.set(tenant, result.id);
+								const shared = await resources.getProject(
+									actors[tenant][2],
+									org,
+									{ id },
+								);
+								assert.equal(shared.id, id);
+								if (measured) shareConfirmations++;
 								if (measured) readiness.push(performance.now() - begin);
 							}
 						}
 						if (measured) successes++;
 					} catch (error) {
+						if (!measured) warmupFailures++;
 						if (measured) {
 							const name = error instanceof Error ? error.name : "Unknown";
 							failures[name] = (failures[name] ?? 0) + 1;
@@ -869,9 +850,7 @@ try {
 	const successRate = attempts ? successes / attempts : 0;
 	const passed =
 		!interrupted &&
-		parentMoves.evidence(
-			(operationCounts.move ?? 0) - (failuresByOperation.move ?? 0),
-		).valid &&
+		partialEvidence().authorizationChanges.valid &&
 		graphAfter.verifiedEmpty &&
 		measuredFgaWrites === 0 &&
 		contextualTupleCounts.length === measuredFgaChecks &&
@@ -921,7 +900,7 @@ try {
 		tenants,
 		memberships: 1000,
 		projects: resourceCount,
-		workspaceParents: 200,
+		workloadVersion: "direct-project-v1",
 		hotTenant: {
 			resources: 50000,
 			trafficPercent: 80,

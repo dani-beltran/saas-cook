@@ -74,25 +74,15 @@ const routes = {
 		path: (input: Record<string, unknown>) =>
 			`/organizations/${input.organizationId}/projects/${input.id}/restore`,
 	},
-	"projects.move": {
-		method: "POST",
-		path: (input: Record<string, unknown>) =>
-			`/organizations/${input.organizationId}/projects/${input.id}/move`,
-	},
-	"workspaces.create": {
-		method: "POST",
-		path: (input: Record<string, unknown>) =>
-			`/organizations/${input.organizationId}/workspaces`,
-	},
-	"workspaces.update": {
-		method: "PATCH",
-		path: (input: Record<string, unknown>) =>
-			`/organizations/${input.organizationId}/workspaces/${input.id}`,
-	},
 	"grants.create": {
 		method: "POST",
 		path: (input: Record<string, unknown>) =>
 			`/organizations/${input.organizationId}/resource-grants`,
+	},
+	"grants.revoke": {
+		method: "DELETE",
+		path: (input: Record<string, unknown>) =>
+			`/organizations/${input.organizationId}/resource-grants/${input.grantId}`,
 	},
 	"serviceAccounts.create": {
 		method: "POST",
@@ -284,14 +274,15 @@ for (const transport of ["rpc", "rest"] as const) {
 				).status,
 			).toBe(200);
 		});
-		it("uses workspace inheritance and rejects archived destinations", async () => {
-			const workspace = await call("workspaces.create", {
+		it("shares a Project directly and revokes access immediately", async () => {
+			const project = await call("projects.create", {
 				organizationId,
-				name: `Workspace ${transport}`,
-				slug: `workspace-${transport}`,
+				name: `Shared ${transport}`,
+				slug: `shared-${transport}`,
 				operationKey: randomUUID(),
 			});
-			expect(workspace.status, JSON.stringify(workspace.body)).toBe(200);
+			expect(project.status, JSON.stringify(project.body)).toBe(200);
+			expect(project.body).not.toHaveProperty("workspaceId");
 			const membershipId = (
 				await fixture.app.query<{ id: string }>(
 					"SELECT id FROM tenancy.memberships WHERE organization_id=$1 AND user_id=$2",
@@ -300,23 +291,21 @@ for (const transport of ["rpc", "rest"] as const) {
 			).rows[0].id;
 			expect(
 				(
-					await call("grants.create", {
-						organizationId,
-						resourceId: workspace.body.id,
-						subject: { kind: "membership", id: membershipId },
-						relation: "viewer",
-						operationKey: randomUUID(),
-					})
+					await call(
+						"projects.get",
+						{ organizationId, id: project.body.id },
+						{ cookie: "synthetic-member" },
+					)
 				).status,
-			).toBe(200);
-			const project = await call("projects.create", {
+			).toBe(403);
+			const grant = await call("grants.create", {
 				organizationId,
-				name: `Inherited ${transport}`,
-				slug: `inherited-${transport}`,
-				workspaceId: workspace.body.id,
+				resourceId: project.body.id,
+				subject: { kind: "membership", id: membershipId },
+				relation: "viewer",
 				operationKey: randomUUID(),
 			});
-			expect(project.status, JSON.stringify(project.body)).toBe(200);
+			expect(grant.status, JSON.stringify(grant.body)).toBe(200);
 			expect(
 				(
 					await call(
@@ -328,41 +317,18 @@ for (const transport of ["rpc", "rest"] as const) {
 			).toBe(200);
 			expect(
 				(
-					await call("workspaces.update", {
-						organizationId,
-						id: workspace.body.id,
-						version: 1,
-						archived: true,
-					})
-				).status,
-			).toBe(200);
-			expect(
-				(
 					await call(
 						"projects.get",
-						{ organizationId, id: project.body.id },
+						{ organizationId: otherOrganizationId, id: project.body.id },
 						{ cookie: "synthetic-member" },
 					)
 				).status,
-			).toBe(200);
+			).toBe(403);
 			expect(
 				(
-					await call("projects.create", {
+					await call("grants.revoke", {
 						organizationId,
-						name: "Blocked assignment",
-						slug: `blocked-${transport}`,
-						workspaceId: workspace.body.id,
-						operationKey: randomUUID(),
-					})
-				).status,
-			).toBe(409);
-			expect(
-				(
-					await call("projects.move", {
-						organizationId,
-						id: project.body.id,
-						version: 1,
-						workspaceId: null,
+						grantId: grant.body.id,
 					})
 				).status,
 			).toBe(200);
@@ -375,6 +341,27 @@ for (const transport of ["rpc", "rest"] as const) {
 					)
 				).status,
 			).toBe(403);
+		});
+		it("rejects obsolete Project assignment and filters on real services", async () => {
+			expect(
+				(
+					await call("projects.create", {
+						organizationId,
+						name: "Obsolete assignment",
+						slug: `obsolete-${transport}`,
+						workspaceId: null,
+						operationKey: randomUUID(),
+					})
+				).status,
+			).toBe(422);
+			expect(
+				(
+					await call("projects.list", {
+						organizationId,
+						workspaceId: randomUUID(),
+					})
+				).status,
+			).toBe(422);
 		});
 		it("rejects missing and stale account versions without lifecycle, credential or audit changes", async () => {
 			const command = {

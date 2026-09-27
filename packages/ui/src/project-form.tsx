@@ -12,18 +12,15 @@ export interface ProjectFormValues {
 	name: string;
 	slug: string;
 	description: string;
-	workspaceId: string;
 	status: "active" | "completed" | "archived";
 }
 export function ProjectForm({
 	initial,
-	workspaces = [],
 	busy = false,
 	onSave,
 	onCancel,
 }: {
 	initial?: ProjectFormValues;
-	workspaces?: { id: string; name: string; archivedAt: string | null }[];
 	busy?: boolean;
 	onSave: (value: ProjectFormValues) => Promise<void>;
 	onCancel?: () => void;
@@ -34,23 +31,11 @@ export function ProjectForm({
 		name: z.string().trim().min(2, t("nameInvalid")).max(80, t("nameInvalid")),
 		slug: z.string().regex(/^[a-z0-9][a-z0-9-]{1,62}$/, t("slugInvalid")),
 		description: z.string().max(4000, t("descriptionInvalid")),
-		workspaceId: z
-			.string()
-			.refine(
-				(value) =>
-					Boolean(initial) ||
-					value === "" ||
-					workspaces.some(
-						(workspace) => workspace.id === value && !workspace.archivedAt,
-					),
-				t("workspaceInvalid"),
-			),
 		status: z.enum(["active", "completed", "archived"]),
 	});
 	const {
 		register,
 		handleSubmit,
-		watch,
 		formState: { errors, isSubmitting },
 	} = useForm<ProjectFormValues>({
 		resolver: zodResolver(schema),
@@ -58,18 +43,10 @@ export function ProjectForm({
 			name: "",
 			slug: "",
 			description: "",
-			workspaceId: "",
 			status: "active",
 		},
 	});
 	const pending = busy || isSubmitting;
-	const selectedWorkspaceId = watch("workspaceId");
-	const unavailableWorkspace =
-		Boolean(selectedWorkspaceId) &&
-		!workspaces.some(
-			(workspace) =>
-				workspace.id === selectedWorkspaceId && !workspace.archivedAt,
-		);
 	return (
 		<form
 			className="grid gap-5 text-sm"
@@ -142,7 +119,7 @@ export function ProjectForm({
 					</p>
 				)}
 			</div>
-			{initial ? (
+			{initial && (
 				<div className="grid gap-2">
 					<label htmlFor={`${id}-status`}>{t("status")}</label>
 					<select
@@ -156,46 +133,6 @@ export function ProjectForm({
 						<option value="archived">{t("archived")}</option>
 					</select>
 				</div>
-			) : (
-				(workspaces.length > 0 || Boolean(selectedWorkspaceId)) && (
-					<div className="grid gap-2">
-						<label htmlFor={`${id}-workspace`}>{t("workspace")}</label>
-						<select
-							id={`${id}-workspace`}
-							value={selectedWorkspaceId}
-							disabled={pending}
-							aria-invalid={Boolean(errors.workspaceId)}
-							aria-describedby={
-								errors.workspaceId ? `${id}-workspace-error` : undefined
-							}
-							className="min-h-10 rounded-md border border-input bg-background p-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-							{...register("workspaceId")}
-						>
-							<option value="">{t("noWorkspace")}</option>
-							{unavailableWorkspace && (
-								<option value={selectedWorkspaceId} disabled>
-									{t("workspaceUnavailableSelection")}
-								</option>
-							)}
-							{workspaces
-								.filter((item) => !item.archivedAt)
-								.map((item) => (
-									<option key={item.id} value={item.id}>
-										{item.name}
-									</option>
-								))}
-						</select>
-						{errors.workspaceId && (
-							<p
-								id={`${id}-workspace-error`}
-								role="alert"
-								className="text-destructive"
-							>
-								{errors.workspaceId.message}
-							</p>
-						)}
-					</div>
-				)
 			)}
 			<div className="flex flex-wrap gap-3 border-t border-border pt-5">
 				<Button type="submit" disabled={pending}>

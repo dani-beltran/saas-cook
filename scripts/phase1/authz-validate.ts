@@ -21,7 +21,7 @@ async function request<T>(
 }
 
 const store = await request<{ id: string }>("/stores", "POST", {
-	name: `phase3-model-validation-${Date.now()}`,
+	name: `project-model-validation-${Date.now()}`,
 });
 try {
 	const model = await request<{ authorization_model_id: string }>(
@@ -69,7 +69,7 @@ try {
 				modelId: model.authorization_model_id,
 				assertions,
 				scope:
-					"Phase 3 production organization, team, workspace, Project and service-principal model",
+					"Production Organization, Team, direct Project and service-principal model",
 				policyCases: { organization: 8, team: 2, resource: 18 },
 			},
 			null,

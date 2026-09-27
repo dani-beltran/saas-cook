@@ -1,7 +1,7 @@
 export const accountDashboardMessages = {
 	en: {
 		personal: "Personal settings",
-		description: "Your identity, workspaces, and the ways you stay secure.",
+		description: "Your identity, organizations, and the ways you stay secure.",
 		identity: "Account identity",
 		identityDescription: "The account you use across all your organizations.",
 		verified: "Email verified",

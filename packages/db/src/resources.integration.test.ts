@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { afterEach, describe, expect, it } from "vitest";
 import { resourceFixture } from "../../../scripts/phase3/fixture";
 import {
@@ -143,11 +143,6 @@ describe("Phase 3 resource policy with restricted PostgreSQL and real OpenFGA", 
 	it("disables positive Project writes while preserving reads and security cleanup", async () => {
 		const f = await fixture();
 		const p = await f.create();
-		const ws = await f.resources.createWorkspace(f.owner, f.org, {
-			name: "Workspace",
-			slug: "workspace",
-			operationKey: randomUUID(),
-		});
 		const viewer = await f.resources.grant(f.owner, f.org, {
 			resourceId: p.id,
 			subject: { kind: "membership", id: f.membership },
@@ -166,13 +161,6 @@ describe("Phase 3 resource policy with restricted PostgreSQL and real OpenFGA", 
 				id: p.id,
 				version: p.version,
 				name: "Disabled",
-			}),
-		).rejects.toMatchObject({ code: "DISABLED" });
-		await expect(
-			f.resources.moveProject(f.owner, f.org, {
-				id: p.id,
-				version: p.version,
-				workspaceId: ws.id,
 			}),
 		).rejects.toMatchObject({ code: "DISABLED" });
 		await expect(
@@ -240,24 +228,19 @@ describe("Phase 3 resource policy with restricted PostgreSQL and real OpenFGA", 
 			revisions.rows[0].applied_revision,
 		);
 	});
-	it("isolates tenant rows with RLS, missing context, and cross-tenant parents", async () => {
+	it("isolates tenant rows with RLS, missing context, and cross-tenant ownership", async () => {
 		const f = await fixture();
 		const p = await f.create();
 		expect((await f.web.query("SELECT id FROM tenancy.projects")).rows).toEqual(
 			[],
 		);
-		const ws = await f.resources.createWorkspace(f.outsider, f.otherOrg, {
-			name: "Other",
-			slug: "other",
-			operationKey: randomUUID(),
-		});
-		await expect(
-			f.resources.moveProject(f.owner, f.org, {
-				id: p.id,
-				version: p.version,
-				workspaceId: ws.id,
-			}),
-		).rejects.toThrow();
+		const otherMembership = (
+			await f.app.query<{ id: string }>(
+				"SELECT id FROM tenancy.memberships WHERE organization_id=$1 AND user_id=$2",
+				[f.otherOrg, f.outsider.userId],
+			)
+		).rows[0]?.id;
+		expect(otherMembership).toBeTruthy();
 		await expect(
 			f.resources.getProject(f.owner, f.otherOrg, { id: p.id }),
 		).rejects.toThrow();
@@ -269,8 +252,8 @@ describe("Phase 3 resource policy with restricted PostgreSQL and real OpenFGA", 
 			]);
 			await expect(
 				client.query(
-					"UPDATE tenancy.projects SET workspace_id=$2 WHERE id=$1",
-					[p.id, ws.id],
+					"UPDATE tenancy.projects SET owner_membership_id=$2 WHERE id=$1",
+					[p.id, otherMembership],
 				),
 			).rejects.toMatchObject({ code: "23503" });
 		} finally {
@@ -339,80 +322,39 @@ describe("Phase 3 resource policy with restricted PostgreSQL and real OpenFGA", 
 			f.resources.getProject(f.member, f.org, { id: p.id }),
 		).rejects.toThrow();
 	});
-	it("inherits workspace access, rejects archived assignments, and permits managed moves out", async () => {
+	it("rejects removed assignment and filter fields before writing or reading Projects", async () => {
 		const f = await fixture();
-		const ws = await f.resources.createWorkspace(f.owner, f.org, {
-			name: "Research",
-			slug: "research",
-			operationKey: randomUUID(),
-		});
-		await f.resources.grant(f.owner, f.org, {
-			resourceId: ws.id,
-			subject: { kind: "membership", id: f.membership },
-			relation: "viewer",
-			operationKey: randomUUID(),
-		});
-		const p = await f.resources.createProject(f.owner, f.org, {
-			name: "Inherited",
-			slug: "inherited",
-			workspaceId: ws.id,
-			operationKey: randomUUID(),
-		});
-		expect(
-			(await f.resources.getProject(f.member, f.org, { id: p.id })).id,
-		).toBe(p.id);
-		await f.resources.updateWorkspace(f.owner, f.org, {
-			id: ws.id,
-			version: ws.version,
-			archived: true,
-		});
-		expect(
-			(await f.resources.getProject(f.member, f.org, { id: p.id })).id,
-		).toBe(p.id);
+		const p = await f.create();
+		const workspaceId = randomUUID();
 		await expect(
 			f.resources.createProject(f.owner, f.org, {
-				name: "No",
-				slug: "no",
-				workspaceId: ws.id,
+				name: "Removed assignment",
+				slug: "removed-assignment",
 				operationKey: randomUUID(),
+				...{ workspaceId },
 			}),
-		).rejects.toThrow();
-		await f.resources.moveProject(f.owner, f.org, {
-			id: p.id,
-			version: p.version,
-			workspaceId: null,
-		});
+		).rejects.toMatchObject({ code: "INVALID" });
 		await expect(
-			f.resources.getProject(f.member, f.org, { id: p.id }),
-		).rejects.toThrow();
-	});
-	it("requires source and destination authority for a parent move", async () => {
-		const f = await fixture();
-		const ws = await f.resources.createWorkspace(f.owner, f.org, {
-			name: "Private",
-			slug: "private",
-			operationKey: randomUUID(),
-		});
-		const p = await f.create(f.member);
-		await expect(
-			f.resources.moveProject(f.member, f.org, {
+			f.resources.updateProject(f.owner, f.org, {
 				id: p.id,
 				version: p.version,
-				workspaceId: ws.id,
+				name: "Must not update",
+				...{ workspaceId: null },
 			}),
-		).rejects.toThrow();
-		await f.resources.grant(f.owner, f.org, {
-			resourceId: ws.id,
-			subject: { kind: "membership", id: f.membership },
-			relation: "manager",
-			operationKey: randomUUID(),
-		});
-		const moved = await f.resources.moveProject(f.member, f.org, {
-			id: p.id,
-			version: p.version,
-			workspaceId: ws.id,
-		});
-		expect(moved.workspaceId).toBe(ws.id);
+		).rejects.toMatchObject({ code: "INVALID" });
+		await expect(
+			f.resources.listProjects(f.owner, f.org, {
+				limit: 10,
+				...{ workspaceId },
+			}),
+		).rejects.toMatchObject({ code: "INVALID" });
+		expect(
+			await f.resources.getProject(f.owner, f.org, { id: p.id }),
+		).toMatchObject({ name: p.name, version: p.version });
+		expect(p).not.toHaveProperty("workspaceId");
+		expect(f.resources).not.toHaveProperty("moveProject");
+		expect(f.resources).not.toHaveProperty("listWorkspaces");
+		expect(f.resources).not.toHaveProperty("createWorkspace");
 	});
 	it("propagates team revocation and team removal without retaining resource access", async () => {
 		const f = await fixture();
@@ -529,6 +471,46 @@ describe("Phase 3 resource policy with restricted PostgreSQL and real OpenFGA", 
 			f.resources.createProject(f.member, f.org, command),
 		).rejects.toThrow();
 	});
+	it("conflicts with pre-retirement create hashes without duplicating an unassigned Project", async () => {
+		const f = await fixture();
+		const command = {
+			name: "Historical receipt",
+			slug: "historical-receipt",
+			operationKey: randomUUID(),
+		};
+		const project = await f.resources.createProject(f.member, f.org, command);
+		const oldHash = createHash("sha256")
+			.update(
+				JSON.stringify({
+					name: command.name,
+					slug: command.slug,
+					description: "",
+					ownerMembershipId: "creator",
+					workspaceId: null,
+				}),
+			)
+			.digest("hex");
+		await f.app.query(
+			"UPDATE tenancy.resource_operations SET input_hash=$3 WHERE organization_id=$1 AND operation='project.create' AND operation_key=$2",
+			[f.org, command.operationKey, oldHash],
+		);
+		await expect(
+			f.resources.createProject(f.member, f.org, command),
+		).rejects.toMatchObject({ code: "CONFLICT" });
+		expect(
+			(await f.resources.listProjects(f.member, f.org)).items.map(
+				(row) => row.id,
+			),
+		).toEqual([project.id]);
+		expect(
+			(
+				await f.app.query(
+					"SELECT input_hash FROM tenancy.resource_operations WHERE organization_id=$1 AND operation='project.create' AND operation_key=$2",
+					[f.org, command.operationKey],
+				)
+			).rows[0],
+		).toEqual({ input_hash: oldHash });
+	});
 	it("returns only authorized search fields and continues sparse keyset pages without totals", async () => {
 		const f = await fixture();
 		for (let i = 0; i < 12; i++) await f.create(f.owner, `Secret ${i}`);
@@ -555,83 +537,55 @@ describe("Phase 3 resource policy with restricted PostgreSQL and real OpenFGA", 
 		expect(new Set(ids).size).toBe(13);
 		expect(ids).toHaveLength(13);
 	});
-	it("applies direct and inherited denials and restores only the remaining current grant paths", async () => {
+	it("applies Project denials over direct and team grants while retaining organization administration", async () => {
 		const f = await fixture();
-		const ws = await f.resources.createWorkspace(f.owner, f.org, {
+		const p = await f.create();
+		const team = await f.tenancy.createTeam(f.owner, f.org, {
 			name: "Shared",
 			slug: "shared",
+		});
+		await f.tenancy.setTeamMember(f.owner, f.org, {
+			teamId: team.id,
+			membershipId: f.membership,
+			present: true,
+		});
+		const teamGrant = await f.resources.grant(f.owner, f.org, {
+			resourceId: p.id,
+			subject: { kind: "team", id: team.id },
+			relation: "viewer",
 			operationKey: randomUUID(),
 		});
-		const grant = (resourceId: string, relation: "viewer" | "denied") =>
-			f.resources.grant(f.owner, f.org, {
-				resourceId,
-				subject: { kind: "membership", id: f.membership },
-				relation,
-				operationKey: randomUUID(),
-			});
-		const inherited = await grant(ws.id, "viewer");
-		const p = await f.resources.createProject(f.owner, f.org, {
-			name: "Inherited",
-			slug: "denials",
-			workspaceId: ws.id,
+		const direct = await f.resources.grant(f.owner, f.org, {
+			resourceId: p.id,
+			subject: { kind: "membership", id: f.membership },
+			relation: "editor",
 			operationKey: randomUUID(),
 		});
-		const denyParent = await grant(ws.id, "denied");
+		const denied = await f.resources.grant(f.owner, f.org, {
+			resourceId: p.id,
+			subject: { kind: "membership", id: f.membership },
+			relation: "denied",
+			operationKey: randomUUID(),
+		});
 		await expect(
 			f.resources.getProject(f.member, f.org, { id: p.id }),
 		).rejects.toThrow();
 		expect((await f.resources.listProjects(f.member, f.org)).items).toEqual([]);
-		await f.resources.revokeGrant(f.owner, f.org, { grantId: denyParent.id });
+		expect(
+			(await f.resources.getProject(f.owner, f.org, { id: p.id })).id,
+		).toBe(p.id);
+		await f.resources.revokeGrant(f.owner, f.org, { grantId: denied.id });
 		expect(
 			(await f.resources.getProject(f.member, f.org, { id: p.id })).id,
 		).toBe(p.id);
-		const denyProject = await grant(p.id, "denied");
+		await f.resources.revokeGrant(f.owner, f.org, { grantId: direct.id });
+		expect(
+			(await f.resources.getProject(f.member, f.org, { id: p.id })).id,
+		).toBe(p.id);
+		await f.resources.revokeGrant(f.owner, f.org, { grantId: teamGrant.id });
 		await expect(
 			f.resources.getProject(f.member, f.org, { id: p.id }),
 		).rejects.toThrow();
-		await f.resources.revokeGrant(f.owner, f.org, { grantId: denyProject.id });
-		await f.resources.revokeGrant(f.owner, f.org, { grantId: inherited.id });
-		await expect(
-			f.resources.getProject(f.member, f.org, { id: p.id }),
-		).rejects.toThrow();
-	});
-	it("renames and paginates only authorized workspaces with optimistic versions", async () => {
-		const f = await fixture();
-		const visible = await f.resources.createWorkspace(f.member, f.org, {
-			name: "Before",
-			slug: "visible",
-			operationKey: randomUUID(),
-		});
-		await f.resources.createWorkspace(f.owner, f.org, {
-			name: "Private",
-			slug: "private",
-			operationKey: randomUUID(),
-		});
-		const renamed = await f.resources.updateWorkspace(f.member, f.org, {
-			id: visible.id,
-			version: visible.version,
-			name: "After",
-		});
-		await expect(
-			f.resources.updateWorkspace(f.member, f.org, {
-				id: visible.id,
-				version: visible.version,
-				name: "Stale",
-			}),
-		).rejects.toThrow();
-		expect(
-			(
-				await f.resources.listWorkspaces(f.member, f.org, { limit: 2 })
-			).items.map((x) => ({ id: x.id, name: x.name })),
-		).toEqual([{ id: visible.id, name: "After" }]);
-		const archived = await f.resources.updateWorkspace(f.member, f.org, {
-			id: visible.id,
-			version: renamed.version,
-			archived: true,
-		});
-		expect(
-			(await f.resources.listWorkspaces(f.member, f.org)).items[0]?.archivedAt,
-		).toBe(archived.archivedAt);
 	});
 	it("serializes create against restore at the final quota slot and rolls back the losing command", async () => {
 		const f = await fixture(1);
@@ -778,29 +732,4 @@ describe("Phase 3 resource policy with restricted PostgreSQL and real OpenFGA", 
 			).toBe(newest.id);
 		},
 	);
-	it("fails closed when a populated workspace module is disabled", async () => {
-		const f = await fixture();
-		await f.resources.createWorkspace(f.owner, f.org, {
-			name: "Enabled",
-			slug: "enabled",
-			operationKey: randomUUID(),
-		});
-		const disabled = createResourceService(
-			f.web,
-			{
-				authorize: f.authorization.authorizeResource,
-				check: f.authorization.checkResource,
-				sourceCommit: f.authorization.sourceCommit,
-			},
-			{ workspacesEnabled: false },
-		);
-		await expect(disabled.listWorkspaces(f.owner, f.org, {})).rejects.toThrow();
-		await expect(
-			disabled.createWorkspace(f.owner, f.org, {
-				name: "No",
-				slug: "no",
-				operationKey: randomUUID(),
-			}),
-		).rejects.toThrow();
-	});
 });

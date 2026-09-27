@@ -26,7 +26,7 @@ Run commands from the repository root. Copy `.env.example` for the documented lo
 | Local services | `bun run services:up` / `bun run services:down` |
 | Apply reviewed migrations | `bun run db:migrate` |
 | Fresh initialization / validate publication | `bun run bootstrap` / `bun run authz:publish` |
-| Upgrade a ready Phase 2 model | `bun run authz:upgrade` |
+| Upgrade a ready Phase 2 or Phase 3 predecessor model | `bun run authz:upgrade` |
 | Resource performance smoke / full gate | `bun run authz:smoke` / `bun run authz:benchmark` |
 | Scoped operator commands | `bun run owner:recover --approval <file>` / `bun run security:deactivate --approval <file>` |
 | Develop | `bun run dev` |
@@ -49,7 +49,7 @@ Use Conventional Commits with a header of at most 100 characters. Validate commi
 
 ## Boundaries and verification
 
-Production identity and tenancy use the Phase 2 services. Derive actors only from verified Better Auth sessions and revalidate them under lifecycle fences. User lifecycle fences precede organization locks; never upgrade a held shared organization fence. Organization routes select context; browser preferences cannot authorize it. Never expose Phase 0 fixture identity headers. All possible positive organization/team/Project/workspace decisions use the pinned model and a fresh contextual OpenFGA namespace. Contextual source changes publish revisions atomically; no production permission tuples are persisted.
+Production identity and tenancy use the Phase 2 services. Derive actors only from verified Better Auth sessions and revalidate them under lifecycle fences. User lifecycle fences precede organization locks; never upgrade a held shared organization fence. Organization routes select context; browser preferences cannot authorize it. Never expose Phase 0 fixture identity headers. All possible positive organization/team/Project decisions use the pinned model and a fresh contextual OpenFGA namespace. Contextual source changes publish revisions atomically; no production permission tuples are persisted.
 
 The separate control store owns installation epochs/readiness and signed operator approvals. Runtime uses its read-only role. `bootstrap` only accepts a fresh installation or its recorded interrupted initialization; existing/restored data must not be treated as fresh. Operator recovery requires a bounded Ed25519-signed independent approval and fresh MFA. The full restore/deletion journal protocol remains Phase 6. See `docs/phase2/authorization.md` and `docs/phase3/README.md`. Phase 3 uses explicit `authz:upgrade` for the reviewed predecessor model; it never clears recovery state.
 

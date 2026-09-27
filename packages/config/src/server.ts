@@ -50,7 +50,6 @@ export function readWebEnv(runtimeEnv: Environment = process.env) {
 		server: {
 			DATABASE_URL: databaseUrl,
 			APP_ORIGIN: origin,
-			WORKSPACES_ENABLED: z.enum(["true", "false"]).default("true"),
 			DEFAULT_PROJECT_CAPACITY: z
 				.union([
 					z.literal("unlimited"),

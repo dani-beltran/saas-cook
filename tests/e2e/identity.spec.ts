@@ -832,7 +832,7 @@ for (const outgoingRole of ["member", "inactive"] as const) {
 	});
 }
 
-test("Project dashboard validates, edits, detects conflicts, moves and restores localized resources", async ({
+test("Project dashboard validates, edits, detects conflicts and restores localized resources", async ({
 	page,
 	baseURL,
 }, testInfo) => {
@@ -856,22 +856,6 @@ test("Project dashboard validates, edits, detects conflicts, moves and restores 
 	await expect(
 		page.getByText("Loading projects…", { exact: true }),
 	).toHaveCount(0);
-	const workspaces = page.getByRole("region", {
-		name: "Workspaces",
-		exact: true,
-	});
-	await workspaces
-		.locator("summary")
-		.filter({ hasText: "Create workspace" })
-		.click();
-	await workspaces.getByLabel("Name", { exact: true }).fill("Design studio");
-	await workspaces.getByLabel("Slug", { exact: true }).fill(`design-${id}`);
-	await workspaces
-		.getByRole("button", { name: "Create workspace", exact: true })
-		.click();
-	await expect(
-		workspaces.getByRole("button", { name: "Archive", exact: true }),
-	).toBeVisible();
 	await page.getByRole("button", { name: "New project", exact: true }).click();
 	const editor = page.getByRole("region", { name: "New project", exact: true });
 	await editor
@@ -883,9 +867,6 @@ test("Project dashboard validates, edits, detects conflicts, moves and restores 
 	await editor
 		.getByLabel("Description", { exact: true })
 		.fill("Synthetic browser project");
-	await editor
-		.getByLabel("Workspace", { exact: true })
-		.selectOption({ label: "Design studio" });
 	await editor
 		.getByRole("button", { name: "Create project", exact: true })
 		.click();
@@ -929,25 +910,6 @@ test("Project dashboard validates, edits, detects conflicts, moves and restores 
 	await editing.getByRole("button", { name: "Cancel", exact: true }).click();
 	await page.getByRole("button", { name: "Refresh", exact: true }).click();
 	await expect(card).toContainText("Concurrent server change");
-	await workspaces
-		.getByRole("button", { name: "Archive", exact: true })
-		.click();
-	await page
-		.getByRole("dialog")
-		.getByRole("button", { name: "Archive workspace", exact: true })
-		.click();
-	await expect(
-		workspaces.getByRole("button", { name: "Unarchive", exact: true }),
-	).toBeVisible();
-	await card.locator("summary").click();
-	await card
-		.getByLabel("Destination for Website refresh", { exact: true })
-		.selectOption("");
-	await card.getByRole("button", { name: "Move", exact: true }).click();
-	await expect(
-		card.getByLabel("Destination for Website refresh", { exact: true }),
-	).toHaveValue("");
-	await expect(card.getByRole("status")).toContainText("Changes saved.");
 	if (
 		!(await card
 			.locator("details.projects-context")

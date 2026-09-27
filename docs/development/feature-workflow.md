@@ -7,7 +7,7 @@ Repository skills guide ordinary source edits; they are not a runtime customer-p
 | Responsibility | Maintained source |
 | --- | --- |
 | Tenant schema and lifecycle transactions | [tenancy-schema.ts](../../packages/db/src/tenancy-schema.ts), [tenancy.ts](../../packages/db/src/tenancy.ts) |
-| Project/workspace schema and domain services | [resource-schema.ts](../../packages/db/src/resource-schema.ts), [resources.ts](../../packages/db/src/resources.ts) |
+| Project schema and domain services | [resource-schema.ts](../../packages/db/src/resource-schema.ts), [resources.ts](../../packages/db/src/resources.ts) |
 | Reviewed SQL, snapshots and journal | [migration instructions](../../packages/db/migrations/README.md), [Drizzle config](../../packages/db/drizzle.config.ts) |
 | Resource authorization and bounded model compiler | [resources.ts](../../packages/authz/src/resources.ts), [model.ts](../../packages/authz/src/model.ts) |
 | Independent readiness and operator controls | [control.ts](../../packages/authz/src/control.ts), [operator.ts](../../packages/authz/src/operator.ts), [Phase 2 protocol](../phase2/authorization.md) |

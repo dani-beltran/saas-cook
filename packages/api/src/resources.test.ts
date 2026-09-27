@@ -14,7 +14,6 @@ const fixture = vi.hoisted(() => {
 		description: "A synthetic project",
 		status: "active",
 		ownerMembershipId: "30000000-0000-4000-8000-000000000003",
-		workspaceId: null,
 		version: 1,
 		createdAt: "2026-09-26T09:00:00.000Z",
 		updatedAt: "2026-09-26T09:00:00.000Z",
@@ -51,6 +50,7 @@ const fixture = vi.hoisted(() => {
 		keys: {
 			authenticate: vi.fn(async () => service),
 			createAccount: vi.fn(),
+			issue: vi.fn(),
 			setAccountStatus: vi.fn(),
 		},
 	};
@@ -75,10 +75,15 @@ for (const transport of ["rpc", "rest"] as const) {
 			},
 		) {
 			const read = operation === "get" || operation === "list";
-			const url =
+			const endpoint =
 				transport === "rpc"
 					? `http://localhost/api/rpc/projects/${operation}`
 					: `http://localhost/api/v1/organizations/${fixture.organizationId}/projects${operation === "get" || operation === "update" ? `/${fixture.id}` : ""}`;
+			const url = new URL(endpoint);
+			if (transport === "rest" && read)
+				for (const [key, value] of Object.entries(input))
+					if (key !== "organizationId" && key !== "id" && value !== undefined)
+						url.searchParams.set(key, String(value));
 			const response = await handleApi(
 				new Request(url, {
 					method:
@@ -109,13 +114,18 @@ for (const transport of ["rpc", "rest"] as const) {
 			const { response, body } = await call("create", create());
 			expect(response.status).toBe(200);
 			expect(body).toEqual(fixture.project);
+			expect(body).not.toHaveProperty("workspaceId");
 			expect(fixture.runtime.resources.createProject).toHaveBeenCalledWith(
 				expect.objectContaining({
 					userId: fixture.human.userId,
 					assertCurrent: expect.any(Function),
 				}),
 				fixture.organizationId,
-				create(),
+				{
+					name: "Reference project",
+					slug: "reference-project",
+					operationKey: "create-operation-001",
+				},
 			);
 			expect(response.headers.get("cache-control")).toBe("no-store");
 		});
@@ -149,7 +159,7 @@ for (const transport of ["rpc", "rest"] as const) {
 			expect(fixture.runtime.resources.getProject).toHaveBeenCalledWith(
 				fixture.service,
 				fixture.organizationId,
-				{ organizationId: fixture.organizationId, id: fixture.id },
+				{ id: fixture.id },
 			);
 			expect(fixture.runtime.identity.session).not.toHaveBeenCalled();
 		});
@@ -199,6 +209,117 @@ for (const transport of ["rpc", "rest"] as const) {
 			expect(result.response.status).toBe(422);
 			expect(fixture.runtime.resources.createProject).not.toHaveBeenCalled();
 		});
+		it.each([null, "60000000-0000-4000-8000-000000000006"])(
+			"rejects obsolete Project assignment input %s",
+			async (workspaceId) => {
+				expect(
+					(await call("create", { ...create(), workspaceId })).response.status,
+				).toBe(422);
+				expect(
+					(
+						await call("update", {
+							organizationId: fixture.organizationId,
+							id: fixture.id,
+							version: 1,
+							workspaceId,
+						})
+					).response.status,
+				).toBe(422);
+				expect(fixture.runtime.resources.createProject).not.toHaveBeenCalled();
+				expect(fixture.runtime.resources.updateProject).not.toHaveBeenCalled();
+			},
+		);
+		it("rejects the obsolete Project list filter", async () => {
+			expect(
+				(
+					await call("list", {
+						organizationId: fixture.organizationId,
+						workspaceId: fixture.id,
+					})
+				).response.status,
+			).toBe(422);
+			expect(fixture.runtime.resources.listProjects).not.toHaveBeenCalled();
+		});
+		it.each([
+			["workspaces/list", "workspaces", "GET"],
+			["workspaces/create", "workspaces", "POST"],
+			["workspaces/update", `workspaces/${fixture.id}`, "PATCH"],
+			["projects/move", `projects/${fixture.id}/move`, "POST"],
+		])("has removed the %s endpoint", async (rpcPath, restPath, method) => {
+			const response = await handleApi(
+				new Request(
+					transport === "rpc"
+						? `http://localhost/api/rpc/${rpcPath}`
+						: `http://localhost/api/v1/organizations/${fixture.organizationId}/${restPath}`,
+					{
+						method: transport === "rpc" ? "POST" : method,
+						headers: {
+							cookie: "synthetic",
+							origin: "http://localhost",
+							"content-type": "application/json",
+						},
+						...(transport === "rpc" || method !== "GET"
+							? {
+									body: JSON.stringify(transport === "rpc" ? { json: {} } : {}),
+								}
+							: {}),
+					},
+				),
+				transport,
+			);
+			expect(response.status).toBe(404);
+			expect(fixture.runtime.identity.session).not.toHaveBeenCalled();
+		});
+		it.each([
+			"workspace:read",
+			"workspace:create",
+			"workspace:update",
+			"workspace:manage",
+			"project:move",
+		])(
+			"rejects removed scope %s before credential provisioning",
+			async (scope) => {
+				for (const kind of ["create", "issue"] as const) {
+					const input =
+						kind === "create"
+							? {
+									organizationId: fixture.organizationId,
+									name: "Automation",
+									operationKey: "account-operation-001",
+									capabilities: ["project:read", scope],
+								}
+							: {
+									organizationId: fixture.organizationId,
+									serviceAccountId: fixture.service.serviceAccountId,
+									operationKey: "key-operation-001",
+									scopes: ["project:read", scope],
+									expiresAt: "2026-09-28T10:00:00.000Z",
+								};
+					const response = await handleApi(
+						new Request(
+							transport === "rpc"
+								? `http://localhost/api/rpc/serviceAccounts/${kind}`
+								: `http://localhost/api/v1/organizations/${fixture.organizationId}/${kind === "create" ? "service-accounts" : "api-keys"}`,
+							{
+								method: "POST",
+								headers: {
+									cookie: "synthetic",
+									origin: "http://localhost",
+									"content-type": "application/json",
+								},
+								body: JSON.stringify(
+									transport === "rpc" ? { json: input } : input,
+								),
+							},
+						),
+						transport,
+					);
+					expect(response.status).toBe(422);
+				}
+				expect(fixture.runtime.keys.createAccount).not.toHaveBeenCalled();
+				expect(fixture.runtime.keys.issue).not.toHaveBeenCalled();
+			},
+		);
 		it("rejects service principals for sharing and key provisioning", async () => {
 			const response = await handleApi(
 				new Request(
@@ -315,4 +436,11 @@ it("documents both resource mutations and safe errors in public OpenAPI", async 
 		document.paths?.["/organizations/{organizationId}/api-keys/{keyId}/rotate"]
 			?.post,
 	).toBeDefined();
+});
+
+it("publishes only the remaining Project operations and scopes", async () => {
+	const document = JSON.stringify(await specification());
+	expect(document).not.toMatch(/workspace/i);
+	expect(document).not.toContain("project:move");
+	expect(document).not.toContain("/move");
 });

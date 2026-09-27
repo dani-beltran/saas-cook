@@ -38,11 +38,20 @@ export async function initializeControlStore(pool: Pool): Promise<void> {
         result jsonb, created_at timestamptz NOT NULL DEFAULT now(), completed_at timestamptz
       );
       CREATE TABLE IF NOT EXISTS control.model_upgrades (
-        installation_id uuid PRIMARY KEY REFERENCES control.installations,
+        installation_id uuid NOT NULL REFERENCES control.installations,
         epoch uuid NOT NULL, from_model_id text NOT NULL, from_model_hash text NOT NULL,
         to_model_id text NOT NULL, to_model_hash text NOT NULL,
-        completed_at timestamptz
+        completed_at timestamptz,
+        PRIMARY KEY (installation_id,to_model_hash)
       );
+      -- The predecessor allowed only one upgrade per installation. Preserve its
+      -- receipt while allowing a subsequent independently recorded publication.
+      DO $migration$ BEGIN
+        IF EXISTS (SELECT 1 FROM pg_constraint WHERE conrelid='control.model_upgrades'::regclass AND contype='p' AND cardinality(conkey)=1) THEN
+          ALTER TABLE control.model_upgrades DROP CONSTRAINT model_upgrades_pkey;
+          ALTER TABLE control.model_upgrades ADD PRIMARY KEY (installation_id,to_model_hash);
+        END IF;
+      END $migration$;
       GRANT USAGE ON SCHEMA control TO common_saas_control_reader;
       GRANT SELECT ON control.installations TO common_saas_control_reader;`);
 		await client.query("COMMIT");

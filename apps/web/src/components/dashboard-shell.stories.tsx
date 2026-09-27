@@ -22,7 +22,7 @@ const meta = {
 					<p className="dashboard-eyebrow">North Studio</p>
 					<h1>Projects</h1>
 					<p className="dashboard-description">
-						A focused workspace for your team's projects.
+						A place to organize your team's projects.
 					</p>
 				</div>
 			</header>
