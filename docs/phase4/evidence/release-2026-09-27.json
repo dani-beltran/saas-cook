@@ -1,0 +1,596 @@
+{
+	"schemaVersion": 1,
+	"accepted": true,
+	"capturedAt": "2026-09-27T13:20:19.546Z",
+	"scope": "R-SKILLS Foundation, all ten tasks in two supervised independent trials with retained failures and repairs; not first-attempt or universal reliability",
+	"templateCommit": "acc43c8aa12cfc27174f0a41e280b50aba47486a",
+	"controllerPreparationCommit": "c06ba912955091e38ee287fe86b3a45434b6e241",
+	"baselineProvenance": {
+		"path": "artifacts/foundation-closeout/release-final-v2/baseline-provenance.json",
+		"sha256": "3b2440b79fa54a6b740d4c952d61346388ed5d9a309066defeae86b48d8f64d6"
+	},
+	"priorAttempts": {
+		"path": "artifacts/foundation-closeout/release-final-v2/prior-attempts.json",
+		"sha256": "b6f02d3f54a58e5dd37425d0857d80fdf88928c423c7139b903e96527ffa7ae3"
+	},
+	"manifest": {
+		"path": "artifacts/foundation-closeout/release-final-v2/manifest.json",
+		"sha256": "7f1fefefe9892eb567688bf59fa008194dee071a94a68968ef61b9d35d20ce6a"
+	},
+	"templateSourceHashesSha256": "5b35f5fee68f634bb819b792cc3f185b92ac82bd4e22ee5ef23053a071d048fa",
+	"skillHashes": {
+		".agents/skills/saas-add-dashboard-page/SKILL.md": "a3438b7546328a3c533269ff2840d86401fcfe229ec662e655f3a9fdf522c09d",
+		".agents/skills/saas-add-email/SKILL.md": "5a6f40cc284be759a5a10d96d403a33c74a387f611a9a3d3b3596f90a0929cc9",
+		".agents/skills/saas-add-feature/SKILL.md": "bc024fa1e39539041406b3f5d21c6c31f2d0c30df0a023d5ee7169c19961df16",
+		".agents/skills/saas-bootstrap/SKILL.md": "57f6308a29a29b1c21f264f4266dd2299f95f8d70cac02e091c322ec5bc73460",
+		".agents/skills/saas-evolve-feature/SKILL.md": "e751fca5c992a8eb5816ad69a6569853ff4991472f7103679269786861f10301",
+		".agents/skills/saas-verify-feature/SKILL.md": "b04e4f07b2a155c895ba16a82dba04c93e45c087e15658b1a0e38e190d223d62"
+	},
+	"referenceHashesSha256": "f7c0e5f52fc96b9159a9db558736c04f47f77286cebff943d3e795ce93f1659b",
+	"controlHashesSha256": "62876bfbe915cb251348a8ba8230647ede2411ca99ea69aaf1590eac07e60f5d",
+	"requiredTasks": [
+		"task-01",
+		"task-02",
+		"task-03",
+		"task-04",
+		"task-05",
+		"task-06",
+		"task-07",
+		"task-08",
+		"task-09",
+		"task-10"
+	],
+	"requirements": {
+		"task-01": ["R-SKILLS", "R-TENANCY", "R-AUTHZ", "R-POLICY"],
+		"task-02": ["R-SKILLS", "R-TENANCY", "R-AUTHZ", "R-LIFECYCLE"],
+		"task-03": ["R-SKILLS", "R-TENANCY", "R-AUTHZ", "R-KEYS"],
+		"task-04": ["R-SKILLS", "R-AUTHZ", "R-LIFECYCLE"],
+		"task-05": ["R-SKILLS", "R-TENANCY", "R-AUTHZ", "R-KEYS"],
+		"task-06": ["R-SKILLS", "R-POLICY", "R-LIFECYCLE"],
+		"task-07": ["R-SKILLS", "R-TENANCY", "R-AUTHZ"],
+		"task-08": ["R-SKILLS"],
+		"task-09": ["R-SKILLS", "R-EMAIL", "R-AUTHZ"],
+		"task-10": ["R-SKILLS", "R-TENANCY", "R-AUTHZ"]
+	},
+	"controlRefresh": {
+		"evidence": "artifacts/phase4-evaluator-refresh-2026-09-27",
+		"summary": {
+			"path": "artifacts/phase4-evaluator-refresh-2026-09-27/verified-summary.json",
+			"sha256": "d60af4859e6d8288dd6982582420e9d48993f781fd45598b292dec8b669f9dc7"
+		},
+		"directoryReview": "artifacts/phase4-evaluator-refresh-2026-09-27/directory-review",
+		"emailReview": "artifacts/phase4-evaluator-refresh-2026-09-27/email-review",
+		"description": "Independent fresh-source inventory replaced retired Workspace cases with direct-Project retirement/upgrade cases, retained every applicable required case, extended immutable history through 0009, and preserved per-spec browser installation isolation. Initial controls were frozen before authors ran. Separately reviewed directory locator and valid security-receipt URL fixture corrections were then frozen in new snapshots; both final unchanged candidates were fully rerun. The prior snapshot and failures are retained."
+	},
+	"runs": [
+		{
+			"repeat": 1,
+			"provider": "OpenAI Codex desktop collaboration host",
+			"model": "gpt-6-astra",
+			"configuration": {
+				"runtimeVersion": "0.158.0-alpha.2.1",
+				"reasoningEffort": "xhigh",
+				"skillDiscovery": "Explicit canonical .agents/skills SKILL.md invocation and shared references in an independent candidate copy",
+				"sessions": [
+					{
+						"agentPath": "/root",
+						"sessionId": "01a0e2b3-4a89-7c30-b50b-4f7c6f9e0e97",
+						"runtimeVersion": "0.158.0-alpha.2.1",
+						"provider": "openai",
+						"model": "gpt-6-astra",
+						"effort": "xhigh"
+					},
+					{
+						"agentPath": "/root/evaluation_control_review",
+						"sessionId": "01a0e2bb-cb8d-74f1-95da-60bbe09b5463",
+						"runtimeVersion": "0.158.0-alpha.2.1",
+						"provider": "openai",
+						"model": "gpt-6-astra",
+						"effort": "xhigh"
+					},
+					{
+						"agentPath": "/root/skill_author_one",
+						"sessionId": "01a0e2bd-d978-7263-ae96-49b20a8149ea",
+						"runtimeVersion": "0.158.0-alpha.2.1",
+						"provider": "openai",
+						"model": "gpt-6-astra",
+						"effort": "xhigh"
+					},
+					{
+						"agentPath": "/root/skill_verifier_one",
+						"sessionId": "01a0e2d7-89cd-7483-bdf1-0f5f63a07bcf",
+						"runtimeVersion": "0.158.0-alpha.2.1",
+						"provider": "openai",
+						"model": "gpt-6-astra",
+						"effort": "xhigh"
+					}
+				],
+				"isolation": "Separate source copies and dependency installs; author instructions prohibit controller/other-candidate access. Shared host sandbox, no per-agent filesystem enforcement.",
+				"mode": "Supervised independent trial with retained failure/repair evidence, captured interruption/resume and separately verified source-identical completed-request repeat"
+			},
+			"sourceFiles": 446,
+			"sourceHashesSha256": "9b8e93e8196d6f8dd4e57fda61e82be221a5f493b8c693042958be8722d35bb7",
+			"sourceDiff": {
+				"path": "artifacts/foundation-closeout/release-final-v2/run-1/source.diff",
+				"sha256": "e8ca2e40559bd6d74ed27bfd5b70921cabf0617a5e9658f67825551aa2433c40"
+			},
+			"transcript": {
+				"path": "artifacts/foundation-closeout/release-final-v2/run-1/agent-transcript.md",
+				"sha256": "7cfe8e48978823dd480d9000471ecff62ead9a54d6f5a57e6925db1857f67de8"
+			},
+			"repeatEvidence": {
+				"path": "artifacts/foundation-closeout/author-1/repeat-after.json",
+				"sha256": "fe774d8f74fc6d793ab97376c2f454fb5187cb16d98d19ab18e7d5106b140056"
+			},
+			"interruption": {
+				"path": "artifacts/foundation-closeout/release-final-v2/checkpoints/run-1-interruption.json",
+				"sha256": "897637562f655f2d4e5dde47311b5a5edf20640d0eb2fe6780f09bbab7abb64d"
+			},
+			"review": {
+				"path": "artifacts/foundation-closeout/author-1/review-assessment.json",
+				"sha256": "4828806f5206e106aa3ba4539de0049b2bd942c48d90e9989f33d03e497275c2"
+			},
+			"reviewReport": {
+				"path": "artifacts/foundation-closeout/author-1/candidate/artifacts/independent-review-one/REPORT.md",
+				"sha256": "f86b1f6efa0b583dab9a611c09da1147ba71dab2a0acf2ece209ffcca7a26237"
+			},
+			"customFiles": {
+				"CUSTOM-NOTES.md": "3c9b72850bdf4faf512a1a54e013c002e729714672c695e3cb52dbea919f9a02",
+				"packages/db/src/task-customization.ts": "3711a5f6b95ff8848c1539f12dc6c84e9a5c9c59b0ea673290fbea20ef14c33b"
+			},
+			"verifiedSuites": {
+				"project": 17,
+				"authz": 41,
+				"historical": 23,
+				"capacity": 18,
+				"browser": 47,
+				"directory": 1,
+				"unit": 136
+			},
+			"tasks": {
+				"task-01": [
+					{
+						"passed": true,
+						"exitCode": 0,
+						"timedOut": false,
+						"argv": [
+							"node",
+							"/Users/danielbeltran/Projects/common-saas/artifacts/foundation-closeout/release-final-v2/control/evaluators/check.mjs",
+							"task-01"
+						],
+						"log": "logs/1790514751731-802244b3-7d98-48f0-898b-87bdc3df3f27-task-01-behavior-01.log",
+						"logHash": "ae543d3a3b2af7131d4ddfdf8d0e49548c87be31296c74c71138e6041f0b9df3"
+					}
+				],
+				"task-02": [
+					{
+						"passed": true,
+						"exitCode": 0,
+						"timedOut": false,
+						"argv": [
+							"node",
+							"/Users/danielbeltran/Projects/common-saas/artifacts/foundation-closeout/release-final-v2/control/evaluators/check.mjs",
+							"task-02"
+						],
+						"log": "logs/1790514751731-802244b3-7d98-48f0-898b-87bdc3df3f27-task-02-behavior-02.log",
+						"logHash": "39586746a0c3ce2ba62120fa3e83293a31c29174f05f375b57cb243bd1bfe21f"
+					}
+				],
+				"task-03": [
+					{
+						"passed": true,
+						"exitCode": 0,
+						"timedOut": false,
+						"argv": [
+							"node",
+							"/Users/danielbeltran/Projects/common-saas/artifacts/foundation-closeout/release-final-v2/control/evaluators/check.mjs",
+							"task-03"
+						],
+						"log": "logs/1790514751731-802244b3-7d98-48f0-898b-87bdc3df3f27-task-03-behavior-03.log",
+						"logHash": "c3bf12d6918add8273aba76586ac54d0fa05dbb16d886ea9d4cadcd6eebf4b94"
+					}
+				],
+				"task-04": [
+					{
+						"passed": true,
+						"exitCode": 0,
+						"timedOut": false,
+						"argv": [
+							"node",
+							"/Users/danielbeltran/Projects/common-saas/artifacts/foundation-closeout/release-final-v2/control/evaluators/check.mjs",
+							"task-04"
+						],
+						"log": "logs/1790514751731-802244b3-7d98-48f0-898b-87bdc3df3f27-task-04-behavior-04.log",
+						"logHash": "96be77707188630da3827ca972eb28044e2ac90024216d473e89ee53871d036e"
+					}
+				],
+				"task-05": [
+					{
+						"passed": true,
+						"exitCode": 0,
+						"timedOut": false,
+						"argv": [
+							"node",
+							"/Users/danielbeltran/Projects/common-saas/artifacts/foundation-closeout/release-final-v2/control/evaluators/check.mjs",
+							"task-05"
+						],
+						"log": "logs/1790514751731-802244b3-7d98-48f0-898b-87bdc3df3f27-task-05-behavior-05.log",
+						"logHash": "42af24aeaf6b7925f3d902a8091685803ef43fec98f107f96e1e06e10bb52cd2"
+					}
+				],
+				"task-06": [
+					{
+						"passed": true,
+						"exitCode": 0,
+						"timedOut": false,
+						"argv": [
+							"node",
+							"/Users/danielbeltran/Projects/common-saas/artifacts/foundation-closeout/release-final-v2/control/evaluators/check.mjs",
+							"task-06"
+						],
+						"log": "logs/1790514751731-802244b3-7d98-48f0-898b-87bdc3df3f27-task-06-behavior-06.log",
+						"logHash": "4ec6860e0777fd28f6c8732abe20b4cce2721bc2f70589869d384036b227cdea"
+					}
+				],
+				"task-07": [
+					{
+						"passed": true,
+						"exitCode": 0,
+						"timedOut": false,
+						"argv": [
+							"node",
+							"/Users/danielbeltran/Projects/common-saas/artifacts/foundation-closeout/release-final-v2/control/evaluators/check.mjs",
+							"task-07"
+						],
+						"log": "logs/1790514751731-802244b3-7d98-48f0-898b-87bdc3df3f27-task-07-behavior-07.log",
+						"logHash": "97726eab72b7617152efd9b904b78ccb0201bba88c0cb5e19a9f96877de9833f"
+					}
+				],
+				"task-08": [
+					{
+						"passed": true,
+						"exitCode": 0,
+						"timedOut": false,
+						"argv": [
+							"node",
+							"/Users/danielbeltran/Projects/common-saas/artifacts/foundation-closeout/release-final-v2/control/evaluators/check.mjs",
+							"task-08"
+						],
+						"log": "logs/1790514751731-802244b3-7d98-48f0-898b-87bdc3df3f27-task-08-behavior-08.log",
+						"logHash": "7a4e580fd7f978c5b0dcbebe236816589143ebcfe01474cc58e3d6eababe559f"
+					}
+				],
+				"task-10": [
+					{
+						"passed": true,
+						"exitCode": 0,
+						"timedOut": false,
+						"argv": [
+							"node",
+							"/Users/danielbeltran/Projects/common-saas/artifacts/foundation-closeout/release-final-v2/control/evaluators/check.mjs",
+							"task-10"
+						],
+						"log": "logs/1790514751731-802244b3-7d98-48f0-898b-87bdc3df3f27-task-10-behavior-10.log",
+						"logHash": "207c135d793134cba26b0713313d412ce5445de3b0794aa86720d5db93a6b392"
+					}
+				],
+				"task-09": [
+					{
+						"passed": true,
+						"exitCode": 0,
+						"timedOut": false,
+						"argv": [
+							"node",
+							"/Users/danielbeltran/Projects/common-saas/artifacts/foundation-closeout/release-final-v2/control/evaluators/check.mjs",
+							"task-09"
+						],
+						"log": "logs/1790514873917-c7983f21-fd33-47e2-b9eb-226a904ee41b-task-09-behavior-09.log",
+						"logHash": "3491b37a08366df1db550391160052346bba276663ba0c6ad61699f7f8fa4f04"
+					}
+				]
+			},
+			"applicationChecks": [
+				{
+					"passed": true,
+					"exitCode": 0,
+					"timedOut": false,
+					"argv": ["bun", "run", "typecheck"],
+					"log": "logs/1790514873917-c7983f21-fd33-47e2-b9eb-226a904ee41b-application-typecheck.log",
+					"logHash": "283777e737ed818c3ac2afe263a43436879ee916ad1bf9f2078ee3f16a913ca9"
+				},
+				{
+					"passed": true,
+					"exitCode": 0,
+					"timedOut": false,
+					"argv": [
+						"node",
+						"/Users/danielbeltran/Projects/common-saas/artifacts/foundation-closeout/release-final-v2/control/evaluators/application-check.mjs"
+					],
+					"log": "logs/1790514873917-c7983f21-fd33-47e2-b9eb-226a904ee41b-application-unit.log",
+					"logHash": "d270b5f6120dc3c4d335f295e7bedf5395916094c2ee89177bdc2a87d3aad8ac"
+				},
+				{
+					"passed": true,
+					"exitCode": 0,
+					"timedOut": false,
+					"argv": ["bun", "run", "build"],
+					"log": "logs/1790514873917-c7983f21-fd33-47e2-b9eb-226a904ee41b-application-build.log",
+					"logHash": "02b33b4cfec09813a4030a5507345b3b2b1d404e99a6c827740eb911cdfc1a1e"
+				}
+			],
+			"retainedAttempts": "artifacts/foundation-closeout/release-final-v2/run-1/attempts",
+			"initialAttemptMetadata": "artifacts/foundation-closeout/author-1/evaluation-attempt-1-metadata",
+			"authorDiagnostics": "artifacts/foundation-closeout/author-1/candidate/WORK-REPORT.md"
+		},
+		{
+			"repeat": 2,
+			"provider": "OpenAI Codex desktop collaboration host",
+			"model": "gpt-6-astra",
+			"configuration": {
+				"runtimeVersion": "0.158.0-alpha.2.1",
+				"reasoningEffort": "xhigh",
+				"skillDiscovery": "Explicit canonical .agents/skills SKILL.md invocation and shared references in an independent candidate copy",
+				"sessions": [
+					{
+						"agentPath": "/root",
+						"sessionId": "01a0e2b3-4a89-7c30-b50b-4f7c6f9e0e97",
+						"runtimeVersion": "0.158.0-alpha.2.1",
+						"provider": "openai",
+						"model": "gpt-6-astra",
+						"effort": "xhigh"
+					},
+					{
+						"agentPath": "/root/evaluation_control_review",
+						"sessionId": "01a0e2bb-cb8d-74f1-95da-60bbe09b5463",
+						"runtimeVersion": "0.158.0-alpha.2.1",
+						"provider": "openai",
+						"model": "gpt-6-astra",
+						"effort": "xhigh"
+					},
+					{
+						"agentPath": "/root/skill_author_two",
+						"sessionId": "01a0e2be-1914-77d2-bb14-8e7e7cc864da",
+						"runtimeVersion": "0.158.0-alpha.2.1",
+						"provider": "openai",
+						"model": "gpt-6-astra",
+						"effort": "xhigh"
+					},
+					{
+						"agentPath": "/root/skill_verifier_two",
+						"sessionId": "01a0e2de-6b8c-7102-aa42-4970cf8de082",
+						"runtimeVersion": "0.158.0-alpha.2.1",
+						"provider": "openai",
+						"model": "gpt-6-astra",
+						"effort": "xhigh"
+					}
+				],
+				"isolation": "Separate source copies and dependency installs; author instructions prohibit controller/other-candidate access. Shared host sandbox, no per-agent filesystem enforcement.",
+				"mode": "Supervised independent trial with retained failure/repair evidence, captured interruption/resume and separately verified source-identical completed-request repeat"
+			},
+			"sourceFiles": 450,
+			"sourceHashesSha256": "da83c9c940f975fe7afffb04d7c9c343ede6e5a1db9c234f29e1edccaf585120",
+			"sourceDiff": {
+				"path": "artifacts/foundation-closeout/release-final-v2/run-2/source.diff",
+				"sha256": "16ecf564b0bd60345167ed9112d17c0ca7507ae19902bb760ec59dd150bf51d3"
+			},
+			"transcript": {
+				"path": "artifacts/foundation-closeout/release-final-v2/run-2/agent-transcript.md",
+				"sha256": "03e6833c1ed13d9e0061c88a186fd9798d35a8cb3fe9171e794a380ff01ca809"
+			},
+			"repeatEvidence": {
+				"path": "artifacts/foundation-closeout/author-2/repeat-after.json",
+				"sha256": "f2cb69a3888073806b6826aeacb5a334022594faa53ba7f4ad66b2d1ddcf0252"
+			},
+			"interruption": {
+				"path": "artifacts/foundation-closeout/release-final-v2/checkpoints/run-2-interruption.json",
+				"sha256": "fcdd546e1a205afa643adef637d748bb53f512312a1dd2c10dbecb6ffcda31a9"
+			},
+			"review": {
+				"path": "artifacts/foundation-closeout/author-2/review-assessment.json",
+				"sha256": "2d282cf3122b7f409b3b1a6e712e9c545f64859300816017e1ec099f5d9b9a37"
+			},
+			"reviewReport": {
+				"path": "artifacts/foundation-closeout/author-2/candidate/artifacts/independent-review-two/REPORT.md",
+				"sha256": "7f4c3ea75dc0201078c7b0be2d9baf7dc80266e75687f69ae6d019f15f55440a"
+			},
+			"customFiles": {
+				"CUSTOM-NOTES.md": "3c9b72850bdf4faf512a1a54e013c002e729714672c695e3cb52dbea919f9a02",
+				"packages/db/src/task-customization.ts": "3711a5f6b95ff8848c1539f12dc6c84e9a5c9c59b0ea673290fbea20ef14c33b"
+			},
+			"verifiedSuites": {
+				"project": 17,
+				"authz": 41,
+				"historical": 23,
+				"capacity": 18,
+				"browser": 46,
+				"directory": 1,
+				"unit": 131
+			},
+			"tasks": {
+				"task-01": [
+					{
+						"passed": true,
+						"exitCode": 0,
+						"timedOut": false,
+						"argv": [
+							"node",
+							"/Users/danielbeltran/Projects/common-saas/artifacts/foundation-closeout/release-final-v2/control/evaluators/check.mjs",
+							"task-01"
+						],
+						"log": "logs/1790514992689-77f575be-bf02-46c1-8cdf-f37573c53897-task-01-behavior-01.log",
+						"logHash": "80f24573acd71c5462afd2e8f090fd7de9f388fbbbec05c36c60e0655099823f"
+					}
+				],
+				"task-02": [
+					{
+						"passed": true,
+						"exitCode": 0,
+						"timedOut": false,
+						"argv": [
+							"node",
+							"/Users/danielbeltran/Projects/common-saas/artifacts/foundation-closeout/release-final-v2/control/evaluators/check.mjs",
+							"task-02"
+						],
+						"log": "logs/1790514992689-77f575be-bf02-46c1-8cdf-f37573c53897-task-02-behavior-02.log",
+						"logHash": "d7cea5f5697dce9f425f9e0bce1193c2fbd398324d7d7395d99c1e557bab2f5a"
+					}
+				],
+				"task-03": [
+					{
+						"passed": true,
+						"exitCode": 0,
+						"timedOut": false,
+						"argv": [
+							"node",
+							"/Users/danielbeltran/Projects/common-saas/artifacts/foundation-closeout/release-final-v2/control/evaluators/check.mjs",
+							"task-03"
+						],
+						"log": "logs/1790514992689-77f575be-bf02-46c1-8cdf-f37573c53897-task-03-behavior-03.log",
+						"logHash": "1471f09f684c5d8c538387ddc4336adee41ad11e9b145c3a6bf9ab949fbefe99"
+					}
+				],
+				"task-04": [
+					{
+						"passed": true,
+						"exitCode": 0,
+						"timedOut": false,
+						"argv": [
+							"node",
+							"/Users/danielbeltran/Projects/common-saas/artifacts/foundation-closeout/release-final-v2/control/evaluators/check.mjs",
+							"task-04"
+						],
+						"log": "logs/1790514992689-77f575be-bf02-46c1-8cdf-f37573c53897-task-04-behavior-04.log",
+						"logHash": "b1be15273c268d8feefe4e1e8e06e90e782c6b9e16839e2fc14f794635b5230b"
+					}
+				],
+				"task-05": [
+					{
+						"passed": true,
+						"exitCode": 0,
+						"timedOut": false,
+						"argv": [
+							"node",
+							"/Users/danielbeltran/Projects/common-saas/artifacts/foundation-closeout/release-final-v2/control/evaluators/check.mjs",
+							"task-05"
+						],
+						"log": "logs/1790514992689-77f575be-bf02-46c1-8cdf-f37573c53897-task-05-behavior-05.log",
+						"logHash": "aa84c7ed585e5639a9547520b44581ad94b850aa19760fbee012488f7492dd18"
+					}
+				],
+				"task-06": [
+					{
+						"passed": true,
+						"exitCode": 0,
+						"timedOut": false,
+						"argv": [
+							"node",
+							"/Users/danielbeltran/Projects/common-saas/artifacts/foundation-closeout/release-final-v2/control/evaluators/check.mjs",
+							"task-06"
+						],
+						"log": "logs/1790514992689-77f575be-bf02-46c1-8cdf-f37573c53897-task-06-behavior-06.log",
+						"logHash": "247570fbd80695dc334f6295cd881ff8bfd539c142d6c679da508831d8f8d178"
+					}
+				],
+				"task-07": [
+					{
+						"passed": true,
+						"exitCode": 0,
+						"timedOut": false,
+						"argv": [
+							"node",
+							"/Users/danielbeltran/Projects/common-saas/artifacts/foundation-closeout/release-final-v2/control/evaluators/check.mjs",
+							"task-07"
+						],
+						"log": "logs/1790514992689-77f575be-bf02-46c1-8cdf-f37573c53897-task-07-behavior-07.log",
+						"logHash": "b1dbca5871ea6aed7588b82144d3b1a0fee90eb1cb7195e456fa3548bfda80e0"
+					}
+				],
+				"task-08": [
+					{
+						"passed": true,
+						"exitCode": 0,
+						"timedOut": false,
+						"argv": [
+							"node",
+							"/Users/danielbeltran/Projects/common-saas/artifacts/foundation-closeout/release-final-v2/control/evaluators/check.mjs",
+							"task-08"
+						],
+						"log": "logs/1790514992689-77f575be-bf02-46c1-8cdf-f37573c53897-task-08-behavior-08.log",
+						"logHash": "7a4e580fd7f978c5b0dcbebe236816589143ebcfe01474cc58e3d6eababe559f"
+					}
+				],
+				"task-09": [
+					{
+						"passed": true,
+						"exitCode": 0,
+						"timedOut": false,
+						"argv": [
+							"node",
+							"/Users/danielbeltran/Projects/common-saas/artifacts/foundation-closeout/release-final-v2/control/evaluators/check.mjs",
+							"task-09"
+						],
+						"log": "logs/1790514992689-77f575be-bf02-46c1-8cdf-f37573c53897-task-09-behavior-09.log",
+						"logHash": "9bd53f3e6065c85a92e9153c25340dcd700e607cba9c42e26b48f58a06a231ac"
+					}
+				],
+				"task-10": [
+					{
+						"passed": true,
+						"exitCode": 0,
+						"timedOut": false,
+						"argv": [
+							"node",
+							"/Users/danielbeltran/Projects/common-saas/artifacts/foundation-closeout/release-final-v2/control/evaluators/check.mjs",
+							"task-10"
+						],
+						"log": "logs/1790514992689-77f575be-bf02-46c1-8cdf-f37573c53897-task-10-behavior-10.log",
+						"logHash": "207c135d793134cba26b0713313d412ce5445de3b0794aa86720d5db93a6b392"
+					}
+				]
+			},
+			"applicationChecks": [
+				{
+					"passed": true,
+					"exitCode": 0,
+					"timedOut": false,
+					"argv": ["bun", "run", "typecheck"],
+					"log": "logs/1790514992689-77f575be-bf02-46c1-8cdf-f37573c53897-application-typecheck.log",
+					"logHash": "283777e737ed818c3ac2afe263a43436879ee916ad1bf9f2078ee3f16a913ca9"
+				},
+				{
+					"passed": true,
+					"exitCode": 0,
+					"timedOut": false,
+					"argv": [
+						"node",
+						"/Users/danielbeltran/Projects/common-saas/artifacts/foundation-closeout/release-final-v2/control/evaluators/application-check.mjs"
+					],
+					"log": "logs/1790514992689-77f575be-bf02-46c1-8cdf-f37573c53897-application-unit.log",
+					"logHash": "57aeb5ef0faa0b625f391a652adf35e0b66464be24347cbdc76afd1064f9bc9e"
+				},
+				{
+					"passed": true,
+					"exitCode": 0,
+					"timedOut": false,
+					"argv": ["bun", "run", "build"],
+					"log": "logs/1790514992689-77f575be-bf02-46c1-8cdf-f37573c53897-application-build.log",
+					"logHash": "a989c676cbfd86a3c4c497923cb75fcd77ed8a8bf08a043fc8ca5e6f9e109dcb"
+				}
+			],
+			"retainedAttempts": "artifacts/foundation-closeout/release-final-v2/run-2/attempts",
+			"initialAttemptMetadata": "artifacts/foundation-closeout/author-2/evaluation-attempt-1-metadata",
+			"authorDiagnostics": "artifacts/foundation-closeout/author-2/candidate/WORK-REPORT.md"
+		}
+	],
+	"summary": {
+		"path": "artifacts/foundation-closeout/release-final-v2/summary.json",
+		"sha256": "64606f505cd26390a6b0d9d90485a1004aa037906b1ca03eacac678d6b0ffc5b"
+	},
+	"limitations": [
+		"Separate source copies, dependencies and author instructions provide workflow isolation; the host does not enforce per-agent filesystem isolation.",
+		"Candidate Task/product/directory/email changes remain disposable; they are not installed in the Foundation application.",
+		"Actual model/runtime/effort come from host session metadata; unknown backend model revision is not inferred.",
+		"Complete transcripts, source snapshots, failed attempts and diagnostics are ignored local artifacts. This versioned index does not claim they were uploaded to hosted CI.",
+		"Post-baseline root changes affect test database teardown, evidence references and acceptance documentation; production runtime, authorization model and measured benchmark workload are unchanged."
+	]
+}

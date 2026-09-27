@@ -53,8 +53,4 @@ custom code and existing rows across additive/backfill/rename steps. The Task,
 renamed product, directory page and new email are disposable evaluation outputs,
 not additions to the production reference application's domain.
 
-See the [acceptance record](acceptance.md) for results and limitations. The user
-explicitly excluded the then-missing Phase 3 performance run from that evaluation.
-Phase 4 tooling never invokes it. The separate [manual 2026-09-27 run](../phase3/acceptance.md#accepted-direct-project-performance-result)
-now passes the real-feature `R-AUTHZ-PERF` gate; Phase 4 checks do not establish
-performance acceptance or the remaining Foundation release sign-off.
+See the [acceptance record](acceptance.md) for the refreshed two-candidate results, retained failures and limitations. [M1 Foundation is accepted](../foundation/acceptance.md), including current image/security and hosted CI. The separate [manual 2026-09-27 benchmark](../phase3/acceptance.md#accepted-direct-project-performance-result) passes the real-feature `R-AUTHZ-PERF` gate; Phase 4 tooling never invokes or substitutes for it. The original benchmark exception remains in the historical record.

@@ -632,7 +632,7 @@ it("task-09 new security email is localized, post-commit, retried and redacted",
 				kind: "password-changed",
 				locale,
 				to: "synthetic@example.test",
-				url: `${origin}/en/account`,
+				url: `${origin}/${locale}/account#security`,
 			});
 			expect(message.html).toContain(`lang="${locale}"`);
 			expect(message.subject).toBeTruthy();
@@ -713,7 +713,7 @@ it("task-09 new security email is localized, post-commit, retried and redacted",
 				kind: "password-changed",
 				locale: "en",
 				to: email,
-				url: `${origin}/en/account`,
+				url: `${origin}/en/account#security`,
 				secret,
 				expiresAt: new Date(Date.now() + 600_000),
 			});
