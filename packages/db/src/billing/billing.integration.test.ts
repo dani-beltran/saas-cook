@@ -412,6 +412,48 @@ it("refuses retries beyond the provider key horizon", async () => {
 	);
 	expect(f.calls).toHaveLength(0);
 });
+it("opens the payment portal while an older command awaits reconciliation", async () => {
+	const f = await fixture();
+	const checkout = await f.checkout();
+	f.setTruth({ subscription: f.subscription(6), invoices: [] });
+	await f.app.query(
+		"UPDATE tenancy.billing_commands SET state='review',first_attempt_at=now()-interval '21 hours',available_at=now() WHERE id=$1",
+		[checkout.id],
+	);
+	let portalCalls = 0;
+	const portal = f.provider.portal;
+	f.provider.portal = async (input) => {
+		portalCalls++;
+		return portal(input);
+	};
+	const command = await f.service.command(f.owner, f.org, {
+		kind: "portal",
+		operationKey: randomUUID(),
+	});
+	await f.worker.tick();
+	const commands = (await f.service.get(f.owner, f.org)).commands;
+	expect(commands.find((c) => c.id === command.id)).toMatchObject({
+		state: "complete",
+		url: "https://billing.stripe.com/p/session/synthetic",
+	});
+	expect(commands.find((c) => c.id === checkout.id)?.state).toBe("review");
+	expect(portalCalls).toBe(1);
+	expect(f.calls.filter((call) => call.startsWith("checkout:"))).toHaveLength(
+		1,
+	);
+	// Review remains reconciliation-only and can still complete from provider truth.
+	f.setTruth({ subscription: f.subscription(5), invoices: [] });
+	await f.worker.processAccount(f.org);
+	expect(
+		(await f.service.get(f.owner, f.org)).commands.find(
+			(c) => c.id === checkout.id,
+		)?.state,
+	).toBe("complete");
+	expect(portalCalls).toBe(1);
+	expect(f.calls.filter((call) => call.startsWith("checkout:"))).toHaveLength(
+		1,
+	);
+});
 it("rotates expired first checkouts out of the bounded work batch", async () => {
 	const f = await fixture();
 	const abandoned = [f.org];

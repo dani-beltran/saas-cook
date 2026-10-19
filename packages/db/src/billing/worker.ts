@@ -368,6 +368,7 @@ export function createBillingWorker(
 					);
 				});
 			}
+			// Portal requests can execute while an older command awaits review.
 			const cmd = await billingTransaction(
 				c,
 				o,
@@ -375,7 +376,7 @@ export function createBillingWorker(
 				async () =>
 					(
 						await c.query<Command>(
-							"SELECT * FROM tenancy.billing_commands WHERE organization_id=$1 AND state IN ('pending','submitted','review') AND available_at<=clock_timestamp() ORDER BY created_at LIMIT 1",
+							"SELECT * FROM tenancy.billing_commands WHERE organization_id=$1 AND state IN ('pending','submitted','review') AND available_at<=clock_timestamp() ORDER BY (state='review'),created_at LIMIT 1",
 							[o],
 						)
 					).rows[0],
