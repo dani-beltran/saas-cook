@@ -12,6 +12,7 @@ import { createTestInstallation } from "../../packages/testing/src/installation"
 export async function resourceFixture(
 	options: {
 		defaultProjectCapacity?: number | null;
+		defaultProjectCreatesPerMonth?: number | null;
 		onFenceWait?: (milliseconds: number) => void;
 		poolSize?: number;
 	} = {},

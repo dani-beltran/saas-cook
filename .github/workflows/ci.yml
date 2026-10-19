@@ -209,9 +209,30 @@ jobs:
             artifacts/image/
             artifacts/security/
           retention-days: 30
+  monetization:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      VITEST_REPORT: artifacts/phase5/integration.xml
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - run: bun run services:up
+      - name: Billing, seats, durable usage, restricted transports and notice delivery
+        run: bun run test:integration packages/db/src/billing packages/api/src/billing.integration.test.ts packages/email/src/billing.integration.test.ts
+      - run: docker compose -f infra/compose.yaml down --volumes
+        if: always()
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: monetization-${{ github.sha }}
+          path: artifacts/phase5/
+          retention-days: 30
   required:
     if: always()
-    needs: [source, unit, integration, browser, storybook, production, image]
+    needs: [source, unit, integration, browser, storybook, production, image, monetization]
     runs-on: ubuntu-24.04
     steps:
       - name: Require every applicable gate

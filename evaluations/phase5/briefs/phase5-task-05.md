@@ -1,0 +1,5 @@
+# Diagnose a deliberately unsafe billing review fixture
+
+Use saas-verify-feature. Review `review-billing/` as an intentionally broken, disposable module; do not register it in production, and do not repair its fixture files. Write `BILLING-REVIEW.md` with actionable findings, file/line locations, reproduced behavior and impact. Five independent regressions are seeded: missing current permission checks, permissive DTO leakage, missing forced tenant RLS, trusting caller-supplied provider entitlement truth, and quota/idempotency bypass. Demonstrate each against disposable PostgreSQL and actual platform authorization/quota services. A source-only claim or a successful typecheck does not establish diagnosis. Include the command/evidence path for reproductions, and reject shipping this fixture. Retain the fixture unchanged so the independent evaluator can reproduce all five failures.
+
+After all five tasks, summarize actual commands and limitations. A subsequent identical request is a preservation case: inspect actual completed source and do not add duplicate migrations/registrations or alter unrelated work.

@@ -1,0 +1,111 @@
+{
+	"version": 1,
+	"phase": 5,
+	"tasks": [
+		{
+			"id": "phase5-task-01",
+			"brief": "phase5-task-01.md",
+			"checks": [
+				{
+					"id": "behavior",
+					"argv": ["node", "{evaluators}/check.mjs", "phase5-task-01"],
+					"caseIds": ["immutable-v2"],
+					"timeoutMs": 900000
+				}
+			]
+		},
+		{
+			"id": "phase5-task-02",
+			"brief": "phase5-task-02.md",
+			"checks": [
+				{
+					"id": "behavior",
+					"argv": ["node", "{evaluators}/check.mjs", "phase5-task-02"],
+					"caseIds": [
+						"template-authorization-replay-race",
+						"accounting-rollback-expiry-correction-rebuild-window"
+					],
+					"timeoutMs": 900000
+				}
+			]
+		},
+		{
+			"id": "phase5-task-03",
+			"brief": "phase5-task-03.md",
+			"checks": [
+				{
+					"id": "behavior",
+					"argv": ["node", "{evaluators}/check.mjs", "phase5-task-03"],
+					"caseIds": ["current-seat-authority-and-downgrade"],
+					"timeoutMs": 900000
+				}
+			]
+		},
+		{
+			"id": "phase5-task-04",
+			"brief": "phase5-task-04.md",
+			"checks": [
+				{
+					"id": "behavior",
+					"argv": ["node", "{evaluators}/check.mjs", "phase5-task-04"],
+					"caseIds": [
+						"localized-threshold-email",
+						"durable-dedupe-rollback-recipient-recheck",
+						"localized-dashboard-keyboard-ui-states"
+					],
+					"timeoutMs": 900000
+				}
+			]
+		},
+		{
+			"id": "phase5-task-05",
+			"brief": "phase5-task-05.md",
+			"checks": [
+				{
+					"id": "behavior",
+					"argv": ["node", "{evaluators}/check.mjs", "phase5-task-05"],
+					"caseIds": ["observed-five-seeded-regressions-and-diagnosis"],
+					"timeoutMs": 900000
+				}
+			]
+		}
+	],
+	"applicationChecks": [
+		{
+			"id": "check",
+			"argv": ["node", "{evaluators}/application-check.mjs", "check"],
+			"successPattern": "^APPLICATION_CHECK_PASSED$",
+			"timeoutMs": 900000
+		},
+		{
+			"id": "knip",
+			"argv": ["node", "{evaluators}/application-check.mjs", "knip"],
+			"successPattern": "^APPLICATION_KNIP_PASSED$",
+			"timeoutMs": 900000
+		},
+		{
+			"id": "typecheck",
+			"argv": ["bun", "run", "typecheck"],
+			"successPattern": "typescript/bin/tsc",
+			"timeoutMs": 900000
+		},
+		{
+			"id": "unit",
+			"argv": ["node", "{evaluators}/application-check.mjs", "unit"],
+			"successPattern": "^APPLICATION_UNIT_PASSED=[1-9][0-9]*$",
+			"timeoutMs": 900000
+		},
+		{
+			"id": "integration",
+			"argv": ["node", "{evaluators}/application-check.mjs", "integration"],
+			"successPattern": "^APPLICATION_INTEGRATION_PASSED=[1-9][0-9]*$",
+			"timeoutMs": 900000
+		},
+		{
+			"id": "build",
+			"argv": ["bun", "run", "build"],
+			"successPattern": "Tasks:[^\\n]*successful",
+			"timeoutMs": 900000
+		}
+	]
+}

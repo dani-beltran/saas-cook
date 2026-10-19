@@ -165,13 +165,17 @@ try {
 		"authz-upgrade",
 		"owner-recovery",
 		"security-deactivate",
+		"billing-catalogue",
+		"billing-reconcile",
+		"billing-diagnostics",
+		"usage-rebuild",
 	]) {
 		assert(
 			(await docker(["run", "--rm", image, mode, "--help"])).includes(mode),
 		);
 		if (mode !== "migrate") await rejected(["run", "--rm", image, mode]);
 	}
-	checks.push("five-packaged-commands-and-missing-credential-refusal");
+	checks.push("ten-packaged-commands-and-missing-credential-refusal");
 	await rejected(["run", "--rm", image]);
 	await rejected([
 		"run",

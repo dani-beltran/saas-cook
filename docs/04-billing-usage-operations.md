@@ -1,5 +1,10 @@
 # 4. Billing, usage, audit, and operations
 
+Implemented Phase 5 boundaries, configuration, exact metric contract, state policy and scoped
+commands are documented in [Phase 5 operations](phase5/README.md). Its [acceptance record](phase5/acceptance.md)
+distinguishes local and real Stripe evidence from outstanding release gates. The later modules
+and recovery protocol in this design remain due in their scheduled phases.
+
 ## 4.1 Separate the commercial concepts
 
 | Concept | Question it answers | Owner |

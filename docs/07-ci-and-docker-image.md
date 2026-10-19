@@ -4,7 +4,7 @@
 
 The template produces one Docker application image containing the Next.js web server and Node.js background worker. Infrastructure and operation are outside the template scope. PostgreSQL, OpenFGA, object storage and enabled providers are external dependencies configured at runtime.
 
-**Status: Phase 2 command implementation.** The Dockerfile, Node entrypoint and CI/image checks package real migration, resumable bootstrap, authorization publication and signed operator commands. See the [Phase 2 setup](phase2/README.md) and [acceptance record](phase2/acceptance.md) for executed results and image identity. The Phase 0 Next.js app remains a separate historical fixture.
+**Status: Foundation plus Phase 5 command implementation.** The Dockerfile, Node entrypoint and CI/image checks package real migration, resumable bootstrap, authorization publication and signed operator commands. See the [Phase 2 setup](phase2/README.md) and [acceptance record](phase2/acceptance.md) for executed results and image identity. The Phase 0 Next.js app remains a separate historical fixture.
 
 | Path | Responsibility |
 | --- | --- |
@@ -66,3 +66,17 @@ Record the source commit, base image digest, Node/Bun versions, target architect
 Phase 1 verifies the image against disposable dependencies: startup, assets, configuration rejection, combined health, child failure, shutdown, and availability of one-off command modes. Phase 2 verifies real migration/bootstrap/model commands, including resumable initialization and rejection of existing or restored data as a fresh installation. These are application command invariants tested through the image.
 
 Later feature suites run against the built image as their modules become available. Preserve source checks, integration/browser results, dependency/image scans and build metadata. A successful image build does not imply that unimplemented modules have passed their acceptance gates.
+
+## Phase 5 extension
+
+The required `monetization` CI job runs real-service billing, mapping/entitlement/seat races,
+usage/rebuild/window/upgrade and API/email suites without Stripe credentials. Full integration,
+unit, browser and Storybook jobs discover the additional tests. Real sandbox evidence is a
+separate protected local/release prerequisite; mock adapters and the deterministic CI job do
+not accept the provider gate. Hosted CI execution for an unpushed working tree is unrun.
+
+The image adds `billing-catalogue`, `billing-reconcile`, `billing-diagnostics`, `usage-rebuild`.
+Catalogue import alone uses migration credentials; other commands use restricted worker and
+read-only control roles with explicit organization scope. The image test exercises all ten
+packaged command entry points and missing-credential rejection. See [Phase 5 evidence](phase5/acceptance.md)
+for exact source fingerprint, local architecture, runtime, scans and limitations.

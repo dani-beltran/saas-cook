@@ -83,6 +83,7 @@ export const memberships = tenancy
 			role: text().notNull(),
 			status: text().notNull(),
 			billable: boolean().notNull(),
+			seatCounted: boolean("seat_counted").notNull().default(false),
 			expiresAt: timestamp("expires_at", { withTimezone: true, mode: "date" }),
 			createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
 				.defaultNow()

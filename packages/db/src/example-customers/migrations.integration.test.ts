@@ -97,7 +97,7 @@ it("upgrades a populated 0007 predecessor without changing identity, Project, hi
 					"SELECT count(*) FROM drizzle.__drizzle_migrations",
 				)
 			).rows[0].count,
-		).toBe("10");
+		).toBe("11");
 		expect(
 			(
 				await migrator.query(

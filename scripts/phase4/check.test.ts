@@ -63,7 +63,10 @@ describe("Phase 4 executable contract and route guards", () => {
 		).toContain("projects.list: explicit serviceAccounts capability required");
 		expect(
 			checkRouteCapabilities(
-				source.replace("resourceOperation(", "unreviewedOperation("),
+				source.slice(0, source.indexOf("projects: {")) +
+					source
+						.slice(source.indexOf("projects: {"))
+						.replace("resourceOperation(", "unreviewedOperation("),
 			),
 		).toContain("projects.list: missing permission boundary");
 	});

@@ -57,6 +57,7 @@ export async function renderRuntimeEmail(locale: EmailLocale) {
 	};
 }
 
+export { deliverBillingNotices, renderBillingEmail } from "./billing";
 export {
 	deliverIdentityEmails,
 	type EmailTransport,

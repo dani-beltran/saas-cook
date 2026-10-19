@@ -120,3 +120,33 @@ it("validates the server-only Project capacity preset", () => {
 		}),
 	).not.toHaveProperty("DEFAULT_PROJECT_CAPACITY");
 });
+
+it("keeps Foundation credential-free and validates enabled Stripe mode plus local quota policies", () => {
+	expect(readWebEnv(valid).BILLING_ENABLED).toBe("false");
+	expect(readWebEnv(valid).DEFAULT_PROJECT_CREATES_PER_MONTH).toBe(1000);
+	expect(() => readWebEnv({ ...valid, BILLING_ENABLED: "true" })).toThrow(
+		"Invalid billing configuration",
+	);
+	const billing = {
+		...valid,
+		BILLING_ENABLED: "true",
+		STRIPE_MODE: "test",
+		STRIPE_SECRET_KEY: "sk_test_synthetic",
+		STRIPE_ACCOUNT_ID: "acct_synthetic",
+		STRIPE_WEBHOOK_SECRET: "whsec_synthetic",
+		STRIPE_PORTAL_CONFIGURATION_ID: "bpc_synthetic",
+	};
+	expect(readWebEnv(billing).BILLING_ENABLED).toBe("true");
+	expect(() => readWorkerEnv({ ...billing, STRIPE_MODE: "live" })).toThrow(
+		"Invalid billing configuration",
+	);
+	for (const value of ["-1", "0.5", "1000001"])
+		expect(() =>
+			readWebEnv({ ...valid, DEFAULT_PROJECT_CREATES_PER_MONTH: value }),
+		).toThrow();
+	for (const value of ["0", "101", "80,80"])
+		expect(() =>
+			readWebEnv({ ...valid, USAGE_NOTICE_THRESHOLDS: value }),
+		).toThrow();
+	expect(publicConfig(billing)).not.toHaveProperty("STRIPE_SECRET_KEY");
+});

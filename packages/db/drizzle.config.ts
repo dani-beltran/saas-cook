@@ -6,6 +6,7 @@ export default defineConfig({
 		"./packages/db/src/tenancy-schema.ts",
 		"./packages/db/src/resource-schema.ts",
 		"./packages/db/src/example-customers/schema.ts",
+		"./packages/db/src/billing/schema.ts",
 	],
 	out: "./packages/db/migrations",
 	strict: true,

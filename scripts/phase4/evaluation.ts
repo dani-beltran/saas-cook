@@ -19,6 +19,17 @@ const taskIds = Array.from(
 	{ length: 10 },
 	(_, i) => `task-${String(i + 1).padStart(2, "0")}`,
 );
+const phase5TaskIds = Array.from(
+	{ length: 5 },
+	(_, i) => `phase5-task-${String(i + 1).padStart(2, "0")}`,
+);
+const phase5Requirements: Record<string, string[]> = {
+	"phase5-task-01": ["R-SKILLS", "R-POLICY", "R-TENANCY"],
+	"phase5-task-02": ["R-SKILLS", "R-POLICY", "R-AUTHZ"],
+	"phase5-task-03": ["R-SKILLS", "R-SEATS", "R-LIFECYCLE"],
+	"phase5-task-04": ["R-SKILLS", "R-EMAIL", "R-AUTHZ"],
+	"phase5-task-05": ["R-SKILLS", "R-TENANCY", "R-AUTHZ", "R-POLICY"],
+};
 const requirements: Record<string, string[]> = {
 	"task-01": ["R-SKILLS", "R-TENANCY", "R-AUTHZ", "R-POLICY"],
 	"task-02": ["R-SKILLS", "R-TENANCY", "R-AUTHZ", "R-LIFECYCLE"],
@@ -42,15 +53,16 @@ const applicationCheckSchema = checkSchema.omit({ caseIds: true }).extend({
 });
 const evaluatorSchema = z.object({
 	version: z.literal(1),
+	phase: z.union([z.literal(4), z.literal(5)]).default(4),
 	tasks: z
 		.array(
 			z.object({
-				id: z.enum(taskIds as [string, ...string[]]),
+				id: z.string().min(1),
 				brief: z.string().min(1),
 				checks: z.array(checkSchema).min(1),
 			}),
 		)
-		.length(10),
+		.min(1),
 	applicationChecks: z.array(applicationCheckSchema).min(1),
 });
 const agentSchema = z.object({
@@ -183,6 +195,13 @@ function unique(values: string[], label: string) {
 }
 function validateEvaluator(value: unknown) {
 	const evaluator = evaluatorSchema.parse(value);
+	const expected = evaluator.phase === 5 ? phase5TaskIds : taskIds;
+	if (
+		!same(evaluator.tasks.map((task) => task.id).sort(), [...expected].sort())
+	)
+		throw new Error(
+			`Phase ${evaluator.phase} requires its exact declared task set`,
+		);
 	unique(
 		evaluator.tasks.map((task) => task.id),
 		"task IDs",
@@ -283,7 +302,7 @@ export async function prepareEvaluation(options: {
 			),
 		),
 		controlHashes: await hashes(control, await files(control)),
-		requirements,
+		requirements: evaluator.phase === 5 ? phase5Requirements : requirements,
 		repeats: options.repeats,
 	};
 	if (!Object.keys(manifest.skillHashes).length)
@@ -399,7 +418,11 @@ export async function recordAgentEvidence(
 	const current = await state(output, repeat);
 	const agent = agentSchema.parse(evidence);
 	unique(agent.taskIds, "agent task IDs");
-	if (agent.taskIds.some((id) => !taskIds.includes(id)))
+	if (
+		agent.taskIds.some(
+			(id) => !Object.hasOwn(current.manifest.requirements, id),
+		)
+	)
 		throw new Error("Unknown agent task ID");
 	if (!isAbsolute(agent.transcriptPath))
 		throw new Error("Transcript must use an absolute path");
@@ -507,16 +530,18 @@ async function command(
 export async function runEvaluation(
 	output: string,
 	repeat: number,
-	selected = taskIds,
+	selected?: string[],
 ) {
 	const current = await state(output, repeat);
+	const requiredTaskIds = Object.keys(current.manifest.requirements);
+	selected ??= requiredTaskIds;
 	if (!current.run.agent)
 		throw new Error(
 			"Actual AI agent evidence is required before behavioral checks",
 		);
 	if (selected.some((id) => !current.run.agent?.taskIds.includes(id)))
 		throw new Error("AI evidence is missing for a selected task");
-	if (!selected.length || selected.some((id) => !taskIds.includes(id)))
+	if (!selected.length || selected.some((id) => !requiredTaskIds.includes(id)))
 		throw new Error("Unknown/empty task selection");
 	await retainAttempt(current.directory, current.run);
 	const attemptId = `${Date.now()}-${randomUUID()}`;
@@ -690,7 +715,7 @@ export async function summarizeEvaluation(output: string) {
 	return {
 		accepted: failures.length === 0,
 		repeats: manifest.repeats,
-		requiredTasks: taskIds,
+		requiredTasks: Object.keys(manifest.requirements),
 		requirements: manifest.requirements,
 		failures,
 		statement:

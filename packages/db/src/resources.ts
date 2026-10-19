@@ -6,6 +6,8 @@ import {
 	randomUUID,
 } from "node:crypto";
 import type { Pool, PoolClient } from "pg";
+import { assertLimit, commercialFeatures } from "./billing/policy";
+import { reserveProjectUsage, settleProjectUsage } from "./billing/usage";
 import {
 	assertAuthorizationCurrent,
 	type TenantActor,
@@ -274,6 +276,8 @@ export function createResourceService(
 	hooks: ResourceHooks,
 	options: {
 		defaultProjectCapacity?: number | null;
+		defaultProjectCreatesPerMonth?: number | null;
+		usageThresholds?: readonly number[];
 		cursorSecret?: string;
 		onFenceWait?: (milliseconds: number) => void;
 	} = {},
@@ -435,6 +439,8 @@ export function createResourceService(
 		);
 	}
 	async function projectEnabled(c: PoolClient, o: string) {
+		const commercial = await commercialFeatures(c, o);
+		if (commercial) assertLimit(commercial.projects, 0, 0);
 		const policy = (
 			await c.query<{ policy_kind: string }>(
 				"SELECT policy_kind FROM tenancy.capacity_buckets WHERE organization_id=$1 AND feature='projects.max_active'",
@@ -446,6 +452,16 @@ export function createResourceService(
 	}
 	async function consume(c: PoolClient, o: string, key: string) {
 		await bucket(c, o);
+		const commercial = await commercialFeatures(c, o);
+		if (commercial) {
+			const used = (
+				await c.query<{ consumed: number; reserved: number }>(
+					"SELECT consumed,reserved FROM tenancy.capacity_buckets WHERE organization_id=$1 AND feature='projects.max_active' FOR UPDATE",
+					[o],
+				)
+			).rows[0];
+			assertLimit(commercial.projects, used.consumed + used.reserved, 1);
+		}
 		const reservation = await reserveCapacity(
 			c,
 			o,
@@ -763,6 +779,18 @@ export function createResourceService(
 					o,
 					`create:${hash(`${actorId(a)}:${input.operationKey}`)}`,
 				);
+				const usage = await reserveProjectUsage(
+					c,
+					o,
+					`create:${hash(`${actorId(a)}:${input.operationKey}`)}`,
+					1,
+					options.defaultProjectCreatesPerMonth === null
+						? { kind: "unlimited" }
+						: {
+								kind: "limited",
+								limit: options.defaultProjectCreatesPerMonth ?? 1000,
+							},
+				);
 				const id = randomUUID();
 				await c.query(
 					"INSERT INTO tenancy.resource_registry(id,organization_id,resource_type) VALUES($1,$2,'project')",
@@ -777,6 +805,13 @@ export function createResourceService(
 				if (!row) throw new ResourceError("CONFLICT");
 				await initialGrant(c, a, o, id);
 				await hooks.sourceCommit(c, o);
+				await settleProjectUsage(
+					c,
+					o,
+					usage,
+					"committed",
+					options.usageThresholds,
+				);
 				await audit(c, a, o, "project.created", id, {
 					version: 1,
 				});

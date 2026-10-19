@@ -1,0 +1,501 @@
+{
+	"schemaVersion": 1,
+	"phase": 5,
+	"requirement": "R-SKILLS",
+	"status": "passed",
+	"collectedAt": "2026-10-19T13:32:36.931406+00:00",
+	"scope": "Two supervised independent live-agent five-task Commercial skill trials, unchanged-request repeats, planned interruption/data preservation, evaluator-owned behavioral checks and actual Stripe test-API supplements",
+	"templateCommit": "7ebc9c46aae30c18ea03e5d2568f51f0bb4cf77e",
+	"initialSourceFiles": 467,
+	"initialSourceFingerprint": "62534c0ad3826bf1279515894ce52342a0e3bb010d8c20fb70840edadf555965",
+	"skillHashes": {
+		".agents/skills/saas-add-dashboard-page/SKILL.md": "a3438b7546328a3c533269ff2840d86401fcfe229ec662e655f3a9fdf522c09d",
+		".agents/skills/saas-add-email/SKILL.md": "5a6f40cc284be759a5a10d96d403a33c74a387f611a9a3d3b3596f90a0929cc9",
+		".agents/skills/saas-add-feature/SKILL.md": "bc024fa1e39539041406b3f5d21c6c31f2d0c30df0a023d5ee7169c19961df16",
+		".agents/skills/saas-bootstrap/SKILL.md": "a4e91bbc17a4270ce8ad7184cc06fee20157c973e737b1db5892968eea7f0725",
+		".agents/skills/saas-evolve-feature/SKILL.md": "e751fca5c992a8eb5816ad69a6569853ff4991472f7103679269786861f10301",
+		".agents/skills/saas-verify-feature/SKILL.md": "b04e4f07b2a155c895ba16a82dba04c93e45c087e15658b1a0e38e190d223d62"
+	},
+	"manifest": {
+		"path": "artifacts/phase5-evaluation/2026-10-19/release-v2/manifest.json",
+		"sha256": "3c87d4f47707a70cf70279037a48e75e79cab547c03240bc7bec3345de24de30"
+	},
+	"summary": {
+		"path": "artifacts/phase5-evaluation/2026-10-19/summary-v2.json",
+		"sha256": "6caaeaebf82802f71af02ee124098b942bd9e7255c977e7e05eb5daaf6f178cc"
+	},
+	"controlFileCount": 480,
+	"protectedSourceCount": 111,
+	"caseCountsPerCandidate": {
+		"declaredTasks": 5,
+		"heldoutIntegration": 7,
+		"heldoutBrowser": 1
+	},
+	"toolchain": {
+		"bun": "1.4.2",
+		"node": "24.19.0",
+		"stripeSdk": "22.6.2"
+	},
+	"runs": [
+		{
+			"id": 1,
+			"agent": {
+				"provider": "openai",
+				"model": "gpt-6.1-sol",
+				"sessionId": "01a15441-2ef5-78a0-a762-92474d5929c8",
+				"agentVersion": "0.163.0-alpha.10.2",
+				"actualTurnSettings": [
+					{
+						"model": "gpt-6.1-sol",
+						"effort": "ultra"
+					}
+				],
+				"context": "Fresh independent fork-none author; five explicit candidate-local skills"
+			},
+			"sourceFileCount": 479,
+			"sourceFingerprint": "fd57cb9c36488bd01d71528d14ba48d3bb89f5c84dde1910ba4abbe62ed00a58",
+			"sourceDiff": {
+				"path": "artifacts/phase5-evaluation/2026-10-19/release-v2/run-1/source.diff",
+				"sha256": "ba47071db057b4d65c62dae4206b2552c4309c8b5d860c5aad5e9e30540bfb90"
+			},
+			"result": {
+				"path": "artifacts/phase5-evaluation/2026-10-19/release-v2/run-1/result.json",
+				"sha256": "53d1b2bc08588e24c854e9fc21eddcfabf2a9fdb1f22494e0a698146c039a58f"
+			},
+			"transcript": {
+				"path": "artifacts/phase5-evaluation/2026-10-19/release-v2/run-1/agent-transcript.md",
+				"sha256": "5a4c55fe13fe8ed930c02f84dd9e9dbd8331c8ed7466b716f55359209a0c3a02"
+			},
+			"tasks": [
+				{
+					"id": "phase5-task-01",
+					"status": "passed",
+					"cases": ["immutable-v2"],
+					"logs": [
+						{
+							"path": "artifacts/phase5-evaluation/2026-10-19/release-v2/run-1/logs/1792416352525-dfea4e03-cfa8-44fa-b077-873ca1364577-phase5-task-01-behavior.log",
+							"sha256": "176d490b3cc6c583754faea1ea0acecf8280fae9cabd403a74adfe2e3828e35f"
+						}
+					]
+				},
+				{
+					"id": "phase5-task-02",
+					"status": "passed",
+					"cases": [
+						"template-authorization-replay-race",
+						"accounting-rollback-expiry-correction-rebuild-window"
+					],
+					"logs": [
+						{
+							"path": "artifacts/phase5-evaluation/2026-10-19/release-v2/run-1/logs/1792416352525-dfea4e03-cfa8-44fa-b077-873ca1364577-phase5-task-02-behavior.log",
+							"sha256": "9c3f0c4a7a6415cba85dc1bd9090f1e792c94552edc7c04f6ba0dfc131806fbc"
+						}
+					]
+				},
+				{
+					"id": "phase5-task-03",
+					"status": "passed",
+					"cases": ["current-seat-authority-and-downgrade"],
+					"logs": [
+						{
+							"path": "artifacts/phase5-evaluation/2026-10-19/release-v2/run-1/logs/1792416352525-dfea4e03-cfa8-44fa-b077-873ca1364577-phase5-task-03-behavior.log",
+							"sha256": "f6b2a41669faad88601617bf68d0d596f3e38c37800d0f60308336df5365522f"
+						}
+					]
+				},
+				{
+					"id": "phase5-task-04",
+					"status": "passed",
+					"cases": [
+						"localized-threshold-email",
+						"durable-dedupe-rollback-recipient-recheck",
+						"localized-dashboard-keyboard-ui-states"
+					],
+					"logs": [
+						{
+							"path": "artifacts/phase5-evaluation/2026-10-19/release-v2/run-1/logs/1792416352525-dfea4e03-cfa8-44fa-b077-873ca1364577-phase5-task-04-behavior.log",
+							"sha256": "6e1c7248970763671968e4e9fc727ec02ddd581bfe13619c99b97ee98ce51014"
+						}
+					]
+				},
+				{
+					"id": "phase5-task-05",
+					"status": "passed",
+					"cases": ["observed-five-seeded-regressions-and-diagnosis"],
+					"logs": [
+						{
+							"path": "artifacts/phase5-evaluation/2026-10-19/release-v2/run-1/logs/1792416352525-dfea4e03-cfa8-44fa-b077-873ca1364577-phase5-task-05-behavior.log",
+							"sha256": "b0912704a1782d31ab6693fe69213b77bc43463fbdf3506a7c18547a70f621a8"
+						}
+					]
+				}
+			],
+			"application": [
+				{
+					"id": "check",
+					"status": "passed",
+					"evidence": {
+						"path": "artifacts/phase5-evaluation/2026-10-19/release-v2/run-1/logs/1792416352525-dfea4e03-cfa8-44fa-b077-873ca1364577-application-check.log",
+						"sha256": "d4d90cb9e0abb0ac14d9a97415235b03ddfe66e8ec60926fc8c856fe3740aaf3"
+					}
+				},
+				{
+					"id": "knip",
+					"status": "passed",
+					"evidence": {
+						"path": "artifacts/phase5-evaluation/2026-10-19/release-v2/run-1/logs/1792416352525-dfea4e03-cfa8-44fa-b077-873ca1364577-application-knip.log",
+						"sha256": "7b14a20463eb671285cc83ebe1ddb4156905e84c6d4d1cf41de1b907042ff73f"
+					}
+				},
+				{
+					"id": "typecheck",
+					"status": "passed",
+					"evidence": {
+						"path": "artifacts/phase5-evaluation/2026-10-19/release-v2/run-1/logs/1792416352525-dfea4e03-cfa8-44fa-b077-873ca1364577-application-typecheck.log",
+						"sha256": "283777e737ed818c3ac2afe263a43436879ee916ad1bf9f2078ee3f16a913ca9"
+					}
+				},
+				{
+					"id": "unit",
+					"status": "passed",
+					"evidence": {
+						"path": "artifacts/phase5-evaluation/2026-10-19/release-v2/run-1/logs/1792416352525-dfea4e03-cfa8-44fa-b077-873ca1364577-application-unit.log",
+						"sha256": "d9801c15c18a58b5c11e4dd2a947ace6b3edfecbec7dba541edc2e6c16db8cbb"
+					}
+				},
+				{
+					"id": "integration",
+					"status": "passed",
+					"evidence": {
+						"path": "artifacts/phase5-evaluation/2026-10-19/release-v2/run-1/logs/1792416352525-dfea4e03-cfa8-44fa-b077-873ca1364577-application-integration.log",
+						"sha256": "86110f369e364a332a6f7604a8b5ddee8c7a7d03e6f158eebf7faf06a68e0c2b"
+					}
+				},
+				{
+					"id": "build",
+					"status": "passed",
+					"evidence": {
+						"path": "artifacts/phase5-evaluation/2026-10-19/release-v2/run-1/logs/1792416352525-dfea4e03-cfa8-44fa-b077-873ca1364577-application-build.log",
+						"sha256": "3bfa80f9cb3769f9fb578fcabfb670220b8bb361b415e56392f546acd58f67ee"
+					}
+				}
+			],
+			"applicationCaseCounts": {
+				"unit": 138,
+				"integration": 191
+			},
+			"interruption": {
+				"kind": "Planned stop after tasks 01/02, retained partial source and real Project/usage/migrations, then explicit same-session resume",
+				"preservedAfterResume": true,
+				"counts": {
+					"projects": 1,
+					"events": 1
+				},
+				"migrationCount": 11,
+				"cleanupComplete": true,
+				"evidence": {
+					"path": "artifacts/phase5-evaluation/2026-10-19/checkpoint-1-data.json",
+					"sha256": "f8ea925673dee75e169f60a188d9c7f2769ad19e4dfddeb18af8463154938ad5"
+				}
+			},
+			"unchangedRequestRepeat": {
+				"sourceIdentical": true,
+				"evidence": {
+					"path": "artifacts/phase5-evaluation/2026-10-19/repeat-1-preservation.json",
+					"sha256": "9dbb891559d2f21966a595cbde213b5763f0e2892af07420774bc4fc1c97685f"
+				}
+			},
+			"stripe": {
+				"status": "passed-api-supplement",
+				"checks": [
+					{
+						"name": "real-paid-v1-subscription-reconciles-through-candidate",
+						"passed": true
+					},
+					{
+						"name": "candidate-v2-preserves-sold-plan-and-provider-mapping-isolation",
+						"passed": true
+					},
+					{
+						"name": "real-external-downgrade-races-admission-without-member-loss",
+						"passed": true
+					},
+					{
+						"name": "candidate-deactivation-replays-once-and-rechecks-tenant-authority",
+						"passed": true
+					},
+					{
+						"name": "candidate-template-replay-and-paid-v1-final-quota-race",
+						"passed": true
+					},
+					{
+						"name": "real-provider-v2-switch-reconciles-candidate-feature-definition",
+						"passed": true
+					},
+					{
+						"name": "real-provider-account-validation-rejects-mismatched-adapter",
+						"passed": true
+					}
+				],
+				"cleanupComplete": true,
+				"sourceUnchanged": true,
+				"evidence": {
+					"path": "artifacts/phase5-evaluation/2026-10-19/stripe-1-attempt-1.json",
+					"sha256": "0cd8cbea213d2d03c9330298293e8d929e49f898d76da07556eeeaa7b0d46f1b"
+				}
+			},
+			"authorDiagnostics": {
+				"path": "artifacts/phase5-evaluation/2026-10-19/author-1-diagnostics.tar.gz",
+				"sha256": "4decbe544b9ee7d5a3aefead4ffb04a78cfede8d44b1187db4bf9ab7f96ab3db"
+			}
+		},
+		{
+			"id": 2,
+			"agent": {
+				"provider": "openai",
+				"model": "gpt-6.1-sol",
+				"sessionId": "01a15441-4332-72b2-b16b-a8f3c3759171",
+				"agentVersion": "0.163.0-alpha.10.2",
+				"actualTurnSettings": [
+					{
+						"model": "gpt-6.1-sol",
+						"effort": "ultra"
+					}
+				],
+				"context": "Fresh independent fork-none author; five explicit candidate-local skills"
+			},
+			"sourceFileCount": 479,
+			"sourceFingerprint": "dcb1e15b747acca71ab69cb5873db3f7cab5f91ac37b94e98d568f6834e60226",
+			"sourceDiff": {
+				"path": "artifacts/phase5-evaluation/2026-10-19/release-v2/run-2/source.diff",
+				"sha256": "829054ab86f39733747f48bcf4556c51e1d298d2c518e227bf515737d1b1771c"
+			},
+			"result": {
+				"path": "artifacts/phase5-evaluation/2026-10-19/release-v2/run-2/result.json",
+				"sha256": "0706b49b4433adde277f39be2e215da69e222be85b160bcaed12b98647aa9cf9"
+			},
+			"transcript": {
+				"path": "artifacts/phase5-evaluation/2026-10-19/release-v2/run-2/agent-transcript.md",
+				"sha256": "62c699d70a6f5226fa6413f4c3fd5905cdfc5b1f6682a7e1d72d75d7506722a0"
+			},
+			"tasks": [
+				{
+					"id": "phase5-task-01",
+					"status": "passed",
+					"cases": ["immutable-v2"],
+					"logs": [
+						{
+							"path": "artifacts/phase5-evaluation/2026-10-19/release-v2/run-2/logs/1792416401743-bcb6205a-986d-4b79-b54e-3f5be97bf441-phase5-task-01-behavior.log",
+							"sha256": "9ae768ce82ad3bb3ceb7416b1c77869041488babde114905c34fcff6005324d9"
+						}
+					]
+				},
+				{
+					"id": "phase5-task-02",
+					"status": "passed",
+					"cases": [
+						"template-authorization-replay-race",
+						"accounting-rollback-expiry-correction-rebuild-window"
+					],
+					"logs": [
+						{
+							"path": "artifacts/phase5-evaluation/2026-10-19/release-v2/run-2/logs/1792416401743-bcb6205a-986d-4b79-b54e-3f5be97bf441-phase5-task-02-behavior.log",
+							"sha256": "809b0f63664cdae1120040e1c6759faec9eddc5e0d683788741e677b1dadc0c7"
+						}
+					]
+				},
+				{
+					"id": "phase5-task-03",
+					"status": "passed",
+					"cases": ["current-seat-authority-and-downgrade"],
+					"logs": [
+						{
+							"path": "artifacts/phase5-evaluation/2026-10-19/release-v2/run-2/logs/1792416401743-bcb6205a-986d-4b79-b54e-3f5be97bf441-phase5-task-03-behavior.log",
+							"sha256": "cfe5c2d1bf99faf9616ebfb00340c8d5e73509e26b8c7f63a6f934bd33cf9f7b"
+						}
+					]
+				},
+				{
+					"id": "phase5-task-04",
+					"status": "passed",
+					"cases": [
+						"localized-threshold-email",
+						"durable-dedupe-rollback-recipient-recheck",
+						"localized-dashboard-keyboard-ui-states"
+					],
+					"logs": [
+						{
+							"path": "artifacts/phase5-evaluation/2026-10-19/release-v2/run-2/logs/1792416401743-bcb6205a-986d-4b79-b54e-3f5be97bf441-phase5-task-04-behavior.log",
+							"sha256": "25c67349f683d7260b4ebdeb02e30bd4a2345920c58a2c2eccb3eeb31026487f"
+						}
+					]
+				},
+				{
+					"id": "phase5-task-05",
+					"status": "passed",
+					"cases": ["observed-five-seeded-regressions-and-diagnosis"],
+					"logs": [
+						{
+							"path": "artifacts/phase5-evaluation/2026-10-19/release-v2/run-2/logs/1792416401743-bcb6205a-986d-4b79-b54e-3f5be97bf441-phase5-task-05-behavior.log",
+							"sha256": "10c3b5c822dd10d0be39ee2bb932ec59f6b90dd9fd32c0aef32c053500930137"
+						}
+					]
+				}
+			],
+			"application": [
+				{
+					"id": "check",
+					"status": "passed",
+					"evidence": {
+						"path": "artifacts/phase5-evaluation/2026-10-19/release-v2/run-2/logs/1792416401743-bcb6205a-986d-4b79-b54e-3f5be97bf441-application-check.log",
+						"sha256": "e6d6bc5c9dbbab6fefe93e3cd3f7c630c69eda63b07a6ffbb551a5e7df943968"
+					}
+				},
+				{
+					"id": "knip",
+					"status": "passed",
+					"evidence": {
+						"path": "artifacts/phase5-evaluation/2026-10-19/release-v2/run-2/logs/1792416401743-bcb6205a-986d-4b79-b54e-3f5be97bf441-application-knip.log",
+						"sha256": "7b14a20463eb671285cc83ebe1ddb4156905e84c6d4d1cf41de1b907042ff73f"
+					}
+				},
+				{
+					"id": "typecheck",
+					"status": "passed",
+					"evidence": {
+						"path": "artifacts/phase5-evaluation/2026-10-19/release-v2/run-2/logs/1792416401743-bcb6205a-986d-4b79-b54e-3f5be97bf441-application-typecheck.log",
+						"sha256": "283777e737ed818c3ac2afe263a43436879ee916ad1bf9f2078ee3f16a913ca9"
+					}
+				},
+				{
+					"id": "unit",
+					"status": "passed",
+					"evidence": {
+						"path": "artifacts/phase5-evaluation/2026-10-19/release-v2/run-2/logs/1792416401743-bcb6205a-986d-4b79-b54e-3f5be97bf441-application-unit.log",
+						"sha256": "b0d0942a6259846856cfa89fa026af024dfee41ba237c60509861ada0162a804"
+					}
+				},
+				{
+					"id": "integration",
+					"status": "passed",
+					"evidence": {
+						"path": "artifacts/phase5-evaluation/2026-10-19/release-v2/run-2/logs/1792416401743-bcb6205a-986d-4b79-b54e-3f5be97bf441-application-integration.log",
+						"sha256": "0b938f049508bcfb1c9ce2cc5b7dbcb88be9332c77af18aa266d82dbbe70f008"
+					}
+				},
+				{
+					"id": "build",
+					"status": "passed",
+					"evidence": {
+						"path": "artifacts/phase5-evaluation/2026-10-19/release-v2/run-2/logs/1792416401743-bcb6205a-986d-4b79-b54e-3f5be97bf441-application-build.log",
+						"sha256": "437c992d3a32beeb1de792a4317870aaa24df2e6567db2496dd8a8115be56b5e"
+					}
+				}
+			],
+			"applicationCaseCounts": {
+				"unit": 138,
+				"integration": 189
+			},
+			"interruption": {
+				"kind": "Planned stop after tasks 01/02, retained partial source and real Project/usage/migrations, then explicit same-session resume",
+				"preservedAfterResume": true,
+				"counts": {
+					"projects": 1,
+					"events": 1
+				},
+				"migrationCount": 11,
+				"cleanupComplete": true,
+				"evidence": {
+					"path": "artifacts/phase5-evaluation/2026-10-19/checkpoint-2-data.json",
+					"sha256": "b6208487569c2532c4ce330e6d7c27e2ee4d4221dae37df418dbe07a608ec5be"
+				}
+			},
+			"unchangedRequestRepeat": {
+				"sourceIdentical": true,
+				"evidence": {
+					"path": "artifacts/phase5-evaluation/2026-10-19/repeat-2-preservation.json",
+					"sha256": "a72a87aa6be2872cf9cb5252d2cff89b556a5ff6bc652d6a2eecda301c70af7a"
+				}
+			},
+			"stripe": {
+				"status": "passed-api-supplement",
+				"checks": [
+					{
+						"name": "real-paid-v1-subscription-reconciles-through-candidate",
+						"passed": true
+					},
+					{
+						"name": "candidate-v2-preserves-sold-plan-and-provider-mapping-isolation",
+						"passed": true
+					},
+					{
+						"name": "real-external-downgrade-races-admission-without-member-loss",
+						"passed": true
+					},
+					{
+						"name": "candidate-deactivation-replays-once-and-rechecks-tenant-authority",
+						"passed": true
+					},
+					{
+						"name": "candidate-template-replay-and-paid-v1-final-quota-race",
+						"passed": true
+					},
+					{
+						"name": "real-provider-v2-switch-reconciles-candidate-feature-definition",
+						"passed": true
+					},
+					{
+						"name": "real-provider-account-validation-rejects-mismatched-adapter",
+						"passed": true
+					}
+				],
+				"cleanupComplete": true,
+				"sourceUnchanged": true,
+				"evidence": {
+					"path": "artifacts/phase5-evaluation/2026-10-19/stripe-2-attempt-1.json",
+					"sha256": "cdb841f0b1d5ec95c06c7b40fd54b6e02aed57747df84d8cfda7bf0ebcaf5fa8"
+				}
+			},
+			"authorDiagnostics": {
+				"path": "artifacts/phase5-evaluation/2026-10-19/author-2-diagnostics.tar.gz",
+				"sha256": "105a084581445329b1cd485c1373612beaa54a68c5ba4dbf899071062edbf955"
+			}
+		}
+	],
+	"independentSourceReview": {
+		"path": "artifacts/phase5-evaluation/2026-10-19/independent-source-review.md",
+		"sha256": "e680ec88617ff7a14bf05ff6745ed77bc58a892b321771fb0da3bf86488407fc"
+	},
+	"evaluatorTranscript": {
+		"path": "artifacts/phase5-evaluation/2026-10-19/transcripts/phase5_evaluator.jsonl",
+		"sha256": "df131d9ade7b3c321784e0c9bfcdb94977425da2bb9b53a3920cf4bff55d9321"
+	},
+	"controllerTranscript": {
+		"path": "artifacts/phase5-evaluation/2026-10-19/transcripts/root_controller.jsonl",
+		"sha256": "87983e77021833a7c830459c323dcf69ad88ee0c21fe712cd25e86001447579f"
+	},
+	"isolationAudit": {
+		"path": "artifacts/phase5-evaluation/2026-10-19/isolation-audit.json",
+		"sha256": "b3cb2153d1d91340f0a0abb537669e5da050f57c3c409093454c1670b6f06b7b"
+	},
+	"harnessRepair": {
+		"path": "artifacts/phase5-evaluation/2026-10-19/harness-repair-v2.json",
+		"sha256": "75eaf398db0780d43ce58bc9c02f87c16c4c06bdca87388269953fdedf0d16a9"
+	},
+	"failedAttempts": [
+		"Initial evaluator local TCP denial and expected pre-author missing-review-report calibration retained separately under controller-calibration.",
+		"Candidate 1 retained initial sandbox denial, two corrected new-test assumptions and a browser focus-retention failure repaired in its isolated UI.",
+		"Candidate 2 retained initial new-test type/fixture errors before successful corrected checks.",
+		"Original controller candidate 2 failed task 04 before browser launch because the wrapper supplied an empty base URL. Original release and logs remain retained; release-v2 changes only runtime setup/static helper packaging with assertion and initial baseline hashes unchanged. Both final candidates reran the full required set."
+	],
+	"limitations": [
+		"Source copies, author instructions, transcript audit and immutable control hashes provide supervised isolation on a shared host, not an OS-enforced sandbox.",
+		"Calibration temporarily staged ignored hidden copies inside candidate 1 before authoring. Full author tool-call audit found no access; copies were relocated outside the candidate and canonical controls always remained external.",
+		"The preserved interruption is a planned partial-work stop/resume, not an arbitrary process-crash or production restore test.",
+		"Window rollover uses a retained predecessor bucket plus UTC boundary assertions; the PostgreSQL system clock was not advanced.",
+		"Real Stripe supplements use test mode, actual candidate code and explicit evaluator-owned tenant/customer mapping. They do not complete hosted Checkout, webhook ingress, Portal, provider outage or external email deliverability acceptance.",
+		"Candidate 1 corrected a pre-existing transient Refresh focus-loss issue. Candidate 2 preserves baseline behavior and passes declared keyboard activation checks; no post-refresh focus-retention contract or standards-compliance claim is inferred.",
+		"Candidate features remain disposable evaluation source and were not promoted into the production application. No new image, performance, hosted CI or full Phase 5/M2 acceptance is claimed.",
+		"These two trials demonstrate the recorded configuration and bounded tasks; they do not establish universal agent reliability. Actual transcripts and diagnostic bundles are local ignored evidence, not hosted CI artifacts."
+	]
+}

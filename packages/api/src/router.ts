@@ -13,6 +13,29 @@ import {
 
 const api = implement(contract).$context<RequestContext>();
 export const router = api.router({
+	billing: {
+		get: api.billing.get.handler(({ context, input }) =>
+			resourceOperation(
+				context,
+				input.organizationId,
+				{ mutate: false, serviceAccounts: false },
+				(runtime, actor) => {
+					if ("kind" in actor) throw new Error("Authorization denied");
+					return runtime.billing.get(actor, input.organizationId);
+				},
+			),
+		),
+		preview: api.billing.preview.handler(({ context, input }) =>
+			humanOperation(context, input.organizationId, (runtime, actor) =>
+				runtime.billing.preview(actor, input.organizationId, input.selection),
+			),
+		),
+		command: api.billing.command.handler(({ context, input }) =>
+			humanOperation(context, input.organizationId, (runtime, actor) =>
+				runtime.billing.command(actor, input.organizationId, input.command),
+			),
+		),
+	},
 	organizations: {
 		summary: api.organizations.summary.handler(({ context, input }) =>
 			readOrganizationSummary(context, input.organizationId),
