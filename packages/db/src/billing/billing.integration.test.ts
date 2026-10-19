@@ -500,6 +500,102 @@ it("rotates expired first checkouts out of the bounded work batch", async () => 
 	for (const row of idle.rows)
 		expect(row).toEqual({ customer_id: null, deferred: true });
 });
+it("shows current local quotas before another reservation refreshes the bucket", async () => {
+	const f = await fixture();
+	const tx = <T>(work: Parameters<typeof withTenantTransaction<T>>[4]) =>
+		withTenantTransaction(f.web, f.org, [f.owner.userId], true, work);
+	await tx(async (c) => {
+		const id = await reserveProjectUsage(c, f.org, randomUUID(), 1, {
+			kind: "limited",
+			limit: 2,
+		});
+		await settleProjectUsage(c, f.org, id, "committed");
+	});
+	for (const limit of [0, 10, null]) {
+		const service = createBillingService(f.web, f.authorization, {
+			origin: "http://localhost:3000",
+			defaultProjectCreatesPerMonth: limit,
+		});
+		expect((await service.get(f.owner, f.org)).usage).toMatchObject({
+			consumed: 1,
+			reserved: 0,
+			policy:
+				limit === null ? { kind: "unlimited" } : { kind: "limited", limit },
+		});
+	}
+	await tx(async (c) => {
+		const id = await reserveProjectUsage(c, f.org, randomUUID(), 2, {
+			kind: "limited",
+			limit: 10,
+		});
+		await settleProjectUsage(c, f.org, id, "committed");
+	});
+	expect((await f.service.get(f.owner, f.org)).usage.consumed).toBe(3);
+});
+it("shows a confirmed plan quota increase before new usage and retains local restrictions", async () => {
+	const f = await fixture();
+	await f.checkout();
+	f.setTruth({ subscription: f.subscription(), invoices: [] });
+	await f.worker.processAccount(f.org);
+	const service = createBillingService(f.web, f.authorization, {
+		provider: f.provider,
+		origin: "http://localhost:3000",
+		defaultProjectCreatesPerMonth: 10,
+	});
+	await withTenantTransaction(
+		f.web,
+		f.org,
+		[f.owner.userId],
+		true,
+		async (c) => {
+			const id = await reserveProjectUsage(c, f.org, randomUUID(), 1, {
+				kind: "limited",
+				limit: 10,
+			});
+			await settleProjectUsage(c, f.org, id, "committed");
+		},
+	);
+	const upgraded = {
+		...f.plan,
+		id: "team/v2",
+		version: 2,
+		features: {
+			...f.plan.features,
+			projectCreates: { kind: "limited", limit: 5 },
+		},
+	};
+	await f.app.query(
+		"INSERT INTO foundation.plan_versions(id,plan_key,version,definition) VALUES($1,$2,$3,$4)",
+		[upgraded.id, upgraded.key, upgraded.version, JSON.stringify(upgraded)],
+	);
+	await f.app.query(
+		"INSERT INTO foundation.billing_prices(environment,price_id,plan_version_id,currency,amount,interval) VALUES($1,'price_upgraded',$2,'eur',1000,'month')",
+		[f.provider.environment, upgraded.id],
+	);
+	expect((await service.get(f.owner, f.org)).usage.policy).toEqual({
+		kind: "limited",
+		limit: 2,
+	});
+	const subscription = f.subscription();
+	subscription.price = { ...subscription.price, id: "price_upgraded" };
+	f.setTruth({ subscription, invoices: [] });
+	await f.worker.processAccount(f.org);
+	expect((await service.get(f.owner, f.org)).usage).toMatchObject({
+		consumed: 1,
+		reserved: 0,
+		policy: { kind: "limited", limit: 5 },
+	});
+	// The same purchased grant remains bounded by a stricter local policy.
+	const restricted = createBillingService(f.web, f.authorization, {
+		provider: f.provider,
+		origin: "http://localhost:3000",
+		defaultProjectCreatesPerMonth: 3,
+	});
+	expect((await restricted.get(f.owner, f.org)).usage.policy).toEqual({
+		kind: "limited",
+		limit: 3,
+	});
+});
 it("retains immutable sold versions, handles trial and unpaid policy, and rejects mismatched provider prices", async () => {
 	const f = await fixture();
 	await f.checkout();

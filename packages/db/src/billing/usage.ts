@@ -39,10 +39,6 @@ type Bucket = {
 	period_end: Date;
 	watermark: number;
 };
-const policyOf = (b: Bucket): Limit =>
-	b.policy_kind === "limited"
-		? { kind: "limited", limit: b.capacity ?? 0 }
-		: { kind: b.policy_kind };
 async function expire(c: PoolClient, o: string, bucket: string) {
 	const expired = await c.query<{ quantity: number }>(
 		"UPDATE tenancy.quota_reservations SET state='expired' WHERE organization_id=$1 AND bucket_id=$2 AND state='reserved' AND expires_at<=clock_timestamp() RETURNING quantity",
@@ -412,7 +408,7 @@ export async function usageSnapshot(
 		periodEnd: end.toISOString(),
 		consumed: b?.consumed ?? 0,
 		reserved: b?.reserved ?? 0,
-		policy: b ? intersectLimits(policyOf(b), policy) : policy,
+		policy,
 		watermark: Number(b?.watermark ?? 0),
 		providerCharging: false as const,
 	};
