@@ -5,6 +5,9 @@ import {
 	getPublication,
 } from "@saas-cook/authz";
 import { readWebEnv } from "@saas-cook/config/server";
+import { createBillingService } from "@saas-cook/db/billing";
+import { createStripeProvider } from "@saas-cook/db/billing-stripe";
+import { acceptStripeWebhook } from "@saas-cook/db/billing-worker";
 import { createExampleCustomersService } from "@saas-cook/db/example-customers";
 import { createResourceService } from "@saas-cook/db/resources";
 import { createTenancyService } from "@saas-cook/db/tenancy";
@@ -58,6 +61,24 @@ function createRuntime() {
 			});
 		},
 	});
+	const provider =
+		env.BILLING_ENABLED === "true"
+			? createStripeProvider({
+					secretKey: env.STRIPE_SECRET_KEY as string,
+					accountId: env.STRIPE_ACCOUNT_ID as string,
+					mode: env.STRIPE_MODE,
+					webhookSecret: env.STRIPE_WEBHOOK_SECRET as string,
+					portalConfigurationId: env.STRIPE_PORTAL_CONFIGURATION_ID as string,
+				})
+			: undefined;
+	const billing = createBillingService(applicationPool, authorization, {
+		provider,
+		origin: env.APP_ORIGIN,
+		defaultProjectCreatesPerMonth:
+			env.DEFAULT_PROJECT_CREATES_PER_MONTH === "unlimited"
+				? null
+				: env.DEFAULT_PROJECT_CREATES_PER_MONTH,
+	});
 	const resources = createResourceService(
 		applicationPool,
 		{
@@ -69,6 +90,11 @@ function createRuntime() {
 		},
 		{
 			cursorSecret: env.AUTH_SECRET,
+			defaultProjectCreatesPerMonth:
+				env.DEFAULT_PROJECT_CREATES_PER_MONTH === "unlimited"
+					? null
+					: env.DEFAULT_PROJECT_CREATES_PER_MONTH,
+			usageThresholds: env.USAGE_NOTICE_THRESHOLDS,
 			defaultProjectCapacity:
 				env.DEFAULT_PROJECT_CAPACITY === "unlimited"
 					? null
@@ -77,6 +103,11 @@ function createRuntime() {
 	);
 	const keys = createApiKeyService({ pool: applicationPool, authorization });
 	return {
+		billing,
+		async webhook(raw: Buffer, signature: string) {
+			if (!provider) throw new Error("Billing disabled");
+			return acceptStripeWebhook(applicationPool, provider, raw, signature);
+		},
 		exampleCustomers: createExampleCustomersService(
 			applicationPool,
 			{

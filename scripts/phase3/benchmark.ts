@@ -164,6 +164,8 @@ const fenceListener = (message: unknown) => {
 fenceChannel.subscribe(fenceListener);
 const f = await resourceFixture({
 	defaultProjectCapacity: null,
+	// Exercise the ledger and finite quota path throughout the high-volume workload.
+	defaultProjectCreatesPerMonth: 1000000,
 	// Match packages/api/src/runtime.ts; all 50 clients still submit concurrently.
 	poolSize: 8,
 });
@@ -196,6 +198,7 @@ const environment = {
 	...f.installation.env,
 	APP_ORIGIN: benchmarkOrigin,
 	DEFAULT_PROJECT_CAPACITY: "unlimited",
+	DEFAULT_PROJECT_CREATES_PER_MONTH: "1000000",
 };
 const originalEnvironment = Object.fromEntries(
 	Object.keys(environment).map((key) => [key, process.env[key]]),

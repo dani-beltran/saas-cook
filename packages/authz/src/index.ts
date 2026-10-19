@@ -131,6 +131,10 @@ export function createAuthorizationService(options: {
 		);
 		if (!stillEligible.rows[0]?.eligible)
 			throw new Error("Authorization expired");
+		await client.query(
+			"SELECT set_config('app.authorization_expires_at',coalesce(least(nullif(current_setting('app.authorization_expires_at',true),'')::timestamptz,$1::timestamptz)::text,''),true)",
+			[membership.expires_at],
+		);
 	}
 	return {
 		initialize,

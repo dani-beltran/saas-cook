@@ -1,5 +1,13 @@
 import { oc } from "@orpc/contract";
 import { z } from "zod";
+import { billingContract } from "./billing";
+
+export type {
+	BillingCommand,
+	BillingPreview,
+	BillingSnapshot,
+} from "./billing";
+
 import { exampleCustomersContract } from "./example-customers";
 import { resourcesContract, serviceAccountContract } from "./resources";
 import { tenancyContract } from "./tenancy";
@@ -20,6 +28,7 @@ export const diagnosticDto = z.object({
 });
 const errorData = z.object({ requestId: z.uuid() });
 export const contract = {
+	billing: billingContract,
 	exampleCustomers: exampleCustomersContract,
 	organizations: tenancyContract,
 	...resourcesContract,

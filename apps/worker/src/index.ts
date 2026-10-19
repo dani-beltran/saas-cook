@@ -1,8 +1,14 @@
 import { rename, rm, writeFile } from "node:fs/promises";
-import { getPublication } from "@saas-cook/authz";
+import { createAuthorizationService, getPublication } from "@saas-cook/authz";
 import { readWorkerEnv } from "@saas-cook/config/server";
 import { recordHeartbeat, recordProbe } from "@saas-cook/db";
-import { createSmtpTransport, deliverIdentityEmails } from "@saas-cook/email";
+import { createStripeProvider } from "@saas-cook/db/billing-stripe";
+import { createBillingWorker } from "@saas-cook/db/billing-worker";
+import {
+	createSmtpTransport,
+	deliverBillingNotices,
+	deliverIdentityEmails,
+} from "@saas-cook/email";
 import {
 	initializeObservability,
 	logEvent,
@@ -28,6 +34,24 @@ const controlPool = new Pool({
 	connectionTimeoutMillis: 3000,
 	query_timeout: 3000,
 });
+const authorization = createAuthorizationService({
+	controlPool,
+	installationId: env.INSTALLATION_ID,
+	openfgaUrl: env.OPENFGA_API_URL,
+});
+const billingWorker =
+	env.BILLING_ENABLED === "true"
+		? createBillingWorker(pool, authorization, {
+				provider: createStripeProvider({
+					secretKey: env.STRIPE_SECRET_KEY as string,
+					accountId: env.STRIPE_ACCOUNT_ID as string,
+					mode: env.STRIPE_MODE,
+					webhookSecret: env.STRIPE_WEBHOOK_SECRET as string,
+					portalConfigurationId: env.STRIPE_PORTAL_CONFIGURATION_ID as string,
+				}),
+				origin: env.APP_ORIGIN,
+			})
+		: undefined;
 const mailTransport = createSmtpTransport({
 	host: env.SMTP_HOST,
 	port: env.SMTP_PORT,
@@ -67,6 +91,19 @@ const payload = z
 let stopping = false;
 let timer: NodeJS.Timeout | undefined;
 let pendingHeartbeat: Promise<void> = Promise.resolve();
+let pendingBilling: Promise<void> | undefined;
+let billingTimer: NodeJS.Timeout | undefined;
+async function billingTick() {
+	await ready();
+	await billingWorker?.tick();
+	await deliverBillingNotices(pool, {
+		secret: env.AUTH_SECRET,
+		origin: env.APP_ORIGIN,
+		transport: mailTransport,
+		ready: authorization.publication,
+		authorize: (c, user, o) => authorization.authorize(c, user, o, "billing"),
+	});
+}
 async function heartbeat() {
 	await ready();
 	await deliverIdentityEmails(pool, {
@@ -85,10 +122,12 @@ async function stop(code: number) {
 	if (stopping) return;
 	stopping = true;
 	clearInterval(timer);
+	clearInterval(billingTimer);
 	const deadline = setTimeout(() => process.exit(1), 12_000);
 	try {
 		await boss.stop({ graceful: true, timeout: 8_000 });
 		await pendingHeartbeat.catch(() => {});
+		await pendingBilling?.catch(() => {});
 		await pool.end();
 		await controlPool.end();
 		await rm(heartbeatPath, { force: true });
@@ -144,6 +183,16 @@ try {
 			void stop(1);
 		});
 	}, 2000);
+	billingTimer = setInterval(() => {
+		if (!pendingBilling)
+			pendingBilling = billingTick()
+				.catch(() => {
+					logEvent("worker.billing_failed");
+				})
+				.finally(() => {
+					pendingBilling = undefined;
+				});
+	}, 5000);
 	logEvent("worker.ready");
 } catch (error) {
 	logEvent("worker.startup_failed", {

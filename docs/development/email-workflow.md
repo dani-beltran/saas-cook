@@ -24,3 +24,12 @@ Current tenancy notifications select English in runtime composition. Adding Span
 New resource notifications need a durable consumer, current recipient/lifecycle/permission checks at execution, and an appropriate data-retention design. Do not stretch the identity payload into an undocumented generic notification queue. New provider configuration, live recipients or delivery to external systems require task authorization; synthetic Mailpit/fake-transport tests are sufficient for local implementation work.
 
 Verification should prove one semantic message for a replay, no message on rollback, both locales and escaping, unavailable transport recovery, bounded exhaustion, expiry, stable Message-ID, protected/purged payload behavior and sanitized error counters. Preserve original identity-journey tests. Record the exact exercised path, including any locale or recipient behavior not implemented.
+
+## Phase 5 mandatory billing delivery
+
+`packages/email/src/billing.tsx` adds a dedicated encrypted tenant delivery boundary for
+billing lifecycle and usage-threshold notices. It does not extend identity token payloads.
+The transactional notice enqueue, current recipient checks, locale ownership, seven-day
+expiry, eight-attempt bound and at-least-once SMTP limitations are recorded in the
+[Phase 5 guide](../phase5/README.md#usage-contract-and-notices). Use that existing consumer
+for compatible billing notices; general resource notifications remain Phase 6 work.

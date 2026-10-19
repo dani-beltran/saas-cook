@@ -1,0 +1,1374 @@
+{
+	"version": 1,
+	"heldout": [
+		{
+			"file": "tasks.integration.test.ts",
+			"name": "phase5-task-01 immutable-v2"
+		},
+		{
+			"file": "tasks.integration.test.ts",
+			"name": "phase5-task-02 template-authorization-replay-race"
+		},
+		{
+			"file": "tasks.integration.test.ts",
+			"name": "phase5-task-02 accounting-rollback-expiry-correction-rebuild-window"
+		},
+		{
+			"file": "tasks.integration.test.ts",
+			"name": "phase5-task-03 current-seat-authority-and-downgrade"
+		},
+		{
+			"file": "tasks.integration.test.ts",
+			"name": "phase5-task-04 localized-threshold-email"
+		},
+		{
+			"file": "tasks.integration.test.ts",
+			"name": "phase5-task-04 durable-dedupe-rollback-recipient-recheck"
+		},
+		{
+			"file": "tasks.integration.test.ts",
+			"name": "phase5-task-05 observed-five-seeded-regressions-and-diagnosis"
+		}
+	],
+	"protectedHashes": {
+		"CUSTOM-BILLING-NOTES.md": "d836c59d22aa37be8b731a5d3d04a0a0625239c95959382b9262547895f7cec9",
+		"apps/web/src/features/billing/money.test.ts": "2ecbeb8a0ba9e895cd38d11f081ba1ac123ef14b9caabe8250e7ef6a54adb90b",
+		"apps/web/src/proxy.test.ts": "3522db8523787d8796e24e6112528d47db07ed44db92bda5e631bd7fd10b7cd6",
+		"apps/worker/src/diagnostics.test.ts": "46a901a7c2cfa44a4f5f293506c8b76c3805301f2d91f702822834a6be3923ae",
+		"apps/worker/src/worker.integration.test.ts": "d4e655fad2128dec9bf0fce822c292bd68946aeee22c46e092dc1b5377b44d97",
+		"bun.lock": "df75daab69877ac45908cd0bfceeb5fa5cf51040c9e36736d59bd6b59bcc96bc",
+		"package.json": "53579d98f783dfcef83cca1c370d9f712afbe5ea41556a61987182148467d23c",
+		"packages/api/src/api.test.ts": "70243534639c49537569f0ac6f5004c0a666765e70c74d27f4f7ae9f6d6ea2fb",
+		"packages/api/src/billing.integration.test.ts": "939b1818986b835c6a4cb6f21bd166d1825db4f31e8b11eabf98841a7b64f373",
+		"packages/api/src/billing.test.ts": "15060e6248920459e19c33a0a3631a0cc70a50e96290062997f29ca3a0324f22",
+		"packages/api/src/example-customers/api.integration.test.ts": "67a0ff60da108ef19c7233424c20f42081f649fc48ab624fc32bcad1aa33820b",
+		"packages/api/src/resources.integration.test.ts": "a1029ff1d94d3c506cccaafc865bafbab38113b58671f97467d22ad8a9083c5b",
+		"packages/api/src/resources.test.ts": "f6f19c7e0e4bf5408041fc2a56bc3d1b86bdae10401fbc9be14948eeeb8bf316",
+		"packages/api-contracts/src/example-customers/contracts.test.ts": "2600890b7e1bbd4fe058c338724c8e92470dc788651fc4a704eb96db69c7f631",
+		"packages/auth/src/assurance.test.ts": "1e0dd914c1297aa2f5a6d8733576868496f9de0aaa2d6cc69facde3188fe6ae2",
+		"packages/auth/src/auth.test.ts": "78c7d0a7f89a0dbcdaa5e7abf13058afe989335b77f6ea48fe01a8a30bf4b341",
+		"packages/auth/src/avatar.test.ts": "a25024f27ad7b5ec05a58068b45d7707357dede98f96e9a493dd2deda7bcda3a",
+		"packages/auth/src/identity.integration.test.ts": "62cea50c1b4a182ec8088d4b919f7371c5a4af311667f7a2d3e771456ffe9ee7",
+		"packages/auth/src/ingress.test.ts": "0cdac39c1efe3f16146a1b663dec28fd09a0af1da8276676ae96cc8d4a63dee6",
+		"packages/auth/src/password.integration.test.ts": "b95c8b0345ac8d80c89f6908eeb1f1c2b7df305eb4649014a51e29bc5243a566",
+		"packages/authz/src/authorization.integration.test.ts": "bee94ddb273c1a6319452005d8db7288f5ef39650882d2e27a8727658a2750f5",
+		"packages/authz/src/key-expiry.integration.test.ts": "ef3b264197f0221f2048691211a516b1d8d15c60b3b8a70a6d2f4e5b28f045d5",
+		"packages/authz/src/keys.integration.test.ts": "b7c86e800fe07519e5760b3c417e71b2086d38d522cb732c229098a3a1db2562",
+		"packages/authz/src/model.test.ts": "08a6a2ea6916bd5216dd4f569384a076b1128722a9c671733a58c49d55daa779",
+		"packages/authz/src/operator.test.ts": "d1ff748bfe494439af1fabcf4b9edf3230b0c5290570f6dd55d5f9a5dbf88bfc",
+		"packages/authz/src/parity.integration.test.ts": "1801e48074ae7c8c7ea49aca495ceeb8f9b0840ab94c1ffb173c25ba8363cc81",
+		"packages/authz/src/resources.integration.test.ts": "0c156247e91cd5732ce652887e271dcfa73e531328e300521dc0d31f83b01e72",
+		"packages/authz/src/retirement.integration.test.ts": "7a4828a69c58348a175fa849704fd5087b8288cacd8bb9157e6031565faf91d2",
+		"packages/authz/src/session-expiry.integration.test.ts": "ecc7c32a576b46eba50030d948792ddb7ed984f8f87ca71255ede3166e650eab",
+		"packages/config/src/config.test.ts": "09a8283c08155d53f40529a593a98129a78a37807bc5f0d6f27d8a1a3738bccd",
+		"packages/db/migrations/0000_foundation.sql": "feeeb29b6f3e13e507fec496fd132604e25b6857e1a7e70850111b747d6fa33b",
+		"packages/db/migrations/0001_durable_probes.sql": "7412aaba59cf04e68f969fbed7aeea83caa9c18629a58aecd685a32572d51c1f",
+		"packages/db/migrations/0002_tenancy.sql": "6412a8f6b5e37a8005ca66523b17736847dd376ebeab3100f3d150923b652a3d",
+		"packages/db/migrations/0003_authorization.sql": "38963e8ccb5da5fb0126c94f96febccb044c5a1c47325d900d39934188c7e7f1",
+		"packages/db/migrations/0004_identity.sql": "f7a9fb279258c64fefb225dc6ca3cd9e92a3ce3c6da588f5fdcf1aaf46dda031",
+		"packages/db/migrations/0005_tenant_event_integrity.sql": "7a870afdf0315a2e92af4174b94b9b2f4a5240268c613a2541a5fd1ffaf83d0e",
+		"packages/db/migrations/0006_resources.sql": "53faf5b8d33ce850fb5fc1042e776cfd0ff8c6529fc37b06ddb3670d4d75840b",
+		"packages/db/migrations/0007_organization_projects.sql": "a21a03bc05cd9b29bb227799b69f86004cec64a459e28ab90f96d440690eb789",
+		"packages/db/migrations/0008_example_customers.sql": "7be345855a7e9ab241afb5b81066763ddb11bf0c26ae0975e2c21d7c1aef8532",
+		"packages/db/migrations/0009_personal_settings.sql": "c3a61f0c99a59e25b54bc4fe56c33750107d3bc4b6d7189fbfd2c4d57e16b5b1",
+		"packages/db/migrations/0010_phase5_monetization.sql": "53ade806498f678449994d47089be50a3d86851d933fb7d0a1b05c4649461a2c",
+		"packages/db/migrations/README.md": "f7dcb1c34022dbb6cf8376c04b7a1cd3001544d8e597127fc89c1831875d478a",
+		"packages/db/migrations/meta/0000_snapshot.json": "cbcddba533b5d5b430acc9ce543f634c5b67884859d483ca32367bf36ae17a75",
+		"packages/db/migrations/meta/0001_snapshot.json": "64c766026901553e96057aa9641811185577b6b15e1e8c3cae9920969123c004",
+		"packages/db/migrations/meta/0002_snapshot.json": "c509a1ca1eb5d5533f49cdb0b48817f68d879c48696c95c126de5028551887d5",
+		"packages/db/migrations/meta/0003_snapshot.json": "9d78e93f39b4cf0d29085159a5b7b5443bd03c398edae7567eb69e470b011120",
+		"packages/db/migrations/meta/0004_snapshot.json": "b7c750b2794c4181e4b099a72f1a24f5c4f6c2d56577ddaabf403e70e6169ab1",
+		"packages/db/migrations/meta/0005_snapshot.json": "1956e3b05f7e8a9fcedc8efaa9c9a31a38c97d716526a74683bc1a647fbe4db6",
+		"packages/db/migrations/meta/0006_snapshot.json": "86ccc2c1852f2783004fcce24a075683a17aa1b821092ec708f2692e8464de54",
+		"packages/db/migrations/meta/0007_snapshot.json": "b688348b357906ba4b2d5828965b7b8058e45a9aa59cfcb67ebf3205f2a43d43",
+		"packages/db/migrations/meta/0008_snapshot.json": "e836de28430ca6bdc9ffe69b41a205d54417a3c7f4effd2f57571b6ed415f114",
+		"packages/db/migrations/meta/0009_snapshot.json": "bcfa63eeb1531201bad6b8c85304f18f040c3bf21cbcc4f410ad83da2e310327",
+		"packages/db/migrations/meta/0010_snapshot.json": "7cd0c1498bc204ed7bb4996f39ecab53134a08efc7f046c61270001831da4a5f",
+		"packages/db/migrations/meta/_journal.json": "39d18a6d74d93253abb934ca76bb301d6cb49adc9436e921806bb340e7e4e682",
+		"packages/db/src/billing/billing.integration.test.ts": "a7c560a8756987837e5b632215b603d6d9c3a7e87d34d9507128e7834472665a",
+		"packages/db/src/billing/fixture.ts": "ada1efe4434a2f1302cfe4347d31be84299dc68e72545f40b58a4a2e0826170d",
+		"packages/db/src/billing/migrations.integration.test.ts": "55c06285f3213ae8ef76563b5d39d0350a4104cf6b5c2af3445088aeba0dd5df",
+		"packages/db/src/billing/policy.test.ts": "c489594a37f5e6d6bfe6a964023d40dfe5e4d67599f452d08fdcd6669168c394",
+		"packages/db/src/example-customers/cursor.test.ts": "9c51a2d0466037a02fd84cbfd0bac62904497087a30979996eb1b6f4b740d5f2",
+		"packages/db/src/example-customers/migrations.integration.test.ts": "6f27af73820ad67d2ef2858f6957dc56be5d319a256b3338a36a76288b333474",
+		"packages/db/src/example-customers/service.integration.test.ts": "fd9b0e560f683a4b9216f4bd37630d356495682375e2252c4971a9315797bf32",
+		"packages/db/src/migrations.integration.test.ts": "43415df4778387fb0852497bd49bcd834cfbfc2db42e29d9b8935863cabec43d",
+		"packages/db/src/personal-settings.integration.test.ts": "24c1eb555f01d6e4c898f3f758f50a811482d8f5cc5139081ab384d5578d1ac9",
+		"packages/db/src/resources.integration.test.ts": "717449b90acecb10bbc72432b0182d2b7f764fec32cf7572954519d5079322ea",
+		"packages/db/src/tenancy.integration.test.ts": "3a6eb4ec72ab7f09e316730443ce8b556c9b7d573b674ab8b7329a1d8aeccd74",
+		"packages/email/src/billing.integration.test.ts": "a1b70919f9080ddb09ab1ec27f0bd1714200dcc954637b300846c98ef35336ef",
+		"packages/email/src/billing.test.tsx": "556e81cdc48571df23608bb57dc2f03499ccfa9795555c11a6dd5d34de875c20",
+		"packages/email/src/email.test.ts": "f6850ddfd7da29a19737cdef9237793b4524e4c2fa8016e1d4106ab300305070",
+		"packages/observability/src/observability.test.ts": "da147801f2f649d32d5cc3209ec471653de25610a98adc80ba60798d9e80a08f",
+		"packages/testing/src/database.integration.test.ts": "efb3c2240f139746f6babeea3e6adecc2bee0782c0939f75d434c63103629bc1",
+		"packages/testing/src/fixtures.test.ts": "f7d785158a138f385d48ad1b4d74d00c817e0e288e4e8188f955ea96bcd3365a",
+		"packages/testing/src/installation.ts": "bcdbcf96a9227b7f342703b355ffe4f7607e12662f39c763cb8186d77bed3e04",
+		"packages/testing/src/services.integration.test.ts": "9d44a00358e963e805d1b22d1a39dca69c2fc75a7526295a0a3979c24d95347a",
+		"packages/ui/src/theme.test.ts": "e83ad65476ec13e22f58a6e49e6d64a8de1ba3864eb8664e2eae5cb5e53972c5",
+		"playwright.config.ts": "46d9fdd722dd86c3c9771aa2033de442c64f447f317abe32c98c833260239574",
+		"review-billing/contracts.mjs": "1c89c016e7defaca695aef50534aa1345ec9d1b83fb2b313c851137a9b19a65e",
+		"review-billing/schema.sql": "c5c8ac1eb99b14a2650ef12a9a7841ee24940c08a503026d4eb7944a8605e163",
+		"review-billing/service.mjs": "78a52663d18b44e42b7a1094576fae2c163fa41b081867f7e9e290b1fc19969f",
+		"scripts/phase1/browser-tests.ts": "15268dcc5bf594965fa6744439a51d67a130f8862c5c9b83a0d50d7aaf2e1e7b",
+		"scripts/phase1/scan-policy.test.ts": "e3cdc615d88f1b1b1c5345c5073f4b6d9603ca01f065cf0ec897a785e956adc9",
+		"scripts/phase3/fixture.ts": "1944d0a53619965ea2ce424a8c29a7ef6c638141867e4f271e01a9b1ecdd7862",
+		"spikes/phase0/adapters/providers.test.ts": "8282ae82210b77dd13cadfbde30ad1c79dace3a7c23f5fba272eda27b1999455",
+		"spikes/phase0/adapters/storage.test.ts": "d8aca677975ff5b0fcc5ad6baa5b9e2f618e32df9d7352266ffdc774361f2f2c",
+		"spikes/phase0/api-next/api.test.ts": "7f6ce82ba37e0e5c386b540f9ffcae1e110507ed35589b87da6eddab6011df91",
+		"spikes/phase0/api-next/browser.spec.ts": "e679fb18c19170fcb5bd0350db858cfe1a3159fc36c563287679252639348286",
+		"spikes/phase0/authz/contextual.test.ts": "39ac70d16bdf9911eade0d80a976fa82b6cd2f762caf9221ffe6c69516e52394",
+		"spikes/phase0/authz/integration.test.ts": "07c6ccdbee8e2d3f92580af1a894cbb82c8ccf9febf91dcb6521dfef4efe3612",
+		"spikes/phase0/authz/protocol.test.ts": "3ce3120fdf8df2d5ffa38ab13b5ac8390fe6d01a18a6d1c6fcd30bc2fa3d8cc8",
+		"spikes/phase0/database/drizzle.test.ts": "ca81565495a43927a24ae4f23422ef9e7bfcf31447d41ea6902877ab0bfd80bd",
+		"spikes/phase0/database/rls.test.ts": "f7d19d68c07b8d375104492184a7cae5f12acaf13c138d69d2b89660dd37f4d2",
+		"spikes/phase0/identity/assurance.test.ts": "cab70d389399990b25834bb6a68fe668d9a8fcde992c56904b44eb315b72e2eb",
+		"spikes/phase0/identity/lifecycle.test.ts": "3d18b65ae471ed024b6b950b1654261179df55c36bea80b2f2f112a7ea9d5408",
+		"spikes/phase0/identity/provider.test.ts": "f038c203bc9abc5fed6b62e9bad5b4fa2edbd252519ae30230e5e149ed5e8c75",
+		"spikes/phase0/identity/scim.test.ts": "353ad94da86562119f3ab73ac5ea93c6cfc593e26028a71d6841179ab690edcb",
+		"spikes/phase0/stack/compatibility.test.tsx": "6f8a6a0072ddbec2223d384aadaecaa294e9e094e0067a4b08171bc8787b3cae",
+		"tests/e2e/account-dashboard.spec.ts": "74ab32be0b0fd93e155eb8f9572f76e3fc27f0b41fdf0a5415c3307445129d49",
+		"tests/e2e/appearance-previews.spec.ts": "7303e6aeb6028772048ef468e30a6d49dfef3e44441a097febdc7b9f5b891d97",
+		"tests/e2e/auth-experience.spec.ts": "82a1a95e9ac206f73ff9dd4990cbb836d328c0733bde08f1316039acf7edd87c",
+		"tests/e2e/billing.spec.ts": "448788140ff575108d8c44625420705aa0b7de449c1ccd90347b7e611ee05753",
+		"tests/e2e/dashboard-helpers.ts": "4061e1c6e235ca49d3fbea9d9abf2f3334912edb21c72118d7619149054123e8",
+		"tests/e2e/dashboard-visual.spec.ts": "d0387a6f70ab423213a58ecd8860de68180513fb941d525eb4716e3f5158a180",
+		"tests/e2e/example-customers.spec.ts": "ae9db9ba8b7ac86dc1a731109ed992316a45d65ae76d88bb11f616e015610250",
+		"tests/e2e/foundation.spec.ts": "476f84fdf97c301ab3550785a859265985936dd437261ac77ab1504c362f3821",
+		"tests/e2e/identity.spec.ts": "f92b20573458b8d768973e72ce3960bf0888c5e340e0c243d3ff9d5178b019f5",
+		"tests/e2e/organization-dashboard.spec.ts": "ed13f554d72d8c0a2155fdc0249915966e3645147e0e1da6350fe7481b1f52af",
+		"tests/e2e/personal-settings.spec.ts": "0152c0b6ea20cfcc15be4c3753dbbd69fd0f642598cd42bd21e4d781cbd74135",
+		"tests/e2e/projects-dashboard.spec.ts": "f7450f83889743fee6e7cf379ebf0e8381b54319336be8474f9f55f1881bff3f",
+		"tests/e2e/setup.ts": "d499c3480a48880a760e31b73e52496b582ec22c4c56f9b87504a2ff12982962",
+		"tests/e2e/theme.spec.ts": "bffb336af041746451b911f3ea5859bff8d4517302aa1a7b33311b2fbe40dc05",
+		"tests/theme/showcase.spec.ts": "195342b8c5f583502a960e474569acab052fc4c02e8d06e24f9472bc7bd03dda",
+		"vitest.config.ts": "e83417d2ef70e936d7693c8f8d4f84a67f0e8675f7e5b7dbd733c25c5d630b1b"
+	},
+	"unit": [
+		{
+			"file": "scripts/phase1/scan-policy.test.ts",
+			"name": "vulnerability policy blocks HIGH findings even without an available fix"
+		},
+		{
+			"file": "scripts/phase1/scan-policy.test.ts",
+			"name": "vulnerability policy blocks CRITICAL findings even without an available fix"
+		},
+		{
+			"file": "scripts/phase1/scan-policy.test.ts",
+			"name": "vulnerability policy blocks high findings without an exact scoped exception"
+		},
+		{
+			"file": "scripts/phase1/scan-policy.test.ts",
+			"name": "vulnerability policy rejects expired and excessively long exceptions"
+		},
+		{
+			"file": "scripts/phase1/scan-policy.test.ts",
+			"name": "vulnerability policy fails closed on missing scan results and malformed policy"
+		},
+		{
+			"file": "apps/web/src/proxy.test.ts",
+			"name": "local canonical authentication origin redirects loopback page aliases while preserving path and confirmation query"
+		},
+		{
+			"file": "apps/web/src/proxy.test.ts",
+			"name": "local canonical authentication origin does not redirect canonical, foreign, different-port or mutation requests"
+		},
+		{
+			"file": "apps/worker/src/diagnostics.test.ts",
+			"name": "reports database setup failures without copying sensitive driver details"
+		},
+		{
+			"file": "apps/worker/src/diagnostics.test.ts",
+			"name": "never passes through unknown codes, error messages or thrown payloads"
+		},
+		{
+			"file": "packages/api/src/api.test.ts",
+			"name": "rpc public diagnostic contract returns an explicit DTO from the shared service"
+		},
+		{
+			"file": "packages/api/src/api.test.ts",
+			"name": "rpc public diagnostic contract rejects invalid/unknown fields with the same safe error shape"
+		},
+		{
+			"file": "packages/api/src/api.test.ts",
+			"name": "rpc public diagnostic contract rejects invalid/unknown fields with the same safe error shape"
+		},
+		{
+			"file": "packages/api/src/api.test.ts",
+			"name": "rpc public diagnostic contract rejects invalid/unknown fields with the same safe error shape"
+		},
+		{
+			"file": "packages/api/src/api.test.ts",
+			"name": "rpc public diagnostic contract rejects invalid/unknown fields with the same safe error shape"
+		},
+		{
+			"file": "packages/api/src/api.test.ts",
+			"name": "rest public diagnostic contract returns an explicit DTO from the shared service"
+		},
+		{
+			"file": "packages/api/src/api.test.ts",
+			"name": "rest public diagnostic contract rejects invalid/unknown fields with the same safe error shape"
+		},
+		{
+			"file": "packages/api/src/api.test.ts",
+			"name": "rest public diagnostic contract rejects invalid/unknown fields with the same safe error shape"
+		},
+		{
+			"file": "packages/api/src/api.test.ts",
+			"name": "rest public diagnostic contract rejects invalid/unknown fields with the same safe error shape"
+		},
+		{
+			"file": "packages/api/src/api.test.ts",
+			"name": "rest public diagnostic contract rejects invalid/unknown fields with the same safe error shape"
+		},
+		{
+			"file": "packages/api/src/api.test.ts",
+			"name": "generates public OpenAPI from the same schemas"
+		},
+		{
+			"file": "packages/api/src/api.test.ts",
+			"name": "returns safe uncached request correlation and rejects invalid resource identifiers"
+		},
+		{
+			"file": "packages/api/src/api.test.ts",
+			"name": "creates a browser-safe inferred client"
+		},
+		{
+			"file": "packages/api/src/api.test.ts",
+			"name": "rpc refuses spoofed fixture identity and tenant headers"
+		},
+		{
+			"file": "packages/api/src/api.test.ts",
+			"name": "rest refuses spoofed fixture identity and tenant headers"
+		},
+		{
+			"file": "packages/api/src/billing.test.ts",
+			"name": "rejects caller provider/customer/amount fields and unsupported quantities"
+		},
+		{
+			"file": "packages/api/src/billing.test.ts",
+			"name": "rpc billing rejects bearer principals before cookie fallback"
+		},
+		{
+			"file": "packages/api/src/billing.test.ts",
+			"name": "rest billing rejects bearer principals before cookie fallback"
+		},
+		{
+			"file": "packages/api/src/resources.test.ts",
+			"name": "rpc resource boundary uses the current verified actor and shared transactional service"
+		},
+		{
+			"file": "packages/api/src/resources.test.ts",
+			"name": "rpc resource boundary denies absent identity and browser mutation without the configured origin"
+		},
+		{
+			"file": "packages/api/src/resources.test.ts",
+			"name": "rpc resource boundary authenticates a key for the path organization and passes its live credential for fenced revalidation"
+		},
+		{
+			"file": "packages/api/src/resources.test.ts",
+			"name": "rpc resource boundary does not fall back to a cookie for a rejected bearer credential"
+		},
+		{
+			"file": "packages/api/src/resources.test.ts",
+			"name": "rpc resource boundary returns concurrency and quota failures with correlation"
+		},
+		{
+			"file": "packages/api/src/resources.test.ts",
+			"name": "rpc resource boundary rejects forged ownership and caller policy fields before the service"
+		},
+		{
+			"file": "packages/api/src/resources.test.ts",
+			"name": "rpc resource boundary rejects obsolete Project assignment input null"
+		},
+		{
+			"file": "packages/api/src/resources.test.ts",
+			"name": "rpc resource boundary rejects obsolete Project assignment input 60000000-0000-4000-8000-000000000006"
+		},
+		{
+			"file": "packages/api/src/resources.test.ts",
+			"name": "rpc resource boundary rejects the obsolete Project list filter"
+		},
+		{
+			"file": "packages/api/src/resources.test.ts",
+			"name": "rpc resource boundary has removed the workspaces/list endpoint"
+		},
+		{
+			"file": "packages/api/src/resources.test.ts",
+			"name": "rpc resource boundary has removed the workspaces/create endpoint"
+		},
+		{
+			"file": "packages/api/src/resources.test.ts",
+			"name": "rpc resource boundary has removed the workspaces/update endpoint"
+		},
+		{
+			"file": "packages/api/src/resources.test.ts",
+			"name": "rpc resource boundary has removed the projects/move endpoint"
+		},
+		{
+			"file": "packages/api/src/resources.test.ts",
+			"name": "rpc resource boundary rejects removed scope workspace:read before credential provisioning"
+		},
+		{
+			"file": "packages/api/src/resources.test.ts",
+			"name": "rpc resource boundary rejects removed scope workspace:create before credential provisioning"
+		},
+		{
+			"file": "packages/api/src/resources.test.ts",
+			"name": "rpc resource boundary rejects removed scope workspace:update before credential provisioning"
+		},
+		{
+			"file": "packages/api/src/resources.test.ts",
+			"name": "rpc resource boundary rejects removed scope workspace:manage before credential provisioning"
+		},
+		{
+			"file": "packages/api/src/resources.test.ts",
+			"name": "rpc resource boundary rejects removed scope project:move before credential provisioning"
+		},
+		{
+			"file": "packages/api/src/resources.test.ts",
+			"name": "rpc resource boundary rejects service principals for sharing and key provisioning"
+		},
+		{
+			"file": "packages/api/src/resources.test.ts",
+			"name": "rpc resource boundary rejects bodies over the streaming limit before authentication"
+		},
+		{
+			"file": "packages/api/src/resources.test.ts",
+			"name": "rpc resource boundary requires an account version and exposes the next version or a conflict"
+		},
+		{
+			"file": "packages/api/src/resources.test.ts",
+			"name": "rest resource boundary uses the current verified actor and shared transactional service"
+		},
+		{
+			"file": "packages/api/src/resources.test.ts",
+			"name": "rest resource boundary denies absent identity and browser mutation without the configured origin"
+		},
+		{
+			"file": "packages/api/src/resources.test.ts",
+			"name": "rest resource boundary authenticates a key for the path organization and passes its live credential for fenced revalidation"
+		},
+		{
+			"file": "packages/api/src/resources.test.ts",
+			"name": "rest resource boundary does not fall back to a cookie for a rejected bearer credential"
+		},
+		{
+			"file": "packages/api/src/resources.test.ts",
+			"name": "rest resource boundary returns concurrency and quota failures with correlation"
+		},
+		{
+			"file": "packages/api/src/resources.test.ts",
+			"name": "rest resource boundary rejects forged ownership and caller policy fields before the service"
+		},
+		{
+			"file": "packages/api/src/resources.test.ts",
+			"name": "rest resource boundary rejects obsolete Project assignment input null"
+		},
+		{
+			"file": "packages/api/src/resources.test.ts",
+			"name": "rest resource boundary rejects obsolete Project assignment input 60000000-0000-4000-8000-000000000006"
+		},
+		{
+			"file": "packages/api/src/resources.test.ts",
+			"name": "rest resource boundary rejects the obsolete Project list filter"
+		},
+		{
+			"file": "packages/api/src/resources.test.ts",
+			"name": "rest resource boundary has removed the workspaces/list endpoint"
+		},
+		{
+			"file": "packages/api/src/resources.test.ts",
+			"name": "rest resource boundary has removed the workspaces/create endpoint"
+		},
+		{
+			"file": "packages/api/src/resources.test.ts",
+			"name": "rest resource boundary has removed the workspaces/update endpoint"
+		},
+		{
+			"file": "packages/api/src/resources.test.ts",
+			"name": "rest resource boundary has removed the projects/move endpoint"
+		},
+		{
+			"file": "packages/api/src/resources.test.ts",
+			"name": "rest resource boundary rejects removed scope workspace:read before credential provisioning"
+		},
+		{
+			"file": "packages/api/src/resources.test.ts",
+			"name": "rest resource boundary rejects removed scope workspace:create before credential provisioning"
+		},
+		{
+			"file": "packages/api/src/resources.test.ts",
+			"name": "rest resource boundary rejects removed scope workspace:update before credential provisioning"
+		},
+		{
+			"file": "packages/api/src/resources.test.ts",
+			"name": "rest resource boundary rejects removed scope workspace:manage before credential provisioning"
+		},
+		{
+			"file": "packages/api/src/resources.test.ts",
+			"name": "rest resource boundary rejects removed scope project:move before credential provisioning"
+		},
+		{
+			"file": "packages/api/src/resources.test.ts",
+			"name": "rest resource boundary rejects service principals for sharing and key provisioning"
+		},
+		{
+			"file": "packages/api/src/resources.test.ts",
+			"name": "rest resource boundary rejects bodies over the streaming limit before authentication"
+		},
+		{
+			"file": "packages/api/src/resources.test.ts",
+			"name": "rest resource boundary requires an account version and exposes the next version or a conflict"
+		},
+		{
+			"file": "packages/api/src/resources.test.ts",
+			"name": "documents both resource mutations and safe errors in public OpenAPI"
+		},
+		{
+			"file": "packages/api/src/resources.test.ts",
+			"name": "publishes only the remaining Project operations and scopes"
+		},
+		{
+			"file": "packages/auth/src/assurance.test.ts",
+			"name": "identity assurance boundary rejects external destinations and parser differentials"
+		},
+		{
+			"file": "packages/auth/src/assurance.test.ts",
+			"name": "identity assurance boundary requires recent verified server evidence, not email possession"
+		},
+		{
+			"file": "packages/auth/src/auth.test.ts",
+			"name": "isolated identity adapter setup rejects missing secrets and noncanonical/untrusted origins before connecting"
+		},
+		{
+			"file": "packages/auth/src/avatar.test.ts",
+			"name": "bounded avatar decoding decodes jpeg contents, normalizes orientation, resizes and strips metadata"
+		},
+		{
+			"file": "packages/auth/src/avatar.test.ts",
+			"name": "bounded avatar decoding decodes png contents, normalizes orientation, resizes and strips metadata"
+		},
+		{
+			"file": "packages/auth/src/avatar.test.ts",
+			"name": "bounded avatar decoding decodes webp contents, normalizes orientation, resizes and strips metadata"
+		},
+		{
+			"file": "packages/auth/src/avatar.test.ts",
+			"name": "bounded avatar decoding applies EXIF rotation to pixels and refuses PNG animation controls"
+		},
+		{
+			"file": "packages/auth/src/avatar.test.ts",
+			"name": "bounded avatar decoding rejects disguised SVG, malformed/truncated raster data and excess bytes"
+		},
+		{
+			"file": "packages/auth/src/avatar.test.ts",
+			"name": "bounded avatar decoding enforces decoded dimensions and pixel limits"
+		},
+		{
+			"file": "packages/auth/src/avatar.test.ts",
+			"name": "bounded avatar decoding counts streamed bodies regardless of missing/lying Content-Length"
+		},
+		{
+			"file": "packages/auth/src/ingress.test.ts",
+			"name": "authenticated ingress source accepts only fresh canonical IP claims bound to the request method and route"
+		},
+		{
+			"file": "packages/auth/src/ingress.test.ts",
+			"name": "authenticated ingress source ignores spoofed forwarding headers and fails closed on missing or forged attestations"
+		},
+		{
+			"file": "packages/authz/src/model.test.ts",
+			"name": "direct Project model compatibility retains the immutable published phase2 model"
+		},
+		{
+			"file": "packages/authz/src/model.test.ts",
+			"name": "direct Project model compatibility retains the immutable published phase3 model"
+		},
+		{
+			"file": "packages/authz/src/model.test.ts",
+			"name": "direct Project model compatibility rejects retired targets and parent inputs instead of ignoring them"
+		},
+		{
+			"file": "packages/authz/src/model.test.ts",
+			"name": "direct Project model compatibility publishes no retired resource, relation or move permission"
+		},
+		{
+			"file": "packages/authz/src/operator.test.ts",
+			"name": "independent operator approvals verifies a real Ed25519 signature with exact scope, epoch and fresh subject assurance"
+		},
+		{
+			"file": "packages/authz/src/operator.test.ts",
+			"name": "independent operator approvals rejects forged payloads/signatures and a different authority key"
+		},
+		{
+			"file": "packages/authz/src/operator.test.ts",
+			"name": "independent operator approvals rejects cross-tenant installation/epoch/scope claims and stale/future or absent assurance"
+		},
+		{
+			"file": "packages/authz/src/operator.test.ts",
+			"name": "independent operator approvals requires a signed exact membership target for security deactivation"
+		},
+		{
+			"file": "packages/authz/src/operator.test.ts",
+			"name": "bounds production contexts and never reuses request namespaces or unqualified team references"
+		},
+		{
+			"file": "packages/config/src/config.test.ts",
+			"name": "runtime configuration validates each process without requiring unrelated credentials"
+		},
+		{
+			"file": "packages/config/src/config.test.ts",
+			"name": "runtime configuration rejects malformed configuration without leaking values"
+		},
+		{
+			"file": "packages/config/src/config.test.ts",
+			"name": "runtime configuration only exposes allowlisted public configuration"
+		},
+		{
+			"file": "packages/config/src/config.test.ts",
+			"name": "runtime configuration validates an independent web-only ingress signing key"
+		},
+		{
+			"file": "packages/config/src/config.test.ts",
+			"name": "runtime configuration rejects invalid public configuration before web startup"
+		},
+		{
+			"file": "packages/config/src/config.test.ts",
+			"name": "runtime configuration rejects invalid public configuration before web startup"
+		},
+		{
+			"file": "packages/config/src/config.test.ts",
+			"name": "runtime configuration rejects invalid public configuration before web startup"
+		},
+		{
+			"file": "packages/config/src/config.test.ts",
+			"name": "runtime configuration rejects privileged MIGRATION_DATABASE_URL in combined serve mode"
+		},
+		{
+			"file": "packages/config/src/config.test.ts",
+			"name": "runtime configuration rejects privileged AUTHZ_PUBLISH_TOKEN in combined serve mode"
+		},
+		{
+			"file": "packages/config/src/config.test.ts",
+			"name": "runtime configuration rejects privileged TEST_DATABASE_ADMIN_URL in combined serve mode"
+		},
+		{
+			"file": "packages/config/src/config.test.ts",
+			"name": "runtime configuration rejects privileged CONTROL_ADMIN_DATABASE_URL in combined serve mode"
+		},
+		{
+			"file": "packages/config/src/config.test.ts",
+			"name": "runtime configuration rejects privileged OWNER_RECOVERY_SECRET in combined serve mode"
+		},
+		{
+			"file": "packages/config/src/config.test.ts",
+			"name": "validates the server-only Project capacity preset"
+		},
+		{
+			"file": "packages/config/src/config.test.ts",
+			"name": "keeps Foundation credential-free and validates enabled Stripe mode plus local quota policies"
+		},
+		{
+			"file": "packages/email/src/billing.test.tsx",
+			"name": "renders mandatory billing and threshold notices in both locales with HTML/text parity"
+		},
+		{
+			"file": "packages/email/src/email.test.ts",
+			"name": "renders localized, credential-free React Email HTML and plaintext"
+		},
+		{
+			"file": "packages/email/src/email.test.ts",
+			"name": "renders the Spanish verification identity journey in HTML and plaintext"
+		},
+		{
+			"file": "packages/email/src/email.test.ts",
+			"name": "renders the Spanish reset identity journey in HTML and plaintext"
+		},
+		{
+			"file": "packages/email/src/email.test.ts",
+			"name": "renders the Spanish password-reset identity journey in HTML and plaintext"
+		},
+		{
+			"file": "packages/email/src/email.test.ts",
+			"name": "renders the Spanish magic-link identity journey in HTML and plaintext"
+		},
+		{
+			"file": "packages/email/src/email.test.ts",
+			"name": "renders the Spanish invite identity journey in HTML and plaintext"
+		},
+		{
+			"file": "packages/email/src/email.test.ts",
+			"name": "renders the Spanish transfer identity journey in HTML and plaintext"
+		},
+		{
+			"file": "packages/email/src/email.test.ts",
+			"name": "renders the Spanish transfer-completed identity journey in HTML and plaintext"
+		},
+		{
+			"file": "packages/email/src/email.test.ts",
+			"name": "renders the Spanish recovery identity journey in HTML and plaintext"
+		},
+		{
+			"file": "packages/email/src/email.test.ts",
+			"name": "distinguishes password reset from passwordless recovery and preserves the MFA requirement"
+		},
+		{
+			"file": "packages/testing/src/fixtures.test.ts",
+			"name": "provides distinct organizations and one synthetic user with both memberships"
+		},
+		{
+			"file": "packages/observability/src/observability.test.ts",
+			"name": "redacts credentials, authentication URLs, nested payloads and interpolated messages"
+		},
+		{
+			"file": "packages/observability/src/observability.test.ts",
+			"name": "propagates a real OpenTelemetry trace from request to job"
+		},
+		{
+			"file": "packages/observability/src/observability.test.ts",
+			"name": "exposes only trusted operation correlation with async isolation and no context leakage"
+		},
+		{
+			"file": "packages/ui/src/theme.test.ts",
+			"name": "developer theme configuration defaults to the existing palette, System and Comfortable"
+		},
+		{
+			"file": "packages/ui/src/theme.test.ts",
+			"name": "developer theme configuration falls back safely for malformed configuration: undefined"
+		},
+		{
+			"file": "packages/ui/src/theme.test.ts",
+			"name": "developer theme configuration falls back safely for malformed configuration: null"
+		},
+		{
+			"file": "packages/ui/src/theme.test.ts",
+			"name": "developer theme configuration falls back safely for malformed configuration: undefined"
+		},
+		{
+			"file": "packages/ui/src/theme.test.ts",
+			"name": "developer theme configuration falls back safely for malformed configuration: \"dark\""
+		},
+		{
+			"file": "packages/ui/src/theme.test.ts",
+			"name": "developer theme configuration falls back safely for malformed configuration: 1"
+		},
+		{
+			"file": "packages/ui/src/theme.test.ts",
+			"name": "developer theme configuration falls back per field without accepting CSS, HTML, URLs or unknown keys"
+		},
+		{
+			"file": "packages/ui/src/theme.test.ts",
+			"name": "developer theme configuration accepts every supported option without browser globals"
+		},
+		{
+			"file": "packages/api-contracts/src/example-customers/contracts.test.ts",
+			"name": "strict example-customers allowlists rejects hidden fields and invalid field/query values"
+		},
+		{
+			"file": "packages/db/src/billing/policy.test.ts",
+			"name": "commercial policy keeps free, pending, trial, paid, grace and canceled states distinct at exact boundaries"
+		},
+		{
+			"file": "packages/db/src/billing/policy.test.ts",
+			"name": "commercial policy preserves missing/disabled/zero/limited/unlimited when intersecting local and purchased rights"
+		},
+		{
+			"file": "packages/db/src/billing/policy.test.ts",
+			"name": "commercial policy rejects unstable sold version IDs and undeclared commercial fields"
+		},
+		{
+			"file": "packages/db/src/billing/policy.test.ts",
+			"name": "commercial policy uses UTC half-open windows including leap years and year rollover"
+		},
+		{
+			"file": "packages/db/src/billing/policy.test.ts",
+			"name": "commercial policy verifies raw bytes, rejects signature alteration/expiry and quarantines mode/version/account mismatches"
+		},
+		{
+			"file": "packages/db/src/example-customers/cursor.test.ts",
+			"name": "encrypts sort values, authenticates tokens and expires old cursors"
+		},
+		{
+			"file": "apps/web/src/features/billing/money.test.ts",
+			"name": "displays Stripe charge minor units across two-decimal, zero-decimal and compatibility currencies"
+		}
+	],
+	"integration": [
+		{
+			"file": "apps/worker/src/worker.integration.test.ts",
+			"name": "explains missing bootstrap and stale database targets without leaking connection details"
+		},
+		{
+			"file": "apps/worker/src/worker.integration.test.ts",
+			"name": "reclaims an abandoned claim and processes durable jobs with restricted credentials, trace correlation and graceful shutdown"
+		},
+		{
+			"file": "packages/api/src/billing.integration.test.ts",
+			"name": "rpc uses real billing authorization, strict DTOs and the same idempotent command service"
+		},
+		{
+			"file": "packages/api/src/billing.integration.test.ts",
+			"name": "rest uses real billing authorization, strict DTOs and the same idempotent command service"
+		},
+		{
+			"file": "packages/api/src/resources.integration.test.ts",
+			"name": "rpc real Project policy and concurrency creates immediately readable resources, rechecks idempotency, isolates private lists and conflicts on stale writes"
+		},
+		{
+			"file": "packages/api/src/resources.integration.test.ts",
+			"name": "rpc real Project policy and concurrency shares a Project directly and revokes access immediately"
+		},
+		{
+			"file": "packages/api/src/resources.integration.test.ts",
+			"name": "rpc real Project policy and concurrency rejects obsolete Project assignment and filters on real services"
+		},
+		{
+			"file": "packages/api/src/resources.integration.test.ts",
+			"name": "rpc real Project policy and concurrency rejects missing and stale account versions without lifecycle, credential or audit changes"
+		},
+		{
+			"file": "packages/api/src/resources.integration.test.ts",
+			"name": "rpc real Project policy and concurrency enforces real key scope, tenant binding, rotation, expiry and revocation in both transports"
+		},
+		{
+			"file": "packages/api/src/resources.integration.test.ts",
+			"name": "rest real Project policy and concurrency creates immediately readable resources, rechecks idempotency, isolates private lists and conflicts on stale writes"
+		},
+		{
+			"file": "packages/api/src/resources.integration.test.ts",
+			"name": "rest real Project policy and concurrency shares a Project directly and revokes access immediately"
+		},
+		{
+			"file": "packages/api/src/resources.integration.test.ts",
+			"name": "rest real Project policy and concurrency rejects obsolete Project assignment and filters on real services"
+		},
+		{
+			"file": "packages/api/src/resources.integration.test.ts",
+			"name": "rest real Project policy and concurrency rejects missing and stale account versions without lifecycle, credential or audit changes"
+		},
+		{
+			"file": "packages/api/src/resources.integration.test.ts",
+			"name": "rest real Project policy and concurrency enforces real key scope, tenant binding, rotation, expiry and revocation in both transports"
+		},
+		{
+			"file": "packages/auth/src/identity.integration.test.ts",
+			"name": "production identity with real PostgreSQL and SMTP persists personal color mode, rejects stale/arbitrary/other-account writes and disallows bearer fallback"
+		},
+		{
+			"file": "packages/auth/src/identity.integration.test.ts",
+			"name": "production identity with real PostgreSQL and SMTP uploads, retries, replaces and removes atomically with private owner-only delivery and session image propagation"
+		},
+		{
+			"file": "packages/auth/src/identity.integration.test.ts",
+			"name": "production identity with real PostgreSQL and SMTP serializes competing avatars and rejects revoked/frozen/pending-MFA identities"
+		},
+		{
+			"file": "packages/auth/src/identity.integration.test.ts",
+			"name": "production identity with real PostgreSQL and SMTP rolls back avatar bytes, pointer and audit on database failure or session expiry during SQL"
+		},
+		{
+			"file": "packages/auth/src/identity.integration.test.ts",
+			"name": "production identity with real PostgreSQL and SMTP uses generic requests, hashes tokens, prevents implicit signup, and has non-consuming scanner GETs"
+		},
+		{
+			"file": "packages/auth/src/identity.integration.test.ts",
+			"name": "production identity with real PostgreSQL and SMTP serves concurrent first session reads without aborting fenced provider transactions"
+		},
+		{
+			"file": "packages/auth/src/identity.integration.test.ts",
+			"name": "production identity with real PostgreSQL and SMTP atomically consumes links across concurrent adapters and expires them"
+		},
+		{
+			"file": "packages/auth/src/identity.integration.test.ts",
+			"name": "production identity with real PostgreSQL and SMTP denies frozen identities, changed credential epochs, and independent recovery epoch mismatch"
+		},
+		{
+			"file": "packages/auth/src/identity.integration.test.ts",
+			"name": "production identity with real PostgreSQL and SMTP registers multiple passkeys and propagates only verified UV into durable fresh assurance"
+		},
+		{
+			"file": "packages/auth/src/identity.integration.test.ts",
+			"name": "production identity with real PostgreSQL and SMTP enforces server-verified UV at enrollment and challenge expiry at sign-in"
+		},
+		{
+			"file": "packages/auth/src/identity.integration.test.ts",
+			"name": "production identity with real PostgreSQL and SMTP rejects stale enrollment and applies generic durable identity rate limits"
+		},
+		{
+			"file": "packages/auth/src/identity.integration.test.ts",
+			"name": "production identity with real PostgreSQL and SMTP separates attested source limits and ignores spoofed forwarding identity"
+		},
+		{
+			"file": "packages/auth/src/identity.integration.test.ts",
+			"name": "production identity with real PostgreSQL and SMTP shares an unattributed source limit when ingress trust is not configured"
+		},
+		{
+			"file": "packages/auth/src/identity.integration.test.ts",
+			"name": "production identity with real PostgreSQL and SMTP ignores spoofed provider source headers, separates verified sources and prunes expired buckets"
+		},
+		{
+			"file": "packages/auth/src/identity.integration.test.ts",
+			"name": "production identity with real PostgreSQL and SMTP records bounded sanitized failed identity actions and durable verified-actor audit"
+		},
+		{
+			"file": "packages/auth/src/identity.integration.test.ts",
+			"name": "production identity with real PostgreSQL and SMTP rejects passkey origin failures"
+		},
+		{
+			"file": "packages/auth/src/identity.integration.test.ts",
+			"name": "production identity with real PostgreSQL and SMTP rejects passkey rp failures"
+		},
+		{
+			"file": "packages/auth/src/identity.integration.test.ts",
+			"name": "production identity with real PostgreSQL and SMTP rejects passkey challenge failures"
+		},
+		{
+			"file": "packages/auth/src/identity.integration.test.ts",
+			"name": "production identity with real PostgreSQL and SMTP rejects passkey signature failures"
+		},
+		{
+			"file": "packages/auth/src/identity.integration.test.ts",
+			"name": "production identity with real PostgreSQL and SMTP rejects passkey uv failures"
+		},
+		{
+			"file": "packages/auth/src/identity.integration.test.ts",
+			"name": "production identity with real PostgreSQL and SMTP enrolls passwordless TOTP, requires MFA after magic login, accepts recovery once"
+		},
+		{
+			"file": "packages/auth/src/identity.integration.test.ts",
+			"name": "production identity with real PostgreSQL and SMTP returns the current authoritative session expiry under the lifecycle fence"
+		},
+		{
+			"file": "packages/auth/src/identity.integration.test.ts",
+			"name": "production identity with real PostgreSQL and SMTP drains a fenced in-flight request before session revocation and rejects the original immutable actor afterwards"
+		},
+		{
+			"file": "packages/auth/src/identity.integration.test.ts",
+			"name": "production identity with real PostgreSQL and SMTP cannot add a replacement passkey using email alone after the first verified factor exists"
+		},
+		{
+			"file": "packages/auth/src/identity.integration.test.ts",
+			"name": "production identity with real PostgreSQL and SMTP encrypts every en identity email journey, retries delivery and verifies localized real SMTP"
+		},
+		{
+			"file": "packages/auth/src/identity.integration.test.ts",
+			"name": "production identity with real PostgreSQL and SMTP encrypts every es identity email journey, retries delivery and verifies localized real SMTP"
+		},
+		{
+			"file": "packages/auth/src/password.integration.test.ts",
+			"name": "email/password identity with real PostgreSQL reports unavailable readiness as a service outage before accepting credentials"
+		},
+		{
+			"file": "packages/auth/src/password.integration.test.ts",
+			"name": "email/password identity with real PostgreSQL reports mismatched readiness as a service outage before accepting credentials"
+		},
+		{
+			"file": "packages/auth/src/password.integration.test.ts",
+			"name": "email/password identity with real PostgreSQL verifies registration explicitly before password sessions and never replaces existing credentials"
+		},
+		{
+			"file": "packages/auth/src/password.integration.test.ts",
+			"name": "email/password identity with real PostgreSQL never activates an attacker's pending password through the victim's generic email login"
+		},
+		{
+			"file": "packages/auth/src/password.integration.test.ts",
+			"name": "email/password identity with real PostgreSQL enforces password bounds and hides unknown users behind the same invalid-credentials response"
+		},
+		{
+			"file": "packages/auth/src/password.integration.test.ts",
+			"name": "email/password identity with real PostgreSQL uses hashed, single-use reset tokens, revokes all sessions and requires a fresh login"
+		},
+		{
+			"file": "packages/auth/src/password.integration.test.ts",
+			"name": "email/password identity with real PostgreSQL rejects expired resets and resets issued for an earlier credential epoch"
+		},
+		{
+			"file": "packages/auth/src/password.integration.test.ts",
+			"name": "email/password identity with real PostgreSQL rechecks reset expiry after waiting for the user fence without revoking valid sessions"
+		},
+		{
+			"file": "packages/auth/src/password.integration.test.ts",
+			"name": "email/password identity with real PostgreSQL does not reset unverified identities or convert passwordless accounts"
+		},
+		{
+			"file": "packages/auth/src/password.integration.test.ts",
+			"name": "email/password identity with real PostgreSQL denies password sign-in and previously issued resets while the identity is frozen"
+		},
+		{
+			"file": "packages/auth/src/password.integration.test.ts",
+			"name": "email/password identity with real PostgreSQL keeps MFA and one-use recovery enforced through password login, reset and factor management"
+		},
+		{
+			"file": "packages/auth/src/password.integration.test.ts",
+			"name": "email/password identity with real PostgreSQL drains an in-flight user fence and rejects old-password sign-in queued behind reset"
+		},
+		{
+			"file": "packages/authz/src/authorization.integration.test.ts",
+			"name": "production contextual authorization against real PostgreSQL and OpenFGA bootstraps model/independent readiness, uses restricted read role, and refuses existing/restored fresh initialization"
+		},
+		{
+			"file": "packages/authz/src/authorization.integration.test.ts",
+			"name": "production contextual authorization against real PostgreSQL and OpenFGA recognizes populated completed installations without changing receipts or contacting OpenFGA"
+		},
+		{
+			"file": "packages/authz/src/authorization.integration.test.ts",
+			"name": "production contextual authorization against real PostgreSQL and OpenFGA rejects completed installation with mismatched binding_id"
+		},
+		{
+			"file": "packages/authz/src/authorization.integration.test.ts",
+			"name": "production contextual authorization against real PostgreSQL and OpenFGA rejects completed installation with mismatched recovery_epoch"
+		},
+		{
+			"file": "packages/authz/src/authorization.integration.test.ts",
+			"name": "production contextual authorization against real PostgreSQL and OpenFGA rejects completed installation with mismatched installation_id"
+		},
+		{
+			"file": "packages/authz/src/authorization.integration.test.ts",
+			"name": "production contextual authorization against real PostgreSQL and OpenFGA rejects recovery-required state and a changed model after completion"
+		},
+		{
+			"file": "packages/authz/src/authorization.integration.test.ts",
+			"name": "production contextual authorization against real PostgreSQL and OpenFGA resumes an interrupted bootstrap from independent pending receipts without resetting its epoch"
+		},
+		{
+			"file": "packages/authz/src/authorization.integration.test.ts",
+			"name": "production contextual authorization against real PostgreSQL and OpenFGA rejects populated source data with no independent initialization record"
+		},
+		{
+			"file": "packages/authz/src/authorization.integration.test.ts",
+			"name": "production contextual authorization against real PostgreSQL and OpenFGA checks role/team policy and tenant isolation using authoritative membership"
+		},
+		{
+			"file": "packages/authz/src/authorization.integration.test.ts",
+			"name": "production contextual authorization against real PostgreSQL and OpenFGA commits revocation with its revision and ignores a persistent late grant in an old request namespace"
+		},
+		{
+			"file": "packages/authz/src/authorization.integration.test.ts",
+			"name": "production contextual authorization against real PostgreSQL and OpenFGA drains shared authorization fences before revocation and rejects every later request"
+		},
+		{
+			"file": "packages/authz/src/authorization.integration.test.ts",
+			"name": "production contextual authorization against real PostgreSQL and OpenFGA rejects expired/inactive principals, mismatched model and independent epoch even when revisions match"
+		},
+		{
+			"file": "packages/authz/src/authorization.integration.test.ts",
+			"name": "production contextual authorization against real PostgreSQL and OpenFGA does not accept a late allowed HTTP response after the lock-bearing connection is lost"
+		},
+		{
+			"file": "packages/authz/src/authorization.integration.test.ts",
+			"name": "production contextual authorization against real PostgreSQL and OpenFGA fails closed on endpoint outage, malformed response and actual HTTP timeout, and recovers within 30 seconds"
+		},
+		{
+			"file": "packages/authz/src/authorization.integration.test.ts",
+			"name": "production contextual authorization against real PostgreSQL and OpenFGA rejects membership that expires while an actual allowed OpenFGA response is pending"
+		},
+		{
+			"file": "packages/authz/src/authorization.integration.test.ts",
+			"name": "production contextual authorization against real PostgreSQL and OpenFGA keeps security revocation source commits available while control and FGA readiness are closed"
+		},
+		{
+			"file": "packages/authz/src/authorization.integration.test.ts",
+			"name": "independently signed owner recovery command deactivates a sole owner during FGA outage, refuses reopening on outage, then admits a verified replacement and retries without duplicate seats/mail"
+		},
+		{
+			"file": "packages/authz/src/key-expiry.integration.test.ts",
+			"name": "Key-management authorization deadlines rolls back issue and its side effects when administrator membership expires during SQL"
+		},
+		{
+			"file": "packages/authz/src/key-expiry.integration.test.ts",
+			"name": "Key-management authorization deadlines rolls back rotate and its side effects when administrator membership expires during SQL"
+		},
+		{
+			"file": "packages/authz/src/key-expiry.integration.test.ts",
+			"name": "Key-management authorization deadlines rolls back issue and its side effects when administrator session expires during SQL"
+		},
+		{
+			"file": "packages/authz/src/key-expiry.integration.test.ts",
+			"name": "Key-management authorization deadlines rolls back issue and its side effects when administrator fresh authentication expires during SQL"
+		},
+		{
+			"file": "packages/authz/src/keys.integration.test.ts",
+			"name": "Project service accounts and scoped credentials rejects retired scopes at account provisioning and key issuance"
+		},
+		{
+			"file": "packages/authz/src/keys.integration.test.ts",
+			"name": "Project service accounts and scoped credentials fails closed on obsolete or malformed persisted credential scopes and capabilities"
+		},
+		{
+			"file": "packages/authz/src/keys.integration.test.ts",
+			"name": "Project service accounts and scoped credentials admits one status transition at the expected version under concurrent commands"
+		},
+		{
+			"file": "packages/authz/src/keys.integration.test.ts",
+			"name": "Project service accounts and scoped credentials requires current read scope to return a current DTO on a create retry"
+		},
+		{
+			"file": "packages/authz/src/keys.integration.test.ts",
+			"name": "Project service accounts and scoped credentials replays account creation exactly and never replays an issued secret"
+		},
+		{
+			"file": "packages/authz/src/keys.integration.test.ts",
+			"name": "Project service accounts and scoped credentials stores only a hash, declares capabilities, and intersects resource grants with key scopes"
+		},
+		{
+			"file": "packages/authz/src/keys.integration.test.ts",
+			"name": "Project service accounts and scoped credentials rejects wrong tenant, expiry, revocation and rotation even for already-authenticated actors"
+		},
+		{
+			"file": "packages/authz/src/keys.integration.test.ts",
+			"name": "Project service accounts and scoped credentials rejects fabricated scopes, missing create capabilities, inactive accounts and obsolete epochs"
+		},
+		{
+			"file": "packages/authz/src/keys.integration.test.ts",
+			"name": "Project service accounts and scoped credentials enforces current human administration, recent authentication, policy and nonsecret audit"
+		},
+		{
+			"file": "packages/authz/src/parity.integration.test.ts",
+			"name": "Project stored policy parity matches an independently materialized complete graph for direct, team, denied and service paths"
+		},
+		{
+			"file": "packages/authz/src/resources.integration.test.ts",
+			"name": "Project resource fault and model boundaries uses fresh qualified resource/team namespaces and rejects oversized contexts"
+		},
+		{
+			"file": "packages/authz/src/resources.integration.test.ts",
+			"name": "Project resource fault and model boundaries rechecks expiry after a real delayed OpenFGA allow on the protected resource"
+		},
+		{
+			"file": "packages/authz/src/resources.integration.test.ts",
+			"name": "Project resource fault and model boundaries rejects a late remote allow after the fence connection is terminated and leaves no domain write"
+		},
+		{
+			"file": "packages/authz/src/resources.integration.test.ts",
+			"name": "Project resource fault and model boundaries denies malformed/unavailable FGA without turning errors into empty authorized lists"
+		},
+		{
+			"file": "packages/authz/src/resources.integration.test.ts",
+			"name": "Project resource fault and model boundaries explicitly upgrades phase2 without changing epoch and safely resumes"
+		},
+		{
+			"file": "packages/authz/src/resources.integration.test.ts",
+			"name": "Project resource fault and model boundaries explicitly upgrades phase3 without changing epoch and safely resumes"
+		},
+		{
+			"file": "packages/authz/src/retirement.integration.test.ts",
+			"name": "published predecessor access retirement preserves organization/direct/team/deny behavior and retires inherited-only access after schema and model upgrades"
+		},
+		{
+			"file": "packages/authz/src/session-expiry.integration.test.ts",
+			"name": "session expiry across protected resource transactions rejects a get whose real OpenFGA allow arrives after the validated session expires"
+		},
+		{
+			"file": "packages/authz/src/session-expiry.integration.test.ts",
+			"name": "session expiry across protected resource transactions rejects a list whose real OpenFGA allow arrives after the validated session expires"
+		},
+		{
+			"file": "packages/authz/src/session-expiry.integration.test.ts",
+			"name": "session expiry across protected resource transactions rolls back domain state, capacity, revision, audit and outbox after session expiry during later SQL"
+		},
+		{
+			"file": "packages/db/src/migrations.integration.test.ts",
+			"name": "real PostgreSQL migration and runtime role boundary retires populated Workspace access while preserving Projects, direct grants, receipts and historical payloads"
+		},
+		{
+			"file": "packages/db/src/migrations.integration.test.ts",
+			"name": "real PostgreSQL migration and runtime role boundary rolls back retirement when a custom dependency prevents the reviewed drop and resumes safely"
+		},
+		{
+			"file": "packages/db/src/migrations.integration.test.ts",
+			"name": "real PostgreSQL migration and runtime role boundary upgrades Phase 2 to resource tables while preserving tenant and identity history"
+		},
+		{
+			"file": "packages/db/src/migrations.integration.test.ts",
+			"name": "real PostgreSQL migration and runtime role boundary migrates fresh, safely replays and processes durable two-organization synthetic probes"
+		},
+		{
+			"file": "packages/db/src/migrations.integration.test.ts",
+			"name": "real PostgreSQL migration and runtime role boundary upgrades the previous synthetic baseline and preserves existing rows"
+		},
+		{
+			"file": "packages/db/src/migrations.integration.test.ts",
+			"name": "real PostgreSQL migration and runtime role boundary denies runtime DDL, web writes and cross-schema identity access using actual roles"
+		},
+		{
+			"file": "packages/db/src/migrations.integration.test.ts",
+			"name": "real PostgreSQL migration and runtime role boundary upgrades the complete Phase 1 schema without treating retained identities as a ready installation"
+		},
+		{
+			"file": "packages/db/src/personal-settings.integration.test.ts",
+			"name": "upgrades populated 0008 identity without rewriting users or history, replays, and preserves restricted roles"
+		},
+		{
+			"file": "packages/db/src/resources.integration.test.ts",
+			"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA enforces disabled, zero and unlimited local policy independently of permissions"
+		},
+		{
+			"file": "packages/db/src/resources.integration.test.ts",
+			"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA reserves, releases and expires generic capacity exactly once using the same database boundary"
+		},
+		{
+			"file": "packages/db/src/resources.integration.test.ts",
+			"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA disables positive Project writes while preserving reads and security cleanup"
+		},
+		{
+			"file": "packages/db/src/resources.integration.test.ts",
+			"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA creates a private project with immediately readable manager access, audit, and outbox"
+		},
+		{
+			"file": "packages/db/src/resources.integration.test.ts",
+			"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA isolates tenant rows with RLS, missing context, and cross-tenant ownership"
+		},
+		{
+			"file": "packages/db/src/resources.integration.test.ts",
+			"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA checks viewer/editor/manager grants, revocation, and expired membership"
+		},
+		{
+			"file": "packages/db/src/resources.integration.test.ts",
+			"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA rejects removed assignment and filter fields before writing or reading Projects"
+		},
+		{
+			"file": "packages/db/src/resources.integration.test.ts",
+			"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA propagates team revocation and team removal without retaining resource access"
+		},
+		{
+			"file": "packages/db/src/resources.integration.test.ts",
+			"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA rejects stale edits and atomically admits only one winner at the final capacity slot"
+		},
+		{
+			"file": "packages/db/src/resources.integration.test.ts",
+			"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA rechecks capacity during restore and does not double-spend on idempotent retry"
+		},
+		{
+			"file": "packages/db/src/resources.integration.test.ts",
+			"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA rechecks current resource access before returning a stored create result"
+		},
+		{
+			"file": "packages/db/src/resources.integration.test.ts",
+			"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA conflicts with pre-retirement create hashes without duplicating an unassigned Project"
+		},
+		{
+			"file": "packages/db/src/resources.integration.test.ts",
+			"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA returns only authorized search fields and continues sparse keyset pages without totals"
+		},
+		{
+			"file": "packages/db/src/resources.integration.test.ts",
+			"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA applies Project denials over direct and team grants while retaining organization administration"
+		},
+		{
+			"file": "packages/db/src/resources.integration.test.ts",
+			"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA serializes create against restore at the final quota slot and rolls back the losing command"
+		},
+		{
+			"file": "packages/db/src/resources.integration.test.ts",
+			"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA keeps cursor precision and binds opaque cursors to their actor and query"
+		},
+		{
+			"file": "packages/db/src/resources.integration.test.ts",
+			"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA denies an earlier authorized row that expires during a later batch check"
+		},
+		{
+			"file": "packages/db/src/resources.integration.test.ts",
+			"name": "Phase 3 resource policy with restricted PostgreSQL and real OpenFGA denies an earlier authorized row that expires during a later single check"
+		},
+		{
+			"file": "packages/db/src/tenancy.integration.test.ts",
+			"name": "production tenancy, lifecycle fences and local seats with PostgreSQL/OpenFGA isolates real restricted roles, pooled context, multi-organization users and composite team references"
+		},
+		{
+			"file": "packages/db/src/tenancy.integration.test.ts",
+			"name": "production tenancy, lifecycle fences and local seats with PostgreSQL/OpenFGA accepts verified same-account invitations atomically once, rejects expiry/cancel and rolls back email failures"
+		},
+		{
+			"file": "packages/db/src/tenancy.integration.test.ts",
+			"name": "production tenancy, lifecycle fences and local seats with PostgreSQL/OpenFGA enforces one last seat across invitation versus reactivation and keeps idempotent release receipts"
+		},
+		{
+			"file": "packages/db/src/tenancy.integration.test.ts",
+			"name": "production tenancy, lifecycle fences and local seats with PostgreSQL/OpenFGA serializes billable classification races and retains active owners"
+		},
+		{
+			"file": "packages/db/src/tenancy.integration.test.ts",
+			"name": "production tenancy, lifecycle fences and local seats with PostgreSQL/OpenFGA completes transfer with outgoing admin access, seats, source publication and replay"
+		},
+		{
+			"file": "packages/db/src/tenancy.integration.test.ts",
+			"name": "production tenancy, lifecycle fences and local seats with PostgreSQL/OpenFGA completes transfer with outgoing member access, seats, source publication and replay"
+		},
+		{
+			"file": "packages/db/src/tenancy.integration.test.ts",
+			"name": "production tenancy, lifecycle fences and local seats with PostgreSQL/OpenFGA completes transfer with outgoing billing access, seats, source publication and replay"
+		},
+		{
+			"file": "packages/db/src/tenancy.integration.test.ts",
+			"name": "production tenancy, lifecycle fences and local seats with PostgreSQL/OpenFGA completes transfer with outgoing inactive access, seats, source publication and replay"
+		},
+		{
+			"file": "packages/db/src/tenancy.integration.test.ts",
+			"name": "production tenancy, lifecycle fences and local seats with PostgreSQL/OpenFGA refuses stale, expired, canceled and cross-tenant transfer attempts"
+		},
+		{
+			"file": "packages/db/src/tenancy.integration.test.ts",
+			"name": "production tenancy, lifecycle fences and local seats with PostgreSQL/OpenFGA revokes the sole owner without FGA, freezes access, and only verified fresh MFA recovery reopens after a real positive check"
+		},
+		{
+			"file": "packages/db/src/tenancy.integration.test.ts",
+			"name": "production tenancy, lifecycle fences and local seats with PostgreSQL/OpenFGA does not reopen recovery without seat capacity and does not restore deactivated transfer recipients"
+		},
+		{
+			"file": "packages/db/src/tenancy.integration.test.ts",
+			"name": "production tenancy, lifecycle fences and local seats with PostgreSQL/OpenFGA waits for global lifecycle freeze before admission without acquiring a user fence after organization locks"
+		},
+		{
+			"file": "packages/db/src/tenancy.integration.test.ts",
+			"name": "production tenancy, lifecycle fences and local seats with PostgreSQL/OpenFGA enforces tenant assurance and expiry on every request and provides idempotent teams and invitations"
+		},
+		{
+			"file": "packages/db/src/tenancy.integration.test.ts",
+			"name": "production tenancy, lifecycle fences and local seats with PostgreSQL/OpenFGA orders reciprocal transfers across organizations and resolves recipient deprovisioning races"
+		},
+		{
+			"file": "packages/db/src/tenancy.integration.test.ts",
+			"name": "production tenancy, lifecycle fences and local seats with PostgreSQL/OpenFGA rejects a session revoked between transport authentication and the tenant fence"
+		},
+		{
+			"file": "packages/db/src/tenancy.integration.test.ts",
+			"name": "production tenancy, lifecycle fences and local seats with PostgreSQL/OpenFGA rolls back a transfer when the newly admitted owner cannot complete current graph readiness"
+		},
+		{
+			"file": "packages/db/src/tenancy.integration.test.ts",
+			"name": "production tenancy, lifecycle fences and local seats with PostgreSQL/OpenFGA reserves privileged idempotency scope from ordinary membership commands"
+		},
+		{
+			"file": "packages/db/src/tenancy.integration.test.ts",
+			"name": "production tenancy, lifecycle fences and local seats with PostgreSQL/OpenFGA records trusted request/trace correlation and keeps one transaction fallback without personal email in domain events"
+		},
+		{
+			"file": "packages/email/src/billing.integration.test.ts",
+			"name": "atomically deduplicates, encrypts, retries and purges billing notices using current recipient permission"
+		},
+		{
+			"file": "packages/email/src/billing.integration.test.ts",
+			"name": "delivers localized lifecycle mail through real disposable SMTP"
+		},
+		{
+			"file": "packages/email/src/billing.integration.test.ts",
+			"name": "revokes a queued recipient after membership removal and bounds exhausted delivery"
+		},
+		{
+			"file": "packages/testing/src/database.integration.test.ts",
+			"name": "waits for live test connections to close without terminating them"
+		},
+		{
+			"file": "packages/testing/src/database.integration.test.ts",
+			"name": "reports a leaked connection and leaves that database usable"
+		},
+		{
+			"file": "packages/testing/src/services.integration.test.ts",
+			"name": "disposable local service wiring round-trips synthetic objects for both organization fixtures through real S3"
+		},
+		{
+			"file": "packages/testing/src/services.integration.test.ts",
+			"name": "disposable local service wiring reaches local mail capture and OpenFGA health endpoints"
+		},
+		{
+			"file": "packages/api/src/example-customers/api.integration.test.ts",
+			"name": "Customers rpc through real verified sessions shares strict CRUD behavior, rejects bearer+cookie, and maps denied/stale states"
+		},
+		{
+			"file": "packages/api/src/example-customers/api.integration.test.ts",
+			"name": "Customers rest through real verified sessions shares strict CRUD behavior, rejects bearer+cookie, and maps denied/stale states"
+		},
+		{
+			"file": "packages/db/src/billing/billing.integration.test.ts",
+			"name": "Phase 5 real local policy, durable billing and usage isolates billing data with restricted roles, denies unrelated members and preserves billing-only content denial"
+		},
+		{
+			"file": "packages/db/src/billing/billing.integration.test.ts",
+			"name": "Phase 5 real local policy, durable billing and usage persists scoped commands before calls, deduplicates replay and never grants from checkout"
+		},
+		{
+			"file": "packages/db/src/billing/billing.integration.test.ts",
+			"name": "Phase 5 real local policy, durable billing and usage converges active, delinquent, renewal, scheduled cancellation and canceled state without replay extending grace"
+		},
+		{
+			"file": "packages/db/src/billing/billing.integration.test.ts",
+			"name": "Phase 5 real local policy, durable billing and usage quarantines unknown mappings and replays/out-of-order events by reading provider truth once"
+		},
+		{
+			"file": "packages/db/src/billing/billing.integration.test.ts",
+			"name": "Phase 5 real local policy, durable billing and usage records an external downgrade, blocks new seats and releases a deactivated seat exactly once"
+		},
+		{
+			"file": "packages/db/src/billing/billing.integration.test.ts",
+			"name": "Phase 5 real local policy, durable billing and usage previews upgrades and schedules decreases, rejecting reductions below occupancy"
+		},
+		{
+			"file": "packages/db/src/billing/billing.integration.test.ts",
+			"name": "Phase 5 real local policy, durable billing and usage honors bounded confirmed snapshots during outages and recovers missed changes"
+		},
+		{
+			"file": "packages/db/src/billing/billing.integration.test.ts",
+			"name": "Phase 5 real local policy, durable billing and usage keeps Foundation quotas effective with billing disabled, including final-unit races and atomic retries"
+		},
+		{
+			"file": "packages/db/src/billing/billing.integration.test.ts",
+			"name": "Phase 5 real local policy, durable billing and usage releases/expirs reservations, appends deduplicated corrections and rebuilds corrupted aggregates"
+		},
+		{
+			"file": "packages/db/src/billing/billing.integration.test.ts",
+			"name": "reconciles an ambiguous successful checkout without a second semantic subscription and fences aged retries"
+		},
+		{
+			"file": "packages/db/src/billing/billing.integration.test.ts",
+			"name": "refuses retries beyond the provider key horizon"
+		},
+		{
+			"file": "packages/db/src/billing/billing.integration.test.ts",
+			"name": "retains immutable sold versions, handles trial and unpaid policy, and rejects mismatched provider prices"
+		},
+		{
+			"file": "packages/db/src/billing/billing.integration.test.ts",
+			"name": "reconciles expired membership occupancy and preserves repeated cleanup; scheduled decreases fence admission"
+		},
+		{
+			"file": "packages/db/src/billing/billing.integration.test.ts",
+			"name": "retains operation deduplication across a period boundary and checks transaction-wide snapshot expiry"
+		},
+		{
+			"file": "packages/db/src/billing/billing.integration.test.ts",
+			"name": "rechecks a queued billing manager after revocation before issuing provider writes"
+		},
+		{
+			"file": "packages/db/src/billing/billing.integration.test.ts",
+			"name": "converges concurrent external downgrade and admission while preserving existing members"
+		},
+		{
+			"file": "packages/db/src/billing/billing.integration.test.ts",
+			"name": "abandons a late provider result after worker connection loss, retaining the inbox for restart"
+		},
+		{
+			"file": "packages/db/src/billing/migrations.integration.test.ts",
+			"name": "upgrades the populated 0009 predecessor for Phase 5 without changing identity, Project, history or readiness; replays safely"
+		},
+		{
+			"file": "packages/db/src/example-customers/migrations.integration.test.ts",
+			"name": "upgrades a populated 0007 predecessor without changing identity, Project, history or readiness; replays safely"
+		},
+		{
+			"file": "packages/db/src/example-customers/service.integration.test.ts",
+			"name": "example-customers with restricted PostgreSQL and real OpenFGA persists CRUD, serializes replay, rejects stale writes, and retains private tombstones"
+		},
+		{
+			"file": "packages/db/src/example-customers/service.integration.test.ts",
+			"name": "example-customers with restricted PostgreSQL and real OpenFGA bounds and sorts 90 persisted contacts across every order, status and search with actor/query-bound cursors"
+		},
+		{
+			"file": "packages/db/src/example-customers/service.integration.test.ts",
+			"name": "example-customers with restricted PostgreSQL and real OpenFGA enforces missing/wrong-tenant RLS, same-tenant receipt FK and immutable server columns"
+		},
+		{
+			"file": "packages/db/src/example-customers/service.integration.test.ts",
+			"name": "example-customers with restricted PostgreSQL and real OpenFGA rechecks replay authorization, policy, readiness and final session expiry; faults roll back events"
+		}
+	]
+}

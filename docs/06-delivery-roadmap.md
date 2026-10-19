@@ -16,6 +16,8 @@ Phase 4's [authoring skills and deterministic checks](phase4/README.md) pass the
 
 **M1 Foundation (Phases 0–4) is accepted**, with the [due-only sign-off below](#m1-foundation-sign-off-2026-09-27). The optional [Backoffice plan](backoffice/development-plan.md) remains a separate, unimplemented Phases 5–8 track. BO-00 must assess current Foundation evidence for its proposed changes and ratify its architecture; Foundation acceptance does not accept Backoffice behavior.
 
+**Phase 5 is completed and accepted for its documented scope as of 2026-10-19.** Its additional `R-SKILLS` gate [passed on 2026-10-19](phase5/evaluation.md): two independent candidates pass the five declared Commercial tasks, preserved repeats/resume, evaluator-owned checks and actual Stripe test-API supplements on their recorded SDK 22.6.2 baseline. The subsequent final-source hosted Checkout repeat passed all 11 checks with Stripe SDK 23.0.0 / `2026-09-30.endive`. [Phase 5 hosted CI and current dependency/image security gates](phase5/acceptance.md#hosted-ci-and-security-gate--completed-2026-10-19) passed in [run 39271661736](https://github.com/dani-beltran/saas-cook/actions/runs/39271661736); M2 Commercial still requires Phase 6.
+
 ## 6.2 Phases and acceptance gates
 
 | Phase | Deliverables | Depends on | Exit gate | Effort estimate |
@@ -25,7 +27,7 @@ Phase 4's [authoring skills and deterministic checks](phase4/README.md) pass the
 | 2. Identity, tenancy and authorization primitives | Better Auth/MFA/sessions, email/password registration and reset, magic links, passkeys and identity emails; organizations/members/invitations/teams and ownership transfer; tenant context/RLS, audit/outbox, local policy/seat admission; selected production graph protocol for organization/team roles, lifecycle/authorization fences, independent epoch/readiness and fresh model bootstrap; owner-recovery command and account/org UI | 1 | `R-TENANCY`, `R-LIFECYCLE`, `R-AUTHZ`, `R-SEATS`, `R-OWNER`, `R-PASSWORD`, `R-MAGIC`, `R-PASSKEY`, `R-TRANSFER`, `R-EMAIL` and Phase 2 `R-IMAGE` pass against real services; recovery/transfer complete graph publication | 5–8 |
 | 3. Resource authorization and reference feature | Extend the Phase 2 protocol to Projects directly under Organizations; direct member/team/service grants; service-account/API-key enforcement/provisioning; generic capacity reservations; Project CRUD and feature-local search/pagination; oRPC/Zod contracts, typed client, public OpenAPI and concurrency | 2 | `R-KEYS`, `R-POLICY` and real-feature `R-AUTHZ`/`R-AUTHZ-PERF` pass; both API transports use the same policy and concurrency boundary | 4–6 |
 | 4. AI agent skills | Bootstrap/add/evolve/verify feature skills, dashboard/email skills, feature briefs, shared references, discovery adapters and isolated behavior evaluations; deterministic migration/RLS/API checks | 3 | Agent implements Project + child Task and service-account variant; held-out behavior suites pass without commercial credentials; evolution/resume preserves custom code/data/history; repeated requests add no duplicate artifacts | 3–5 |
-| 5. Monetization | Plans, Stripe fixed/seat billing, Checkout and Customer Portal, webhook inbox, commercial entitlement sources, ledger/windowed quotas, usage dashboard, reconciliation and notices; shared services support optional BO-04 finance/dunning integration | 4 | Stripe lifecycle and replay/out-of-order tests pass; provider downgrades and admission races converge; no duplicate semantic charge or usage; enabled Backoffice adds its own gates in §6.7 | 4–6 |
+| 5. Monetization | [Implementation and evidence](phase5/acceptance.md); completed and accepted for its documented scope; historical evaluation limits remain documented. Plans, Stripe fixed/seat billing, Checkout and Customer Portal, webhook inbox, commercial entitlement sources, ledger/windowed quotas, usage dashboard, reconciliation and notices; shared services support optional BO-04 finance/dunning integration | 4 | Stripe lifecycle and replay/out-of-order tests pass; provider downgrades and admission races converge; no duplicate semantic charge or usage; enabled Backoffice adds its own gates in §6.7 | 4–6 |
 | 6. Platform modules and baseline recovery | Files/import/export; cross-resource search and resource activity feeds; personal/organization deletion and independent journal; analytics events/reports/controls/cleanup; recovery with credential replacement and independent access revalidation; notifications/API-key UI/webhooks/integrations/flags; audit/help/public UI; BO-05/06 reuse these services | 5 | `R-SEARCH`, `R-ACTIVITY`, `R-ANALYTICS`, `R-ACCOUNT`, `R-FILES`, `R-ORG-DATA`, `R-RECOVERY` and Commercial `R-IMAGE` pass for Commercial modules; operator UI cannot replace domain acceptance | 6–9 |
 | 7. Enterprise administration | OIDC/SAML, SCIM, custom roles, security policies, guests, contract overrides, advanced operator governance and optional delegated support, advanced retention/legal-hold hooks; minimal Backoffice boundary/read UI is pulled forward through BO-01/02 | 6 | Real IdP deprovisioning is organization-scoped, including sole owner; SCIM uses shared seat admission; recovery/support/policy actions fully audited; support remains separately gated | 4–7 |
 | 8. Hardening and template release | Expanded performance/failure/recovery tests, accessibility, previous-release compatibility, bootstrap presets and image verification; BO-07 adds enabled dual-image compatibility/isolation/reporting evidence | 7 | All applicable application and image gates pass; tagged template release with documented limitations; enabled Backoffice passes §6.7 release gate | 3–5 |
@@ -172,6 +174,26 @@ The general checklist below remains for later milestone scope. Unchecked combine
 - [ ] `R-AUTHZ-PERF` passes at its decision, real-feature and image verification gates; the documented workload also covers enabled bulk operations and tenant fairness.
 - [ ] Synthetic local setup, safe runtime configuration, logs/traces/redaction, dead-letter diagnostics and reconciliation commands are usable.
 - [ ] Dashboard forms/tables/dialogs meet keyboard/accessibility requirements and expose all required loading, pending, denied, conflict, quota and failure states.
+
+### Phase 5 sign-off — 2026-10-19
+
+The [Phase 5 acceptance record](phase5/acceptance.md) registers current evidence for
+immutable plans, fixed/seat Stripe billing, hosted sessions, durable verified inbox and
+commands, commercial policy/seats, transactional usage, localized UI and mandatory notices.
+The new migration preserves the populated 0009 predecessor. Stripe remains opt-in and
+Foundation policy remains credential-free. Independent skill behavior evaluations passed
+on their recorded baseline, and the final-source Endive hosted Checkout/webhook repeat
+passed all 11 checks. **Phase 5 is completed and accepted for its documented scope.**
+[Hosted CI run 39271661736](https://github.com/dani-beltran/saas-cook/actions/runs/39271661736)
+passed all nine jobs, including the final `required` gate and current dependency/image
+security scans with zero blocking findings and no exceptions. The earlier failed local
+database download is historical evidence, not an outstanding gate. No Phase 5 technical
+gate remains before starting Phase 6; PR review/merge is a separate delivery step.
+The renewed 30-minute authorization benchmark passed 442,464/442,464 operations on unchanged
+Phase 5 source, with zero retries and every original latency target met.
+Historical M1 evidence does not accept changed Phase 5 paths. M2 Commercial still requires
+all due Phase 6 capabilities and recovery gates. Provider-metered charging and Backoffice
+remain disabled/out of scope.
 
 ## 6.5 Configuration and adoption decisions
 

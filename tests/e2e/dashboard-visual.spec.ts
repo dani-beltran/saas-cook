@@ -71,6 +71,8 @@ test("authenticated pages: desktop/mobile, English/Spanish, light/dark and shell
 					["account", "/account"],
 					["organization", path],
 					["projects", `${path}/projects`],
+					["billing", `${path}/billing`],
+					["usage", `${path}/usage`],
 				]) {
 					await page.goto(`/${locale}${route}`);
 					await expect(page.locator(".dashboard-shell")).toBeVisible();

@@ -175,3 +175,17 @@ Check constraints validate nonnegative quantities where appropriate, enum states
 8. Deleting one organization does not delete a user's independent memberships or another organization's data. Financial/audit retention and legal holds are explicit policy exceptions recorded in the deletion manifest.
 9. Personal account deletion removes global credentials and personal data according to policy while preserving continuing organizations and their billing. Ownership obligations must be resolved; historical actor references use the configured retention/anonymization rules. Analytics payloads, subject mappings, and provider copies participate in deletion.
 10. Deletion is acknowledged as scheduled only after the independent journal durably records it. A restore keeps tenant serving and workers gated until journal replay, current policy/context reconstruction, and independent security validation complete; local tombstones or matching authorization counters from a backup cannot release that gate.
+
+## Phase 5 physical schema implementation
+
+Migration `0010_phase5_monetization` implements the [Phase 5 data and policy contracts](phase5/README.md).
+`foundation.plan_versions` / `billing_prices` are immutable environment-mapped catalogue data;
+`foundation.billing_inbox` is a global verified routing envelope with a raw-byte digest.
+Reviewed security-definer functions expose only bounded routing/work scopes to restricted roles.
+Tenant billing accounts, commands, previews, invoices, reconciliations, quota buckets,
+reservations, append-only usage events and notice/delivery rows use forced RLS and same-tenant
+relationships. Memberships add `seat_counted` to preserve idempotent occupancy reconciliation.
+A billing account holds one current subscription projection; immutable sold catalogue versions,
+command/inbox/reconciliation/audit receipts retain history. The logical SUBSCRIPTION relationship
+above does not authorize multiple concurrent provider subscriptions or a second charging system.
+No applied predecessor migration is rewritten. See [fresh/upgrade evidence](phase5/acceptance.md).

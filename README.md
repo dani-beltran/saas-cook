@@ -2,7 +2,7 @@
 
 A reusable SaaS template designed to give you a foundation to build your own SaaS product on. It brings together the platform features that SaaS products commonly need, so you can focus on your product’s domain, workflows, and customer experience.
 
-The implemented foundation uses **Next.js, React 19, TypeScript, shadcn/ui, Tailwind CSS, Better Auth, Drizzle ORM, PostgreSQL, and oRPC**, with **Bun** for package management. **Stripe** payments and billing are planned for Phase 5. It covers authentication with email/password registration and reset, magic links, passkeys and MFA recovery, organizations and tenant isolation, relationship-based permissions, a dashboard, background jobs, and AI agent skills for building and evolving product features. Commercial and enterprise modules add subscriptions, usage tracking, product analytics, personal account deletion with organization ownership transfer, integrations, SSO, and administration.
+The implemented foundation uses **Next.js, React 19, TypeScript, shadcn/ui, Tailwind CSS, Better Auth, Drizzle ORM, PostgreSQL, and oRPC**, with **Bun** for package management. Optional **Stripe** fixed/seat billing and a local usage ledger are implemented in [Phase 5](docs/phase5/README.md), with release gates tracked separately. It covers authentication with email/password registration and reset, magic links, passkeys and MFA recovery, organizations and tenant isolation, relationship-based permissions, a dashboard, background jobs, and AI agent skills for building and evolving product features. Commercial and enterprise modules add subscriptions, usage tracking, product analytics, personal account deletion with organization ownership transfer, integrations, SSO, and administration.
 
 The [required stack](docs/02-architecture-and-security.md#21-stack-decisions) also includes next-intl, React Email, Zod, React Hook Form, Vitest, Playwright, Storybook, Biome, Commitlint, Lefthook, Knip, T3 Env, GitHub Actions, LogTape, and `AGENTS.md` for AI coding context.
 
@@ -12,7 +12,7 @@ The root package is `saas-cook`, and active workspace packages use `@saas-cook`.
 
 The template builds one Docker image containing the web app and background worker, with external data services configured at runtime.
 
-**Status: M1 Foundation is complete through Phase 4.** The [Foundation acceptance record](docs/foundation/acceptance.md) covers identity and tenancy, direct-Organization Projects, scoped service accounts/API keys, local capacity, the full authorization benchmark, current image/security checks, hosted CI and two refreshed skill evaluations. See the [Phase 2 setup](docs/phase2/README.md), [Phase 3 upgrade guide](docs/phase3/README.md) and [Phase 4 skills](docs/phase4/README.md). Phases 5–8 and Backoffice remain planned.
+**Status: M1 Foundation is complete through Phase 4.** The [Foundation acceptance record](docs/foundation/acceptance.md) covers identity and tenancy, direct-Organization Projects, scoped service accounts/API keys, local capacity, the full authorization benchmark, current image/security checks, hosted CI and two refreshed skill evaluations. See the [Phase 2 setup](docs/phase2/README.md), [Phase 3 upgrade guide](docs/phase3/README.md) and [Phase 4 skills](docs/phase4/README.md). Phase 5 implementation and its outstanding acceptance gates are recorded [here](docs/phase5/acceptance.md). Phases 6–8 and Backoffice remain planned.
 
 ## Local development
 

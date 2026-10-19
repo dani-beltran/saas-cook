@@ -1,0 +1,956 @@
+{
+	"schemaVersion": 1,
+	"phase": 5,
+	"acceptance": "accepted",
+	"baselineCommit": "a35fa43a2cc32803750ffb8dae55adf655f3c283",
+	"implementationSha256": "8d1cce54de8d67796bd9ebbb5a322d7d5d7cfc82324500538cf57a4a71dae52e",
+	"collectedAt": "2026-09-27T16:09:44.819667+00:00",
+	"sourceDirty": true,
+	"toolchain": {
+		"bun": "1.4.2",
+		"node": "24.19.0",
+		"imageNode": "24.21.0"
+	},
+	"agent": {
+		"host": "Codex desktop",
+		"provider": "OpenAI",
+		"model": "GPT-6 system designation; exact backend identifier not exposed in this session",
+		"delegatedAgents": 0
+	},
+	"sourceManifest": {
+		"path": "artifacts/phase5/source-manifest.json",
+		"sha256": "309f9a58543cbe486cf799e56a2eebd0017a858ecf79b21dd74957d9b8805919"
+	},
+	"trackedDiff": {
+		"path": "artifacts/phase5/tracked.diff",
+		"sha256": "2a542ef5f964974ffde862be190392f212b36d7e7e9f4900e09f271d266e4651"
+	},
+	"migrationHistory": [
+		{
+			"path": "packages/db/migrations/0000_foundation.sql",
+			"sha256": "feeeb29b6f3e13e507fec496fd132604e25b6857e1a7e70850111b747d6fa33b",
+			"unchangedFromBaseline": true
+		},
+		{
+			"path": "packages/db/migrations/0001_durable_probes.sql",
+			"sha256": "7412aaba59cf04e68f969fbed7aeea83caa9c18629a58aecd685a32572d51c1f",
+			"unchangedFromBaseline": true
+		},
+		{
+			"path": "packages/db/migrations/0002_tenancy.sql",
+			"sha256": "6412a8f6b5e37a8005ca66523b17736847dd376ebeab3100f3d150923b652a3d",
+			"unchangedFromBaseline": true
+		},
+		{
+			"path": "packages/db/migrations/0003_authorization.sql",
+			"sha256": "38963e8ccb5da5fb0126c94f96febccb044c5a1c47325d900d39934188c7e7f1",
+			"unchangedFromBaseline": true
+		},
+		{
+			"path": "packages/db/migrations/0004_identity.sql",
+			"sha256": "f7a9fb279258c64fefb225dc6ca3cd9e92a3ce3c6da588f5fdcf1aaf46dda031",
+			"unchangedFromBaseline": true
+		},
+		{
+			"path": "packages/db/migrations/0005_tenant_event_integrity.sql",
+			"sha256": "7a870afdf0315a2e92af4174b94b9b2f4a5240268c613a2541a5fd1ffaf83d0e",
+			"unchangedFromBaseline": true
+		},
+		{
+			"path": "packages/db/migrations/0006_resources.sql",
+			"sha256": "53faf5b8d33ce850fb5fc1042e776cfd0ff8c6529fc37b06ddb3670d4d75840b",
+			"unchangedFromBaseline": true
+		},
+		{
+			"path": "packages/db/migrations/0007_organization_projects.sql",
+			"sha256": "a21a03bc05cd9b29bb227799b69f86004cec64a459e28ab90f96d440690eb789",
+			"unchangedFromBaseline": true
+		},
+		{
+			"path": "packages/db/migrations/0008_example_customers.sql",
+			"sha256": "7be345855a7e9ab241afb5b81066763ddb11bf0c26ae0975e2c21d7c1aef8532",
+			"unchangedFromBaseline": true
+		},
+		{
+			"path": "packages/db/migrations/0009_personal_settings.sql",
+			"sha256": "c3a61f0c99a59e25b54bc4fe56c33750107d3bc4b6d7189fbfd2c4d57e16b5b1",
+			"unchangedFromBaseline": true
+		}
+	],
+	"newMigration": {
+		"path": "packages/db/migrations/0010_phase5_monetization.sql",
+		"sha256": "53ade806498f678449994d47089be50a3d86851d933fb7d0a1b05c4649461a2c"
+	},
+	"skills": {
+		".agents/skills/saas-add-dashboard-page/SKILL.md": "a3438b7546328a3c533269ff2840d86401fcfe229ec662e655f3a9fdf522c09d",
+		".agents/skills/saas-add-email/SKILL.md": "5a6f40cc284be759a5a10d96d403a33c74a387f611a9a3d3b3596f90a0929cc9",
+		".agents/skills/saas-add-feature/SKILL.md": "bc024fa1e39539041406b3f5d21c6c31f2d0c30df0a023d5ee7169c19961df16",
+		".agents/skills/saas-bootstrap/SKILL.md": "a4e91bbc17a4270ce8ad7184cc06fee20157c973e737b1db5892968eea7f0725",
+		".agents/skills/saas-evolve-feature/SKILL.md": "e751fca5c992a8eb5816ad69a6569853ff4991472f7103679269786861f10301",
+		".agents/skills/saas-verify-feature/SKILL.md": "b04e4f07b2a155c895ba16a82dba04c93e45c087e15658b1a0e38e190d223d62"
+	},
+	"checks": [
+		{
+			"name": "frozen-install",
+			"command": "bun install --frozen-lockfile",
+			"status": "passed",
+			"evidence": [
+				{
+					"path": "artifacts/phase5/install-final.log",
+					"sha256": "c4ab00f7fdf6e293181ac6d2095f9a15b59940055b3836695ddfcca9a4f9eb82"
+				}
+			]
+		},
+		{
+			"name": "source",
+			"command": "bun run check",
+			"status": "passed",
+			"evidence": [
+				{
+					"path": "artifacts/phase5/check-final.log",
+					"sha256": "7b9d90f3638475c46d73f8f29358f5ac88672803c7a46f1646cc30bdda7242a9"
+				}
+			]
+		},
+		{
+			"name": "types",
+			"command": "bun run typecheck",
+			"status": "passed",
+			"evidence": [
+				{
+					"path": "artifacts/phase5/typecheck-final.log",
+					"sha256": "283777e737ed818c3ac2afe263a43436879ee916ad1bf9f2078ee3f16a913ca9"
+				}
+			]
+		},
+		{
+			"name": "unused",
+			"command": "bun run knip",
+			"status": "passed",
+			"evidence": [
+				{
+					"path": "artifacts/phase5/knip-final.log",
+					"sha256": "cdfc5fca5678e62e6a4571f5e55652910a0307746679c20ec62332598c3cc4dc"
+				}
+			]
+		},
+		{
+			"name": "production-build",
+			"command": "bun run build",
+			"status": "passed",
+			"evidence": [
+				{
+					"path": "artifacts/phase5/build-final.log",
+					"sha256": "a76f5ffc6d83ebfa0776c12af01a14811fd4bcf0281689514ae84a8acdfaf904"
+				}
+			]
+		},
+		{
+			"name": "storybook",
+			"command": "bun run storybook:build",
+			"status": "passed",
+			"evidence": [
+				{
+					"path": "artifacts/phase5/storybook-final.log",
+					"sha256": "c828ad39b00de2985a97b8a8eeb09102bbfcd71f67ea8969529cfec2a7246188"
+				}
+			]
+		},
+		{
+			"name": "model-compatibility",
+			"command": "bun run authz:validate",
+			"status": "passed",
+			"evidence": [
+				{
+					"path": "artifacts/phase5/authz-validate-final.log",
+					"sha256": "dc1b6f83fb53a1833ac86ebfafefc5703949f5fedf5a0c35f596eefa7ec59ebe"
+				}
+			]
+		},
+		{
+			"name": "unit",
+			"command": "bun run test:unit --reporter=default --reporter=junit --outputFile.junit=artifacts/phase5/unit-final.xml",
+			"status": "passed",
+			"evidence": [
+				{
+					"path": "artifacts/phase5/unit-final.xml",
+					"sha256": "e2c1ac3aa4b3a393f7cb2d6cbef811af2de822a808ff63fca5ef8c34de8dcd05"
+				},
+				{
+					"path": "artifacts/phase5/unit-final.log",
+					"sha256": "e07719638cbca56422b3d6513fed03f9e9c0f9f558ee37cdcc463bb3d8c80776"
+				}
+			],
+			"counts": {
+				"tests": 157,
+				"failures": 0,
+				"errors": 0,
+				"skipped": 0
+			}
+		},
+		{
+			"name": "integration",
+			"command": "bun run test:integration --reporter=default --reporter=junit --outputFile.junit=artifacts/phase5/integration-final.xml",
+			"status": "passed",
+			"evidence": [
+				{
+					"path": "artifacts/phase5/integration-final.xml",
+					"sha256": "2f8ddaf3cb7703587b55ce11b5cde961526030b38afb67a30c34e74eab0bc02a"
+				},
+				{
+					"path": "artifacts/phase5/integration-final.log",
+					"sha256": "e79d7574ff655f2b12fa3722ef00d55963e0153ea12b67cf07be8f07ba4cdfe4"
+				}
+			],
+			"counts": {
+				"tests": 173,
+				"failures": 0,
+				"errors": 0,
+				"skipped": 0
+			}
+		},
+		{
+			"name": "browser",
+			"command": "bun run test:e2e",
+			"status": "passed",
+			"evidence": [
+				{
+					"path": "artifacts/phase5/browser-final.log",
+					"sha256": "206fae4ec4c6c38d252829c3b4c1253ae00f5d9d5636cf740ef89fd7fb486c36"
+				}
+			],
+			"counts": {
+				"tests": 45,
+				"failures": 0,
+				"skipped": 0
+			},
+			"scope": "Full local browser suite; later changes affect worker crash recovery and tests, not these UI journeys."
+		},
+		{
+			"name": "expanded-billing-usage-visuals",
+			"command": "bun run test:e2e tests/e2e/dashboard-visual.spec.ts",
+			"status": "passed",
+			"evidence": [
+				{
+					"path": "artifacts/phase5/browser-visual.log",
+					"sha256": "f770717821c12f1542dbe1a5d64b1d4c1775c19ed4dbdca9f20afcb5fab87fde"
+				},
+				{
+					"path": "artifacts/phase5/ui/billing-en-blue-light-mobile.png",
+					"sha256": "982c4fa2a5beabca198c3a9d015c146fec41d618eab84a2bc90b3fc21b5be6ae"
+				},
+				{
+					"path": "artifacts/phase5/ui/usage-es-blue-dark-desktop.png",
+					"sha256": "007aab25b19a13643ef4915c6a0e256881e72656f901fadac2939932f0f42a6f"
+				}
+			],
+			"scope": "Both locales, mobile/desktop, all palettes, light/dark, contrast and keyboard navigation; representative screenshots inspected."
+		},
+		{
+			"name": "skill-contracts",
+			"command": "bun run skills:check",
+			"status": "passed",
+			"evidence": [
+				{
+					"path": "artifacts/phase5/skills-check-final.log",
+					"sha256": "8074fca26554bb1b53be8ecfccff692a22abd89c5060d532f6a1a945a76f541b"
+				},
+				{
+					"path": "artifacts/phase5/skills-report.json",
+					"sha256": "a41ae0bcde9ca6e81a17e78440728d56845ec2e96dbc41ad7850a4a8c414ece1"
+				}
+			],
+			"scope": "Six deterministic contracts, 64 focused unit cases and 126 real-service cases. Not live-agent skill evaluation."
+		},
+		{
+			"name": "image",
+			"command": "bun run image:build && bun run test:image",
+			"status": "passed",
+			"evidence": [
+				{
+					"path": "artifacts/phase5/image-build-acceptance.log",
+					"sha256": "a5ec89e21a2f90ab4d9c8dd4d98771711b994a16dade326ddc8ddfeabc8bf280"
+				},
+				{
+					"path": "artifacts/phase5/image-test-acceptance.log",
+					"sha256": "9ce59937f532647838930042d715b4a942bdbaea3efbc726178e7f20d2d8ffc5"
+				},
+				{
+					"path": "artifacts/phase5/image/acceptance.json",
+					"sha256": "8e876ac87a0949c5a12548775d636042fc26650dad95a4fe4e6f5b4c015ea6b6"
+				}
+			],
+			"image": "sha256:a7cc340f3044a221f683cd2a47ca8a5e4379ff58b06cb4195cfa886e88599556",
+			"implementationSha256": "8d1cce54de8d67796bd9ebbb5a322d7d5d7cfc82324500538cf57a4a71dae52e",
+			"architecture": "linux/arm64",
+			"checks": 16,
+			"commands": 10
+		},
+		{
+			"name": "security-dependencies",
+			"command": "TRIVY_BIN=/private/tmp/common-saas-trivy/trivy TRIVY_CACHE_DIR=/private/tmp/common-saas-trivy/cache bun run security:scan dependencies",
+			"status": "passed",
+			"evidence": [
+				{
+					"path": "artifacts/phase5/security/dependencies.json",
+					"sha256": "1683510da9c7b20d5fcc5ae7f8902fd0c04f1df7e66838a14983aa3b4494aa03"
+				},
+				{
+					"path": "artifacts/phase5/security/dependencies-policy.json",
+					"sha256": "27c476b2b860dba4c87d022b77df1a510421c6dec04d98f535654b43e028da91"
+				},
+				{
+					"path": "artifacts/phase5/security-dependencies.log",
+					"sha256": "c97ce0ab39213098138015e8a2ff3a09e104deb7e73d6f2aeeb66fe6a6c23853"
+				}
+			],
+			"toolVersion": "0.69.3",
+			"exceptionsAdded": 0
+		},
+		{
+			"name": "security-image",
+			"command": "TRIVY_BIN=/private/tmp/common-saas-trivy/trivy TRIVY_CACHE_DIR=/private/tmp/common-saas-trivy/cache bun run security:scan image saas-cook:phase2",
+			"status": "passed",
+			"evidence": [
+				{
+					"path": "artifacts/phase5/security/image.json",
+					"sha256": "0f9fa40ef3baffa56b0e8bd7638d5a914a0a67146a9b5f958b4da3602d0020b6"
+				},
+				{
+					"path": "artifacts/phase5/security/image-policy.json",
+					"sha256": "67b030aaf6cb6604500c8fb8d2a6c51872582cdb2b7f27e7981a2f7a12713754"
+				},
+				{
+					"path": "artifacts/phase5/security-image-acceptance.log",
+					"sha256": "5938ea4f0125ed2455acc1c05ebbc362e7047fcd99ca6f4748c0d623c4cb4cd4"
+				}
+			],
+			"toolVersion": "0.69.3",
+			"exceptionsAdded": 0
+		},
+		{
+			"name": "stripe-provider",
+			"command": "bun run billing:sandbox --env-file .env --stripe-cli /private/tmp/phase5-stripe-cli/stripe --hosted-checkout",
+			"status": "passed",
+			"evidence": [
+				{
+					"path": "artifacts/phase5/stripe-sandbox-8866f5d7-fac6-43ce-ad14-e25dd8cffe03.json",
+					"sha256": "6cc3e5c3f68e8766dc5e89ffaf73a5217401c6e280c6adc72d0851d90565ac75"
+				},
+				{
+					"path": "artifacts/phase5/stripe-sandbox-8866f5d7-fac6-43ce-ad14-e25dd8cffe03-cleanup.json",
+					"sha256": "1695f8409afbee71ff76604176f1815a99ebd08c9a35e50c05af1982b795dd21"
+				},
+				{
+					"path": "artifacts/phase5/hosted-checkout-endive-2026-10-19-repeat2-provenance.json",
+					"sha256": "262c4d920dc96ea08884d424b0cbd5b15035d821ca2cf54a8d117d007f05442e"
+				},
+				{
+					"path": "artifacts/phase5/hosted-checkout-endive-2026-10-19-repeat2-tracked.diff",
+					"sha256": "5ac4421832122dee1a53170549df4017e52f195a6d19e6bc52c6f524cfb1e8a8"
+				},
+				{
+					"path": "artifacts/phase5/endive-hosted-repeat2.log",
+					"sha256": "f68c574908336c708a567ec9bef21155e19b4d770024ad773a66a396195c6dcc"
+				}
+			],
+			"sdk": "23.0.0",
+			"apiVersion": "2026-09-30.endive",
+			"stripeCliVersion": "1.52.0",
+			"stripeCliArchiveSha256": "5946baab218d43d4d7e3f43ec30a05e0dd3deadbcded5d11b67398e3cfe30830",
+			"attempts": [
+				{
+					"runId": "1368cb58-5d16-4639-86a2-a2954038efc6",
+					"startedAt": "2026-09-27T14:54:29.057Z",
+					"implementationSha256": "a85dd092e8f70eb75a14d1f59994eb2b5aeeb9a4486053db547428cdec4db90e",
+					"passedCases": 6,
+					"accepted": false,
+					"failure": "Prerequisite or assertion failure",
+					"limitations": [
+						"Hosted Checkout session creation does not prove browser payment completion.",
+						"Real webhook delivery/signature ingress requires a Stripe CLI or configured endpoint; locally signed fixtures do not satisfy it."
+					],
+					"report": {
+						"path": "artifacts/phase5/stripe-sandbox-1368cb58-5d16-4639-86a2-a2954038efc6.json",
+						"sha256": "22e01896ac86be16f92406deafeb4163b4497146c5e9021ac5f264521e6bd53a"
+					},
+					"sdk": "22.6.2",
+					"apiVersion": "2026-08-26.dahlia"
+				},
+				{
+					"runId": "14144c40-33e5-4e6a-90ae-7245a01b8044",
+					"startedAt": "2026-09-27T14:53:23.206Z",
+					"implementationSha256": "285483ae9ef59266131aadb43b8128032fb016a130d16a1accfe9e52fb8bbd6c",
+					"passedCases": 6,
+					"accepted": false,
+					"failure": "StripeCardError",
+					"limitations": [
+						"Hosted Checkout session creation does not prove browser payment completion.",
+						"Real webhook delivery/signature ingress requires a Stripe CLI or configured endpoint; locally signed fixtures do not satisfy it."
+					],
+					"report": {
+						"path": "artifacts/phase5/stripe-sandbox-14144c40-33e5-4e6a-90ae-7245a01b8044.json",
+						"sha256": "f65b4e3ca71913d202a18e62cdbc33985c2e618f452a9c5140c998922562897b"
+					},
+					"sdk": "22.6.2",
+					"apiVersion": "2026-08-26.dahlia"
+				},
+				{
+					"runId": "2ee4fd2b-adac-4882-a315-10c54fb27d88",
+					"startedAt": "2026-09-27T15:03:06.313Z",
+					"implementationSha256": "3a2a3533d4f15ca6f2b67ed586ca1a45e47d8f669142e94c3373f65c0d486ec3",
+					"passedCases": 6,
+					"accepted": false,
+					"failure": "Prerequisite or assertion failure",
+					"limitations": [
+						"Hosted Checkout session creation does not prove browser payment completion.",
+						"Real webhook delivery/signature ingress requires a Stripe CLI or configured endpoint; locally signed fixtures do not satisfy it."
+					],
+					"report": {
+						"path": "artifacts/phase5/stripe-sandbox-2ee4fd2b-adac-4882-a315-10c54fb27d88.json",
+						"sha256": "8e8889496c89b0498000db4f4bf8f58655bdc758c83513be5872aa40c9bf029d"
+					},
+					"sdk": "22.6.2",
+					"apiVersion": "2026-08-26.dahlia"
+				},
+				{
+					"runId": "680abde8-80f0-4b22-be42-dd9f65709913",
+					"startedAt": "2026-09-27T15:22:35.034Z",
+					"implementationSha256": "454feaafce8dffdf7a05bcc4fa96e121f9ed8880d9cc85c34b92482f346ce6d1",
+					"passedCases": 10,
+					"accepted": false,
+					"failure": null,
+					"limitations": [
+						"Hosted Checkout session creation does not prove browser payment completion."
+					],
+					"report": {
+						"path": "artifacts/phase5/stripe-sandbox-680abde8-80f0-4b22-be42-dd9f65709913.json",
+						"sha256": "72568e7b2186fde285e02ac25ad5eb1f59ef6276c52112163a96e62f8caa06b2"
+					},
+					"sdk": "22.6.2",
+					"apiVersion": "2026-08-26.dahlia"
+				},
+				{
+					"runId": "821fda42-fe7e-4f91-ba6f-b4a315b36dad",
+					"startedAt": "2026-09-27T15:09:37.630Z",
+					"implementationSha256": "4c4ef88d76db65871ebb3f42de25b5e2695e781a2565fddbf291af78284f1cc2",
+					"passedCases": 10,
+					"accepted": true,
+					"failure": null,
+					"limitations": [],
+					"report": {
+						"path": "artifacts/phase5/stripe-sandbox-821fda42-fe7e-4f91-ba6f-b4a315b36dad.json",
+						"sha256": "261994111225c0a713db488225a1a7cbbbe70afa11ebf429bcf3afe788eaf6c0"
+					},
+					"sdk": "22.6.2",
+					"apiVersion": "2026-08-26.dahlia"
+				},
+				{
+					"runId": "943e045b-9fe1-4bad-a17e-e98fd51ffa68",
+					"startedAt": "2026-09-27T15:31:28.513Z",
+					"implementationSha256": "8d1cce54de8d67796bd9ebbb5a322d7d5d7cfc82324500538cf57a4a71dae52e",
+					"passedCases": 0,
+					"accepted": false,
+					"failure": "Prerequisite or assertion failure",
+					"limitations": [
+						"Hosted Checkout session creation does not prove browser payment completion.",
+						"Real webhook delivery/signature ingress requires a Stripe CLI or configured endpoint; locally signed fixtures do not satisfy it."
+					],
+					"report": {
+						"path": "artifacts/phase5/stripe-sandbox-943e045b-9fe1-4bad-a17e-e98fd51ffa68.json",
+						"sha256": "73a980fd8331f18f2e5c817d82353229654101ec0c22360c5f98f481fd8cf8e9"
+					},
+					"sdk": "22.6.2",
+					"apiVersion": "2026-08-26.dahlia"
+				},
+				{
+					"runId": "d101a336-240a-4c24-9848-cb4fffedc1e2",
+					"startedAt": "2026-09-27T14:59:25.200Z",
+					"implementationSha256": "75141f92b95e9bb93e6ac1b95196e2cc7bef320a0b32e9330711ca78f597c95e",
+					"passedCases": 6,
+					"accepted": false,
+					"failure": "Prerequisite or assertion failure",
+					"limitations": [
+						"Hosted Checkout session creation does not prove browser payment completion.",
+						"Real webhook delivery/signature ingress requires a Stripe CLI or configured endpoint; locally signed fixtures do not satisfy it."
+					],
+					"report": {
+						"path": "artifacts/phase5/stripe-sandbox-d101a336-240a-4c24-9848-cb4fffedc1e2.json",
+						"sha256": "1e453b5402321f08a293482f09da58b16a0117553ba942bf3cf46f8f89f5e645"
+					},
+					"sdk": "22.6.2",
+					"apiVersion": "2026-08-26.dahlia"
+				},
+				{
+					"runId": "d6d4f3c2-675f-4f76-bfed-3f29ab8b4b35",
+					"startedAt": "2026-09-27T15:05:19.877Z",
+					"implementationSha256": "785db90269d58b86941613a6c04e828b6f16d1147c7f4a3314bbfaaac7dca2be",
+					"passedCases": 9,
+					"accepted": false,
+					"failure": null,
+					"limitations": [
+						"Hosted Checkout session creation does not prove browser payment completion."
+					],
+					"report": {
+						"path": "artifacts/phase5/stripe-sandbox-d6d4f3c2-675f-4f76-bfed-3f29ab8b4b35.json",
+						"sha256": "5d289b8b33ed521f70006f36160cf84cdedae11abd885b75836664a0ac3bcbe4"
+					},
+					"sdk": "22.6.2",
+					"apiVersion": "2026-08-26.dahlia"
+				},
+				{
+					"runId": "151e54a9-7ed5-40d4-b8e0-c27409aa9dd4",
+					"startedAt": "2026-10-19T13:24:21.099Z",
+					"commit": "7ebc9c46aae30c18ea03e5d2568f51f0bb4cf77e",
+					"implementationSha256": "7533e8ab5ce652c5483b11ddacfd638709a998721f70c460ae46d4b1ca011e24",
+					"passedCases": 10,
+					"accepted": false,
+					"failure": "Prerequisite or assertion failure",
+					"limitations": [
+						"Real webhook delivery/signature ingress requires a Stripe CLI or configured endpoint; locally signed fixtures do not satisfy it."
+					],
+					"report": {
+						"path": "artifacts/phase5/stripe-sandbox-151e54a9-7ed5-40d4-b8e0-c27409aa9dd4.json",
+						"sha256": "1cf1f271853251355a97b992025f8dae3530d2861f9ccc10dee10a42a5bcbaec"
+					},
+					"diagnosis": {
+						"path": "artifacts/phase5/stripe-sandbox-151e54a9-7ed5-40d4-b8e0-c27409aa9dd4-diagnosis.json",
+						"sha256": "27b824ca11c807757d64bf2c0e8b5533e3fe4c5823436f1d5840a64ebb3a97bb"
+					},
+					"provenance": {
+						"path": "artifacts/phase5/hosted-checkout-2026-10-19-provenance.json",
+						"sha256": "b7a7e95cce12b4046a60a829c1068072e8c82e89141f4f9f46464958cd2b66bd"
+					},
+					"trackedDiff": {
+						"path": "artifacts/phase5/hosted-checkout-2026-10-19-tracked.diff",
+						"sha256": "3d4bbed9ce9c5515e795376041c9628279be602a9fde1d850768ef2c4420347e"
+					},
+					"sdk": "22.6.2",
+					"apiVersion": "2026-08-26.dahlia"
+				},
+				{
+					"runId": "70f74669-2047-454d-834c-3e7d0565f39e",
+					"startedAt": "2026-10-19T13:39:06.429Z",
+					"commit": "7ebc9c46aae30c18ea03e5d2568f51f0bb4cf77e",
+					"sdk": "23.0.0",
+					"apiVersion": "2026-09-30.endive",
+					"implementationSha256": "773e00c52cdaf31d4dc78d503c656b571e80cf0256da21bebe3786659953e290",
+					"passedCases": 0,
+					"accepted": false,
+					"failure": "Prerequisite or assertion failure",
+					"limitations": [
+						"Hosted Checkout session creation does not prove browser payment completion.",
+						"Real webhook delivery/signature ingress requires a Stripe CLI or configured endpoint; locally signed fixtures do not satisfy it."
+					],
+					"report": {
+						"path": "artifacts/phase5/stripe-sandbox-70f74669-2047-454d-834c-3e7d0565f39e.json",
+						"sha256": "c0f50756c0ab6c3014c40c9cbb2a82dc0a606061dda11ba73943c2bc3cbcc4ce"
+					},
+					"paymentDiagnosis": {
+						"path": "artifacts/phase5/stripe-sandbox-70f74669-2047-454d-834c-3e7d0565f39e-payment-status.json",
+						"sha256": "b098d4ed83cc1df1b86372dfea0588a2bbff7cbc69329875c38e7d70f6bee853"
+					},
+					"provenance": {
+						"path": "artifacts/phase5/hosted-checkout-endive-2026-10-19-provenance.json",
+						"sha256": "88f47b5638ae283777ca882b87f33c28006cf90bb9c533db69b7bcf6428f3276"
+					},
+					"reason": "Browser payment did not complete during the bounded wait; runner cleaned up the test customer at 2026-10-19T14:00:08Z. No card-decline event recorded."
+				},
+				{
+					"runId": "8866f5d7-fac6-43ce-ad14-e25dd8cffe03",
+					"startedAt": "2026-10-19T14:15:41.563Z",
+					"commit": "7ebc9c46aae30c18ea03e5d2568f51f0bb4cf77e",
+					"sdk": "23.0.0",
+					"apiVersion": "2026-09-30.endive",
+					"implementationSha256": "773e00c52cdaf31d4dc78d503c656b571e80cf0256da21bebe3786659953e290",
+					"passedCases": 11,
+					"accepted": true,
+					"failure": null,
+					"limitations": [],
+					"report": {
+						"path": "artifacts/phase5/stripe-sandbox-8866f5d7-fac6-43ce-ad14-e25dd8cffe03.json",
+						"sha256": "6cc3e5c3f68e8766dc5e89ffaf73a5217401c6e280c6adc72d0851d90565ac75"
+					},
+					"cleanup": {
+						"path": "artifacts/phase5/stripe-sandbox-8866f5d7-fac6-43ce-ad14-e25dd8cffe03-cleanup.json",
+						"sha256": "1695f8409afbee71ff76604176f1815a99ebd08c9a35e50c05af1982b795dd21"
+					},
+					"provenance": {
+						"path": "artifacts/phase5/hosted-checkout-endive-2026-10-19-repeat2-provenance.json",
+						"sha256": "262c4d920dc96ea08884d424b0cbd5b15035d821ca2cf54a8d117d007f05442e"
+					},
+					"trackedDiff": {
+						"path": "artifacts/phase5/hosted-checkout-endive-2026-10-19-repeat2-tracked.diff",
+						"sha256": "5ac4421832122dee1a53170549df4017e52f195a6d19e6bc52c6f524cfb1e8a8"
+					},
+					"log": {
+						"path": "artifacts/phase5/endive-hosted-repeat2.log",
+						"sha256": "f68c574908336c708a567ec9bef21155e19b4d770024ad773a66a396195c6dcc"
+					}
+				}
+			],
+			"scope": "Final-source Endive repeat passed all 11 checks on unchanged source: user-completed hosted payment, paid seat lifecycle, paid upgrade/ambiguous-response reconciliation, renewal downgrade, delinquency/recovery, cancellation, fixed-plan trial conversion and real signed CLI webhook replay. Received 19 deliveries with zero rejections; 15 relevant events processed at 2026-09-30.endive. Cleanup independently verified. Earlier failed and successful attempts remain retained. No deployed internet endpoint or live-mode charge claim.",
+			"lastRepeatedAt": "2026-10-19T14:15:41.563Z",
+			"lastRepeatCommit": "7ebc9c46aae30c18ea03e5d2568f51f0bb4cf77e",
+			"lastRepeatImplementationSha256": "773e00c52cdaf31d4dc78d503c656b571e80cf0256da21bebe3786659953e290"
+		},
+		{
+			"name": "authorization-performance-smoke",
+			"command": "bun run authz:smoke",
+			"status": "passed",
+			"evidence": [
+				{
+					"path": "artifacts/phase5/performance-smoke-final.json",
+					"sha256": "e3022e911a2553f305454238cf2e412b9ea4ab768b08079e05542c01368fac6a"
+				},
+				{
+					"path": "artifacts/phase5/performance-smoke-final.log",
+					"sha256": "4f0c83605dc0329015128549da27dde93a130880e6bff63b5367dd82ac71a2eb"
+				}
+			],
+			"attempts": 3331,
+			"successes": 3331,
+			"retries": 0,
+			"sourceStable": true,
+			"implementationSha256": "8d1cce54de8d67796bd9ebbb5a322d7d5d7cfc82324500538cf57a4a71dae52e",
+			"durationSeconds": 15.281428458000002,
+			"latencyMs": {
+				"read": {
+					"count": 2010,
+					"p95": 261.8245829999996,
+					"p99": 303.10191699999996,
+					"max": 354.8624579999996
+				},
+				"write": {
+					"count": 1321,
+					"p95": 511.7330000000002,
+					"p99": 617.2617920000012,
+					"max": 700.4646250000005
+				},
+				"createToReadable": {
+					"count": 190,
+					"p95": 526.4936660000021,
+					"p99": 598.676958,
+					"max": 612.5049160000017
+				},
+				"sourceCommit": {
+					"count": 651,
+					"p95": 549.2741669999996,
+					"p99": 639.2721249999995,
+					"max": 700.4642500000009
+				},
+				"fenceWait": {
+					"count": 4112,
+					"p95": 54.65845799999988,
+					"p99": 70.9797499999986,
+					"max": 102.32795799999803
+				},
+				"revocation": {
+					"count": 127,
+					"p95": 498.8110830000005,
+					"p99": 517.9103329999998,
+					"max": 588.6803330000002
+				},
+				"revocationFenceWait": {
+					"count": 127,
+					"p95": 65.71683400000256,
+					"p99": 79.23712499999965,
+					"max": 81.1181660000002
+				}
+			},
+			"scope": "smoke only; does not satisfy R-AUTHZ-PERF"
+		},
+		{
+			"name": "authorization-performance-full",
+			"command": "bun run authz:benchmark",
+			"status": "passed",
+			"evidence": [
+				{
+					"path": "artifacts/phase5/performance-full-final.json",
+					"sha256": "626a0d8e356a87417388d91fb1afd829862684f49af30df90c92e7f5951d360d"
+				},
+				{
+					"path": "artifacts/phase5/performance-full-final.log",
+					"sha256": "0f33db53110a9f847ac7dea0b24f11ceb5fdb8e7e39ea2fee3f2820c769b4f9b"
+				}
+			],
+			"attempts": 442464,
+			"successes": 442464,
+			"retries": 0,
+			"sourceStable": true,
+			"implementationSha256": "8d1cce54de8d67796bd9ebbb5a322d7d5d7cfc82324500538cf57a4a71dae52e",
+			"durationSeconds": 1800.6271839170001,
+			"latencyMs": {
+				"read": {
+					"count": 265467,
+					"p95": 196.12450000015087,
+					"p99": 270.59283300000243,
+					"max": 653.3207499999553
+				},
+				"write": {
+					"count": 176997,
+					"p95": 676.9881659999955,
+					"p99": 798.5181669999729,
+					"max": 1243.9945000000298
+				},
+				"createToReadable": {
+					"count": 23192,
+					"p95": 719.7686249997932,
+					"p99": 827.5382910000626,
+					"max": 1102.2067919999827
+				},
+				"sourceCommit": {
+					"count": 88493,
+					"p95": 703.7542919999687,
+					"p99": 826.5591669999994,
+					"max": 1243.9939170000143
+				},
+				"fenceWait": {
+					"count": 533133,
+					"p95": 56.98350000008941,
+					"p99": 78.6482079999987,
+					"max": 397.1557919997722
+				},
+				"revocation": {
+					"count": 21064,
+					"p95": 653.1350000000093,
+					"p99": 747.9221669998951,
+					"max": 1061.0047499999637
+				},
+				"revocationFenceWait": {
+					"count": 21066,
+					"p95": 64.22549999994226,
+					"p99": 82.04862499982119,
+					"max": 362.43874999997206
+				}
+			},
+			"scope": "R-AUTHZ-PERF actual in-process Project API (25 RPC +25 REST clients); real signed Better Auth sessions; excludes TCP/Next wrapper"
+		},
+		{
+			"name": "live-agent-skills",
+			"command": "Phase 5 declared module-dependent repeat evaluation",
+			"status": "not-run",
+			"evidence": [],
+			"reason": "Explicit independent-agent authorization requested but not received; author tests cannot replace evaluator-owned live-agent trials.",
+			"specification": "docs/phase5/evaluation.md",
+			"historical": true,
+			"supersededBy": "live-agent-skills-2026-10-19"
+		},
+		{
+			"name": "hosted-ci",
+			"command": "PR/main required workflow including monetization",
+			"status": "not-run",
+			"evidence": [],
+			"reason": "Working tree is uncommitted; no hosted CI run was dispatched or claimed.",
+			"historical": true,
+			"supersededBy": "hosted-ci-2026-10-19"
+		},
+		{
+			"name": "final-documentation-contracts",
+			"command": "bun run check && bun run skills:check --static",
+			"status": "passed",
+			"evidence": [
+				{
+					"path": "artifacts/phase5/check-docs-final.log",
+					"sha256": "40e347b6c0c759c585cc11b364c14ab6e2f90b459166f65b5daa67512de27856"
+				},
+				{
+					"path": "artifacts/phase5/skills-static-final.log",
+					"sha256": "488cc54c02584381fff087260a96bdef8de3a894d46da6a7f97ee85a5723674d"
+				}
+			]
+		},
+		{
+			"name": "live-agent-skills-2026-10-19",
+			"command": "Explicit Phase 5 five-task/two-candidate controller plus interruption/repeat/source review and real Stripe API supplements",
+			"status": "passed",
+			"evidence": [
+				{
+					"path": "docs/phase5/evaluation-2026-10-19.json",
+					"sha256": "0ce4375bd8cb2c8798f6469c5062249df0e75a289f8657aef0c123bdd9866d0b"
+				}
+			],
+			"scope": "R-SKILLS only; hosted Checkout/CI and M2 remain unaccepted"
+		},
+		{
+			"name": "stripe-endive-compatibility",
+			"status": "passed-local-and-hosted-security-pending",
+			"recordedAt": "2026-10-19T13:47:10.577Z",
+			"implementationSha256": "773e00c52cdaf31d4dc78d503c656b571e80cf0256da21bebe3786659953e290",
+			"sdk": "23.0.0",
+			"apiVersion": "2026-09-30.endive",
+			"scope": "Exact SDK/API upgrade, card-only allowed_payment_method_types, strict old-event quarantine, and listener version preflight; shared sandbox default and applied migration history unchanged.",
+			"checks": [
+				{
+					"command": "bun install --frozen-lockfile",
+					"status": "passed"
+				},
+				{
+					"command": "bun run check",
+					"status": "passed",
+					"evidence": {
+						"path": "artifacts/phase5/endive-source-check.log",
+						"sha256": "521164de0b05457e78abea979a055e9580a53bf59641583647cb2a91645588de"
+					}
+				},
+				{
+					"command": "bun run typecheck",
+					"status": "passed",
+					"evidence": {
+						"path": "artifacts/phase5/endive-typecheck.log",
+						"sha256": "283777e737ed818c3ac2afe263a43436879ee916ad1bf9f2078ee3f16a913ca9"
+					}
+				},
+				{
+					"command": "bun run knip",
+					"status": "passed",
+					"evidence": {
+						"path": "artifacts/phase5/endive-knip.log",
+						"sha256": "cdfc5fca5678e62e6a4571f5e55652910a0307746679c20ec62332598c3cc4dc"
+					}
+				},
+				{
+					"command": "bun run test:unit",
+					"status": "passed",
+					"cases": 158,
+					"evidence": {
+						"path": "artifacts/phase5/endive-unit.log",
+						"sha256": "ee11e71ad5aad50a349bf016e0fdefa9dc3ef3d26a458812ac2a871d510fe0ea"
+					}
+				},
+				{
+					"command": "bun run test:integration packages/db/src/billing packages/api/src/billing.integration.test.ts",
+					"status": "passed",
+					"cases": 20,
+					"evidence": {
+						"path": "artifacts/phase5/endive-integration.log",
+						"sha256": "ee9a5f1e00bcf5dc61bf066795d4eca8d501f549eb348181d7d52f7b14f6ce40"
+					}
+				},
+				{
+					"command": "bun run build",
+					"status": "passed",
+					"evidence": {
+						"path": "artifacts/phase5/endive-build.log",
+						"sha256": "ac465f8ef8fcb09b4a84b644446cc7865d9497c2985ac813b5b390f7f6b6ba99"
+					}
+				},
+				{
+					"command": "bun run phase0:test",
+					"status": "passed-unit-subset",
+					"passedCases": 79,
+					"skippedIntegrationCases": 52,
+					"evidence": {
+						"path": "artifacts/phase5/endive-phase0-unit.log",
+						"sha256": "7fef1f3349b83cc633f7802af144514befc832ae57f59a9e8eb1c115640f6ebb"
+					}
+				},
+				{
+					"name": "synthetic-listener-version-prerequisites",
+					"status": "passed",
+					"cases": 2,
+					"evidence": {
+						"path": "artifacts/phase5/endive-listener-regression.json",
+						"sha256": "ed6b002110d92d553de3a6d8c1821d5a20d9447d49f396aa2fb43434c2cbc9ee"
+					}
+				}
+			],
+			"limitations": [
+				"Dependency vulnerability scan failed to download its database from both the mirror and official registry; no current-source scan pass claimed.",
+				"Historical image/performance and independent skill candidate evidence describes its original source and SDK; no new independent authoring evaluation for this API upgrade is claimed.",
+				"Hosted GitHub CI remains pending."
+			],
+			"dependencyScan": {
+				"status": "failed-database-download",
+				"evidence": {
+					"path": "artifacts/phase5/endive-dependency-scan.log",
+					"sha256": "c42a473e81c5ed6a214226d01ce6837bf63e4872c419fddf795226625710353c"
+				},
+				"retainedMirrorAttempt": {
+					"path": "artifacts/phase5/endive-dependency-scan-mirror-interrupted.log",
+					"sha256": "4c4b4f9569bc9d75c8825c82f1fec4428a3aa2b5bec70593b864c222fd10d8d1"
+				}
+			},
+			"hostedRepeat": {
+				"path": "artifacts/phase5/stripe-sandbox-8866f5d7-fac6-43ce-ad14-e25dd8cffe03.json",
+				"sha256": "6cc3e5c3f68e8766dc5e89ffaf73a5217401c6e280c6adc72d0851d90565ac75"
+			},
+			"cleanup": {
+				"path": "artifacts/phase5/stripe-sandbox-8866f5d7-fac6-43ce-ad14-e25dd8cffe03-cleanup.json",
+				"sha256": "1695f8409afbee71ff76604176f1815a99ebd08c9a35e50c05af1982b795dd21"
+			},
+			"historical": true,
+			"securityAndCiSupersededBy": "hosted-ci-2026-10-19"
+		},
+		{
+			"name": "hosted-ci-2026-10-19",
+			"status": "passed",
+			"url": "https://github.com/dani-beltran/saas-cook/actions/runs/39271661736",
+			"completedAt": "2026-10-19T14:52:49Z",
+			"headCommit": "e2a17023516146b1422befbfb78f47d524cbb984",
+			"testedMergeCommit": "48ac5ee04309ce5946769ae481e9d05dc2a99e59",
+			"jobs": [
+				"source",
+				"unit",
+				"integration",
+				"browser",
+				"storybook",
+				"production",
+				"monetization",
+				"image",
+				"required"
+			],
+			"dependencyPolicy": {
+				"status": "passed",
+				"blockingFindings": 0
+			},
+			"imagePolicy": {
+				"status": "passed",
+				"blockingFindings": 0
+			},
+			"securityExceptions": 0,
+			"image": "sha256:c2e8ddfe42140e21be78e24e803a2cfbfe14ed6bb793d99ee51fb317c47bb0b3",
+			"implementationSha256": "bf2d643cdc07137a1ae633fef0f6332312bef93ac17a94249b2733fc44328424",
+			"runtimeNode": "24.22.0",
+			"architecture": "amd64",
+			"imageAcceptanceChecks": 16,
+			"evidence": [
+				{
+					"path": "artifacts/ci-security-final/dependency-scan-48ac5ee04309ce5946769ae481e9d05dc2a99e59/security/dependencies-policy.json",
+					"sha256": "11bda3ede2dc5c2181039b6cd220bc58a0b9a9a2ce9810fd305089ffd17d2a85"
+				},
+				{
+					"path": "artifacts/ci-security-final/image-48ac5ee04309ce5946769ae481e9d05dc2a99e59/security/image-policy.json",
+					"sha256": "6e2b47a1a2d4644610ec8040e6f46a57a7dc108955c40f785accaa172ec0b848"
+				},
+				{
+					"path": "artifacts/ci-security-final/image-48ac5ee04309ce5946769ae481e9d05dc2a99e59/image/acceptance.json",
+					"sha256": "e795c928554061af26e71db48ef0221198f35b7224a74031cce90fa6ff3722bd"
+				}
+			],
+			"scope": "Hosted CI and current dependency/image security gate completed. Historical skill/provider/performance evidence retains its recorded source scope; M2 still requires Phase 6."
+		}
+	],
+	"diagnostics": "All failed and interrupted attempts retained in artifacts/phase5; no skips or failed attempts counted as passes. Logs are local artifacts, not hosted CI links.",
+	"limitations": [
+		"External email deliverability and deployed webhook TLS/routing unverified",
+		"Provider metered charging disabled; Phase 6 and Backoffice outside scope; M2 Commercial unaccepted"
+	],
+	"sourceArchive": {
+		"path": "artifacts/phase5/source.tar.gz",
+		"sha256": "0abeb1ac43b94918a7c50fd9086b4327cf11dbf779962fac1e27d805f54edbf4"
+	},
+	"lastUpdatedAt": "2026-10-19T14:52:49Z",
+	"latestSkillEvaluation": {
+		"path": "docs/phase5/evaluation-2026-10-19.json",
+		"sha256": "0ce4375bd8cb2c8798f6469c5062249df0e75a289f8657aef0c123bdd9866d0b"
+	},
+	"acceptanceScope": {
+		"date": "2026-10-19",
+		"status": "Phase 5 completed; no Phase 5 technical gate remains before Phase 6",
+		"hostedCiCheck": "hosted-ci-2026-10-19",
+		"sourceScope": "Hosted CI verified PR head e2a17023516146b1422befbfb78f47d524cbb984 and its recorded GitHub merge commit; historical evaluations retain their own source/SDK scope.",
+		"milestone": "M2 Commercial remains unaccepted until Phase 6 gates pass",
+		"delivery": "PR review and merge remain separate delivery steps"
+	}
+}

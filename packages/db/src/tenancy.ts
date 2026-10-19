@@ -2,6 +2,8 @@ import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { channel } from "node:diagnostics_channel";
 import type { Pool, PoolClient } from "pg";
 
+import { commercialFeatures } from "./billing/policy";
+
 const authorizationFenceWait = channel("saas-cook.authorization.fence-wait");
 
 export type MembershipRole = "owner" | "admin" | "member" | "billing";
@@ -76,6 +78,7 @@ interface MemberRow {
 	role: MembershipRole;
 	status: "active" | "inactive";
 	billable: boolean;
+	seat_counted: boolean;
 	expires_at: Date | null;
 }
 interface IdentityRow {
@@ -188,6 +191,7 @@ export async function withTenantTransaction<T>(
 			);
 		}
 		const value = await work(client);
+		await assertAuthorizationCurrent(client);
 		await client.query("COMMIT");
 		return value;
 	} catch (error) {
@@ -409,9 +413,22 @@ export function createTenancyService(
 			);
 			if (!owners.rowCount) throw new TenancyError("LAST_OWNER");
 		}
-		const oldSeat = previous?.status === "active" && previous.billable ? 1 : 0;
+		const oldSeat = previous?.seat_counted ? 1 : 0;
 		const newSeat = input.status === "active" && input.billable ? 1 : 0;
 		const delta = newSeat - oldSeat;
+		if (delta > 0) {
+			const commercial = await commercialFeatures(client, orgId);
+			if (commercial) {
+				const seats = (
+					await client.query<{ occupied: number }>(
+						"SELECT occupied FROM tenancy.seat_capacities WHERE organization_id=$1",
+						[orgId],
+					)
+				).rows[0];
+				if (seats.occupied + delta > commercial.seats)
+					throw new TenancyError("CAPACITY");
+			}
+		}
 		const updated = await client.query(
 			"UPDATE tenancy.seat_capacities SET occupied=occupied+$2 WHERE organization_id=$1 AND occupied+$2>=0 AND ($2<=0 OR occupied+$2<=capacity) RETURNING organization_id",
 			[orgId, delta],
@@ -419,7 +436,7 @@ export function createTenancyService(
 		if (!updated.rowCount) throw new TenancyError("CAPACITY");
 		const id = previous?.id ?? randomUUID();
 		await client.query(
-			"INSERT INTO tenancy.memberships(id,organization_id,user_id,role,status,billable) VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT (organization_id,user_id) DO UPDATE SET role=excluded.role,status=excluded.status,billable=excluded.billable,expires_at=NULL",
+			"INSERT INTO tenancy.memberships(id,organization_id,user_id,role,status,billable,seat_counted) VALUES ($1,$2,$3,$4,$5,$6,($5='active' AND $6)) ON CONFLICT (organization_id,user_id) DO UPDATE SET role=excluded.role,status=excluded.status,billable=excluded.billable,seat_counted=excluded.seat_counted,expires_at=NULL",
 			[id, orgId, input.userId, input.role, input.status, input.billable],
 		);
 		await client.query(
@@ -1423,7 +1440,7 @@ export function createTenancyService(
 					await authorized(client, actor, orgId, "billing");
 					reauthenticate(actor);
 					const result = await client.query(
-						"UPDATE tenancy.seat_capacities SET capacity=$2,policy_version=policy_version+1 WHERE organization_id=$1 AND occupied<=$2 RETURNING organization_id",
+						"UPDATE tenancy.seat_capacities SET capacity=$2,policy_version=policy_version+1 WHERE organization_id=$1 AND occupied<=$2 AND NOT EXISTS(SELECT 1 FROM tenancy.billing_accounts WHERE organization_id=$1) RETURNING organization_id",
 						[orgId, capacity],
 					);
 					if (!result.rowCount) throw new TenancyError("CAPACITY");

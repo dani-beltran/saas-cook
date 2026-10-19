@@ -27,6 +27,61 @@ const identity = {
 	AUTH_SECRET: z.string().min(32),
 	AUTH_INGRESS_SECRET: z.string().min(32).optional(),
 };
+const billing = {
+	BILLING_ENABLED: z.enum(["true", "false"]).default("false"),
+	STRIPE_MODE: z.enum(["test", "live"]).default("test"),
+	STRIPE_SECRET_KEY: z.string().optional(),
+	STRIPE_WEBHOOK_SECRET: z.string().optional(),
+	STRIPE_ACCOUNT_ID: z
+		.string()
+		.regex(/^acct_[A-Za-z0-9]+$/)
+		.optional(),
+	STRIPE_PORTAL_CONFIGURATION_ID: z
+		.string()
+		.regex(/^bpc_[A-Za-z0-9]+$/)
+		.optional(),
+	DEFAULT_PROJECT_CREATES_PER_MONTH: z
+		.union([
+			z.literal("unlimited"),
+			z.coerce.number().int().min(0).max(1000000),
+		])
+		.default(1000),
+	USAGE_NOTICE_THRESHOLDS: z
+		.string()
+		.default("80,95,100")
+		.transform((v) => v.split(",").map(Number))
+		.refine(
+			(v) =>
+				v.length > 0 &&
+				v.length <= 10 &&
+				new Set(v).size === v.length &&
+				v.every((n) => Number.isInteger(n) && n > 0 && n <= 100),
+		),
+};
+function validateBilling<
+	T extends {
+		BILLING_ENABLED: string;
+		STRIPE_MODE: string;
+		STRIPE_SECRET_KEY?: string;
+		STRIPE_WEBHOOK_SECRET?: string;
+		STRIPE_ACCOUNT_ID?: string;
+		STRIPE_PORTAL_CONFIGURATION_ID?: string;
+	},
+>(env: T): T {
+	if (
+		env.BILLING_ENABLED === "true" &&
+		(!env.STRIPE_SECRET_KEY?.startsWith(
+			env.STRIPE_MODE === "test" ? "sk_test_" : "sk_live_",
+		) ||
+			!env.STRIPE_WEBHOOK_SECRET?.startsWith("whsec_") ||
+			!env.STRIPE_ACCOUNT_ID ||
+			!env.STRIPE_PORTAL_CONFIGURATION_ID)
+	)
+		throw new Error(
+			"Invalid billing configuration; enabled Stripe requires matching mode, key, account, webhook and portal configuration",
+		);
+	return env;
+}
 const options = {
 	emptyStringAsUndefined: true,
 	onValidationError: () => {
@@ -58,30 +113,35 @@ export function readWebEnv(runtimeEnv: Environment = process.env) {
 				.default(100),
 			...identity,
 			...authorization,
+			...billing,
 		},
 		runtimeEnv,
 	});
 	if (env.AUTH_INGRESS_SECRET === env.AUTH_SECRET) {
 		throw new Error("Authentication and ingress signing keys must differ");
 	}
-	return env;
+	return validateBilling(env);
 }
 export function readWorkerEnv(runtimeEnv: Environment = process.env) {
-	return createEnv({
-		...options,
-		server: {
-			WORKER_DATABASE_URL: databaseUrl,
-			AUTH_SECRET: z.string().min(32),
-			SMTP_HOST: z.string().min(1),
-			SMTP_PORT: z.coerce.number().int().min(1).max(65535),
-			SMTP_FROM: z.email().default("security@localhost.test"),
-			SMTP_SECURE: z.enum(["true", "false"]).default("false"),
-			SMTP_USERNAME: z.string().optional(),
-			SMTP_PASSWORD: z.string().optional(),
-			...authorization,
-		},
-		runtimeEnv,
-	});
+	return validateBilling(
+		createEnv({
+			...options,
+			server: {
+				WORKER_DATABASE_URL: databaseUrl,
+				APP_ORIGIN: origin.default("http://localhost:3000"),
+				...billing,
+				AUTH_SECRET: z.string().min(32),
+				SMTP_HOST: z.string().min(1),
+				SMTP_PORT: z.coerce.number().int().min(1).max(65535),
+				SMTP_FROM: z.email().default("security@localhost.test"),
+				SMTP_SECURE: z.enum(["true", "false"]).default("false"),
+				SMTP_USERNAME: z.string().optional(),
+				SMTP_PASSWORD: z.string().optional(),
+				...authorization,
+			},
+			runtimeEnv,
+		}),
+	);
 }
 export function readMigrationEnv(runtimeEnv: Environment = process.env) {
 	return createEnv({

@@ -71,6 +71,13 @@
 			"when": 1790502427327,
 			"tag": "0009_personal_settings",
 			"breakpoints": true
+		},
+		{
+			"idx": 10,
+			"version": "7",
+			"when": 1790519434580,
+			"tag": "0010_phase5_monetization",
+			"breakpoints": true
 		}
 	]
 }

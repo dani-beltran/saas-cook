@@ -2,6 +2,8 @@ import { customerMessages } from "../features/example-customers/messages";
 export const dashboardMessages = {
 	en: {
 		account: "Account",
+		billing: "Billing",
+		usage: "Usage",
 		organization: "Organization",
 		projects: "Projects",
 		customers: customerMessages.en.title,
@@ -24,6 +26,8 @@ export const dashboardMessages = {
 	},
 	es: {
 		account: "Cuenta",
+		billing: "Facturación",
+		usage: "Uso",
 		organization: "Organización",
 		projects: "Proyectos",
 		customers: customerMessages.es.title,

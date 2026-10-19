@@ -39,7 +39,14 @@ afterEach(async () => {
 		roots.splice(0).map((root) => rm(root, { recursive: true, force: true })),
 	);
 });
-async function fixture() {
+async function fixture(phase: 4 | 5 = 4) {
+	const fixtureIds =
+		phase === 5
+			? Array.from(
+					{ length: 5 },
+					(_, index) => `phase5-task-${String(index + 1).padStart(2, "0")}`,
+				)
+			: ids;
 	const root = await mkdtemp(join(tmpdir(), "phase4-harness-test-"));
 	roots.push(root);
 	const template = join(root, "template");
@@ -96,7 +103,8 @@ console.log('PHASE4_RESULT=' + JSON.stringify({taskId,checkId:'behavior',cases:[
 		join(evaluators, "manifest.json"),
 		JSON.stringify({
 			version: 1,
-			tasks: ids.map((id) => ({
+			phase,
+			tasks: fixtureIds.map((id) => ({
 				id,
 				brief: `${id}.md`,
 				checks: [
@@ -120,7 +128,7 @@ console.log('PHASE4_RESULT=' + JSON.stringify({taskId,checkId:'behavior',cases:[
 			],
 		}),
 	);
-	for (const id of ids)
+	for (const id of fixtureIds)
 		await writeFile(
 			join(briefs, `${id}.md`),
 			`${id}: harness infrastructure fixture, not an AI behavior evaluation.\n`,
@@ -136,7 +144,7 @@ console.log('PHASE4_RESULT=' + JSON.stringify({taskId,checkId:'behavior',cases:[
 		provider: "unit-test fixture only",
 		model: "test-fixture-not-real-ai",
 		configuration: { testOnly: true },
-		taskIds: ids,
+		taskIds: fixtureIds,
 		transcriptPath,
 	};
 	return { root, template, output, evidence };
@@ -157,6 +165,22 @@ describe("evaluation infrastructure (does not establish actual AI behavior)", ()
 			"Actual AI agent evidence",
 		);
 	});
+	it("declares five Phase 5 tasks independently of the frozen Phase 4 set", async () => {
+		const { output, evidence } = await fixture(5);
+		const manifest = await assertEvaluationIntegrity(output);
+		expect(Object.keys(manifest.requirements)).toEqual(evidence.taskIds);
+		await recordAgentEvidence(output, 1, evidence);
+		await recordAgentEvidence(output, 2, evidence);
+		await runEvaluation(output, 1);
+		await runEvaluation(output, 2);
+		const result = await summarizeEvaluation(output);
+		expect(result.accepted).toBe(true);
+		expect(result.requiredTasks).toHaveLength(5);
+		await expect(
+			recordAgentEvidence(output, 1, { ...evidence, taskIds: ids }),
+		).rejects.toThrow("Unknown agent task ID");
+	});
+
 	it("rejects malformed, deterministic-only and empty agent evidence", async () => {
 		const { output, evidence } = await fixture();
 		await expect(

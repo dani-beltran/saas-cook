@@ -165,13 +165,17 @@ try {
 		"authz-upgrade",
 		"owner-recovery",
 		"security-deactivate",
+		"billing-catalogue",
+		"billing-reconcile",
+		"billing-diagnostics",
+		"usage-rebuild",
 	]) {
 		assert(
 			(await docker(["run", "--rm", image, mode, "--help"])).includes(mode),
 		);
 		if (mode !== "migrate") await rejected(["run", "--rm", image, mode]);
 	}
-	checks.push("five-packaged-commands-and-missing-credential-refusal");
+	checks.push("ten-packaged-commands-and-missing-credential-refusal");
 	await rejected(["run", "--rm", image]);
 	await rejected([
 		"run",
@@ -265,7 +269,7 @@ try {
 	const id = await start();
 	assert.equal(
 		await docker(["exec", id, "/nodejs/bin/node", "--version"]),
-		"v24.21.0",
+		"v24.22.0",
 	);
 	await node(
 		id,
@@ -389,10 +393,10 @@ try {
 		architecture: identity.Architecture,
 		os: identity.Os,
 		buildNode: "24.19.0",
-		runtimeNode: "24.21.0",
+		runtimeNode: "24.22.0",
 		bun: "1.4.2",
 		baseImage:
-			"gcr.io/distroless/nodejs24-debian13:nonroot@sha256:bb6b03d81066993293a10feda7250e8e1cc034035fe9b61cfceededa7c8bf04d",
+			"gcr.io/distroless/nodejs24-debian13:nonroot@sha256:59c479c9b8c123e66047315c968aa2d35e31ae5149c856e4110a79c8b3563f0b",
 		phase2Commands:
 			"Real packaged migration, interrupted/resumed model bootstrap, independent readiness, existing/restored-data rejection and authz publication; operator command help/credential rejection. Signed operator mutation covered by real-service integration suite.",
 	};

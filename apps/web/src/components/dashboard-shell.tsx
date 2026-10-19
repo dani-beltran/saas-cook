@@ -28,7 +28,13 @@ export function DashboardBrand({
 function NavigationIcon({
 	kind,
 }: {
-	kind: "account" | "organization" | "projects" | "customers";
+	kind:
+		| "account"
+		| "organization"
+		| "projects"
+		| "customers"
+		| "billing"
+		| "usage";
 }) {
 	return (
 		<svg
@@ -65,7 +71,13 @@ export function DashboardShell({
 	children,
 	onLocaleChange,
 }: {
-	section: "account" | "organization" | "projects" | "customers";
+	section:
+		| "account"
+		| "organization"
+		| "projects"
+		| "customers"
+		| "billing"
+		| "usage";
 	organizationId?: string;
 	children: ReactNode;
 	onLocaleChange?: (locale: "en" | "es") => void;
@@ -133,7 +145,13 @@ export function DashboardFrame({
 	onRetry,
 	onLocaleChange,
 }: {
-	section: "account" | "organization" | "projects" | "customers";
+	section:
+		| "account"
+		| "organization"
+		| "projects"
+		| "customers"
+		| "billing"
+		| "usage";
 	organizationId?: string;
 	children: ReactNode;
 	organizations: Array<{ id: string; name: string }>;
@@ -232,7 +250,7 @@ export function DashboardFrame({
 						onChange={(event) => {
 							if (event.target.value)
 								window.location.assign(
-									`/${locale}/organizations/${event.target.value}${section === "projects" ? "/projects" : section === "customers" ? "/customers" : ""}`,
+									`/${locale}/organizations/${event.target.value}${section === "projects" ? "/projects" : section === "customers" ? "/customers" : section === "billing" ? "/billing" : section === "usage" ? "/usage" : ""}`,
 								);
 						}}
 					>
@@ -267,6 +285,8 @@ export function DashboardFrame({
 								copy.customers,
 								`${organizationPath}/customers`,
 							)}
+							{link("billing", copy.billing, `${organizationPath}/billing`)}
+							{link("usage", copy.usage, `${organizationPath}/usage`)}
 							{link("organization", copy.settings, organizationPath)}
 						</>
 					)}

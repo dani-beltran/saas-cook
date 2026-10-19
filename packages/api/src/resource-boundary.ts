@@ -1,5 +1,6 @@
 import { ORPCError } from "@orpc/server";
 import { ApiKeyError, ResourceAuthorizationDenied } from "@saas-cook/authz";
+import { BillingError } from "@saas-cook/db/billing";
 import { type ResourceActor, ResourceError } from "@saas-cook/db/resources";
 import { TenancyError, type TenantActor } from "@saas-cook/db/tenancy";
 import { applicationRuntime } from "./runtime";
@@ -59,17 +60,23 @@ export async function resourceOperation<T>(
 				});
 			throw failure(error.code === "CONFLICT" ? "CONFLICT" : "FORBIDDEN");
 		}
-		if (error instanceof ResourceError || error instanceof TenancyError) {
+		if (
+			error instanceof ResourceError ||
+			error instanceof TenancyError ||
+			error instanceof BillingError
+		) {
 			const code =
-				error.code === "CONFLICT"
-					? "CONFLICT"
-					: error.code === "CAPACITY" || error.code === "DISABLED"
-						? "PRECONDITION_FAILED"
-						: error.code === "NOT_FOUND"
-							? "NOT_FOUND"
-							: error.code === "INVALID"
-								? "UNPROCESSABLE_CONTENT"
-								: "FORBIDDEN";
+				error.code === "OUTAGE" || error.code === "REVIEW"
+					? "SERVICE_UNAVAILABLE"
+					: error.code === "CONFLICT"
+						? "CONFLICT"
+						: error.code === "CAPACITY" || error.code === "DISABLED"
+							? "PRECONDITION_FAILED"
+							: error.code === "NOT_FOUND"
+								? "NOT_FOUND"
+								: error.code === "INVALID"
+									? "UNPROCESSABLE_CONTENT"
+									: "FORBIDDEN";
 			if (code === "UNPROCESSABLE_CONTENT")
 				throw new ORPCError(code, {
 					message: "Invalid input",

@@ -477,7 +477,7 @@ describe("real PostgreSQL migration and runtime role boundary", () => {
 					"SELECT count(*)::int AS count FROM drizzle.__drizzle_migrations",
 				)
 			).rows[0],
-		).toEqual({ count: 10 });
+		).toEqual({ count: 11 });
 	});
 	it("upgrades Phase 2 to resource tables while preserving tenant and identity history", async () => {
 		const f = await fixture();
