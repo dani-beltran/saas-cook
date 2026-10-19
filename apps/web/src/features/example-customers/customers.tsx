@@ -3,7 +3,16 @@ import type {
 	CustomerDto,
 	CustomerQuery,
 } from "@saas-cook/api-contracts/example-customers";
-import { Button, Input } from "@saas-cook/ui";
+import {
+	Button,
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogTitle,
+	Input,
+	NativeSelect,
+	NativeSelectOption,
+} from "@saas-cook/ui";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useLocale } from "next-intl";
 import { useEffect, useRef, useState } from "react";
@@ -82,8 +91,7 @@ function Directory({
 		[busy, setBusy] = useState(false),
 		[error, setError] = useState<unknown>(null),
 		[notice, setNotice] = useState("");
-	const dialog = useRef<HTMLDialogElement>(null),
-		trigger = useRef<HTMLElement | null>(null),
+	const trigger = useRef<HTMLElement | null>(null),
 		add = useRef<HTMLButtonElement>(null),
 		busyRef = useRef(false);
 	const operation = useRef<{ input: string; key: string } | null>(null),
@@ -105,17 +113,6 @@ function Directory({
 		setEditor(null);
 		setError(null);
 	};
-	useEffect(() => {
-		if (editor) {
-			dialog.current?.showModal();
-		} else {
-			dialog.current?.close();
-			const target = trigger.current?.isConnected
-				? trigger.current
-				: add.current;
-			if (trigger.current) target?.focus();
-		}
-	}, [editor]);
 	async function open(action: Editor["action"], customer?: CustomerDto) {
 		trigger.current = document.activeElement as HTMLElement;
 		setError(null);
@@ -283,7 +280,7 @@ function Directory({
 					</form>
 					<div className="customers-field">
 						<label htmlFor="customers-status">{copy.status}</label>
-						<select
+						<NativeSelect
 							id="customers-status"
 							value={query.status ?? ""}
 							onChange={(e) =>
@@ -293,13 +290,13 @@ function Directory({
 								})
 							}
 						>
-							<option value="">{copy.all}</option>
+							<NativeSelectOption value="">{copy.all}</NativeSelectOption>
 							{(["lead", "active", "inactive"] as const).map((s) => (
-								<option key={s} value={s}>
+								<NativeSelectOption key={s} value={s}>
 									{copy[s]}
-								</option>
+								</NativeSelectOption>
 							))}
-						</select>
+						</NativeSelect>
 					</div>
 					<Button
 						className="customers-secondary customers-clear"
@@ -312,7 +309,7 @@ function Directory({
 				<div className="customers-options">
 					<div>
 						<label htmlFor="customers-sort">{copy.sort}</label>
-						<select
+						<NativeSelect
 							id="customers-sort"
 							value={query.sort}
 							onChange={(e) =>
@@ -320,15 +317,15 @@ function Directory({
 							}
 						>
 							{(["createdAt", "name", "company"] as const).map((s) => (
-								<option key={s} value={s}>
+								<NativeSelectOption key={s} value={s}>
 									{copy[s]}
-								</option>
+								</NativeSelectOption>
 							))}
-						</select>
+						</NativeSelect>
 						<label className="sr-only" htmlFor="customers-direction">
 							{copy.direction}
 						</label>
-						<select
+						<NativeSelect
 							id="customers-direction"
 							value={query.direction}
 							onChange={(e) =>
@@ -337,13 +334,13 @@ function Directory({
 								})
 							}
 						>
-							<option value="desc">{copy.desc}</option>
-							<option value="asc">{copy.asc}</option>
-						</select>
+							<NativeSelectOption value="desc">{copy.desc}</NativeSelectOption>
+							<NativeSelectOption value="asc">{copy.asc}</NativeSelectOption>
+						</NativeSelect>
 					</div>
 					<div>
 						<label htmlFor="customers-size">{copy.size}</label>
-						<select
+						<NativeSelect
 							id="customers-size"
 							value={query.limit}
 							onChange={(e) =>
@@ -353,9 +350,9 @@ function Directory({
 							}
 						>
 							{[10, 25, 50].map((n) => (
-								<option key={n}>{n}</option>
+								<NativeSelectOption key={n}>{n}</NativeSelectOption>
 							))}
-						</select>
+						</NativeSelect>
 					</div>
 				</div>
 				<div aria-busy={state.loading}>
@@ -442,139 +439,156 @@ function Directory({
 					? `${copy.loaded} ${state.items.length} ${copy.rows}.`
 					: ""}
 			</p>
-			<dialog
-				ref={dialog}
-				className="customers-dialog"
-				aria-labelledby="customer-dialog-title"
-				aria-describedby={
-					editor?.action === "delete" ? "customer-delete-effect" : undefined
-				}
-				onCancel={(event) => {
-					event.preventDefault();
-					close();
-				}}
-				onClose={() => {
-					if (!busyRef.current) setEditor(null);
+			<Dialog
+				open={Boolean(editor)}
+				onOpenChange={(open) => {
+					if (!open) close();
 				}}
 			>
-				{editor && (
-					<>
-						<div className="customers-dialog-header">
-							<h2 id="customer-dialog-title">
-								{editor.action === "create"
-									? copy.add
-									: editor.action === "delete"
-										? copy.deleteTitle
-										: editor.action === "view"
-											? copy.view
-											: copy.edit}
-							</h2>
-							<button
-								type="button"
-								className="customers-close"
-								disabled={busy}
-								aria-label={copy.close}
-								onClick={close}
-							>
-								×
-							</button>
-						</div>
-						{error && feedback(error)}
-						{(error as Failure)?.code === "CONFLICT" && (
-							<Button
-								className="customers-secondary"
-								disabled={busy}
-								onClick={() => void latest()}
-							>
-								{copy.reload}
-							</Button>
-						)}
-						{editor.action === "delete" ? (
-							<>
-								<p className="customers-delete-name">{editor.customer?.name}</p>
-								<p id="customer-delete-effect" className="customers-muted">
-									{copy.deleteEffect}
-								</p>
-								<div className="customers-dialog-actions">
-									<Button
-										className="customers-secondary"
-										disabled={busy}
-										onClick={close}
-									>
-										{copy.cancel}
-									</Button>
-									<Button
-										className="customers-danger"
-										disabled={busy}
-										onClick={() => void save()}
-									>
-										{busy ? copy.deleting : copy.confirmDelete}
-									</Button>
-								</div>
-							</>
-						) : editor.action === "view" && editor.customer ? (
-							<>
-								<dl className="customers-details">
-									{(
-										[
-											"name",
-											"email",
-											"company",
-											"status",
-											"createdAt",
-											"updatedAt",
-										] as const
-									).map((field) => (
-										<div key={field}>
-											<dt>{copy[field]}</dt>
-											<dd>
-												{field === "status"
-													? copy[editor.customer?.status ?? "lead"]
-													: field === "createdAt" || field === "updatedAt"
-														? new Intl.DateTimeFormat(locale, {
-																dateStyle: "long",
-																timeStyle: "short",
-																timeZone: "UTC",
-															}).format(
-																new Date(editor.customer?.[field] ?? ""),
-															)
-														: (editor.customer?.[field] ?? copy.notProvided)}
-											</dd>
-										</div>
-									))}
-								</dl>
+				<DialogContent
+					className="customers-dialog"
+					showCloseButton={false}
+					aria-describedby={
+						editor?.action === "delete" ? "customer-delete-effect" : undefined
+					}
+					onInteractOutside={(event) => event.preventDefault()}
+					onEscapeKeyDown={(event) => {
+						if (busyRef.current) event.preventDefault();
+					}}
+					onCloseAutoFocus={(event) => {
+						event.preventDefault();
+						const target = trigger.current?.isConnected
+							? trigger.current
+							: add.current;
+						target?.focus();
+					}}
+				>
+					{editor && (
+						<>
+							<div className="customers-dialog-header">
+								<DialogTitle>
+									{editor.action === "create"
+										? copy.add
+										: editor.action === "delete"
+											? copy.deleteTitle
+											: editor.action === "view"
+												? copy.view
+												: copy.edit}
+								</DialogTitle>
 								<Button
+									variant="ghost"
+									size="plain"
+									type="button"
+									className="customers-close"
 									disabled={busy}
-									onClick={() => {
-										setError(null);
-										setEditor({ ...editor, action: "edit" });
-									}}
+									aria-label={copy.close}
+									onClick={close}
 								>
-									{copy.edit}
+									×
 								</Button>
-							</>
-						) : (
-							<CustomerForm
-								key={`${editor.customer?.id ?? "new"}:${editorRevision}`}
-								copy={copy}
-								busy={busy}
-								initial={
-									editor.customer
-										? {
-												name: editor.customer.name,
-												email: editor.customer.email,
-												company: editor.customer.company ?? "",
-												status: editor.customer.status,
-											}
-										: undefined
-								}
-								onSave={save}
-								onCancel={close}
-							/>
-						)}
-					</>
-				)}
-			</dialog>
+							</div>
+							{error && feedback(error)}
+							{(error as Failure)?.code === "CONFLICT" && (
+								<Button
+									className="customers-secondary"
+									disabled={busy}
+									onClick={() => void latest()}
+								>
+									{copy.reload}
+								</Button>
+							)}
+							{editor.action === "delete" ? (
+								<>
+									<p className="customers-delete-name">
+										{editor.customer?.name}
+									</p>
+									<DialogDescription
+										id="customer-delete-effect"
+										className="customers-muted"
+									>
+										{copy.deleteEffect}
+									</DialogDescription>
+									<div className="customers-dialog-actions">
+										<Button
+											className="customers-secondary"
+											disabled={busy}
+											onClick={close}
+										>
+											{copy.cancel}
+										</Button>
+										<Button
+											className="customers-danger"
+											disabled={busy}
+											onClick={() => void save()}
+										>
+											{busy ? copy.deleting : copy.confirmDelete}
+										</Button>
+									</div>
+								</>
+							) : editor.action === "view" && editor.customer ? (
+								<>
+									<dl className="customers-details">
+										{(
+											[
+												"name",
+												"email",
+												"company",
+												"status",
+												"createdAt",
+												"updatedAt",
+											] as const
+										).map((field) => (
+											<div key={field}>
+												<dt>{copy[field]}</dt>
+												<dd>
+													{field === "status"
+														? copy[editor.customer?.status ?? "lead"]
+														: field === "createdAt" || field === "updatedAt"
+															? new Intl.DateTimeFormat(locale, {
+																	dateStyle: "long",
+																	timeStyle: "short",
+																	timeZone: "UTC",
+																}).format(
+																	new Date(editor.customer?.[field] ?? ""),
+																)
+															: (editor.customer?.[field] ?? copy.notProvided)}
+												</dd>
+											</div>
+										))}
+									</dl>
+									<Button
+										disabled={busy}
+										onClick={() => {
+											setError(null);
+											setEditor({ ...editor, action: "edit" });
+										}}
+									>
+										{copy.edit}
+									</Button>
+								</>
+							) : (
+								<CustomerForm
+									key={`${editor.customer?.id ?? "new"}:${editorRevision}`}
+									copy={copy}
+									busy={busy}
+									initial={
+										editor.customer
+											? {
+													name: editor.customer.name,
+													email: editor.customer.email,
+													company: editor.customer.company ?? "",
+													status: editor.customer.status,
+												}
+											: undefined
+									}
+									onSave={save}
+									onCancel={close}
+								/>
+							)}
+						</>
+					)}
+				</DialogContent>
+			</Dialog>
 		</section>
 	);
 }

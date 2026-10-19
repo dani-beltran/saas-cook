@@ -1,6 +1,6 @@
 "use client";
 
-import { SampleForm } from "@saas-cook/ui";
+import { NativeSelect, NativeSelectOption, SampleForm } from "@saas-cook/ui";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
@@ -64,18 +64,18 @@ export function Shell({ appName }: { appName: string }) {
 							>
 								{t("organization")}
 							</label>
-							<select
+							<NativeSelect
 								className="min-h-10 rounded-md border border-input px-3 text-sm"
 								id="demo-organization"
 								value={organization}
 								onChange={(event) => setOrganization(event.target.value)}
 							>
 								{demoOrganizations.map((item) => (
-									<option key={item.id} value={item.id}>
+									<NativeSelectOption key={item.id} value={item.id}>
 										{item.name}
-									</option>
+									</NativeSelectOption>
 								))}
-							</select>
+							</NativeSelect>
 						</div>
 						<div className="flex items-end gap-3">
 							<div className="grid gap-1.5">
@@ -85,7 +85,7 @@ export function Shell({ appName }: { appName: string }) {
 								>
 									{t("language")}
 								</label>
-								<select
+								<NativeSelect
 									className="min-h-10 rounded-md border border-input px-3 text-sm"
 									id="locale"
 									value={locale}
@@ -93,13 +93,13 @@ export function Shell({ appName }: { appName: string }) {
 										window.location.assign(`/${event.target.value}/patterns`);
 									}}
 								>
-									<option value="en" lang="en">
+									<NativeSelectOption value="en" lang="en">
 										English
-									</option>
-									<option value="es" lang="es">
+									</NativeSelectOption>
+									<NativeSelectOption value="es" lang="es">
 										Español
-									</option>
-								</select>
+									</NativeSelectOption>
+								</NativeSelect>
 							</div>
 						</div>
 					</header>

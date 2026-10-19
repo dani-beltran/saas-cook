@@ -3,6 +3,16 @@ import type {
 	CustomerDto,
 	CustomerQuery,
 } from "@saas-cook/api-contracts/example-customers";
+import {
+	Button,
+	Table,
+	TableBody,
+	TableCaption,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@saas-cook/ui";
 import type { CustomerCopy } from "./messages";
 
 export function CustomerTable({
@@ -25,7 +35,7 @@ export function CustomerTable({
 		timeZone: "UTC",
 	});
 	const heading = (field: CustomerQuery["sort"]) => (
-		<th
+		<TableHead
 			scope="col"
 			aria-sort={
 				query.sort === field
@@ -35,7 +45,9 @@ export function CustomerTable({
 					: "none"
 			}
 		>
-			<button
+			<Button
+				variant="ghost"
+				size="plain"
 				id={`customers-sort-${field}`}
 				type="button"
 				onClick={() => onSort(field)}
@@ -44,77 +56,83 @@ export function CustomerTable({
 				<span aria-hidden="true">
 					{query.sort === field ? (query.direction === "asc" ? "↑" : "↓") : "↕"}
 				</span>
-			</button>
-		</th>
+			</Button>
+		</TableHead>
 	);
 	return (
-		<table className="customers-table">
-			<caption className="sr-only">{copy.title}</caption>
-			<thead>
-				<tr>
+		<Table className="customers-table">
+			<TableCaption className="sr-only">{copy.title}</TableCaption>
+			<TableHeader>
+				<TableRow>
 					{heading("name")}
-					<th scope="col">{copy.email}</th>
+					<TableHead scope="col">{copy.email}</TableHead>
 					{heading("company")}
-					<th scope="col">{copy.status}</th>
+					<TableHead scope="col">{copy.status}</TableHead>
 					{heading("createdAt")}
-					<th scope="col">
+					<TableHead scope="col">
 						<span className="sr-only">{copy.actions}</span>
-					</th>
-				</tr>
-			</thead>
-			<tbody>
+					</TableHead>
+				</TableRow>
+			</TableHeader>
+			<TableBody>
 				{items.map((customer) => (
-					<tr key={customer.id}>
-						<td data-label={copy.name}>
-							<button
+					<TableRow key={customer.id}>
+						<TableCell data-label={copy.name}>
+							<Button
+								variant="ghost"
+								size="plain"
 								type="button"
 								className="customers-name"
 								onClick={() => onAction("view", customer)}
 								aria-label={`${copy.view}: ${customer.name}`}
 							>
 								{customer.name}
-							</button>
-						</td>
-						<td data-label={copy.email}>
+							</Button>
+						</TableCell>
+						<TableCell data-label={copy.email}>
 							<span className="customers-email">{customer.email}</span>
-						</td>
-						<td data-label={copy.company}>
+						</TableCell>
+						<TableCell data-label={copy.company}>
 							{customer.company ?? (
 								<span className="customers-muted">{copy.notProvided}</span>
 							)}
-						</td>
-						<td data-label={copy.status}>
+						</TableCell>
+						<TableCell data-label={copy.status}>
 							<span className={`customers-badge customers-${customer.status}`}>
 								<span aria-hidden="true">●</span>
 								{copy[customer.status]}
 							</span>
-						</td>
-						<td data-label={copy.createdAt}>
+						</TableCell>
+						<TableCell data-label={copy.createdAt}>
 							<time dateTime={customer.createdAt}>
 								{date.format(new Date(customer.createdAt))}
 							</time>
-						</td>
-						<td data-label={copy.actions}>
+						</TableCell>
+						<TableCell data-label={copy.actions}>
 							<div className="customers-row-actions">
-								<button
+								<Button
+									variant="ghost"
+									size="plain"
 									type="button"
 									onClick={() => onAction("edit", customer)}
 									aria-label={`${copy.edit}: ${customer.name}`}
 								>
 									{copy.edit}
-								</button>
-								<button
+								</Button>
+								<Button
+									variant="ghost"
+									size="plain"
 									type="button"
 									onClick={() => onAction("delete", customer)}
 									aria-label={`${copy.delete}: ${customer.name}`}
 								>
 									{copy.delete}
-								</button>
+								</Button>
 							</div>
-						</td>
-					</tr>
+						</TableCell>
+					</TableRow>
 				))}
-			</tbody>
-		</table>
+			</TableBody>
+		</Table>
 	);
 }

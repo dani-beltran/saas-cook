@@ -1,6 +1,6 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, Input } from "@saas-cook/ui";
+import { Button, Input, NativeSelect, NativeSelectOption } from "@saas-cook/ui";
 import { useId } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -95,11 +95,17 @@ export function CustomerForm({
 			))}
 			<div className="customers-field">
 				<label htmlFor={`${id}-status`}>{copy.status}</label>
-				<select id={`${id}-status`} disabled={pending} {...register("status")}>
-					<option value="lead">{copy.lead}</option>
-					<option value="active">{copy.active}</option>
-					<option value="inactive">{copy.inactive}</option>
-				</select>
+				<NativeSelect
+					id={`${id}-status`}
+					disabled={pending}
+					{...register("status")}
+				>
+					<NativeSelectOption value="lead">{copy.lead}</NativeSelectOption>
+					<NativeSelectOption value="active">{copy.active}</NativeSelectOption>
+					<NativeSelectOption value="inactive">
+						{copy.inactive}
+					</NativeSelectOption>
+				</NativeSelect>
 			</div>
 			<div className="customers-dialog-actions">
 				<Button type="submit" disabled={pending}>

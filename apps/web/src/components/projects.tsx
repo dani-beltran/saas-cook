@@ -4,6 +4,11 @@ import { createApiClient } from "@saas-cook/api/client";
 import type { ProjectDto } from "@saas-cook/api-contracts";
 import {
 	Button,
+	Checkbox,
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogTitle,
 	Input,
 	ProjectForm,
 	type ProjectFormValues,
@@ -37,7 +42,6 @@ export function Projects({ organizationId }: { organizationId: string }) {
 	const busyRef = useRef(false);
 	const operationKeys = useRef(new Map<string, string>());
 	const editorHeading = useRef<HTMLHeadingElement>(null);
-	const confirmationDialog = useRef<HTMLDialogElement>(null);
 	const newProjectButton = useRef<HTMLButtonElement>(null);
 	const queryKey = `${organizationId}:${search}:${includeDeleted}`;
 	const currentQuery = useRef(queryKey);
@@ -159,10 +163,6 @@ export function Projects({ organizationId }: { organizationId: string }) {
 			setFocusProjectAction(false);
 		}
 	}, [focusProjectAction, busy]);
-	useEffect(() => {
-		if (confirmation) confirmationDialog.current?.showModal();
-		else confirmationDialog.current?.close();
-	}, [confirmation]);
 	function operationKey(signature: string) {
 		const existing = operationKeys.current.get(signature);
 		if (existing) return existing;
@@ -357,12 +357,17 @@ export function Projects({ organizationId }: { organizationId: string }) {
 						</Button>
 					</form>
 					<div className="projects-toolbar-options">
-						<label className="projects-checkbox">
-							<input
-								type="checkbox"
+						<label
+							className="projects-checkbox"
+							htmlFor="projects-include-deleted"
+						>
+							<Checkbox
+								id="projects-include-deleted"
 								checked={includeDeleted}
 								disabled={busy}
-								onChange={(event) => setIncludeDeleted(event.target.checked)}
+								onCheckedChange={(checked) =>
+									setIncludeDeleted(checked === true)
+								}
 							/>
 							{t("showDeleted")}
 						</label>
@@ -512,42 +517,47 @@ export function Projects({ organizationId }: { organizationId: string }) {
 					</div>
 				)}
 			</section>
-			<dialog
-				ref={confirmationDialog}
-				className="projects-confirmation"
-				aria-labelledby="project-confirm-title"
-				aria-describedby="project-confirm-description"
-				onCancel={(event) => {
-					if (busy) event.preventDefault();
-					else setConfirmation(null);
+			<Dialog
+				open={Boolean(confirmation)}
+				onOpenChange={(open) => {
+					if (!open && !busyRef.current) setConfirmation(null);
 				}}
 			>
-				{confirmation && (
-					<>
-						<h2 id="project-confirm-title">
-							{t("deleteTitle", { name: confirmation.project.name })}
-						</h2>
-						<p id="project-confirm-description">{t("deleteHint")}</p>
-						{notice("confirmation")}
-						<div className="projects-confirmation-actions">
-							<Button
-								className="dashboard-secondary"
-								disabled={busy}
-								onClick={() => setConfirmation(null)}
-							>
-								{t("cancel")}
-							</Button>
-							<Button
-								className="dashboard-danger"
-								disabled={busy}
-								onClick={confirmAction}
-							>
-								{busy ? t("saving") : t("confirmDelete")}
-							</Button>
-						</div>
-					</>
-				)}
-			</dialog>
+				<DialogContent
+					className="projects-confirmation"
+					showCloseButton={false}
+					onInteractOutside={(event) => event.preventDefault()}
+					onEscapeKeyDown={(event) => {
+						if (busyRef.current) event.preventDefault();
+					}}
+				>
+					{confirmation && (
+						<>
+							<DialogTitle>
+								{t("deleteTitle", { name: confirmation.project.name })}
+							</DialogTitle>
+							<DialogDescription>{t("deleteHint")}</DialogDescription>
+							{notice("confirmation")}
+							<div className="projects-confirmation-actions">
+								<Button
+									className="dashboard-secondary"
+									disabled={busy}
+									onClick={() => setConfirmation(null)}
+								>
+									{t("cancel")}
+								</Button>
+								<Button
+									className="dashboard-danger"
+									disabled={busy}
+									onClick={confirmAction}
+								>
+									{busy ? t("saving") : t("confirmDelete")}
+								</Button>
+							</div>
+						</>
+					)}
+				</DialogContent>
+			</Dialog>
 		</DashboardShell>
 	);
 }

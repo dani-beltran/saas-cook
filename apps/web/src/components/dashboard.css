@@ -89,7 +89,7 @@
 .dashboard-org-switch select {
 	width: 100%;
 	min-height: var(--control-height);
-	padding: var(--control-padding-y) 9px;
+	padding: var(--control-padding-y) 36px var(--control-padding-y) 9px;
 	border: 1px solid var(--input);
 	border-radius: var(--control-radius);
 	font-size: 13px;
@@ -189,6 +189,10 @@
 	padding: 6px;
 }
 .dashboard-preferences select {
+	flex: 1;
+	padding-right: 36px;
+}
+.dashboard-preferences [data-slot="native-select-wrapper"] {
 	flex: 1;
 }
 .dashboard-preferences button {

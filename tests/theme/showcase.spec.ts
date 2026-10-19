@@ -103,12 +103,9 @@ for (const palette of themeOptions.palette) {
 				);
 				expect(await contrast(dialog)).toBeGreaterThanOrEqual(4.5);
 				expect(await contrast(dialog.locator("p"))).toBeGreaterThanOrEqual(4.5);
-				expect(
-					await dialog.evaluate(
-						(element) =>
-							getComputedStyle(element, "::backdrop").backgroundColor,
-					),
-				).not.toBe("rgba(0, 0, 0, 0)");
+				await expect(
+					page.locator('[data-slot="dialog-overlay"]'),
+				).not.toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
 				await page.screenshot({ path: testInfo.outputPath("portal.png") });
 				await page.keyboard.press("Escape");
 				await expect(dialog).toHaveCount(0);

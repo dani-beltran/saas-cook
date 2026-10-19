@@ -1,6 +1,6 @@
 "use client";
 
-import { Input } from "@saas-cook/ui";
+import { Button, Input } from "@saas-cook/ui";
 import { type ComponentProps, useState } from "react";
 
 export function PasswordField({
@@ -20,7 +20,9 @@ export function PasswordField({
 				type={visible ? "text" : "password"}
 				className={`auth-input pr-12 ${className ?? ""}`}
 			/>
-			<button
+			<Button
+				variant="ghost"
+				size="plain"
 				type="button"
 				className="auth-password-toggle"
 				disabled={props.disabled}
@@ -44,7 +46,7 @@ export function PasswordField({
 					<circle cx="12" cy="12" r="3" />
 					{visible && <path d="m3 3 18 18" />}
 				</svg>
-			</button>
+			</Button>
 		</div>
 	);
 }

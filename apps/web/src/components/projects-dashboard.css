@@ -33,7 +33,7 @@
 	color: var(--muted-foreground);
 	font-size: 12px;
 }
-.projects-checkbox input {
+.projects-checkbox [data-slot="checkbox"] {
 	accent-color: var(--primary);
 	width: 15px;
 	height: 15px;
@@ -234,7 +234,6 @@
 }
 .projects-confirmation {
 	position: fixed;
-	inset: 0;
 	margin: auto;
 	width: min(480px, calc(100% - 32px));
 	padding: 28px;
@@ -243,9 +242,6 @@
 	border: 1px solid var(--border);
 	border-radius: var(--dialog-radius);
 	box-shadow: var(--elevation-overlay);
-}
-.projects-confirmation::backdrop {
-	background: var(--overlay);
 }
 .projects-confirmation h2 {
 	font-size: 18px;

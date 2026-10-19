@@ -383,7 +383,7 @@
 	padding: 22px 0;
 	border-bottom: 1px solid var(--border);
 }
-.org-policy-row input {
+.org-policy-row [data-slot="checkbox"] {
 	width: 18px;
 	height: 18px;
 	flex-shrink: 0;
@@ -469,7 +469,6 @@
 }
 .org-dialog {
 	position: fixed;
-	inset: 0;
 	width: min(480px, calc(100% - 40px));
 	margin: auto;
 	max-height: calc(100dvh - 48px);
@@ -480,9 +479,6 @@
 	background: var(--card);
 	color: var(--foreground);
 	box-shadow: var(--elevation-overlay);
-}
-.org-dialog::backdrop {
-	background: var(--overlay);
 }
 .org-dialog h2 {
 	margin-bottom: 12px;

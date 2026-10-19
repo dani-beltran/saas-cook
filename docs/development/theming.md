@@ -73,7 +73,7 @@ For deeper design changes, edit the CSS tokens in source; do not expose unrestri
 
 ## Development and verification
 
-`bun run storybook` exposes palette, mode, density, locale, typography, radius and shadow controls. `Foundation/Theme` includes the owned Button/Input, localized SampleForm, navigation, status notices, validation and a native dialog rendered through a React body portal. Existing feature stories also inherit the root theme. Storybook alone uses a layout effect to apply its development controls to the preview document and restores prior attributes when unmounted.
+`bun run storybook` exposes palette, mode, density, locale, typography, radius and shadow controls. `Foundation/Theme` includes the owned Button/Input, localized SampleForm, navigation, status notices, validation and the shared shadcn/Radix dialog rendered through its body portal. Existing feature stories also inherit the root theme. Storybook alone uses a layout effect to apply its development controls to the preview document and restores prior attributes when unmounted.
 
 Run from the root:
 
