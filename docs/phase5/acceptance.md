@@ -1,7 +1,7 @@
 # Phase 5 acceptance — updated 2026-10-19
 
 **Phase 5 is not yet accepted.** Implementation and local verification are recorded below;
-the final-source hosted Checkout repeat passed on 2026-10-19; hosted CI remains a release gate. Independent skill
+the final-source hosted Checkout repeat and hosted CI/security gates passed on 2026-10-19. Independent skill
 behavior acceptance passed on 2026-10-19. **M2 Commercial is not accepted**: Phase 6 modules/recovery are still required.
 The [roadmap](../06-delivery-roadmap.md) remains the canonical register.
 
@@ -122,9 +122,9 @@ confirmed deletion of the test clock and deactivation of the product, both price
 Portal configuration; local installation cleanup reported no failure. This closes the
 final-source hosted Checkout repeat gate.
 
-The current dependency vulnerability scan did not complete: both the mirror and official
+The local dependency vulnerability scan at that checkpoint did not complete: both the mirror and official
 registry database downloads timed out or were interrupted after stalling. No new scan pass
-or exception is claimed; hosted release checks must supply current dependency/image evidence.
+or exception was claimed for that attempt. The later hosted run below supplies current dependency/image evidence.
 Historical image, performance and
 independent candidate evidence retains its original source/SDK scope; this update does not
 relabel it as a run against the upgraded dependency. The candidate trials below used SDK
@@ -144,14 +144,27 @@ evaluator-only browser setup correction and the shared-host isolation limitation
 These disposable feature trials are separate from the successful Endive hosted repeat and
 hosted CI, and do not claim new production image/performance or M2 acceptance.
 
+## Hosted CI and security gate — completed 2026-10-19
+
+[GitHub Actions run 39271661736](https://github.com/dani-beltran/saas-cook/actions/runs/39271661736) passed all nine jobs:
+source, unit, integration, browser, Storybook, production, monetization, image and the final
+`required` gate. PR head was `e2a17023516146b1422befbfb78f47d524cbb984`; GitHub tested
+merge commit `48ac5ee04309ce5946769ae481e9d05dc2a99e59`.
+
+Both current Trivy policies passed with zero blocking findings and no exceptions. The
+Linux amd64 image `sha256:c2e8ddfe42140e21be78e24e803a2cfbfe14ed6bb793d99ee51fb317c47bb0b3`
+passed all 16 image acceptance checks on Node 24.22.0. Its implementation fingerprint is
+`bf2d643cdc07137a1ae633fef0f6332312bef93ac17a94249b2733fc44328424`.
+The evidence index records report hashes. The first failed scan and cancelled intermediate
+runs remain historical attempts; they are not counted as passes. Later source changes need
+their own successful required workflow.
+
 ## Remaining gates and limitations
 
-1. Hosted GitHub CI has not passed for this release candidate. Local counterparts and the
-   independent skill trials do not establish a hosted successful workflow run. In particular,
-   the updated dependency needs successful current dependency/image security checks; the
-   local scan could not download its vulnerability database.
-2. Independent skill candidate evidence remains scoped to its recorded SDK 22.6.2 baseline;
-   no independent authoring repeat for the subsequent Endive compatibility update is claimed.
+Hosted GitHub CI and current dependency/image security gates are **completed**. Independent
+skill candidate evidence remains scoped to its recorded SDK 22.6.2 baseline; no independent
+authoring repeat for the subsequent Endive compatibility update is claimed. This CI result
+does not broaden those historical evaluations or accept M2 Commercial/Phase 6.
 
 No production pricing, live-mode charge, external customer email, deploy, application-data
 migration, Phase 6 capability or Backoffice acceptance is implied. Review-mode commands are

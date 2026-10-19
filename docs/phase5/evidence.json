@@ -741,7 +741,9 @@
 			"command": "PR/main required workflow including monetization",
 			"status": "not-run",
 			"evidence": [],
-			"reason": "Working tree is uncommitted; no hosted CI run was dispatched or claimed."
+			"reason": "Working tree is uncommitted; no hosted CI run was dispatched or claimed.",
+			"historical": true,
+			"supersededBy": "hosted-ci-2026-10-19"
 		},
 		{
 			"name": "final-documentation-contracts",
@@ -876,21 +878,69 @@
 			"cleanup": {
 				"path": "artifacts/phase5/stripe-sandbox-8866f5d7-fac6-43ce-ad14-e25dd8cffe03-cleanup.json",
 				"sha256": "1695f8409afbee71ff76604176f1815a99ebd08c9a35e50c05af1982b795dd21"
-			}
+			},
+			"historical": true,
+			"securityAndCiSupersededBy": "hosted-ci-2026-10-19"
+		},
+		{
+			"name": "hosted-ci-2026-10-19",
+			"status": "passed",
+			"url": "https://github.com/dani-beltran/saas-cook/actions/runs/39271661736",
+			"completedAt": "2026-10-19T14:52:49Z",
+			"headCommit": "e2a17023516146b1422befbfb78f47d524cbb984",
+			"testedMergeCommit": "48ac5ee04309ce5946769ae481e9d05dc2a99e59",
+			"jobs": [
+				"source",
+				"unit",
+				"integration",
+				"browser",
+				"storybook",
+				"production",
+				"monetization",
+				"image",
+				"required"
+			],
+			"dependencyPolicy": {
+				"status": "passed",
+				"blockingFindings": 0
+			},
+			"imagePolicy": {
+				"status": "passed",
+				"blockingFindings": 0
+			},
+			"securityExceptions": 0,
+			"image": "sha256:c2e8ddfe42140e21be78e24e803a2cfbfe14ed6bb793d99ee51fb317c47bb0b3",
+			"implementationSha256": "bf2d643cdc07137a1ae633fef0f6332312bef93ac17a94249b2733fc44328424",
+			"runtimeNode": "24.22.0",
+			"architecture": "amd64",
+			"imageAcceptanceChecks": 16,
+			"evidence": [
+				{
+					"path": "artifacts/ci-security-final/dependency-scan-48ac5ee04309ce5946769ae481e9d05dc2a99e59/security/dependencies-policy.json",
+					"sha256": "11bda3ede2dc5c2181039b6cd220bc58a0b9a9a2ce9810fd305089ffd17d2a85"
+				},
+				{
+					"path": "artifacts/ci-security-final/image-48ac5ee04309ce5946769ae481e9d05dc2a99e59/security/image-policy.json",
+					"sha256": "6e2b47a1a2d4644610ec8040e6f46a57a7dc108955c40f785accaa172ec0b848"
+				},
+				{
+					"path": "artifacts/ci-security-final/image-48ac5ee04309ce5946769ae481e9d05dc2a99e59/image/acceptance.json",
+					"sha256": "e795c928554061af26e71db48ef0221198f35b7224a74031cce90fa6ff3722bd"
+				}
+			],
+			"scope": "Hosted CI and current dependency/image security gate completed. Historical skill/provider/performance evidence retains its recorded source scope; M2 still requires Phase 6."
 		}
 	],
 	"diagnostics": "All failed and interrupted attempts retained in artifacts/phase5; no skips or failed attempts counted as passes. Logs are local artifacts, not hosted CI links.",
 	"limitations": [
-		"Hosted GitHub CI unrun",
 		"External email deliverability and deployed webhook TLS/routing unverified",
-		"Provider metered charging disabled; Phase 6 and Backoffice outside scope; M2 Commercial unaccepted",
-		"Endive dependency vulnerability scan could not download its database from the mirror or official registry; current dependency/image security evidence remains required."
+		"Provider metered charging disabled; Phase 6 and Backoffice outside scope; M2 Commercial unaccepted"
 	],
 	"sourceArchive": {
 		"path": "artifacts/phase5/source.tar.gz",
 		"sha256": "0abeb1ac43b94918a7c50fd9086b4327cf11dbf779962fac1e27d805f54edbf4"
 	},
-	"lastUpdatedAt": "2026-10-19T13:32:48.120124+00:00",
+	"lastUpdatedAt": "2026-10-19T14:52:49Z",
 	"latestSkillEvaluation": {
 		"path": "docs/phase5/evaluation-2026-10-19.json",
 		"sha256": "0ce4375bd8cb2c8798f6469c5062249df0e75a289f8657aef0c123bdd9866d0b"
