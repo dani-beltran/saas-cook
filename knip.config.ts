@@ -27,7 +27,6 @@ const config: KnipConfig = {
 			// scripts/phase0/toolchain.ts. These are exact root-only exceptions;
 			// application workspace dependencies remain fully checked.
 			ignoreDependencies: [
-				"shadcn",
 				"react-email",
 				"@t3-oss/env-nextjs",
 				"@openfga/sdk",

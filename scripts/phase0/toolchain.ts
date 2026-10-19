@@ -18,7 +18,6 @@ for (const name of [
 	"@commitlint/cli",
 	"lefthook",
 	"knip",
-	"shadcn",
 	"drizzle-kit",
 ]) {
 	const directory = resolve("node_modules", name);

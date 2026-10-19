@@ -269,7 +269,7 @@ try {
 	const id = await start();
 	assert.equal(
 		await docker(["exec", id, "/nodejs/bin/node", "--version"]),
-		"v24.21.0",
+		"v24.22.0",
 	);
 	await node(
 		id,
@@ -393,7 +393,7 @@ try {
 		architecture: identity.Architecture,
 		os: identity.Os,
 		buildNode: "24.19.0",
-		runtimeNode: "24.21.0",
+		runtimeNode: "24.22.0",
 		bun: "1.4.2",
 		baseImage:
 			"gcr.io/distroless/nodejs24-debian13:nonroot@sha256:bb6b03d81066993293a10feda7250e8e1cc034035fe9b61cfceededa7c8bf04d",

@@ -67,7 +67,7 @@ CI runs source, unit, integration, browser, Storybook, production and image chec
 
 `bun run image:build` currently builds `saas-cook:phase2` from the exact frozen workspace input, records the current Git revision and labels an implementation fingerprint. `bun run test:image` rejects an image whose fingerprint no longer matches the implementation. The fingerprint includes app/package/runtime/tooling sources and excludes documentation/evidence to avoid a self-referential report. No new commit is created by these commands.
 
-The build uses Node **24.19.0** and Bun **1.4.2**. The final non-root image uses the digest-pinned official distroless Node **24.21.0** runtime on Debian 13. This supported Node 24 patch update avoids the high/critical findings in the initial Debian 12 slim runtime. The final image has no shell or package installer. Acceptance executes the bundled native Sharp library on the final runtime, as well as the application and command paths. Only the locally tested architecture is claimed in the retained evidence; CI independently builds/tests Linux amd64.
+The build uses Node **24.19.0** and Bun **1.4.2**. The final non-root image uses the digest-pinned official distroless Node **24.22.0** runtime on Debian 13. This supported Node 24 patch update avoids the high/critical findings in the initial Debian 12 slim runtime. The final image has no shell or package installer. Acceptance executes the bundled native Sharp library on the final runtime, as well as the application and command paths. Only the locally tested architecture is claimed in the retained evidence; CI independently builds/tests Linux amd64.
 
 | Mode | Phase 1 behavior |
 | --- | --- |
