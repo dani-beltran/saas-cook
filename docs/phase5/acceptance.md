@@ -1,6 +1,7 @@
 # Phase 5 acceptance — updated 2026-10-19
 
-**Phase 5 is not yet accepted.** Implementation and local verification are recorded below;
+**Phase 5 is completed and accepted for its documented scope as of 2026-10-19.**
+Implementation and local verification are recorded below;
 the final-source hosted Checkout repeat and hosted CI/security gates passed on 2026-10-19. Independent skill
 behavior acceptance passed on 2026-10-19. **M2 Commercial is not accepted**: Phase 6 modules/recovery are still required.
 The [roadmap](../06-delivery-roadmap.md) remains the canonical register.
@@ -159,7 +160,7 @@ The evidence index records report hashes. The first failed scan and cancelled in
 runs remain historical attempts; they are not counted as passes. Later source changes need
 their own successful required workflow.
 
-## Remaining gates and limitations
+## Acceptance scope and remaining limitations
 
 Hosted GitHub CI and current dependency/image security gates are **completed**. Independent
 skill candidate evidence remains scoped to its recorded SDK 22.6.2 baseline; no independent

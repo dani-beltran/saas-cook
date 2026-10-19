@@ -1,7 +1,7 @@
 {
 	"schemaVersion": 1,
 	"phase": 5,
-	"acceptance": "pending",
+	"acceptance": "accepted",
 	"baselineCommit": "a35fa43a2cc32803750ffb8dae55adf655f3c283",
 	"implementationSha256": "8d1cce54de8d67796bd9ebbb5a322d7d5d7cfc82324500538cf57a4a71dae52e",
 	"collectedAt": "2026-09-27T16:09:44.819667+00:00",
@@ -944,5 +944,13 @@
 	"latestSkillEvaluation": {
 		"path": "docs/phase5/evaluation-2026-10-19.json",
 		"sha256": "0ce4375bd8cb2c8798f6469c5062249df0e75a289f8657aef0c123bdd9866d0b"
+	},
+	"acceptanceScope": {
+		"date": "2026-10-19",
+		"status": "Phase 5 completed; no Phase 5 technical gate remains before Phase 6",
+		"hostedCiCheck": "hosted-ci-2026-10-19",
+		"sourceScope": "Hosted CI verified PR head e2a17023516146b1422befbfb78f47d524cbb984 and its recorded GitHub merge commit; historical evaluations retain their own source/SDK scope.",
+		"milestone": "M2 Commercial remains unaccepted until Phase 6 gates pass",
+		"delivery": "PR review and merge remain separate delivery steps"
 	}
 }

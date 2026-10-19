@@ -81,8 +81,9 @@ host; it is not an OS-enforced security boundary. Calibration temporarily staged
 hidden copies inside candidate 1; the complete author tool-call audit found no access, the
 copies were relocated, and canonical frozen controls always remained external.
 
-**Phase 5 overall remains unaccepted.** These candidate trials used SDK 22.6.2 and do not
-claim an independent authoring repeat for the subsequent SDK 23.0.0 / Endive update.
-The final-source Endive hosted Checkout repeat subsequently passed; hosted CI and current
-security evidence remain outstanding in the [acceptance record](acceptance.md).
-M2 Commercial also requires Phase 6.
+**Phase 5 is completed and accepted for its documented scope as of 2026-10-19.**
+These candidate trials retain their SDK 22.6.2 baseline and do not claim an independent
+authoring repeat for the subsequent SDK 23.0.0 / Endive update. The final-source Endive
+hosted Checkout repeat and current hosted CI/security gates subsequently passed, as recorded
+in the [acceptance record](acceptance.md). That later evidence does not broaden the scope
+of these historical candidate trials. M2 Commercial still requires Phase 6.
