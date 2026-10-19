@@ -1,0 +1,1 @@
+CREATE INDEX "activity_retention_order" ON "tenancy"."activity_events" USING btree ("occurred_at","organization_id","source_id");

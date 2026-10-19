@@ -49,7 +49,12 @@ const config: KnipConfig = {
 			project: ["src/**/*.{ts,tsx}"],
 		},
 		"packages/db": {
-			entry: ["src/example-customers/schema.ts", "src/billing/schema.ts"],
+			entry: [
+				"src/example-customers/schema.ts",
+				"src/billing/schema.ts",
+				"src/platform/schema.ts",
+				"src/files/schema.ts",
+			],
 			project: ["src/**/*.ts"],
 		},
 		"packages/ui": {

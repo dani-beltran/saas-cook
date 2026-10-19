@@ -4,6 +4,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { createServer } from "node:net";
 import { setTimeout as delay } from "node:timers/promises";
 import type { FullConfig } from "@playwright/test";
+import { createTestFileStorage } from "../../packages/testing/src/file-storage";
 import { createTestInstallation } from "../../packages/testing/src/installation";
 
 export default async function setup(config: FullConfig) {
@@ -19,6 +20,7 @@ export default async function setup(config: FullConfig) {
 		});
 	});
 	const installation = await createTestInstallation();
+	let storage: Awaited<ReturnType<typeof createTestFileStorage>> | undefined;
 	const previousEnv = Object.fromEntries(
 		Object.keys(installation.env).map((key) => [key, process.env[key]]),
 	);
@@ -50,15 +52,21 @@ export default async function setup(config: FullConfig) {
 				if (value === undefined) delete process.env[key];
 				else process.env[key] = value;
 			}
-			await installation.cleanup();
+			try {
+				await storage?.cleanup();
+			} finally {
+				await installation.cleanup();
+			}
 		}
 	}
 	try {
+		storage = await createTestFileStorage(baseURL);
 		server = spawn(
 			process.execPath,
 			["apps/web/.next/standalone/apps/web/server.js"],
 			{
 				env: {
+					...storage.env,
 					PATH: process.env.PATH,
 					NODE_ENV: "production",
 					HOSTNAME: "127.0.0.1",

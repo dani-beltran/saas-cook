@@ -137,7 +137,7 @@ it("upgrades the populated 0009 predecessor for Phase 5 without changing identit
 					"SELECT count(*) FROM drizzle.__drizzle_migrations",
 				)
 			).rows[0].count,
-		).toBe("11");
+		).toBe("16");
 		expect(
 			(
 				await migrator.query(

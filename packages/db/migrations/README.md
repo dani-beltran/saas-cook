@@ -4,8 +4,7 @@ The explicitly requested SaaS Cook disposable reset on 2026-09-27 changed the
 database role prefix throughout SQL and snapshots to `saas_cook`. It preserves
 journal ordering, snapshot ancestry and schema behavior, but requires a fresh
 installation; it is not an upgrade path for databases using the former roles.
-The [rename brief](../../../feature-briefs/saas-cook-rename.md#database-reset)
-records this one-time exception to immutable history. The history guard pins its
+This documented reset is a one-time exception to immutable history. The history guard pins its
 exact before/after hashes and continues to reject all other historical edits.
 
 `0000_foundation` creates runtime heartbeat and isolated Better Auth adapter tables.
@@ -123,3 +122,26 @@ private row. Apply before starting the new binaries; no backfill, new environmen
 variables, OpenFGA model or publication is needed. Fresh, populated 0008 upgrade,
 journal replay, role denial and storage constraints have dedicated integration
 coverage. The existing `user.image` remains the sole display pointer.
+
+
+`0011_phase6_discovery` adds a forced-RLS, tenant/source-constrained safe activity
+projection. A fixed audit-event allowlist projects in the source transaction;
+replay uses the same source ID and never copies arbitrary payloads or personal
+actor labels. Existing audit/outbox history and readiness remain unchanged.
+`0012_phase6_search_indexes` adds PostgreSQL name-search indexes and a restricted
+worker-only lookup for tenants with expired activity. `0013_phase6_activity_retention_index`
+indexes that bounded cleanup lookup. Activity expires after 90 days, independently
+of audit retention. These migrations add no credentials or recovery authority.
+Apply the migration journal before starting the new web/worker binaries. Old
+history is not automatically backfilled; the scoped `tenancy.project_activity_event`
+function can replay retained source IDs without duplicating activity. The Phase 6
+upgrade suite preserves populated Phase 5 source/history and closed readiness.
+
+
+`0014_phase6_files` adds Project-inherited file attempts with forced RLS and a
+worker-only bounded expiry lookup. `0015_phase6_file_reservation` adds the
+same-tenant reservation reference and its referenced unique constraint; the SQL
+orders that unique constraint before the foreign key. File identities and object
+versions are private service state. Existing schema/history/readiness are preserved.
+Apply both before enabling file storage. Storage is disabled by default and requires
+the [documented private versioned adapter](../../../docs/phase6/files.md).

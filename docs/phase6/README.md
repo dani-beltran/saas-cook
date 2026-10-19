@@ -1,0 +1,16 @@
+# Phase 6 implementation in progress
+
+This checkout implements the discovery/activity, API-key administration and bounded text-file portion of Phase 6. It does **not** implement the complete phase or establish M2 Commercial acceptance. See the [acceptance record](acceptance.md) for remaining work.
+
+## Implemented behavior
+
+- `/[locale]/organizations/[organizationId]/search` searches Project and example-customer **names**, using PostgreSQL full-text indexes and current source records. English and Spanish UI use the shared controls/theme. Description/email/company are excluded from search and result DTOs. Results expose no unrestricted totals. Filters and opaque, 30-minute continuation cursors bind actor, tenant, query, page size and enabled types. A page scans at most 100 candidates; empty pages may continue.
+- Activity appears in the search result detail, Project editor and customer detail. New supported events project atomically from audit writes into `tenancy.activity_events`; only created/updated/deleted/restored actions, generic actor class, event ID and time are exposed. Current Project read or customer organization-read permission is required. Deleted resources are unavailable. Activity pagination binds resource, actor and tenant and orders by millisecond timestamp/source ID.
+- A bounded worker cleanup removes activity older than 90 days. Audit history remains separate. Only the worker can discover retention work or delete the projection; ordinary web access cannot rewrite/delete it. Source replay deduplicates and ignores events outside the retention window. Existing history is not automatically backfilled.
+- `/[locale]/organizations/[organizationId]/keys` lists service accounts and key metadata with current organization manage permission. It supports account creation/activation/deactivation and existing key issuance/rotation/revocation, with explicit scopes, expiry, confirmation for destructive actions, and secrets displayed once in memory. Organization-wide Project capabilities default off. Changes retain the existing five-minute fresh-authentication requirement. Keys have no access to the new human-only platform endpoints.
+
+- The Project editor supports private UTF-8 `.txt`/CSV uploads, verification and authorized proxy downloads. The service records the scanned immutable S3 version and digest, charges staging plus captured storage, bounds unfinished allocations and removes expired objects before releasing physical allocation. See [files](files.md). Bulk import/export is still unimplemented.
+
+Apply reviewed migrations `0011`–`0015` before starting the new binaries. They preserve existing data, audit/outbox and readiness; no model publication or ambient installation reset is required. Search, activity and key administration need no new configuration. Files are disabled by default; [file configuration and limits](files.md) describe the optional private versioned S3 adapter. The normal migration command is `bun run db:migrate`; it was exercised only through disposable test installations during this implementation.
+
+The existing authoring skills guide ordinary source. This implementation added no generators, permission bypasses, new authorization model or substituted provider adapter.

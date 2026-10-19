@@ -50,6 +50,9 @@ export const exampleCustomers = tenancy
 		},
 		(t) => [
 			unique("example_customers_org_id").on(t.organizationId, t.id),
+			index("example_customers_search_name")
+				.using("gin", sql`to_tsvector('simple',name)`)
+				.where(sql`deleted_at IS NULL`),
 			check(
 				"example_customers_name",
 				sql`length(btrim(name)) BETWEEN 1 AND 120`,

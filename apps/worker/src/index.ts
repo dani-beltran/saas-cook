@@ -4,6 +4,9 @@ import { readWorkerEnv } from "@saas-cook/config/server";
 import { recordHeartbeat, recordProbe } from "@saas-cook/db";
 import { createStripeProvider } from "@saas-cook/db/billing-stripe";
 import { createBillingWorker } from "@saas-cook/db/billing-worker";
+import { configuredFileStorage } from "@saas-cook/db/file-storage";
+import { pruneFiles } from "@saas-cook/db/files-worker";
+import { pruneActivity } from "@saas-cook/db/platform-worker";
 import {
 	createSmtpTransport,
 	deliverBillingNotices,
@@ -52,6 +55,7 @@ const billingWorker =
 				origin: env.APP_ORIGIN,
 			})
 		: undefined;
+const fileStorage = configuredFileStorage(env);
 const mailTransport = createSmtpTransport({
 	host: env.SMTP_HOST,
 	port: env.SMTP_PORT,
@@ -93,6 +97,8 @@ let timer: NodeJS.Timeout | undefined;
 let pendingHeartbeat: Promise<void> = Promise.resolve();
 let pendingBilling: Promise<void> | undefined;
 let billingTimer: NodeJS.Timeout | undefined;
+let platformTimer: NodeJS.Timeout | undefined;
+let pendingPlatform: Promise<void> | undefined;
 async function billingTick() {
 	await ready();
 	await billingWorker?.tick();
@@ -123,11 +129,13 @@ async function stop(code: number) {
 	stopping = true;
 	clearInterval(timer);
 	clearInterval(billingTimer);
+	clearInterval(platformTimer);
 	const deadline = setTimeout(() => process.exit(1), 12_000);
 	try {
 		await boss.stop({ graceful: true, timeout: 8_000 });
 		await pendingHeartbeat.catch(() => {});
 		await pendingBilling?.catch(() => {});
+		await pendingPlatform?.catch(() => {});
 		await pool.end();
 		await controlPool.end();
 		await rm(heartbeatPath, { force: true });
@@ -193,6 +201,19 @@ try {
 					pendingBilling = undefined;
 				});
 	}, 5000);
+	// Projection retention is optional work; its failures cannot block billing notices.
+	platformTimer = setInterval(() => {
+		if (!pendingPlatform)
+			pendingPlatform = ready()
+				.then(() => pruneActivity(pool, authorization.publication))
+				.then(() => pruneFiles(pool, fileStorage, authorization.publication))
+				.catch(() => {
+					logEvent("worker.platform_retention_failed");
+				})
+				.finally(() => {
+					pendingPlatform = undefined;
+				});
+	}, 60_000);
 	logEvent("worker.ready");
 } catch (error) {
 	logEvent("worker.startup_failed", {

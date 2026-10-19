@@ -5,7 +5,9 @@
 	"type": "module",
 	"exports": {
 		".": "./src/index.ts",
-		"./example-customers": "./src/example-customers/index.ts"
+		"./example-customers": "./src/example-customers/index.ts",
+		"./platform": "./src/platform.ts",
+		"./files": "./src/files.ts"
 	},
 	"scripts": {
 		"typecheck": "tsc --noEmit"

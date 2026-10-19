@@ -13,6 +13,116 @@ import {
 
 const api = implement(contract).$context<RequestContext>();
 export const router = api.router({
+	files: {
+		list: api.files.list.handler(
+			({ input: { organizationId, ...input }, context }) =>
+				resourceOperation(
+					context,
+					organizationId,
+					{ mutate: false, serviceAccounts: false },
+					(runtime, actor) => {
+						if ("kind" in actor) throw new Error("Human principal required");
+						return runtime.files.list(actor, organizationId, input.projectId);
+					},
+				),
+		),
+		initiate: api.files.initiate.handler(
+			({ input: { organizationId, ...input }, context }) =>
+				resourceOperation(
+					context,
+					organizationId,
+					{ mutate: true, serviceAccounts: false },
+					(runtime, actor) => {
+						if ("kind" in actor) throw new Error("Human principal required");
+						return runtime.files.initiate(actor, organizationId, input);
+					},
+				),
+		),
+		finalize: api.files.finalize.handler(
+			({ input: { organizationId, ...input }, context }) =>
+				resourceOperation(
+					context,
+					organizationId,
+					{ mutate: true, serviceAccounts: false },
+					(runtime, actor) => {
+						if ("kind" in actor) throw new Error("Human principal required");
+						return runtime.files.finalize(
+							actor,
+							organizationId,
+							input.projectId,
+							input.id,
+						);
+					},
+				),
+		),
+		download: api.files.download.handler(
+			({ input: { organizationId, ...input }, context }) =>
+				resourceOperation(
+					context,
+					organizationId,
+					{ mutate: false, serviceAccounts: false },
+					(runtime, actor) => {
+						if ("kind" in actor) throw new Error("Human principal required");
+						return runtime.files.download(
+							actor,
+							organizationId,
+							input.projectId,
+							input.id,
+						);
+					},
+				),
+		),
+	},
+	platform: {
+		accounts: api.platform.accounts.handler(
+			({ context, input: { organizationId, ...input } }) =>
+				resourceOperation(
+					context,
+					organizationId,
+					{ mutate: false, serviceAccounts: false },
+					(runtime, actor) => {
+						if ("kind" in actor) throw new Error("Authorization denied");
+						return runtime.platform.accounts(actor, organizationId, input);
+					},
+				),
+		),
+		keys: api.platform.keys.handler(
+			({ context, input: { organizationId, ...input } }) =>
+				resourceOperation(
+					context,
+					organizationId,
+					{ mutate: false, serviceAccounts: false },
+					(runtime, actor) => {
+						if ("kind" in actor) throw new Error("Authorization denied");
+						return runtime.platform.keys(actor, organizationId, input);
+					},
+				),
+		),
+		search: api.platform.search.handler(
+			({ context, input: { organizationId, ...input } }) =>
+				resourceOperation(
+					context,
+					organizationId,
+					{ mutate: false, serviceAccounts: false },
+					(runtime, actor) => {
+						if ("kind" in actor) throw new Error("Authorization denied");
+						return runtime.platform.search(actor, organizationId, input);
+					},
+				),
+		),
+		activity: api.platform.activity.handler(
+			({ context, input: { organizationId, ...input } }) =>
+				resourceOperation(
+					context,
+					organizationId,
+					{ mutate: false, serviceAccounts: false },
+					(runtime, actor) => {
+						if ("kind" in actor) throw new Error("Authorization denied");
+						return runtime.platform.activity(actor, organizationId, input);
+					},
+				),
+		),
+	},
 	billing: {
 		get: api.billing.get.handler(({ context, input }) =>
 			resourceOperation(

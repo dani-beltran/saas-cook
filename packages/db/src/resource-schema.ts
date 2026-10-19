@@ -128,6 +128,9 @@ export const projects = tenancy
 		},
 		(t) => [
 			unique("projects_org_id").on(t.organizationId, t.id),
+			index("projects_search_name")
+				.using("gin", sql`to_tsvector('simple',name)`)
+				.where(sql`deleted_at IS NULL`),
 			unique("projects_org_slug").on(t.organizationId, t.slug),
 			foreignKey({
 				columns: [t.organizationId, t.id],
@@ -280,6 +283,7 @@ export const capacityReservations = tenancy
 				.notNull(),
 		},
 		(t) => [
+			unique("capacity_reservations_org_id").on(t.organizationId, t.id),
 			unique("capacity_reservations_operation").on(
 				t.organizationId,
 				t.bucketId,

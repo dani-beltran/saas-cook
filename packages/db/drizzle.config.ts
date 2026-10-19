@@ -7,6 +7,8 @@ export default defineConfig({
 		"./packages/db/src/resource-schema.ts",
 		"./packages/db/src/example-customers/schema.ts",
 		"./packages/db/src/billing/schema.ts",
+		"./packages/db/src/platform/schema.ts",
+		"./packages/db/src/files/schema.ts",
 	],
 	out: "./packages/db/migrations",
 	strict: true,

@@ -8,11 +8,11 @@ The [required stack](docs/02-architecture-and-security.md#21-stack-decisions) al
 
 The template is intended to be source code you own and customize. You supply your product-specific features, business rules, branding, and pricing.
 
-The checkout directory and root package are `saas-cook`, and active workspace packages use `@saas-cook`. The [rename brief](feature-briefs/saas-cook-rename.md) records compatibility identifiers retained from the original foundation.
+The checkout directory and root package are `saas-cook`, and active workspace packages use `@saas-cook`. The [compatibility notes](docs/00-project-overview.md#compatibility-identifiers) records compatibility identifiers retained from the original foundation.
 
 The template builds one Docker image containing the web app and background worker, with external data services configured at runtime.
 
-**Status: M1 Foundation is complete through Phase 4.** The [Foundation acceptance record](docs/foundation/acceptance.md) covers identity and tenancy, direct-Organization Projects, scoped service accounts/API keys, local capacity, the full authorization benchmark, current image/security checks, hosted CI and two refreshed skill evaluations. See the [Phase 2 setup](docs/phase2/README.md), [Phase 3 upgrade guide](docs/phase3/README.md) and [Phase 4 skills](docs/phase4/README.md). Phase 5 implementation and its outstanding acceptance gates are recorded [here](docs/phase5/acceptance.md). Phases 6–8 and Backoffice remain planned.
+**Status: M1 Foundation is complete through Phase 4.** The [Foundation acceptance record](docs/foundation/acceptance.md) covers identity and tenancy, direct-Organization Projects, scoped service accounts/API keys, local capacity, the full authorization benchmark, current image/security checks, hosted CI and two refreshed skill evaluations. See the [Phase 2 setup](docs/phase2/README.md), [Phase 3 upgrade guide](docs/phase3/README.md) and [Phase 4 skills](docs/phase4/README.md). Phase 5 implementation and its outstanding acceptance gates are recorded [here](docs/phase5/acceptance.md). Phase 6 is partially implemented: [search, activity and API-key administration](docs/phase6/README.md). The remaining Phase 6 modules, Phases 7–8 and Backoffice remain pending.
 
 ## Local development
 

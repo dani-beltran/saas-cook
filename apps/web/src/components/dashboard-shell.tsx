@@ -35,7 +35,9 @@ function NavigationIcon({
 		| "projects"
 		| "customers"
 		| "billing"
-		| "usage";
+		| "usage"
+		| "search"
+		| "keys";
 }) {
 	return (
 		<svg
@@ -78,7 +80,9 @@ export function DashboardShell({
 		| "projects"
 		| "customers"
 		| "billing"
-		| "usage";
+		| "usage"
+		| "search"
+		| "keys";
 	organizationId?: string;
 	children: ReactNode;
 	onLocaleChange?: (locale: "en" | "es") => void;
@@ -152,7 +156,9 @@ export function DashboardFrame({
 		| "projects"
 		| "customers"
 		| "billing"
-		| "usage";
+		| "usage"
+		| "search"
+		| "keys";
 	organizationId?: string;
 	children: ReactNode;
 	organizations: Array<{ id: string; name: string }>;
@@ -253,7 +259,7 @@ export function DashboardFrame({
 						onChange={(event) => {
 							if (event.target.value)
 								window.location.assign(
-									`/${locale}/organizations/${event.target.value}${section === "projects" ? "/projects" : section === "customers" ? "/customers" : section === "billing" ? "/billing" : section === "usage" ? "/usage" : ""}`,
+									`/${locale}/organizations/${event.target.value}${section === "projects" ? "/projects" : section === "customers" ? "/customers" : section === "billing" ? "/billing" : section === "usage" ? "/usage" : section === "search" ? "/search" : section === "keys" ? "/keys" : ""}`,
 								);
 						}}
 					>
@@ -290,6 +296,7 @@ export function DashboardFrame({
 					{organizationId && (
 						<>
 							<p className="dashboard-nav-label">{copy.work}</p>
+							{link("search", copy.search, `${organizationPath}/search`)}
 							{link("projects", copy.projects, `${organizationPath}/projects`)}
 							{link(
 								"customers",
@@ -298,6 +305,7 @@ export function DashboardFrame({
 							)}
 							{link("billing", copy.billing, `${organizationPath}/billing`)}
 							{link("usage", copy.usage, `${organizationPath}/usage`)}
+							{link("keys", copy.keys, `${organizationPath}/keys`)}
 							{link("organization", copy.settings, organizationPath)}
 						</>
 					)}

@@ -15,6 +15,8 @@ import {
 } from "@saas-cook/ui";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { ResourceActivity } from "../features/platform/activity";
+import { ProjectFiles } from "../features/platform/files";
 import { DashboardShell } from "./dashboard-shell";
 import "./projects-dashboard.css";
 
@@ -308,6 +310,21 @@ export function Projects({ organizationId }: { organizationId: string }) {
 						</div>
 					</div>
 					{notice("editor")}
+					{editor !== "create" && (
+						<ResourceActivity
+							key={editor.id}
+							organizationId={organizationId}
+							resourceType="project"
+							resourceId={editor.id}
+						/>
+					)}
+					{editor !== "create" && (
+						<ProjectFiles
+							key={editor.id}
+							organizationId={organizationId}
+							projectId={editor.id}
+						/>
+					)}
 					<ProjectForm
 						key={editor === "create" ? "new" : `${editor.id}:${editor.version}`}
 						initial={

@@ -27,6 +27,22 @@ const identity = {
 	AUTH_SECRET: z.string().min(32),
 	AUTH_INGRESS_SECRET: z.string().min(32).optional(),
 };
+const files = {
+	FILES_ENABLED: z.enum(["true", "false"]).default("false"),
+	FILES_S3_ENDPOINT: z.url().optional(),
+	FILES_S3_REGION: z.string().default("us-east-1"),
+	FILES_S3_BUCKET: z.string().min(3).max(63).optional(),
+	FILES_S3_UPLOAD_KEY: z.string().optional(),
+	FILES_S3_UPLOAD_SECRET: z.string().optional(),
+	FILES_S3_FINALIZER_KEY: z.string().optional(),
+	FILES_S3_FINALIZER_SECRET: z.string().optional(),
+	FILES_CAPACITY_BYTES: z.coerce
+		.number()
+		.int()
+		.min(0)
+		.max(1000000000)
+		.default(52428800),
+};
 const billing = {
 	BILLING_ENABLED: z.enum(["true", "false"]).default("false"),
 	STRIPE_MODE: z.enum(["test", "live"]).default("test"),
@@ -58,7 +74,7 @@ const billing = {
 				v.every((n) => Number.isInteger(n) && n > 0 && n <= 100),
 		),
 };
-function validateBilling<
+function validateOptionalModules<
 	T extends {
 		BILLING_ENABLED: string;
 		STRIPE_MODE: string;
@@ -66,6 +82,12 @@ function validateBilling<
 		STRIPE_WEBHOOK_SECRET?: string;
 		STRIPE_ACCOUNT_ID?: string;
 		STRIPE_PORTAL_CONFIGURATION_ID?: string;
+		FILES_ENABLED?: string;
+		FILES_S3_BUCKET?: string;
+		FILES_S3_UPLOAD_KEY?: string;
+		FILES_S3_UPLOAD_SECRET?: string;
+		FILES_S3_FINALIZER_KEY?: string;
+		FILES_S3_FINALIZER_SECRET?: string;
 	},
 >(env: T): T {
 	if (
@@ -79,6 +101,17 @@ function validateBilling<
 	)
 		throw new Error(
 			"Invalid billing configuration; enabled Stripe requires matching mode, key, account, webhook and portal configuration",
+		);
+	if (
+		env.FILES_ENABLED === "true" &&
+		(!env.FILES_S3_BUCKET ||
+			!env.FILES_S3_UPLOAD_KEY ||
+			!env.FILES_S3_UPLOAD_SECRET ||
+			!env.FILES_S3_FINALIZER_KEY ||
+			!env.FILES_S3_FINALIZER_SECRET)
+	)
+		throw new Error(
+			"Invalid file storage configuration; enabled files require private versioned storage and separate credentials",
 		);
 	return env;
 }
@@ -114,22 +147,24 @@ export function readWebEnv(runtimeEnv: Environment = process.env) {
 			...identity,
 			...authorization,
 			...billing,
+			...files,
 		},
 		runtimeEnv,
 	});
 	if (env.AUTH_INGRESS_SECRET === env.AUTH_SECRET) {
 		throw new Error("Authentication and ingress signing keys must differ");
 	}
-	return validateBilling(env);
+	return validateOptionalModules(env);
 }
 export function readWorkerEnv(runtimeEnv: Environment = process.env) {
-	return validateBilling(
+	return validateOptionalModules(
 		createEnv({
 			...options,
 			server: {
 				WORKER_DATABASE_URL: databaseUrl,
 				APP_ORIGIN: origin.default("http://localhost:3000"),
 				...billing,
+				...files,
 				AUTH_SECRET: z.string().min(32),
 				SMTP_HOST: z.string().min(1),
 				SMTP_PORT: z.coerce.number().int().min(1).max(65535),

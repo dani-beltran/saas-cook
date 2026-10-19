@@ -4,7 +4,7 @@ An implementation plan for a reusable enterprise SaaS template built with **Next
 
 **Status:** Phase 0 validation and Phase 1 repository/runtime implementation are complete for their documented scope. The [Phase 1 guide](phase1/README.md) covers the runnable shell, worker, API skeleton, combined image and local acceptance evidence. Identity, tenant access and production authorization are Phase 2 work.
 
-The project is named **SaaS Cook**, with root package `saas-cook` and workspace package namespace `@saas-cook`. See the [rename brief](../feature-briefs/saas-cook-rename.md) for retained compatibility identifiers.
+The project is named **SaaS Cook**, with root package `saas-cook` and workspace package namespace `@saas-cook`. See the [compatibility notes](#compatibility-identifiers) for retained compatibility identifiers.
 
 ## Read the plan
 
@@ -62,3 +62,7 @@ The template should be a strong base for many SaaS products. Each product still 
 - Every transition into a billable membership uses the same transactional seat-admission boundary.
 
 The [roadmap's capability-to-phase matrix](06-delivery-roadmap.md#capability-to-phase-and-acceptance-matrix) assigns these requirements and the skills' platform dependencies to explicit delivery gates. These safeguards are planned acceptance criteria, not implemented guarantees.
+
+## Compatibility identifiers
+
+Active packages use `@saas-cook`; PostgreSQL roles use `saas_cook` under the one-time disposable reset documented in the [migration guide](../packages/db/migrations/README.md). Preserve the `x-common-saas-source*` ingress headers and `common-saas-ingress:v1` signing domain as protocol identifiers. Retained Phase 0 fixtures, package names and acceptance evidence remain historical contracts. A product rename does not authorize changing deployed database roles, signed protocol identifiers or applied migrations.
