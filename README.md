@@ -8,7 +8,7 @@ The [required stack](docs/02-architecture-and-security.md#21-stack-decisions) al
 
 The template is intended to be source code you own and customize. You supply your product-specific features, business rules, branding, and pricing.
 
-The root package is `saas-cook`, and active workspace packages use `@saas-cook`. The [rename brief](feature-briefs/saas-cook-rename.md) records compatibility identifiers retained from the original foundation.
+The checkout directory and root package are `saas-cook`, and active workspace packages use `@saas-cook`. The [rename brief](feature-briefs/saas-cook-rename.md) records compatibility identifiers retained from the original foundation.
 
 The template builds one Docker image containing the web app and background worker, with external data services configured at runtime.
 
