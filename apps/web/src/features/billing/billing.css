@@ -74,7 +74,7 @@
 .billing-fields select {
 	border: 1px solid var(--input);
 	border-radius: 0.4rem;
-	padding: 0.6rem;
+	padding: 0.6rem 2.25rem 0.6rem 0.6rem;
 	background: var(--background);
 }
 .billing-fields select:focus-visible {

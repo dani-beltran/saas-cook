@@ -1,5 +1,5 @@
 "use client";
-import { Input } from "@saas-cook/ui";
+import { Button, Input } from "@saas-cook/ui";
 import { useLocale, useTranslations } from "next-intl";
 import { type MouseEvent, useEffect, useRef, useState } from "react";
 import { IdentityRequestError, identityRequest } from "../lib/identity-request";
@@ -385,7 +385,9 @@ export function SignIn({
 						<>
 							<div className="auth-divider">{t("alternativeMethods")}</div>
 							<div className="space-y-2.5">
-								<button
+								<Button
+									variant="ghost"
+									size="plain"
 									type="button"
 									className="auth-secondary"
 									disabled={Boolean(busy)}
@@ -407,7 +409,7 @@ export function SignIn({
 									<span aria-live="polite" aria-atomic="true">
 										{t(busy === "passkey" ? "passkeyPending" : "passkey")}
 									</span>
-								</button>
+								</Button>
 								{modeLink("link", t("useEmailLink"), "auth-secondary")}
 							</div>
 						</>

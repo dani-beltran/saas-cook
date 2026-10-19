@@ -273,7 +273,7 @@
 	border-radius: var(--panel-radius);
 	cursor: pointer;
 }
-.account-mode-option:has(:checked) {
+.account-mode-option:has([data-state="checked"]) {
 	border-color: var(--primary);
 	outline: 2px solid var(--primary);
 	outline-offset: -2px;
@@ -283,7 +283,7 @@
 	outline: 3px solid var(--ring);
 	outline-offset: 3px;
 }
-.account-mode-option input {
+.account-mode-option [data-slot="radio-group-item"] {
 	position: absolute;
 	width: 1px;
 	height: 1px;
@@ -301,7 +301,7 @@
 	visibility: hidden;
 	color: var(--primary);
 }
-.account-mode-option:has(:checked) .account-mode-check {
+.account-mode-option:has([data-state="checked"]) .account-mode-check {
 	visibility: visible;
 }
 .account-mode-option:has(:disabled) {

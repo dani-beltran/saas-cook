@@ -6,7 +6,18 @@ import type {
 	BillingPreview,
 	BillingSnapshot,
 } from "@saas-cook/api-contracts";
-import { Button, Input } from "@saas-cook/ui";
+import {
+	Button,
+	Input,
+	NativeSelect,
+	NativeSelectOption,
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@saas-cook/ui";
 import { useLocale } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -184,9 +195,10 @@ export function BillingPage({
 								) : (
 									<form onSubmit={form.handleSubmit(select)}>
 										<div className="billing-fields">
-											<label>
+											<label htmlFor="billing-plan">
 												{t.select}
-												<select
+												<NativeSelect
+													id="billing-plan"
 													{...form.register("planVersionId")}
 													onChange={(e) => {
 														void form.register("planVersionId").onChange(e);
@@ -198,9 +210,11 @@ export function BillingPage({
 															form.setValue("quantity", 1);
 													}}
 												>
-													<option value="">{t.select}</option>
+													<NativeSelectOption value="">
+														{t.select}
+													</NativeSelectOption>
 													{data.plans.map((p) => (
-														<option key={p.id} value={p.id}>
+														<NativeSelectOption key={p.id} value={p.id}>
 															{p.name} · {p.id} ·{" "}
 															{formatBillingAmount(
 																p.amount,
@@ -215,9 +229,9 @@ export function BillingPage({
 																: locale === "es"
 																	? "año"
 																	: "year"}
-														</option>
+														</NativeSelectOption>
 													))}
-												</select>
+												</NativeSelect>
 											</label>
 											<label htmlFor="billing-quantity">
 												{t.quantity}
@@ -429,38 +443,38 @@ export function BillingOverview({
 						<p>{t.empty}</p>
 					) : (
 						<div className="billing-table">
-							<table>
-								<thead>
-									<tr>
-										<th>{t.date}</th>
-										<th>{t.status}</th>
-										<th>{t.amount}</th>
-										<th>{t.paid}</th>
-										<th>{t.invoices}</th>
-									</tr>
-								</thead>
-								<tbody>
+							<Table>
+								<TableHeader>
+									<TableRow>
+										<TableHead>{t.date}</TableHead>
+										<TableHead>{t.status}</TableHead>
+										<TableHead>{t.amount}</TableHead>
+										<TableHead>{t.paid}</TableHead>
+										<TableHead>{t.invoices}</TableHead>
+									</TableRow>
+								</TableHeader>
+								<TableBody>
 									{data.invoices.map((i) => (
-										<tr key={i.id}>
-											<td>{date(i.periodStart)}</td>
-											<td>{state(i.status)}</td>
-											<td>
+										<TableRow key={i.id}>
+											<TableCell>{date(i.periodStart)}</TableCell>
+											<TableCell>{state(i.status)}</TableCell>
+											<TableCell>
 												{formatBillingAmount(i.amountDue, i.currency, locale)}
-											</td>
-											<td>
+											</TableCell>
+											<TableCell>
 												{formatBillingAmount(i.amountPaid, i.currency, locale)}
-											</td>
-											<td>
+											</TableCell>
+											<TableCell>
 												{i.hostedUrl && (
 													<a href={i.hostedUrl} rel="noreferrer">
 														{t.view} ↗
 													</a>
 												)}
-											</td>
-										</tr>
+											</TableCell>
+										</TableRow>
 									))}
-								</tbody>
-							</table>
+								</TableBody>
+							</Table>
 						</div>
 					)}
 				</section>

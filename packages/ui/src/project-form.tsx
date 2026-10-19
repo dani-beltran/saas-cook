@@ -7,6 +7,8 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "./button";
 import { Input } from "./input";
+import { NativeSelect, NativeSelectOption } from "./native-select";
+import { Textarea } from "./textarea";
 
 export interface ProjectFormValues {
 	name: string;
@@ -99,7 +101,7 @@ export function ProjectForm({
 			)}
 			<div className="grid gap-2">
 				<label htmlFor={`${id}-description`}>{t("description")}</label>
-				<textarea
+				<Textarea
 					id={`${id}-description`}
 					className="min-h-28 resize-y rounded-md border border-input bg-background p-3 outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
 					disabled={pending}
@@ -122,16 +124,22 @@ export function ProjectForm({
 			{initial && (
 				<div className="grid gap-2">
 					<label htmlFor={`${id}-status`}>{t("status")}</label>
-					<select
+					<NativeSelect
 						id={`${id}-status`}
 						disabled={pending}
 						className="min-h-10 rounded-md border border-input bg-background p-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
 						{...register("status")}
 					>
-						<option value="active">{t("active")}</option>
-						<option value="completed">{t("completed")}</option>
-						<option value="archived">{t("archived")}</option>
-					</select>
+						<NativeSelectOption value="active">
+							{t("active")}
+						</NativeSelectOption>
+						<NativeSelectOption value="completed">
+							{t("completed")}
+						</NativeSelectOption>
+						<NativeSelectOption value="archived">
+							{t("archived")}
+						</NativeSelectOption>
+					</NativeSelect>
 				</div>
 			)}
 			<div className="flex flex-wrap gap-3 border-t border-border pt-5">

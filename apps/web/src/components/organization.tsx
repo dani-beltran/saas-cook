@@ -6,9 +6,19 @@ import type {
 	OrganizationCommand,
 	OrganizationSnapshotDto,
 } from "@saas-cook/api-contracts";
-import { Button, Input } from "@saas-cook/ui";
+import {
+	Button,
+	Checkbox,
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogTitle,
+	Input,
+	NativeSelect,
+	NativeSelectOption,
+} from "@saas-cook/ui";
 import { useLocale, useTranslations } from "next-intl";
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { organizationDashboardCopy } from "../i18n/organization-dashboard";
@@ -97,45 +107,44 @@ export function ConfirmDialog({
 	onConfirm: () => void;
 }) {
 	const { t, copy } = useCopy();
-	const dialog = useRef<HTMLDialogElement>(null);
-	const id = useId();
-	useEffect(() => {
-		if (value && !dialog.current?.open) dialog.current?.showModal();
-		if (!value && dialog.current?.open) dialog.current.close();
-	}, [value]);
 	return (
-		<dialog
-			ref={dialog}
-			className="org-dialog"
-			aria-labelledby={`${id}-title`}
-			aria-describedby={`${id}-description`}
-			onCancel={(event) => {
-				event.preventDefault();
-				if (!busy) onCancel();
+		<Dialog
+			open={Boolean(value)}
+			onOpenChange={(open) => {
+				if (!open && !busy) onCancel();
 			}}
 		>
-			{value && (
-				<>
-					<h2 id={`${id}-title`}>{value.title}</h2>
-					<p id={`${id}-description`} className="dashboard-description">
-						{value.description}
-					</p>
-					<Notice feedback={feedback} scope={value.scope} />
-					<div className="org-dialog-actions">
-						<Button
-							className="dashboard-secondary"
-							disabled={busy}
-							onClick={onCancel}
-						>
-							{t("cancel")}
-						</Button>
-						<Button disabled={busy} onClick={onConfirm}>
-							{busy ? copy.working : copy.confirmChange}
-						</Button>
-					</div>
-				</>
-			)}
-		</dialog>
+			<DialogContent
+				className="org-dialog"
+				showCloseButton={false}
+				onInteractOutside={(event) => event.preventDefault()}
+				onEscapeKeyDown={(event) => {
+					if (busy) event.preventDefault();
+				}}
+			>
+				{value && (
+					<>
+						<DialogTitle>{value.title}</DialogTitle>
+						<DialogDescription className="dashboard-description">
+							{value.description}
+						</DialogDescription>
+						<Notice feedback={feedback} scope={value.scope} />
+						<div className="org-dialog-actions">
+							<Button
+								className="dashboard-secondary"
+								disabled={busy}
+								onClick={onCancel}
+							>
+								{t("cancel")}
+							</Button>
+							<Button disabled={busy} onClick={onConfirm}>
+								{busy ? copy.working : copy.confirmChange}
+							</Button>
+						</div>
+					</>
+				)}
+			</DialogContent>
+		</Dialog>
 	);
 }
 
@@ -186,11 +195,17 @@ function InviteForm({ busy, run }: { busy: boolean; run: Run }) {
 			</div>
 			<div className="dashboard-field">
 				<label htmlFor="invitation-role">{t("role")}</label>
-				<select id="invitation-role" disabled={busy} {...register("role")}>
-					<option value="member">{t("member")}</option>
-					<option value="admin">{t("admin")}</option>
-					<option value="billing">{t("billing")}</option>
-				</select>
+				<NativeSelect
+					id="invitation-role"
+					disabled={busy}
+					{...register("role")}
+				>
+					<NativeSelectOption value="member">{t("member")}</NativeSelectOption>
+					<NativeSelectOption value="admin">{t("admin")}</NativeSelectOption>
+					<NativeSelectOption value="billing">
+						{t("billing")}
+					</NativeSelectOption>
+				</NativeSelect>
 			</div>
 			<Button type="submit" disabled={busy}>
 				{busy ? copy.working : t("invite")}
@@ -379,7 +394,7 @@ export function MemberRow({
 						}}
 					>
 						<label htmlFor={`role-${member.id}`}>{t("role")}</label>
-						<select
+						<NativeSelect
 							id={`role-${member.id}`}
 							value={role}
 							disabled={busy}
@@ -388,12 +403,20 @@ export function MemberRow({
 							}
 						>
 							{member.role === "owner" && (
-								<option value="owner">{t("owner")}</option>
+								<NativeSelectOption value="owner">
+									{t("owner")}
+								</NativeSelectOption>
 							)}
-							<option value="admin">{t("admin")}</option>
-							<option value="member">{t("member")}</option>
-							<option value="billing">{t("billing")}</option>
-						</select>
+							<NativeSelectOption value="admin">
+								{t("admin")}
+							</NativeSelectOption>
+							<NativeSelectOption value="member">
+								{t("member")}
+							</NativeSelectOption>
+							<NativeSelectOption value="billing">
+								{t("billing")}
+							</NativeSelectOption>
+						</NativeSelect>
 						<Button
 							type="submit"
 							className="dashboard-secondary"
@@ -541,7 +564,7 @@ export function TeamCard({
 									<label htmlFor={`team-member-${team.id}`}>
 										{t("membership")}
 									</label>
-									<select
+									<NativeSelect
 										id={`team-member-${team.id}`}
 										value={selectedId}
 										disabled={busy || !filtered.length}
@@ -549,14 +572,16 @@ export function TeamCard({
 									>
 										{filtered.length ? (
 											filtered.map((member) => (
-												<option key={member.id} value={member.id}>
+												<NativeSelectOption key={member.id} value={member.id}>
 													{member.email}
-												</option>
+												</NativeSelectOption>
 											))
 										) : (
-											<option value="">{copy.noMatches}</option>
+											<NativeSelectOption value="">
+												{copy.noMatches}
+											</NativeSelectOption>
 										)}
-									</select>
+									</NativeSelect>
 								</div>
 								<Button
 									type="submit"
@@ -639,28 +664,28 @@ function SecurityPolicy({
 							);
 						}}
 					>
-						<label className="org-policy-row">
+						<label className="org-policy-row" htmlFor="policy-requireMfa">
 							<span>{t("requireMfa")}</span>
-							<input
-								type="checkbox"
+							<Checkbox
+								id="policy-requireMfa"
 								name="requireMfa"
 								disabled={busy}
 								defaultChecked={policy?.requireMfa}
 							/>
 						</label>
-						<label className="org-policy-row">
+						<label className="org-policy-row" htmlFor="policy-acceptPasskeyMfa">
 							<span>{t("acceptPasskeyMfa")}</span>
-							<input
-								type="checkbox"
+							<Checkbox
+								id="policy-acceptPasskeyMfa"
 								name="acceptPasskeyMfa"
 								disabled={busy}
 								defaultChecked={policy?.acceptPasskeyMfa}
 							/>
 						</label>
-						<label className="org-policy-row">
+						<label className="org-policy-row" htmlFor="policy-passkeyOnly">
 							<span>{t("passkeyOnly")}</span>
-							<input
-								type="checkbox"
+							<Checkbox
+								id="policy-passkeyOnly"
 								name="passkeyOnly"
 								disabled={busy}
 								defaultChecked={policy?.requiredAuthMethod === "passkey"}
@@ -1101,7 +1126,9 @@ export function Organization({ organizationId }: { organizationId: string }) {
 								aria-label={copy.navigation}
 							>
 								{tabs.map((tab, index) => (
-									<button
+									<Button
+										variant="ghost"
+										size="plain"
 										type="button"
 										role="tab"
 										key={tab.id}
@@ -1130,7 +1157,7 @@ export function Organization({ organizationId }: { organizationId: string }) {
 										}}
 									>
 										{tab.label}
-									</button>
+									</Button>
 								))}
 							</div>
 						</div>
@@ -1358,36 +1385,42 @@ export function Organization({ organizationId }: { organizationId: string }) {
 											<label htmlFor="transfer-recipient">
 												{t("recipient")}
 											</label>
-											<select
+											<NativeSelect
 												id="transfer-recipient"
 												name="membershipId"
 												disabled={busy}
 												required
 											>
 												{recipients.map((member) => (
-													<option key={member.id} value={member.id}>
+													<NativeSelectOption key={member.id} value={member.id}>
 														{member.email}
-													</option>
+													</NativeSelectOption>
 												))}
-											</select>
+											</NativeSelect>
 										</div>
 										<div className="dashboard-field">
 											<label htmlFor="transfer-outgoing-role">
 												{t("outgoingRole")}
 											</label>
-											<select
+											<NativeSelect
 												id="transfer-outgoing-role"
 												name="outgoingRole"
 												defaultValue="member"
 												disabled={busy}
 											>
-												<option value="admin">{t("admin")}</option>
-												<option value="member">{t("member")}</option>
-												<option value="billing">{t("billing")}</option>
-												<option value="inactive">
+												<NativeSelectOption value="admin">
+													{t("admin")}
+												</NativeSelectOption>
+												<NativeSelectOption value="member">
+													{t("member")}
+												</NativeSelectOption>
+												<NativeSelectOption value="billing">
+													{t("billing")}
+												</NativeSelectOption>
+												<NativeSelectOption value="inactive">
 													{t("leaveOrganization")}
-												</option>
-											</select>
+												</NativeSelectOption>
+											</NativeSelect>
 										</div>
 										<p className="dashboard-description">{copy.transferNote}</p>
 										<Button

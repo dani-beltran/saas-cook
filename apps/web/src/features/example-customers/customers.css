@@ -250,10 +250,6 @@
 	color: var(--foreground);
 	box-shadow: var(--elevation-overlay);
 }
-.customers-dialog::backdrop {
-	background: var(--overlay);
-	backdrop-filter: blur(3px);
-}
 .customers-dialog-header {
 	display: flex;
 	justify-content: space-between;

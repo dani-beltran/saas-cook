@@ -313,7 +313,9 @@ export function Account() {
 					aria-label={copy.accountSections}
 				>
 					{tabs.map((tab, index) => (
-						<button
+						<Button
+							variant="ghost"
+							size="plain"
 							type="button"
 							role="tab"
 							key={tab.id}
@@ -340,7 +342,7 @@ export function Account() {
 							}}
 						>
 							{tab.label}
-						</button>
+						</Button>
 					))}
 				</div>
 				<div

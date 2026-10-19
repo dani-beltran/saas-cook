@@ -1,6 +1,7 @@
 "use client";
 
 import { createApiClient } from "@saas-cook/api/client";
+import { Button, NativeSelect, NativeSelectOption } from "@saas-cook/ui";
 import { useLocale } from "next-intl";
 import {
 	createContext,
@@ -194,7 +195,9 @@ export function DashboardFrame({
 					</span>
 					{name}
 				</span>
-				<button
+				<Button
+					variant="ghost"
+					size="plain"
 					type="button"
 					className="dashboard-icon-button"
 					aria-label={copy.menu}
@@ -218,7 +221,7 @@ export function DashboardFrame({
 							d={open ? "m6 6 12 12M6 18 18 6" : "M4 6h16M4 12h16M4 18h16"}
 						/>
 					</svg>
-				</button>
+				</Button>
 			</header>
 			<aside
 				id="dashboard-sidebar"
@@ -243,7 +246,7 @@ export function DashboardFrame({
 				</a>
 				<div className="dashboard-org-switch">
 					<label htmlFor="dashboard-organization">{copy.context}</label>
-					<select
+					<NativeSelect
 						id="dashboard-organization"
 						value={organizationId ?? ""}
 						disabled={state === "loading" || pendingMfa}
@@ -254,24 +257,32 @@ export function DashboardFrame({
 								);
 						}}
 					>
-						<option value="" disabled={Boolean(organizationId)}>
+						<NativeSelectOption value="" disabled={Boolean(organizationId)}>
 							{state === "loading" ? copy.loading : copy.choose}
-						</option>
+						</NativeSelectOption>
 						{organizationId && !current && (
-							<option value={organizationId}>{copy.selected}</option>
+							<NativeSelectOption value={organizationId}>
+								{copy.selected}
+							</NativeSelectOption>
 						)}
 						{organizations.map((item) => (
-							<option key={item.id} value={item.id}>
+							<NativeSelectOption key={item.id} value={item.id}>
 								{item.name}
-							</option>
+							</NativeSelectOption>
 						))}
-					</select>
+					</NativeSelect>
 					{state === "error" && (
 						<p className="dashboard-sidebar-note">
 							{copy.failed}{" "}
-							<button type="button" className="underline" onClick={onRetry}>
+							<Button
+								variant="ghost"
+								size="plain"
+								type="button"
+								className="underline"
+								onClick={onRetry}
+							>
 								{copy.retry}
-							</button>
+							</Button>
 						</p>
 					)}
 				</div>
@@ -316,7 +327,7 @@ export function DashboardFrame({
 						<label className="sr-only" htmlFor="dashboard-language">
 							{copy.language}
 						</label>
-						<select
+						<NativeSelect
 							id="dashboard-language"
 							value={locale}
 							onChange={(event) => {
@@ -332,13 +343,13 @@ export function DashboardFrame({
 								window.location.assign(url.href);
 							}}
 						>
-							<option value="en" lang="en">
+							<NativeSelectOption value="en" lang="en">
 								English
-							</option>
-							<option value="es" lang="es">
+							</NativeSelectOption>
+							<NativeSelectOption value="es" lang="es">
 								Español
-							</option>
-						</select>
+							</NativeSelectOption>
+						</NativeSelect>
 					</div>
 				</div>
 			</aside>

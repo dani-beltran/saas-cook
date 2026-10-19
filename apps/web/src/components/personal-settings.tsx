@@ -1,8 +1,8 @@
 "use client";
-import { Button } from "@saas-cook/ui";
+import { Button, Input, RadioGroup, RadioGroupItem } from "@saas-cook/ui";
 import type { ThemeConfig } from "@saas-cook/ui/theme";
 import { useLocale } from "next-intl";
-import { useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { personalSettingsMessages } from "../i18n/personal-settings";
 import { usePersonalSettings } from "./personal-settings-provider";
 
@@ -15,21 +15,36 @@ export function AppearanceChoices({
 	disabled?: boolean;
 	onChange: (mode: ThemeConfig["mode"]) => void;
 }) {
+	const id = useId();
 	const copy = personalSettingsMessages[useLocale() === "es" ? "es" : "en"];
 	return (
 		<>
 			{" "}
 			<fieldset disabled={disabled}>
-				<legend className="sr-only">{copy.mode}</legend>
-				<div className="account-mode-options">
+				<legend id="color-mode-label" className="sr-only">
+					{copy.mode}
+				</legend>
+				<RadioGroup
+					className="account-mode-options"
+					name="color-mode"
+					aria-labelledby="color-mode-label"
+					aria-describedby="color-mode-help"
+					value={value}
+					disabled={disabled}
+					onValueChange={(mode) => {
+						if (mode === "light" || mode === "dark" || mode === "system")
+							onChange(mode);
+					}}
+				>
 					{(["light", "dark", "system"] as const).map((mode) => (
-						<label key={mode} className="account-mode-option">
-							<input
-								type="radio"
-								name="color-mode"
+						<label
+							key={mode}
+							className="account-mode-option"
+							htmlFor={`${id}-${mode}`}
+						>
+							<RadioGroupItem
+								id={`${id}-${mode}`}
 								value={mode}
-								checked={value === mode}
-								onChange={() => onChange(mode)}
 								aria-describedby="color-mode-help"
 							/>
 							<span
@@ -48,7 +63,7 @@ export function AppearanceChoices({
 							</span>
 						</label>
 					))}
-				</div>
+				</RadioGroup>
 			</fieldset>
 			<p id="color-mode-help" className="account-setting-description">
 				{copy.systemHelp}
@@ -153,9 +168,9 @@ export function ProfilePictureControls() {
 	return (
 		<div className="account-picture-controls" aria-busy={busy}>
 			<div className="account-picture-actions">
-				<input
+				<Input
 					ref={input}
-					className="sr-only"
+					hidden
 					tabIndex={-1}
 					type="file"
 					accept="image/jpeg,image/png,image/webp"
