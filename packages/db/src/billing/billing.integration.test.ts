@@ -412,6 +412,52 @@ it("refuses retries beyond the provider key horizon", async () => {
 	);
 	expect(f.calls).toHaveLength(0);
 });
+it("rotates expired first checkouts out of the bounded work batch", async () => {
+	const f = await fixture();
+	const abandoned = [f.org];
+	for (let i = 1; i < 10; i++)
+		abandoned.push((await f.organization(f.owner)).id);
+	for (const org of abandoned) {
+		const command = await f.service.command(f.owner, org, {
+			kind: "checkout",
+			selection: { planVersionId: f.plan.id, quantity: 5 },
+			locale: "en",
+			operationKey: randomUUID(),
+		});
+		await f.app.query(
+			"UPDATE tenancy.billing_commands SET authorized_until=now()-interval '1 second' WHERE id=$1",
+			[command.id],
+		);
+	}
+	await f.app.query(
+		"UPDATE tenancy.billing_accounts SET next_reconcile_at=now()-interval '1 hour' WHERE organization_id=ANY($1::uuid[])",
+		[abandoned],
+	);
+	const active = (await f.organization(f.owner)).id;
+	const command = await f.service.command(f.owner, active, {
+		kind: "checkout",
+		selection: { planVersionId: f.plan.id, quantity: 5 },
+		locale: "en",
+		operationKey: randomUUID(),
+	});
+	await f.worker.tick();
+	expect(f.calls).toHaveLength(0);
+	await f.worker.tick();
+	expect((await f.service.get(f.owner, active)).commands[0]).toMatchObject({
+		id: command.id,
+		state: "complete",
+	});
+	expect(f.calls.filter((call) => call.startsWith("checkout:"))).toHaveLength(
+		1,
+	);
+	const idle = await f.app.query(
+		"SELECT customer_id,next_reconcile_at>clock_timestamp() AS deferred FROM tenancy.billing_accounts WHERE organization_id=ANY($1::uuid[])",
+		[abandoned],
+	);
+	expect(idle.rows).toHaveLength(10);
+	for (const row of idle.rows)
+		expect(row).toEqual({ customer_id: null, deferred: true });
+});
 it("retains immutable sold versions, handles trial and unpaid policy, and rejects mismatched provider prices", async () => {
 	const f = await fixture();
 	await f.checkout();

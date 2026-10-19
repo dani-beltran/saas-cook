@@ -359,6 +359,14 @@ export function createBillingWorker(
 					await provider.truth(a.customer_id),
 					cutoff,
 				);
+			} else {
+				// Rotate customerless accounts too, including failed first checkouts.
+				await billingTransaction(c, o, hooks, async () => {
+					await c.query(
+						"UPDATE tenancy.billing_accounts SET next_reconcile_at=clock_timestamp()+interval '5 minutes' WHERE organization_id=$1",
+						[o],
+					);
+				});
 			}
 			const cmd = await billingTransaction(
 				c,
