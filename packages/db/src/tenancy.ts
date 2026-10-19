@@ -160,6 +160,7 @@ export async function withTenantTransaction<T>(
 			"SELECT set_config('app.request_id',$1,true),set_config('app.organization_id',$2,true),set_config('app.authorization_expires_at','',true),set_config('statement_timeout','8s',true),set_config('lock_timeout','5s',true)",
 			[randomUUID(), organizationId],
 		);
+		await client.query("SELECT pg_advisory_xact_lock_shared(1849202603)");
 		for (const userId of [...new Set(userIds)].sort()) {
 			await client.query(
 				"SELECT pg_advisory_xact_lock_shared(hashtextextended($1,0))",
@@ -307,6 +308,115 @@ export async function appendTenantAudit(
 	);
 }
 
+export async function transitionMembership(
+	client: PoolClient,
+	orgId: string,
+	actorId: string,
+	input: Transition,
+	correlation?: ReturnType<NonNullable<TenancyHooks["correlation"]>>,
+) {
+	validateKey(input.operationKey, true);
+	if (input.billable !== (input.role !== "billing"))
+		throw new TenancyError("INVALID");
+	const inputHash = hash(
+		JSON.stringify({
+			userId: input.userId,
+			role: input.role,
+			status: input.status,
+			billable: input.billable,
+		}),
+	);
+	const receipt = (
+		await client.query<{ input_hash: string; membership_id: string }>(
+			"SELECT input_hash,membership_id FROM tenancy.membership_transitions WHERE organization_id=$1 AND operation_key=$2",
+			[orgId, input.operationKey],
+		)
+	).rows[0];
+	if (receipt) {
+		if (receipt.input_hash !== inputHash) throw new TenancyError("CONFLICT");
+		return receipt.membership_id;
+	}
+	const previous = (
+		await client.query<MemberRow>(
+			"SELECT * FROM tenancy.memberships WHERE organization_id=$1 AND user_id=$2 FOR UPDATE",
+			[orgId, input.userId],
+		)
+	).rows[0];
+	if (input.membershipId && previous?.id !== input.membershipId)
+		throw new TenancyError("NOT_FOUND");
+	if (input.status === "active") await identity(client, input.userId);
+	if (
+		input.role === "owner" &&
+		input.status === "active" &&
+		!input.ownerTransfer &&
+		previous?.role !== "owner"
+	)
+		throw new TenancyError("DENIED");
+	if (
+		previous?.role === "owner" &&
+		active(previous) &&
+		(input.role !== "owner" || input.status !== "active") &&
+		!input.securityOverride
+	) {
+		const owners = await client.query(
+			"SELECT id FROM tenancy.memberships WHERE organization_id=$1 AND role='owner' AND status='active' AND (expires_at IS NULL OR expires_at>clock_timestamp()) AND id<>$2",
+			[orgId, previous.id],
+		);
+		if (!owners.rowCount) throw new TenancyError("LAST_OWNER");
+	}
+	const oldSeat = previous?.seat_counted ? 1 : 0;
+	const newSeat = input.status === "active" && input.billable ? 1 : 0;
+	const delta = newSeat - oldSeat;
+	if (delta > 0) {
+		const commercial = await commercialFeatures(client, orgId);
+		if (commercial) {
+			const seats = (
+				await client.query<{ occupied: number }>(
+					"SELECT occupied FROM tenancy.seat_capacities WHERE organization_id=$1",
+					[orgId],
+				)
+			).rows[0];
+			if (seats.occupied + delta > commercial.seats)
+				throw new TenancyError("CAPACITY");
+		}
+	}
+	const updated = await client.query(
+		"UPDATE tenancy.seat_capacities SET occupied=occupied+$2 WHERE organization_id=$1 AND occupied+$2>=0 AND ($2<=0 OR occupied+$2<=capacity) RETURNING organization_id",
+		[orgId, delta],
+	);
+	if (!updated.rowCount) throw new TenancyError("CAPACITY");
+	const id = previous?.id ?? randomUUID();
+	await client.query(
+		"INSERT INTO tenancy.memberships(id,organization_id,user_id,role,status,billable,seat_counted) VALUES ($1,$2,$3,$4,$5,$6,($5='active' AND $6)) ON CONFLICT (organization_id,user_id) DO UPDATE SET role=excluded.role,status=excluded.status,billable=excluded.billable,seat_counted=excluded.seat_counted,expires_at=NULL",
+		[id, orgId, input.userId, input.role, input.status, input.billable],
+	);
+	await client.query(
+		"INSERT INTO tenancy.membership_transitions(organization_id,operation_key,input_hash,membership_id,delta) VALUES ($1,$2,$3,$4,$5)",
+		[orgId, input.operationKey, inputHash, id, delta],
+	);
+	if (previous?.role === "owner" || input.role === "owner")
+		await client.query(
+			"UPDATE tenancy.organizations SET ownership_version=ownership_version+1 WHERE id=$1",
+			[orgId],
+		);
+	await appendTenantAudit(
+		client,
+		orgId,
+		actorId,
+		"membership.transition",
+		id,
+		{
+			userId: input.userId,
+			role: input.role,
+			status: input.status,
+			billable: input.billable,
+			delta,
+		},
+		correlation,
+	);
+	return id;
+}
+
 /** Callers must derive actors from authenticated sessions, and control principals from independent operator verification. */
 export function createTenancyService(
 	pool: Pool,
@@ -358,105 +468,14 @@ export function createTenancyService(
 			return rows.rows.map((row) => row.user_id);
 		});
 	}
-	async function transition(
+	const transition = (
 		client: PoolClient,
 		orgId: string,
 		actorId: string,
 		input: Transition,
-	) {
-		validateKey(input.operationKey, true);
-		if (input.billable !== (input.role !== "billing"))
-			throw new TenancyError("INVALID");
-		const inputHash = hash(
-			JSON.stringify({
-				userId: input.userId,
-				role: input.role,
-				status: input.status,
-				billable: input.billable,
-			}),
-		);
-		const receipt = (
-			await client.query<{ input_hash: string; membership_id: string }>(
-				"SELECT input_hash,membership_id FROM tenancy.membership_transitions WHERE organization_id=$1 AND operation_key=$2",
-				[orgId, input.operationKey],
-			)
-		).rows[0];
-		if (receipt) {
-			if (receipt.input_hash !== inputHash) throw new TenancyError("CONFLICT");
-			return receipt.membership_id;
-		}
-		const previous = (
-			await client.query<MemberRow>(
-				"SELECT * FROM tenancy.memberships WHERE organization_id=$1 AND user_id=$2 FOR UPDATE",
-				[orgId, input.userId],
-			)
-		).rows[0];
-		if (input.membershipId && previous?.id !== input.membershipId)
-			throw new TenancyError("NOT_FOUND");
-		if (input.status === "active") await identity(client, input.userId);
-		if (
-			input.role === "owner" &&
-			input.status === "active" &&
-			!input.ownerTransfer &&
-			previous?.role !== "owner"
-		)
-			throw new TenancyError("DENIED");
-		if (
-			previous?.role === "owner" &&
-			active(previous) &&
-			(input.role !== "owner" || input.status !== "active") &&
-			!input.securityOverride
-		) {
-			const owners = await client.query(
-				"SELECT id FROM tenancy.memberships WHERE organization_id=$1 AND role='owner' AND status='active' AND (expires_at IS NULL OR expires_at>clock_timestamp()) AND id<>$2",
-				[orgId, previous.id],
-			);
-			if (!owners.rowCount) throw new TenancyError("LAST_OWNER");
-		}
-		const oldSeat = previous?.seat_counted ? 1 : 0;
-		const newSeat = input.status === "active" && input.billable ? 1 : 0;
-		const delta = newSeat - oldSeat;
-		if (delta > 0) {
-			const commercial = await commercialFeatures(client, orgId);
-			if (commercial) {
-				const seats = (
-					await client.query<{ occupied: number }>(
-						"SELECT occupied FROM tenancy.seat_capacities WHERE organization_id=$1",
-						[orgId],
-					)
-				).rows[0];
-				if (seats.occupied + delta > commercial.seats)
-					throw new TenancyError("CAPACITY");
-			}
-		}
-		const updated = await client.query(
-			"UPDATE tenancy.seat_capacities SET occupied=occupied+$2 WHERE organization_id=$1 AND occupied+$2>=0 AND ($2<=0 OR occupied+$2<=capacity) RETURNING organization_id",
-			[orgId, delta],
-		);
-		if (!updated.rowCount) throw new TenancyError("CAPACITY");
-		const id = previous?.id ?? randomUUID();
-		await client.query(
-			"INSERT INTO tenancy.memberships(id,organization_id,user_id,role,status,billable,seat_counted) VALUES ($1,$2,$3,$4,$5,$6,($5='active' AND $6)) ON CONFLICT (organization_id,user_id) DO UPDATE SET role=excluded.role,status=excluded.status,billable=excluded.billable,seat_counted=excluded.seat_counted,expires_at=NULL",
-			[id, orgId, input.userId, input.role, input.status, input.billable],
-		);
-		await client.query(
-			"INSERT INTO tenancy.membership_transitions(organization_id,operation_key,input_hash,membership_id,delta) VALUES ($1,$2,$3,$4,$5)",
-			[orgId, input.operationKey, inputHash, id, delta],
-		);
-		if (previous?.role === "owner" || input.role === "owner")
-			await client.query(
-				"UPDATE tenancy.organizations SET ownership_version=ownership_version+1 WHERE id=$1",
-				[orgId],
-			);
-		await audit(client, orgId, actorId, "membership.transition", id, {
-			userId: input.userId,
-			role: input.role,
-			status: input.status,
-			billable: input.billable,
-			delta,
-		});
-		return id;
-	}
+	) =>
+		transitionMembership(client, orgId, actorId, input, hooks.correlation?.());
+
 	return {
 		async createOrganization(
 			actor: TenantActor,

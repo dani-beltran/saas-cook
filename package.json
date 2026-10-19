@@ -64,7 +64,12 @@
 		"billing:reconcile": "node --env-file-if-exists=.env --import tsx scripts/phase5/command.ts reconcile",
 		"billing:diagnostics": "node --env-file-if-exists=.env --import tsx scripts/phase5/command.ts diagnostics",
 		"usage:rebuild": "node --env-file-if-exists=.env --import tsx scripts/phase5/command.ts rebuild",
-		"billing:sandbox": "node --import tsx scripts/phase5/stripe-sandbox.ts"
+		"billing:sandbox": "node --import tsx scripts/phase5/stripe-sandbox.ts",
+		"recovery:run": "node --env-file-if-exists=.env --import tsx scripts/phase6/command.ts recovery",
+		"recovery:fingerprint": "node --env-file-if-exists=.env --import tsx scripts/phase6/command.ts recovery-fingerprint",
+		"analytics:report": "node --env-file-if-exists=.env --import tsx scripts/phase6/command.ts analytics-report",
+		"flags:set": "node --env-file-if-exists=.env --import tsx scripts/phase6/command.ts flags-set",
+		"control:schema": "node --env-file-if-exists=.env --import tsx scripts/phase6/command.ts control-schema"
 	},
 	"devDependencies": {
 		"next": "16.3.8",

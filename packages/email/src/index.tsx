@@ -64,4 +64,5 @@ export {
 	enqueueIdentityEmail,
 } from "./delivery";
 export { renderIdentityEmail } from "./identity";
+export { renderOptionalEmail } from "./optional";
 export { createSmtpTransport } from "./smtp";

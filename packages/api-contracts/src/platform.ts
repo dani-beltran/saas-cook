@@ -29,7 +29,7 @@ export const activityItem = z.strictObject({
 	schemaVersion: z.literal(1),
 });
 const errors = z.object({ requestId: z.uuid() });
-const operation = oc.errors({
+export const platformOperation = oc.errors({
 	UNAUTHORIZED: { status: 401, data: errors },
 	FORBIDDEN: { status: 403, data: errors },
 	NOT_FOUND: { status: 404, data: errors },
@@ -68,7 +68,7 @@ export const keySummary = z.strictObject({
 	lastUsedAt: z.iso.datetime().nullable(),
 });
 export const platformContract = {
-	accounts: operation
+	accounts: platformOperation
 		.route({
 			method: "GET",
 			path: "/organizations/{organizationId}/service-accounts",
@@ -80,7 +80,7 @@ export const platformContract = {
 				nextCursor: z.string().nullable(),
 			}),
 		),
-	keys: operation
+	keys: platformOperation
 		.route({
 			method: "GET",
 			path: "/organizations/{organizationId}/service-accounts/{serviceAccountId}/keys",
@@ -97,7 +97,7 @@ export const platformContract = {
 				nextCursor: z.string().nullable(),
 			}),
 		),
-	search: operation
+	search: platformOperation
 		.route({
 			method: "GET",
 			path: "/organizations/{organizationId}/search",
@@ -111,7 +111,7 @@ export const platformContract = {
 				nextCursor: z.string().nullable(),
 			}),
 		),
-	activity: operation
+	activity: platformOperation
 		.route({
 			method: "GET",
 			path: "/organizations/{organizationId}/activity/{resourceType}/{resourceId}",

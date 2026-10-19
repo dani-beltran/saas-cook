@@ -90,6 +90,7 @@
     "apps/worker": {
       "name": "@saas-cook/worker",
       "dependencies": {
+        "@saas-cook/api": "workspace:*",
         "@saas-cook/authz": "workspace:*",
         "@saas-cook/config": "workspace:*",
         "@saas-cook/db": "workspace:*",

@@ -113,6 +113,69 @@
 			"when": 1792432675194,
 			"tag": "0015_phase6_file_reservation",
 			"breakpoints": true
+		},
+		{
+			"idx": 16,
+			"version": "7",
+			"when": 1792441125158,
+			"tag": "0016_phase6_lifecycle",
+			"breakpoints": true
+		},
+		{
+			"idx": 17,
+			"version": "7",
+			"when": 1792441554770,
+			"tag": "0017_phase6_recovery",
+			"breakpoints": true
+		},
+		{
+			"idx": 18,
+			"version": "7",
+			"when": 1792441828843,
+			"tag": "0018_phase6_analytics",
+			"breakpoints": true
+		},
+		{
+			"idx": 19,
+			"version": "7",
+			"when": 1792442000648,
+			"tag": "0019_phase6_bulk",
+			"breakpoints": true
+		},
+		{
+			"idx": 20,
+			"version": "7",
+			"when": 1792442333937,
+			"tag": "0020_phase6_settings",
+			"breakpoints": true
+		},
+		{
+			"idx": 21,
+			"version": "7",
+			"when": 1792442427781,
+			"tag": "0021_phase6_settings_receipts",
+			"breakpoints": true
+		},
+		{
+			"idx": 22,
+			"version": "7",
+			"when": 1792442723893,
+			"tag": "0022_phase6_delivery_cleanup",
+			"breakpoints": true
+		},
+		{
+			"idx": 23,
+			"version": "7",
+			"when": 1792443021490,
+			"tag": "0023_phase6_email_recipient",
+			"breakpoints": true
+		},
+		{
+			"idx": 24,
+			"version": "7",
+			"when": 1792443712729,
+			"tag": "0024_phase6_retry_ownership",
+			"breakpoints": true
 		}
 	]
 }

@@ -1,5 +1,7 @@
 import type { Pool, PoolClient } from "pg";
+import { initializeJournal } from "./journal";
 import { modelHash, safeIdentifier } from "./model";
+import { initializeRecovery } from "./recovery";
 
 export interface Publication {
 	installationId: string;
@@ -54,6 +56,8 @@ export async function initializeControlStore(pool: Pool): Promise<void> {
       END $migration$;
       GRANT USAGE ON SCHEMA control TO saas_cook_control_reader;
       GRANT SELECT ON control.installations TO saas_cook_control_reader;`);
+		await initializeJournal(client);
+		await initializeRecovery(client);
 		await client.query("COMMIT");
 	} catch (error) {
 		await client.query("ROLLBACK").catch(() => {});

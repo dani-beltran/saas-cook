@@ -1,9 +1,11 @@
 import { rename, rm, writeFile } from "node:fs/promises";
+import { createPlatformRuntime } from "@saas-cook/api/platform-runtime";
 import { createAuthorizationService, getPublication } from "@saas-cook/authz";
 import { readWorkerEnv } from "@saas-cook/config/server";
 import { recordHeartbeat, recordProbe } from "@saas-cook/db";
 import { createStripeProvider } from "@saas-cook/db/billing-stripe";
 import { createBillingWorker } from "@saas-cook/db/billing-worker";
+import { backgroundActors } from "@saas-cook/db/bulk-actor";
 import { configuredFileStorage } from "@saas-cook/db/file-storage";
 import { pruneFiles } from "@saas-cook/db/files-worker";
 import { pruneActivity } from "@saas-cook/db/platform-worker";
@@ -11,6 +13,7 @@ import {
 	createSmtpTransport,
 	deliverBillingNotices,
 	deliverIdentityEmails,
+	renderOptionalEmail,
 } from "@saas-cook/email";
 import {
 	initializeObservability,
@@ -27,7 +30,7 @@ const env = readWorkerEnv();
 initializeObservability("worker");
 const pool = new Pool({
 	connectionString: env.WORKER_DATABASE_URL,
-	max: 3,
+	max: 8,
 	connectionTimeoutMillis: 3000,
 	query_timeout: 3000,
 });
@@ -64,6 +67,30 @@ const mailTransport = createSmtpTransport({
 	username: env.SMTP_USERNAME,
 	password: env.SMTP_PASSWORD,
 });
+const completion = createPlatformRuntime(
+	env,
+	pool,
+	controlPool,
+	backgroundActors(pool, () =>
+		getPublication(controlPool, env.INSTALLATION_ID),
+	),
+	async (m) => {
+		const content = await renderOptionalEmail({
+			locale: m.locale,
+			url: new URL(
+				`/${m.locale}/organizations/${m.organizationId}/data`,
+				env.APP_ORIGIN,
+			).href,
+			unsubscribeUrl: new URL(
+				`/${m.locale}/unsubscribe#${m.unsubscribe}`,
+				env.APP_ORIGIN,
+			).href,
+		});
+		await mailTransport({ id: m.id, to: m.to, ...content });
+	},
+);
+let completionTimer: NodeJS.Timeout | undefined,
+	pendingCompletion: Promise<void> | undefined;
 async function ready() {
 	const publication = await getPublication(controlPool, env.INSTALLATION_ID);
 	const binding = await pool.query(
@@ -130,12 +157,15 @@ async function stop(code: number) {
 	clearInterval(timer);
 	clearInterval(billingTimer);
 	clearInterval(platformTimer);
+	clearInterval(completionTimer);
 	const deadline = setTimeout(() => process.exit(1), 12_000);
 	try {
 		await boss.stop({ graceful: true, timeout: 8_000 });
 		await pendingHeartbeat.catch(() => {});
 		await pendingBilling?.catch(() => {});
 		await pendingPlatform?.catch(() => {});
+		await pendingCompletion?.catch(() => {});
+		await completion?.close();
 		await pool.end();
 		await controlPool.end();
 		await rm(heartbeatPath, { force: true });
@@ -214,6 +244,17 @@ try {
 					pendingPlatform = undefined;
 				});
 	}, 60_000);
+	completionTimer = setInterval(() => {
+		if (!pendingCompletion)
+			pendingCompletion = ready()
+				.then(() => completion?.tick())
+				.catch(() => {
+					logEvent("worker.platform_pending");
+				})
+				.finally(() => {
+					pendingCompletion = undefined;
+				});
+	}, 5000);
 	logEvent("worker.ready");
 } catch (error) {
 	logEvent("worker.startup_failed", {

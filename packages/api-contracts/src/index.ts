@@ -1,6 +1,7 @@
 import { oc } from "@orpc/contract";
 import { z } from "zod";
 import { billingContract } from "./billing";
+import { completionContract } from "./completion";
 import { filesContract } from "./files";
 import { platformContract } from "./platform";
 
@@ -30,6 +31,7 @@ export const diagnosticDto = z.object({
 });
 const errorData = z.object({ requestId: z.uuid() });
 export const contract = {
+	completion: completionContract,
 	files: filesContract,
 	platform: platformContract,
 	billing: billingContract,

@@ -86,8 +86,13 @@ export async function enqueueIdentityEmail(
 		throw new Error("Expired identity message");
 	const id = randomUUID();
 	await database.query(
-		"INSERT INTO identity.email_delivery(id,encrypted_payload,expires_at) VALUES($1,$2,$3)",
-		[id, protect(payload, input.secret, id), input.expiresAt],
+		"INSERT INTO identity.email_delivery(id,encrypted_payload,expires_at,recipient_hash) VALUES($1,$2,$3,$4)",
+		[
+			id,
+			protect(payload, input.secret, id),
+			input.expiresAt,
+			createHash("sha256").update(input.to.toLowerCase()).digest("hex"),
+		],
 	);
 	return id;
 }
@@ -109,6 +114,8 @@ export async function deliverIdentityEmails(
 		const client = await pool.connect();
 		try {
 			await client.query("BEGIN");
+			await client.query("SET LOCAL lock_timeout='5s'");
+			await client.query("SELECT pg_advisory_xact_lock_shared(1849202603)");
 			const row = (
 				await client.query<{
 					id: string;
@@ -140,6 +147,21 @@ export async function deliverIdentityEmails(
 					options.secret,
 					row.id,
 				);
+				if (
+					!(
+						await client.query(
+							"SELECT identity.email_recipient_active($1) AS active",
+							[payload.to],
+						)
+					).rows[0].active
+				) {
+					await client.query(
+						"UPDATE identity.email_delivery SET failed_at=now(),encrypted_payload='' WHERE id=$1",
+						[row.id],
+					);
+					await client.query("COMMIT");
+					continue;
+				}
 				stage = "render";
 				const content = await renderIdentityEmail(payload);
 				stage = "transport";

@@ -13,6 +13,7 @@
 		"pg-boss": "12.33.4",
 		"zod": "4.6.5",
 		"@saas-cook/authz": "workspace:*",
-		"@saas-cook/email": "workspace:*"
+		"@saas-cook/email": "workspace:*",
+		"@saas-cook/api": "workspace:*"
 	}
 }

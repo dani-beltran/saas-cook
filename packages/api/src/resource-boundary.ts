@@ -124,3 +124,29 @@ export function humanOperation<T>(
 		},
 	);
 }
+
+function enabled() {
+	const r = applicationRuntime().completion;
+	if (!r) throw new ORPCError("SERVICE_UNAVAILABLE");
+	return r;
+}
+export async function publicOperation<T>(
+	context: RequestContext,
+	work: (
+		r: NonNullable<ReturnType<typeof applicationRuntime>["completion"]>,
+	) => Promise<T>,
+) {
+	try {
+		const request = context.request;
+		if (!request || request.headers.has("authorization"))
+			throw new Error("Denied");
+		const origin = request.headers.get("origin");
+		if (origin && origin !== applicationRuntime().origin)
+			throw new Error("Denied");
+		return await work(enabled());
+	} catch {
+		throw new ORPCError("FORBIDDEN", {
+			data: { requestId: context.requestId },
+		});
+	}
+}

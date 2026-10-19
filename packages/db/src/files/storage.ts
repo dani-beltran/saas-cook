@@ -18,6 +18,7 @@ export interface StoredObject {
 }
 export interface FileStorage {
 	ready(): Promise<void>;
+	writeExport?(key: string, bytes: Buffer): Promise<StoredObject>;
 	upload(
 		key: string,
 		bytes: number,
@@ -158,6 +159,52 @@ export function s3FileStorage(options: {
 				throw new Error("Captured version mismatch");
 			if (fileDigest(await readBytes(captured, bytes)) !== sha256)
 				throw new Error("Captured checksum mismatch");
+			return object;
+		},
+		async writeExport(key, bytes) {
+			if (
+				!/^quarantine\/[a-f0-9-]{36}\/[a-f0-9-]{36}$/.test(key) ||
+				bytes.length < 1 ||
+				bytes.length > 1048576
+			)
+				throw new Error("Invalid export object");
+			try {
+				await finalizer.send(
+					new PutObjectCommand({
+						Bucket: bucket,
+						Key: key,
+						Body: bytes,
+						ContentType: "application/octet-stream",
+						IfNoneMatch: "*",
+						ChecksumSHA256: Buffer.from(fileDigest(bytes), "hex").toString(
+							"base64",
+						),
+					}),
+					sendOptions(),
+				);
+			} catch (e) {
+				if (
+					!(
+						e &&
+						typeof e === "object" &&
+						"$metadata" in e &&
+						(e.$metadata as { httpStatusCode?: number }).httpStatusCode === 412
+					)
+				)
+					throw e;
+			}
+			const captured = await finalizer.send(
+				new GetObjectCommand({ Bucket: bucket, Key: key }),
+				sendOptions(),
+			);
+			const object = {
+				key,
+				version: version(captured.VersionId),
+				bytes: bytes.length,
+				sha256: fileDigest(bytes),
+			};
+			if (fileDigest(await readBytes(captured, bytes.length)) !== object.sha256)
+				throw new Error("Export identity conflict");
 			return object;
 		},
 		read,

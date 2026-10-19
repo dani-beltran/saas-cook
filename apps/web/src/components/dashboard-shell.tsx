@@ -10,6 +10,7 @@ import {
 	useEffect,
 	useState,
 } from "react";
+import { WorkspaceHelp } from "../features/completion/widget";
 import { dashboardMessages } from "../i18n/dashboard";
 import { identityClient } from "../lib/identity-client";
 import "./dashboard.css";
@@ -37,7 +38,10 @@ function NavigationIcon({
 		| "billing"
 		| "usage"
 		| "search"
-		| "keys";
+		| "keys"
+		| "data"
+		| "settings"
+		| "privacy";
 }) {
 	return (
 		<svg
@@ -82,7 +86,10 @@ export function DashboardShell({
 		| "billing"
 		| "usage"
 		| "search"
-		| "keys";
+		| "keys"
+		| "data"
+		| "settings"
+		| "privacy";
 	organizationId?: string;
 	children: ReactNode;
 	onLocaleChange?: (locale: "en" | "es") => void;
@@ -158,7 +165,10 @@ export function DashboardFrame({
 		| "billing"
 		| "usage"
 		| "search"
-		| "keys";
+		| "keys"
+		| "data"
+		| "settings"
+		| "privacy";
 	organizationId?: string;
 	children: ReactNode;
 	organizations: Array<{ id: string; name: string }>;
@@ -259,7 +269,7 @@ export function DashboardFrame({
 						onChange={(event) => {
 							if (event.target.value)
 								window.location.assign(
-									`/${locale}/organizations/${event.target.value}${section === "projects" ? "/projects" : section === "customers" ? "/customers" : section === "billing" ? "/billing" : section === "usage" ? "/usage" : section === "search" ? "/search" : section === "keys" ? "/keys" : ""}`,
+									`/${locale}/organizations/${event.target.value}${section === "projects" ? "/projects" : section === "customers" ? "/customers" : section === "billing" ? "/billing" : section === "usage" ? "/usage" : section === "search" ? "/search" : section === "keys" ? "/keys" : section === "data" ? "/data" : section === "settings" ? "/settings" : section === "privacy" ? "/privacy" : ""}`,
 								);
 						}}
 					>
@@ -306,6 +316,14 @@ export function DashboardFrame({
 							{link("billing", copy.billing, `${organizationPath}/billing`)}
 							{link("usage", copy.usage, `${organizationPath}/usage`)}
 							{link("keys", copy.keys, `${organizationPath}/keys`)}
+							{link("data", copy.data, `${organizationPath}/data`)}
+							{link(
+								"settings",
+								locale === "es"
+									? "Integraciones y datos"
+									: "Integrations and data",
+								`${organizationPath}/settings`,
+							)}
 							{link("organization", copy.settings, organizationPath)}
 						</>
 					)}
@@ -323,13 +341,19 @@ export function DashboardFrame({
 				</nav>
 				<div className="dashboard-sidebar-footer">
 					{user && (
-						<a href={`/${locale}/account`} className="dashboard-user">
-							<UserAvatar user={user} />
-							<span>
-								<strong>{user.name || copy.account}</strong>
-								<small>{user.email}</small>
-							</span>
-						</a>
+						<>
+							<a href={`/${locale}/privacy`}>{copy.privacy}</a>
+							<a href={`/${locale}/help`}>
+								{locale === "es" ? "Ayuda" : "Help"}
+							</a>
+							<a href={`/${locale}/account`} className="dashboard-user">
+								<UserAvatar user={user} />
+								<span>
+									<strong>{user.name || copy.account}</strong>
+									<small>{user.email}</small>
+								</span>
+							</a>
+						</>
 					)}
 					<div className="dashboard-preferences">
 						<label className="sr-only" htmlFor="dashboard-language">
@@ -377,6 +401,7 @@ export function DashboardFrame({
 					className="dashboard-content"
 				>
 					{children}
+					<WorkspaceHelp organizationId={organizationId} />
 				</main>
 			</div>
 		</div>

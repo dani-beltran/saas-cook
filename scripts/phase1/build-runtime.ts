@@ -9,6 +9,7 @@ await build({
 	entryPoints: {
 		worker: "apps/worker/src/index.ts",
 		command: "scripts/phase1/command.ts",
+		"platform-command": "scripts/phase6/command.ts",
 		"billing-command": "scripts/phase5/command.ts",
 		supervisor: "infra/docker/supervisor.ts",
 	},

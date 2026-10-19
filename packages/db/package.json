@@ -20,7 +20,20 @@
 		"./platform-worker": "./src/platform/worker.ts",
 		"./files-worker": "./src/files/worker.ts",
 		"./files": "./src/files/service.ts",
-		"./file-storage": "./src/files/storage.ts"
+		"./file-storage": "./src/files/storage.ts",
+		"./bulk": "./src/bulk/service.ts",
+		"./lifecycle": "./src/lifecycle/service.ts",
+		"./lifecycle-cleanup": "./src/lifecycle/cleanup.ts",
+		"./lifecycle-recovery": "./src/lifecycle/recovery.ts",
+		"./analytics": "./src/analytics/service.ts",
+		"./analytics-provider": "./src/analytics/provider.ts",
+		"./analytics-worker": "./src/analytics/worker.ts",
+		"./analytics-reports": "./src/analytics/reports.ts",
+		"./settings": "./src/settings/service.ts",
+		"./endpoint-transport": "./src/settings/network.ts",
+		"./notifications": "./src/settings/notifications.ts",
+		"./flags": "./src/settings/flags.ts",
+		"./bulk-actor": "./src/bulk/actor.ts"
 	},
 	"scripts": {
 		"typecheck": "tsc --noEmit"

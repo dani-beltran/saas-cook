@@ -67,46 +67,55 @@ export function customerFixtureRuntime(
 		);
 	}
 	async function human(email: string, create = true) {
-		let response: Response;
-		if (create) {
-			const registration = await request("register", {
-				email,
-				name: "Synthetic customer developer",
-				password: customerFixturePassword,
-				locale: "en",
-			});
-			if (!registration.ok) throw new Error("Synthetic registration failed");
-			let token: string | undefined;
-			await deliverIdentityEmails(worker, {
-				secret: env.AUTH_SECRET,
-				transport: async (message) => {
-					if (message.to === email)
-						token = message.text.match(
-							/\/auth\/confirm\?token=([A-Za-z0-9_-]+)/,
-						)?.[1];
+		// Parallel fixture processes share this installation's mail queue. Serialize
+		// registration + capture so one test cannot acknowledge another's token.
+		const fixtureLock = await identityPool.connect();
+		await fixtureLock.query("SELECT pg_advisory_lock(1849202604)");
+		try {
+			let response: Response;
+			if (create) {
+				const registration = await request("register", {
+					email,
+					name: "Synthetic customer developer",
+					password: customerFixturePassword,
+					locale: "en",
+				});
+				if (!registration.ok) throw new Error("Synthetic registration failed");
+				let token: string | undefined;
+				await deliverIdentityEmails(worker, {
+					secret: env.AUTH_SECRET,
+					transport: async (message) => {
+						if (message.to === email)
+							token = message.text.match(
+								/\/auth\/confirm\?token=([A-Za-z0-9_-]+)/,
+							)?.[1];
+					},
+				});
+				if (!token) throw new Error("Synthetic verification token missing");
+				response = await request("confirm", { token });
+			} else
+				response = await request("sign-in/email", {
+					email,
+					password: customerFixturePassword,
+				});
+			if (!response.ok) throw new Error("Synthetic sign-in failed");
+			const cookie = response.headers
+				.getSetCookie()
+				.map((value) => value.split(";")[0])
+				.join("; ");
+			const session = await identity.session(new Headers({ cookie }));
+			if (!session) throw new Error("Verified fixture session missing");
+			return {
+				cookie,
+				actor: {
+					...session,
+					assertCurrent: () => identity.assertCurrent(session),
 				},
-			});
-			if (!token) throw new Error("Synthetic verification token missing");
-			response = await request("confirm", { token });
-		} else
-			response = await request("sign-in/email", {
-				email,
-				password: customerFixturePassword,
-			});
-		if (!response.ok) throw new Error("Synthetic sign-in failed");
-		const cookie = response.headers
-			.getSetCookie()
-			.map((value) => value.split(";")[0])
-			.join("; ");
-		const session = await identity.session(new Headers({ cookie }));
-		if (!session) throw new Error("Verified fixture session missing");
-		return {
-			cookie,
-			actor: {
-				...session,
-				assertCurrent: () => identity.assertCurrent(session),
-			},
-		};
+			};
+		} finally {
+			await fixtureLock.query("SELECT pg_advisory_unlock(1849202604)");
+			fixtureLock.release();
+		}
 	}
 	return {
 		web,
