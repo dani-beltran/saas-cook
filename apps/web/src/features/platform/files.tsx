@@ -1,48 +1,9 @@
 "use client";
 import { createApiClient } from "@saas-cook/api/client";
 import { Button, Input } from "@saas-cook/ui";
-import { useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 
-const messages = {
-	en: {
-		title: "Files",
-		hint: "UTF-8 text or CSV, up to 1 MiB. Available files expire after 30 days.",
-		choose: "Choose file",
-		upload: "Upload and verify",
-		download: "Download",
-		finish: "Finish verification",
-		empty: "No files",
-		retry: "Reload",
-		failed: "The operation could not be completed. Check access or try again.",
-		loading: "Loading…",
-		busy: "Working…",
-		staging: "Awaiting verification",
-		available: "Ready",
-		rejected: "Rejected",
-		deleted: "Expired",
-		invalid: "Choose a UTF-8 .txt or .csv file between 1 byte and 1 MiB.",
-	},
-	es: {
-		title: "Archivos",
-		hint: "Texto UTF-8 o CSV, hasta 1 MiB. Los archivos caducan a los 30 días.",
-		choose: "Elegir archivo",
-		upload: "Subir y verificar",
-		download: "Descargar",
-		finish: "Finalizar verificación",
-		empty: "No hay archivos",
-		retry: "Recargar",
-		failed:
-			"No se pudo completar la operación. Comprueba el acceso o inténtalo de nuevo.",
-		loading: "Cargando…",
-		busy: "Procesando…",
-		staging: "Pendiente de verificación",
-		available: "Listo",
-		rejected: "Rechazado",
-		deleted: "Caducado",
-		invalid: "Elige un archivo UTF-8 .txt o .csv de entre 1 byte y 1 MiB.",
-	},
-};
 type Rows = Awaited<
 	ReturnType<ReturnType<typeof createApiClient>["files"]["list"]>
 >;
@@ -53,7 +14,7 @@ export function ProjectFiles({
 	organizationId: string;
 	projectId: string;
 }) {
-	const t = messages[useLocale() === "es" ? "es" : "en"];
+	const t = useTranslations("Phase6.Files");
 	const [rows, setRows] = useState<Rows>(),
 		[file, setFile] = useState<File>(),
 		[busy, setBusy] = useState(false),
@@ -77,12 +38,12 @@ export function ProjectFiles({
 				if (active) setRows(r);
 			})
 			.catch(() => {
-				if (active) setError(t.failed);
+				if (active) setError(t("failed"));
 			});
 		return () => {
 			active = false;
 		};
-	}, [organizationId, projectId, revision, t.failed]);
+	}, [organizationId, projectId, revision, t]);
 	async function run(work: () => Promise<void>) {
 		setBusy(true);
 		setError(undefined);
@@ -90,7 +51,7 @@ export function ProjectFiles({
 			await work();
 			if (current.current) setRevision((v) => v + 1);
 		} catch {
-			if (current.current) setError(t.failed);
+			if (current.current) setError(t("failed"));
 		} finally {
 			if (current.current) setBusy(false);
 		}
@@ -102,7 +63,7 @@ export function ProjectFiles({
 			file.size > 1048576 ||
 			!/\.(txt|csv)$/i.test(file.name)
 		) {
-			setError(t.invalid);
+			setError(t("invalid"));
 			return;
 		}
 		await run(async () => {
@@ -145,11 +106,14 @@ export function ProjectFiles({
 		});
 	}
 	return (
-		<section aria-label={t.title} className="platform-activity platform-files">
-			<h2>{t.title}</h2>
-			<p>{t.hint}</p>
+		<section
+			aria-label={t("title")}
+			className="platform-activity platform-files"
+		>
+			<h2>{t("title")}</h2>
+			<p>{t("hint")}</p>
 			<label htmlFor={`project-file-${projectId}`}>
-				{t.choose}
+				{t("choose")}
 				<Input
 					id={`project-file-${projectId}`}
 					type="file"
@@ -162,7 +126,7 @@ export function ProjectFiles({
 				/>
 			</label>
 			<Button disabled={busy || !file} onClick={() => void upload()}>
-				{busy ? t.busy : t.upload}
+				{busy ? t("busy") : t("upload")}
 			</Button>
 			{error && <p role="alert">{error}</p>}
 			<Button
@@ -172,14 +136,14 @@ export function ProjectFiles({
 					setRevision((v) => v + 1);
 				}}
 			>
-				{t.retry}
+				{t("retry")}
 			</Button>
-			{!rows && !error && <p role="status">{t.loading}</p>}
-			{rows?.length === 0 && <p>{t.empty}</p>}
+			{!rows && !error && <p role="status">{t("loading")}</p>}
+			{rows?.length === 0 && <p>{t("empty")}</p>}
 			<ul>
 				{rows?.map((row) => (
 					<li key={row.id}>
-						{row.name} · {row.bytes} B · {t[row.state]}{" "}
+						{row.name} · {row.bytes} B · {t(row.state)}{" "}
 						{row.state === "staging" && (
 							<Button
 								disabled={busy}
@@ -191,7 +155,7 @@ export function ProjectFiles({
 									})
 								}
 							>
-								{t.finish}
+								{t("finish")}
 							</Button>
 						)}
 						{row.state === "available" && (
@@ -217,7 +181,7 @@ export function ProjectFiles({
 									})
 								}
 							>
-								{t.download}
+								{t("download")}
 							</Button>
 						)}
 					</li>

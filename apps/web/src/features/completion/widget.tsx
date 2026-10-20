@@ -1,11 +1,11 @@
 "use client";
 import { Button } from "@saas-cook/ui";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { api } from "./common";
 export function WorkspaceHelp({ organizationId }: { organizationId?: string }) {
-	const locale = useLocale(),
-		es = locale === "es";
+	const locale = useLocale();
+	const t = useTranslations("Phase6.Widget");
 	const [notices, setNotices] = useState<
 			Awaited<ReturnType<ReturnType<typeof api>["completion"]["notifications"]>>
 		>([]),
@@ -33,29 +33,21 @@ export function WorkspaceHelp({ organizationId }: { organizationId?: string }) {
 	return (
 		<details className="completion-card">
 			<summary>
-				{es ? "Ayuda y notificaciones" : "Help and notifications"}
+				{t("title")}
 				{notices.some((n) => !n.read) ? " •" : ""}
 			</summary>
 			<p>
-				<a href={`/${locale}/help`}>{es ? "Centro de ayuda" : "Help center"}</a>
+				<a href={`/${locale}/help`}>{t("help")}</a>
 			</p>
-			{contact && (
-				<p>
-					{es
-						? "Para ayuda con esta organización, contacta con el administrador de tu instalación y comparte solo el identificador de la solicitud fallida."
-						: "For help with this organization, contact your installation administrator and share only the failed request identifier."}
-				</p>
-			)}
+			{contact && <p>{t("contact")}</p>}
 			{notices.length === 0 ? (
-				<p>{es ? "No tienes notificaciones." : "You have no notifications."}</p>
+				<p>{t("noNotifications")}</p>
 			) : (
 				<ul className="completion-list">
 					{notices.map((n) => (
 						<li key={n.id}>
 							<a href={`/${locale}/organizations/${organizationId}/data`}>
-								{es
-									? "Un trabajo de datos ha terminado."
-									: "A data job has finished."}
+								{t("jobFinished")}
 							</a>
 							{!n.read && (
 								<Button
@@ -77,7 +69,7 @@ export function WorkspaceHelp({ organizationId }: { organizationId?: string }) {
 												.catch(() => {});
 									}}
 								>
-									{es ? "Marcar como leído" : "Mark read"}
+									{t("markRead")}
 								</Button>
 							)}
 						</li>

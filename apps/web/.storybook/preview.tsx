@@ -1,5 +1,4 @@
 import "@saas-cook/ui/styles.css";
-import { messages } from "@saas-cook/ui/messages";
 import {
 	resolveThemeConfig,
 	themeAttributes,
@@ -8,6 +7,8 @@ import {
 import type { Preview } from "@storybook/nextjs-vite";
 import { NextIntlClientProvider } from "next-intl";
 import { type ReactNode, useLayoutEffect } from "react";
+import { localeMessages } from "../src/i18n/catalogs";
+import { locales, resolveLocale } from "../src/i18n/locales";
 import { productTheme } from "../src/product-theme";
 
 function PreviewTheme({
@@ -17,7 +18,7 @@ function PreviewTheme({
 	children: ReactNode;
 	globals: Record<string, unknown>;
 }) {
-	const locale = globals.locale === "es" ? "es" : "en";
+	const locale = resolveLocale(globals.locale);
 	const { palette, mode, typography, radius, shadows, density } =
 		resolveThemeConfig({ ...productTheme, ...globals });
 	useLayoutEffect(() => {
@@ -48,7 +49,7 @@ function PreviewTheme({
 	return (
 		<NextIntlClientProvider
 			locale={locale}
-			messages={messages[locale]}
+			messages={localeMessages(locale)}
 			timeZone="UTC"
 		>
 			{children}
@@ -60,7 +61,7 @@ export default {
 	globalTypes: {
 		locale: {
 			description: "Language",
-			toolbar: { icon: "globe", items: ["en", "es"] },
+			toolbar: { icon: "globe", items: [...locales] },
 		},
 		mode: {
 			description: "Color mode",

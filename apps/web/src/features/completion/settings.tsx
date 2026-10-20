@@ -1,5 +1,6 @@
 "use client";
 import { Button, Input, NativeSelect, NativeSelectOption } from "@saas-cook/ui";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { DashboardShell } from "../../components/dashboard-shell";
 import { api, Reload, Status, useOperation } from "./common";
@@ -14,8 +15,9 @@ export function OrganizationSettings({
 }: {
 	organizationId: string;
 }) {
-	const op = useOperation(),
-		{ es } = op;
+	const op = useOperation();
+	const { locale } = op;
+	const t = useTranslations("Phase6.Settings");
 	const [webhooks, setWebhooks] = useState<Endpoint>(),
 		[integrations, setIntegrations] = useState<Connections>(),
 		[grants, setGrants] = useState<Grants>(),
@@ -64,52 +66,29 @@ export function OrganizationSettings({
 	return (
 		<DashboardShell section="settings" organizationId={organizationId}>
 			<header className="dashboard-page-header">
-				<h1>
-					{es ? "Configuración de la organización" : "Organization settings"}
-				</h1>
+				<h1>{t("title")}</h1>
 				<Reload load={() => void op.run(load)} disabled={op.busy} />
 			</header>
 			<p>
-				{es
-					? "Los cambios sensibles requieren haber confirmado tu identidad en los últimos cinco minutos."
-					: "Sensitive changes require identity confirmation within the last five minutes."}{" "}
-				<a
-					href={
-						es ? "/es/account#reauthenticate" : "/en/account#reauthenticate"
-					}
-				>
-					{es ? "Confirmar identidad" : "Confirm identity"}
-				</a>
+				{t("freshAuthNotice")}{" "}
+				<a href={`/${locale}/account#reauthenticate`}>{t("confirmIdentity")}</a>
 			</p>
 			<Status {...op} />
 			{secret && (
-				<section
-					className="completion-card"
-					aria-label={es ? "Secreto nuevo" : "New secret"}
-				>
-					<p>
-						{es
-							? "Guarda este secreto ahora. Solo se muestra una vez."
-							: "Save this secret now. It is shown only once."}
-					</p>
+				<section className="completion-card" aria-label={t("secretTitle")}>
+					<p>{t("saveSecret")}</p>
 					<code className="completion-secret">{secret}</code>
-					<Button onClick={() => setSecret(null)}>
-						{es ? "Cerrar" : "Dismiss"}
-					</Button>
+					<Button onClick={() => setSecret(null)}>{t("dismiss")}</Button>
 				</section>
 			)}
 			<section className="completion-card">
-				<h2>{es ? "Analítica del producto" : "Product analytics"}</h2>
+				<h2>{t("analyticsTitle")}</h2>
 				{preference ? (
 					<>
 						<p>
 							{preference.configured
-								? es
-									? "La recopilación está configurada."
-									: "Collection is configured."
-								: es
-									? "La recopilación está desactivada en esta instalación."
-									: "Collection is disabled for this installation."}
+								? t("configured")
+								: t("collectionDisabled")}
 						</p>
 						<label className="completion-check">
 							<input
@@ -128,22 +107,16 @@ export function OrganizationSettings({
 									)
 								}
 							/>
-							{es
-								? "Permitir analítica opcional de esta organización"
-								: "Allow optional analytics for this organization"}
+							{t("analyticsConsent")}
 						</label>
 					</>
 				) : (
-					<p>{es ? "No disponible" : "Unavailable"}</p>
+					<p>{t("unavailable")}</p>
 				)}
 			</section>
 			<section className="completion-card">
-				<h2>{es ? "Webhooks salientes" : "Outgoing webhooks"}</h2>
-				<p>
-					{es
-						? "El administrador de la instalación debe permitir el dominio HTTPS. El destino debe devolver el desafío de verificación."
-						: "The installation administrator must allow the HTTPS domain. The endpoint must echo the verification challenge."}
-				</p>
+				<h2>{t("webhooksTitle")}</h2>
+				<p>{t("webhooksHint")}</p>
 				<form
 					className="completion-form"
 					onSubmit={(e) => {
@@ -171,11 +144,11 @@ export function OrganizationSettings({
 					}}
 				>
 					<label htmlFor="settings-field-1">
-						{es ? "Nombre" : "Name"}
+						{t("name")}
 						<Input id="settings-field-1" name="name" required maxLength={80} />
 					</label>
 					<label htmlFor="settings-field-2">
-						URL
+						{t("url")}
 						<Input
 							id="settings-field-2"
 							name="url"
@@ -186,7 +159,7 @@ export function OrganizationSettings({
 						/>
 					</label>
 					<label htmlFor="settings-field-3">
-						{es ? "Evento" : "Event"}
+						{t("event")}
 						<NativeSelect id="settings-field-3" name="event">
 							{[
 								"project.created",
@@ -201,7 +174,7 @@ export function OrganizationSettings({
 						</NativeSelect>
 					</label>
 					<Button type="submit" disabled={op.busy}>
-						{es ? "Crear webhook" : "Create webhook"}
+						{t("createWebhook")}
 					</Button>
 				</form>
 				<ul className="completion-list">
@@ -232,11 +205,7 @@ export function OrganizationSettings({
 												})
 											}
 										>
-											{
-												(es
-													? ["Verificar", "Rotar secreto", "Revocar"]
-													: ["Verify", "Rotate secret", "Revoke"])[i]
-											}
+											{[t("verify"), t("rotateSecret"), t("revoke")][i]}
 										</Button>
 									))}
 								<Button
@@ -253,24 +222,21 @@ export function OrganizationSettings({
 										)
 									}
 								>
-									{es ? "Entregas" : "Deliveries"}
+									{t("deliveries")}
 								</Button>
 							</div>
 						</li>
 					))}
 				</ul>
-				{webhooks?.length === 0 && (
-					<p>{es ? "No hay webhooks." : "No webhooks."}</p>
-				)}
+				{webhooks?.length === 0 && <p>{t("noWebhooks")}</p>}
 				{deliveries && (
 					<ul className="completion-list">
 						{deliveries.length === 0 ? (
-							<li>{es ? "Sin entregas" : "No deliveries"}</li>
+							<li>{t("noDeliveries")}</li>
 						) : (
 							deliveries.map((d) => (
 								<li key={d.id}>
-									{d.event} · {d.state} · {d.attempts}{" "}
-									{es ? "intentos" : "attempts"}
+									{d.event} · {d.state} · {t("attempts", { count: d.attempts })}
 									{d.lastStatus ? ` · HTTP ${d.lastStatus}` : ""}
 								</li>
 							))
@@ -279,12 +245,8 @@ export function OrganizationSettings({
 				)}
 			</section>
 			<section className="completion-card">
-				<h2>{es ? "Integraciones" : "Integrations"}</h2>
-				<p>
-					{es
-						? "Conecta un endpoint HTTPS compatible con connection.health. Los permisos son declarados y deben coincidir con los del proveedor."
-						: "Connect an HTTPS endpoint that supports connection.health. Declared scopes must match the provider’s permissions."}
-				</p>
+				<h2>{t("integrationsTitle")}</h2>
+				<p>{t("integrationsHint")}</p>
 				<form
 					className="completion-form"
 					onSubmit={(e) => {
@@ -308,11 +270,11 @@ export function OrganizationSettings({
 					}}
 				>
 					<label htmlFor="settings-field-4">
-						{es ? "Nombre" : "Name"}
+						{t("name")}
 						<Input id="settings-field-4" name="name" maxLength={80} required />
 					</label>
 					<label htmlFor="settings-field-5">
-						URL
+						{t("url")}
 						<Input
 							id="settings-field-5"
 							name="url"
@@ -322,7 +284,7 @@ export function OrganizationSettings({
 						/>
 					</label>
 					<label htmlFor="settings-field-6">
-						{es ? "Token del proveedor" : "Provider token"}
+						{t("providerToken")}
 						<Input
 							id="settings-field-6"
 							name="token"
@@ -334,7 +296,7 @@ export function OrganizationSettings({
 						/>
 					</label>
 					<label htmlFor="settings-field-7">
-						{es ? "Permisos (separados por comas)" : "Scopes (comma separated)"}
+						{t("scopes")}
 						<Input
 							id="settings-field-7"
 							name="scopes"
@@ -343,7 +305,7 @@ export function OrganizationSettings({
 						/>
 					</label>
 					<Button type="submit" disabled={op.busy}>
-						{es ? "Conectar" : "Connect"}
+						{t("connect")}
 					</Button>
 				</form>
 				<ul className="completion-list">
@@ -374,11 +336,7 @@ export function OrganizationSettings({
 													})
 												}
 											>
-												{
-													(es
-														? ["Comprobar", "Desconectar"]
-														: ["Check health", "Disconnect"])[i]
-												}
+												{[t("checkHealth"), t("disconnect")][i]}
 											</Button>
 										))}
 									</div>
@@ -403,7 +361,7 @@ export function OrganizationSettings({
 										}}
 									>
 										<label htmlFor={`integration-token-${c.id}`}>
-											{es ? "Token de reemplazo" : "Replacement token"}
+											{t("replacementToken")}
 											<Input
 												id={`integration-token-${c.id}`}
 												name="token"
@@ -415,7 +373,7 @@ export function OrganizationSettings({
 											/>
 										</label>
 										<Button type="submit" disabled={op.busy}>
-											{es ? "Rotar token" : "Rotate token"}
+											{t("rotateToken")}
 										</Button>
 									</form>
 								</>
@@ -423,17 +381,11 @@ export function OrganizationSettings({
 						</li>
 					))}
 				</ul>
-				{integrations?.length === 0 && (
-					<p>{es ? "No hay integraciones." : "No integrations."}</p>
-				)}
+				{integrations?.length === 0 && <p>{t("noIntegrations")}</p>}
 			</section>
 			<section className="completion-card">
-				<h2>{es ? "Auditoría restringida" : "Restricted audit log"}</h2>
-				<p>
-					{es
-						? "Solo un propietario puede conceder este permiso adicional a propietarios o administradores."
-						: "Only an owner can grant this additional permission to owners or administrators."}
-				</p>
+				<h2>{t("auditTitle")}</h2>
+				<p>{t("auditHint")}</p>
 				<ul className="completion-list">
 					{grants?.map((g) => (
 						<li key={g.membershipId}>
@@ -456,13 +408,7 @@ export function OrganizationSettings({
 									})
 								}
 							>
-								{g.enabled
-									? es
-										? "Retirar acceso"
-										: "Remove access"
-									: es
-										? "Conceder acceso"
-										: "Grant access"}
+								{g.enabled ? t("removeAccess") : t("grantAccess")}
 							</Button>
 						</li>
 					))}
@@ -475,35 +421,28 @@ export function OrganizationSettings({
 						)
 					}
 				>
-					{es ? "Consultar auditoría" : "Query audit log"}
+					{t("queryAudit")}
 				</Button>
 				{audit && (
 					<>
 						<div className="completion-scroll">
 							<table className="completion-table">
-								<caption>
-									{es ? "Eventos de seguridad" : "Security events"}
-								</caption>
+								<caption>{t("securityEvents")}</caption>
 								<thead>
 									<tr>
-										{(es
-											? ["Fecha", "Acción", "Actor", "Destino"]
-											: ["Date", "Action", "Actor", "Target"]
-										).map((h) => (
-											<th scope="col" key={h}>
-												{h}
-											</th>
-										))}
+										{[t("date"), t("action"), t("actor"), t("target")].map(
+											(h) => (
+												<th scope="col" key={h}>
+													{h}
+												</th>
+											),
+										)}
 									</tr>
 								</thead>
 								<tbody>
 									{audit.items.map((r) => (
 										<tr key={r.id}>
-											<td>
-												{new Date(r.occurredAt).toLocaleString(
-													es ? "es" : "en",
-												)}
-											</td>
+											<td>{new Date(r.occurredAt).toLocaleString(locale)}</td>
 											<td>{r.action}</td>
 											<td>{r.actor}</td>
 											<td>{r.targetId}</td>
@@ -526,17 +465,13 @@ export function OrganizationSettings({
 									)
 								}
 							>
-								{es ? "Más antiguos" : "Older events"}
+								{t("olderEvents")}
 							</Button>
 						)}
 					</>
 				)}
 			</section>
-			<a href={`../${organizationId}/privacy`}>
-				{es
-					? "Exportación y eliminación de la organización"
-					: "Organization export and deletion"}
-			</a>
+			<a href={`../${organizationId}/privacy`}>{t("privacy")}</a>
 		</DashboardShell>
 	);
 }

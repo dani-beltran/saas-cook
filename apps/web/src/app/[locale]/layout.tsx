@@ -1,14 +1,13 @@
 import "@saas-cook/ui/styles.css";
 import { publicConfig } from "@saas-cook/config/client";
-import { messages } from "@saas-cook/ui/messages";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
-import { setRequestLocale } from "next-intl/server";
+import { getMessages, setRequestLocale } from "next-intl/server";
 import type { ReactNode } from "react";
 import { DashboardBrand } from "../../components/dashboard-shell";
 import { ThemeDocument } from "../../components/theme-document";
-import { accountMessages } from "../../i18n/account";
+import { isLocale } from "../../i18n/locales";
 
 export const metadata: Metadata = {
 	title: "SaaS Cook · Foundation",
@@ -25,13 +24,13 @@ export default async function LocaleLayout({
 	params: Promise<{ locale: string }>;
 }) {
 	const { locale } = await params;
-	if (locale !== "en" && locale !== "es") notFound();
+	if (!isLocale(locale)) notFound();
 	setRequestLocale(locale);
 	return (
 		<ThemeDocument locale={locale}>
 			<NextIntlClientProvider
 				locale={locale}
-				messages={{ ...messages[locale], Account: accountMessages[locale] }}
+				messages={await getMessages({ locale })}
 				timeZone="UTC"
 			>
 				<DashboardBrand name={publicConfig(process.env).appName}>

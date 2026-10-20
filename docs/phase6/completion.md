@@ -41,3 +41,9 @@ The initial `https-api` integration stores an encrypted token and declared scope
 ## Audit and UI
 
 Audit query/export requires current organization manage permission **and** an explicit owner-granted audit permission. Owners can grant/revoke it for current owners/admins. Bounded opaque cursors bind requester, organization and query. Queries themselves are audited; DTOs expose event IDs, actor IDs, action, target and timestamp, not unrestricted changes or secrets. Data/settings/privacy, receipt/unsubscribe, help and public about routes support English/Spanish and existing responsive themes. Public help contains instructions, not claims that unavailable enterprise modules are implemented.
+
+## Translation authoring
+
+All Phase 6 screens, including the predecessor search/activity/files/API-key components, use next-intl’s `Phase6` namespaces. Edit `apps/web/src/i18n/messages/en/phase6.json` and `apps/web/src/i18n/messages/es/phase6.json`; page components contain translation keys. Server pages use `getTranslations`, client components use `useTranslations`, and `i18n/catalogs.ts` supplies the same selected catalog to the request, layout and Storybook. Counts and row summaries use complete ICU messages so translators control word order and plural forms.
+
+To add a UI language, register it in `i18n/locales.ts`, add its Phase 6 catalog and include it in `i18n/catalogs.ts`, together with translations for the application’s existing shared/account surfaces. The catalogue unit suite checks keys, placeholders and runtime formatting for all registered locales. Other application modules and email/API locale contracts still declare their own supported languages and must also be extended before enabling a new language across the entire product.

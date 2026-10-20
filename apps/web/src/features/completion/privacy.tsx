@@ -1,13 +1,15 @@
 "use client";
 import { Button } from "@saas-cook/ui";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { DashboardShell } from "../../components/dashboard-shell";
 import { api, download, Status, useOperation } from "./common";
 
 type Client = ReturnType<typeof api>["completion"];
 export function PrivacyPage({ organizationId }: { organizationId?: string }) {
-	const op = useOperation(),
-		{ es } = op;
+	const op = useOperation();
+	const { locale } = op;
+	const t = useTranslations("Phase6.Privacy");
 	const [obligations, setObligations] =
 			useState<Awaited<ReturnType<Client["deletionPreview"]>>>(),
 		[request, setRequest] =
@@ -39,7 +41,7 @@ export function PrivacyPage({ organizationId }: { organizationId?: string }) {
 	return (
 		<DashboardShell section="privacy" organizationId={organizationId}>
 			<header className="dashboard-page-header">
-				<h1>{es ? "Privacidad y preferencias" : "Privacy and preferences"}</h1>
+				<h1>{t("title")}</h1>
 			</header>
 			<Status {...op} />
 			{!organizationId && (
@@ -52,9 +54,9 @@ export function PrivacyPage({ organizationId }: { organizationId?: string }) {
 							)
 						}
 					>
-						{es ? "Exportar mis datos" : "Export my account data"}
+						{t("personalExport")}
 					</Button>
-					<h2>{es ? "Notificaciones opcionales" : "Optional notifications"}</h2>
+					<h2>{t("notificationsTitle")}</h2>
 					{preferences && (
 						<>
 							<label className="completion-check">
@@ -67,7 +69,7 @@ export function PrivacyPage({ organizationId }: { organizationId?: string }) {
 											await api().completion.notificationSave({
 												email: e.target.checked,
 												inApp: preferences.inApp,
-												locale: es ? "es" : "en",
+												locale,
 												version: preferences.version,
 											});
 											setPreferences(
@@ -76,9 +78,7 @@ export function PrivacyPage({ organizationId }: { organizationId?: string }) {
 										})
 									}
 								/>
-								{es
-									? "Correo al terminar trabajos de datos"
-									: "Email when data jobs finish"}
+								{t("email")}
 							</label>
 							<label className="completion-check">
 								<input
@@ -90,7 +90,7 @@ export function PrivacyPage({ organizationId }: { organizationId?: string }) {
 											await api().completion.notificationSave({
 												email: preferences.email,
 												inApp: e.target.checked,
-												locale: es ? "es" : "en",
+												locale,
 												version: preferences.version,
 											});
 											setPreferences(
@@ -99,24 +99,12 @@ export function PrivacyPage({ organizationId }: { organizationId?: string }) {
 										})
 									}
 								/>
-								{es
-									? "Notificaciones en la aplicación"
-									: "In-app notifications"}
+								{t("inApp")}
 							</label>
-							{preferences.suppressed && (
-								<p>
-									{es
-										? "El correo opcional está suprimido por una baja, rebote o queja."
-										: "Optional email is suppressed after an unsubscribe, bounce, or complaint."}
-								</p>
-							)}
+							{preferences.suppressed && <p>{t("suppressed")}</p>}
 						</>
 					)}
-					<p>
-						{es
-							? "Los avisos obligatorios de seguridad y facturación siguen sus propias reglas."
-							: "Mandatory security and billing notices follow their own rules."}
-					</p>
+					<p>{t("mandatoryNotice")}</p>
 					{analytics && (
 						<label className="completion-check">
 							<input
@@ -135,48 +123,24 @@ export function PrivacyPage({ organizationId }: { organizationId?: string }) {
 									)
 								}
 							/>
-							{es
-								? "Permitir analítica opcional del producto"
-								: "Allow optional product analytics"}
+							{t("analytics")}
 						</label>
 					)}
 				</section>
 			)}
 			<section className="completion-card">
-				<h2>
-					{organizationId
-						? es
-							? "Eliminar organización"
-							: "Delete organization"
-						: es
-							? "Eliminar mi cuenta"
-							: "Delete my account"}
-				</h2>
+				<h2>{organizationId ? t("deleteOrganization") : t("deleteAccount")}</h2>
 				<p>
 					{organizationId
-						? es
-							? "Se suspende la organización y se eliminan sus datos. La cancelación de la suscripción se confirma con el proveedor; puede quedar pendiente hasta el final del periodo contratado. Exporta primero los datos que necesites."
-							: "The organization is suspended and its data is deleted. Subscription cancellation is confirmed with the provider; it may remain pending until the contracted period ends. Export the data you need first."
-						: es
-							? "Antes de eliminar tu cuenta, cada organización de la que seas el único propietario debe tener un sucesor verificado o completar su eliminación. Las organizaciones compartidas y sus suscripciones se conservan."
-							: "Before deleting your account, each organization where you are the sole owner must have a verified successor or complete deletion. Shared organizations and their subscriptions are preserved."}
+						? t("deleteOrganizationDescription")
+						: t("deleteAccountDescription")}
 				</p>
+				<p>{t("retentionNotice")}</p>
 				<p>
-					{es
-						? "Se conservan registros restringidos de seguridad y financieros. Las copias de seguridad caducan según la política de almacenamiento; el estado no certifica su eliminación."
-						: "Restricted security and financial records are retained. Backups expire under the storage policy; this status does not certify their erasure."}
-				</p>
-				<p>
-					<a href="/auth/confirm">
-						{es
-							? "Confirma tu identidad antes de continuar"
-							: "Confirm your identity before continuing"}
-					</a>
+					<a href="/auth/confirm">{t("confirmIdentity")}</a>
 				</p>
 				{organizationId && (
-					<a href={`../${organizationId}/data`}>
-						{es ? "Exportar datos" : "Export data"}
-					</a>
+					<a href={`../${organizationId}/data`}>{t("export")}</a>
 				)}
 				{!organizationId && (
 					<Button
@@ -188,26 +152,17 @@ export function PrivacyPage({ organizationId }: { organizationId?: string }) {
 							)
 						}
 					>
-						{es ? "Comprobar propiedad" : "Check ownership"}
+						{t("checkOwnership")}
 					</Button>
 				)}
 				{obligations && (
 					<ul>
 						{obligations.map((o) => (
 							<li key={o.organizationId}>
-								<a
-									href={`/${es ? "es" : "en"}/organizations/${o.organizationId}`}
-								>
+								<a href={`/${locale}/organizations/${o.organizationId}`}>
 									{o.name}
 								</a>{" "}
-								—{" "}
-								{o.requiresSuccessor
-									? es
-										? "Necesita sucesor o eliminación"
-										: "Needs successor or deletion"
-									: es
-										? "Sin bloqueo de propiedad"
-										: "No ownership blocker"}
+								— {o.requiresSuccessor ? t("needsSuccessor") : t("noBlocker")}
 							</li>
 						))}
 					</ul>
@@ -231,21 +186,13 @@ export function PrivacyPage({ organizationId }: { organizationId?: string }) {
 							)
 						}
 					>
-						{es
-							? "Preparar solicitud de eliminación"
-							: "Prepare deletion request"}
+						{t("prepareDeletion")}
 					</Button>
 				) : (
 					<>
-						<p>
-							{es
-								? "Guarda este enlace de estado. Solo permite consultar esta solicitud."
-								: "Save this status link. It only allows viewing this request."}
-						</p>
-						<a
-							href={`/${es ? "es" : "en"}/deletion#${request.id}.${request.receipt}`}
-						>
-							{es ? "Estado de eliminación" : "Deletion status"}
+						<p>{t("saveReceipt")}</p>
+						<a href={`/${locale}/deletion#${request.id}.${request.receipt}`}>
+							{t("deletionStatus")}
 						</a>
 						<label className="completion-check">
 							<input
@@ -253,9 +200,7 @@ export function PrivacyPage({ organizationId }: { organizationId?: string }) {
 								checked={consent}
 								onChange={(e) => setConsent(e.target.checked)}
 							/>
-							{es
-								? "Entiendo que al confirmar se revoca el acceso y comienza la eliminación irreversible."
-								: "I understand that confirmation revokes access and starts irreversible deletion."}
+							{t("deletionConsent")}
 						</label>
 						<div className="completion-actions">
 							<Button
@@ -264,12 +209,12 @@ export function PrivacyPage({ organizationId }: { organizationId?: string }) {
 									void op.run(async () => {
 										await api().completion.deletionConfirm({ id: request.id });
 										window.location.assign(
-											`/${es ? "es" : "en"}/deletion#${request.id}.${request.receipt}`,
+											`/${locale}/deletion#${request.id}.${request.receipt}`,
 										);
 									})
 								}
 							>
-								{es ? "Confirmar eliminación" : "Confirm deletion"}
+								{t("confirmDeletion")}
 							</Button>
 							<Button
 								variant="secondary"
@@ -282,7 +227,7 @@ export function PrivacyPage({ organizationId }: { organizationId?: string }) {
 									})
 								}
 							>
-								{es ? "Cancelar solicitud" : "Cancel request"}
+								{t("cancelDeletion")}
 							</Button>
 						</div>
 					</>
@@ -296,21 +241,13 @@ export function ReceiptPage({
 }: {
 	unsubscribe?: boolean;
 }) {
-	const op = useOperation(),
-		{ es } = op;
+	const op = useOperation();
+	const t = useTranslations("Phase6.Privacy");
 	const [state, setState] =
 		useState<Awaited<ReturnType<Client["deletionStatus"]>>>();
 	return (
 		<main className="completion-public">
-			<h1>
-				{unsubscribe
-					? es
-						? "Desactivar correo opcional"
-						: "Unsubscribe from optional email"
-					: es
-						? "Estado de eliminación"
-						: "Deletion status"}
-			</h1>
+			<h1>{unsubscribe ? t("unsubscribeTitle") : t("deletionStatus")}</h1>
 			<Status {...op} />
 			<Button
 				disabled={op.busy}
@@ -331,29 +268,14 @@ export function ReceiptPage({
 					})
 				}
 			>
-				{unsubscribe
-					? es
-						? "Confirmar baja"
-						: "Confirm unsubscribe"
-					: es
-						? "Consultar estado"
-						: "Check status"}
+				{unsubscribe ? t("confirmUnsubscribe") : t("checkStatus")}
 			</Button>
 			{state && (
 				<section className="completion-card">
 					<p>{state.state}</p>
-					<p>
-						{es ? "Pasos completados" : "Completed steps"}:{" "}
-						{state.steps.join(", ") || "—"}
-					</p>
-					<p>
-						{es ? "Conservado" : "Retained"}: {state.retained.join(", ")}
-					</p>
-					<p>
-						{es
-							? "La caducidad de las copias de seguridad no está confirmada."
-							: "Backup expiry is not confirmed."}
-					</p>
+					<p>{t("completedSteps", { steps: state.steps.join(", ") || "—" })}</p>
+					<p>{t("retained", { categories: state.retained.join(", ") })}</p>
+					<p>{t("backupNotice")}</p>
 				</section>
 			)}
 		</main>

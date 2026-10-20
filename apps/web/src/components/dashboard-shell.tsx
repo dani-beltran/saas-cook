@@ -2,7 +2,7 @@
 
 import { createApiClient } from "@saas-cook/api/client";
 import { Button, NativeSelect, NativeSelectOption } from "@saas-cook/ui";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import {
 	createContext,
 	type ReactNode,
@@ -12,6 +12,7 @@ import {
 } from "react";
 import { WorkspaceHelp } from "../features/completion/widget";
 import { dashboardMessages } from "../i18n/dashboard";
+import { resolveLocale } from "../i18n/locales";
 import { identityClient } from "../lib/identity-client";
 import "./dashboard.css";
 import { UserAvatar } from "./user-avatar";
@@ -183,8 +184,16 @@ export function DashboardFrame({
 	onRetry: () => void;
 	onLocaleChange?: (locale: "en" | "es") => void;
 }) {
-	const locale = useLocale() === "es" ? "es" : "en";
+	const locale = resolveLocale(useLocale());
 	const copy = dashboardMessages[locale];
+	const phase6 = useTranslations("Phase6.Navigation");
+	const sectionLabel =
+		section === "search" ||
+		section === "keys" ||
+		section === "data" ||
+		section === "privacy"
+			? phase6(section)
+			: copy[section];
 	const name = useContext(AppName);
 	const [open, setOpen] = useState(false);
 	const current = organizations.find((item) => item.id === organizationId);
@@ -306,7 +315,7 @@ export function DashboardFrame({
 					{organizationId && (
 						<>
 							<p className="dashboard-nav-label">{copy.work}</p>
-							{link("search", copy.search, `${organizationPath}/search`)}
+							{link("search", phase6("search"), `${organizationPath}/search`)}
 							{link("projects", copy.projects, `${organizationPath}/projects`)}
 							{link(
 								"customers",
@@ -315,13 +324,11 @@ export function DashboardFrame({
 							)}
 							{link("billing", copy.billing, `${organizationPath}/billing`)}
 							{link("usage", copy.usage, `${organizationPath}/usage`)}
-							{link("keys", copy.keys, `${organizationPath}/keys`)}
-							{link("data", copy.data, `${organizationPath}/data`)}
+							{link("keys", phase6("keys"), `${organizationPath}/keys`)}
+							{link("data", phase6("data"), `${organizationPath}/data`)}
 							{link(
 								"settings",
-								locale === "es"
-									? "Integraciones y datos"
-									: "Integrations and data",
+								phase6("settings"),
 								`${organizationPath}/settings`,
 							)}
 							{link("organization", copy.settings, organizationPath)}
@@ -342,10 +349,8 @@ export function DashboardFrame({
 				<div className="dashboard-sidebar-footer">
 					{user && (
 						<>
-							<a href={`/${locale}/privacy`}>{copy.privacy}</a>
-							<a href={`/${locale}/help`}>
-								{locale === "es" ? "Ayuda" : "Help"}
-							</a>
+							<a href={`/${locale}/privacy`}>{phase6("privacy")}</a>
+							<a href={`/${locale}/help`}>{phase6("help")}</a>
 							<a href={`/${locale}/account`} className="dashboard-user">
 								<UserAvatar user={user} />
 								<span>
@@ -393,7 +398,7 @@ export function DashboardFrame({
 							: (current?.name ?? copy.selected)}
 					</span>
 					<span aria-hidden="true">/</span>
-					<strong>{copy[section]}</strong>
+					<strong>{sectionLabel}</strong>
 				</div>
 				<main
 					id="dashboard-content"

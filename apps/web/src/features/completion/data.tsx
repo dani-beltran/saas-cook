@@ -1,5 +1,6 @@
 "use client";
 import { Button, Input, NativeSelect, NativeSelectOption } from "@saas-cook/ui";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { DashboardShell } from "../../components/dashboard-shell";
 import { api, download, Reload, Status, useOperation } from "./common";
@@ -8,8 +9,8 @@ type Jobs = Awaited<
 	ReturnType<ReturnType<typeof api>["completion"]["bulkList"]>
 >;
 export function DataPage({ organizationId }: { organizationId: string }) {
-	const op = useOperation(),
-		{ es } = op;
+	const op = useOperation();
+	const t = useTranslations("Phase6.Data");
 	const [jobs, setJobs] = useState<Jobs>(),
 		[projects, setProjects] = useState<{ id: string; name: string }[]>([]),
 		[project, setProject] = useState(""),
@@ -66,17 +67,13 @@ export function DataPage({ organizationId }: { organizationId: string }) {
 	return (
 		<DashboardShell section="data" organizationId={organizationId}>
 			<header className="dashboard-page-header">
-				<h1>{es ? "Datos de la organización" : "Organization data"}</h1>
+				<h1>{t("title")}</h1>
 				<Reload load={() => void op.run(load)} disabled={op.busy} />
 			</header>
-			<p>
-				{es
-					? "Los archivos de exportación caducan a las 24 horas. Los trabajos verifican tus permisos actuales en cada paso."
-					: "Exports expire after 24 hours. Jobs check your current access at each step."}
-			</p>
+			<p>{t("expiryNotice")}</p>
 			<Status {...op} />
 			<section className="completion-card">
-				<h2>{es ? "Exportar" : "Export"}</h2>
+				<h2>{t("exportTitle")}</h2>
 				<div className="completion-actions">
 					{(
 						["projects.export", "organization.export", "audit.export"] as const
@@ -96,35 +93,21 @@ export function DataPage({ organizationId }: { organizationId: string }) {
 							}
 						>
 							{
-								(es
-									? [
-											"Proyectos CSV",
-											"Organización JSON",
-											"Registro de auditoría JSON",
-										]
-									: ["Projects CSV", "Organization JSON", "Audit log JSON"])[
-									index
-								]
+								[
+									t("projectsExport"),
+									t("organizationExport"),
+									t("auditExport"),
+								][index]
 							}
 						</Button>
 					))}
 				</div>
-				<p>
-					{es
-						? "La auditoría necesita un permiso adicional del propietario."
-						: "Audit exports require an additional owner-granted permission."}
-				</p>
+				<p>{t("auditNotice")}</p>
 			</section>
 			<section className="completion-card">
-				<h2>{es ? "Importar proyectos" : "Import projects"}</h2>
-				<p>
-					{es
-						? "Sube primero un CSV en los archivos de un proyecto. Máximo 1000 filas y 1 MiB."
-						: "First upload a CSV in a project’s files. Maximum 1,000 rows and 1 MiB."}
-				</p>
-				<a href={`../${organizationId}/projects`}>
-					{es ? "Abrir proyectos y archivos" : "Open projects and files"}
-				</a>
+				<h2>{t("importTitle")}</h2>
+				<p>{t("importHint")}</p>
+				<a href={`../${organizationId}/projects`}>{t("openProjects")}</a>
 				<form
 					className="completion-form"
 					onSubmit={(e) => {
@@ -162,7 +145,7 @@ export function DataPage({ organizationId }: { organizationId: string }) {
 					}}
 				>
 					<label htmlFor="data-field-1">
-						{es ? "Proyecto de origen" : "Source project"}
+						{t("sourceProject")}
 						<NativeSelect
 							id="data-field-1"
 							value={project}
@@ -172,9 +155,7 @@ export function DataPage({ organizationId }: { organizationId: string }) {
 							}}
 							required
 						>
-							<NativeSelectOption value="">
-								{es ? "Seleccionar" : "Select"}
-							</NativeSelectOption>
+							<NativeSelectOption value="">{t("select")}</NativeSelectOption>
 							{projects.map((p) => (
 								<NativeSelectOption key={p.id} value={p.id}>
 									{p.name}
@@ -183,7 +164,7 @@ export function DataPage({ organizationId }: { organizationId: string }) {
 						</NativeSelect>
 					</label>
 					<label htmlFor="data-field-2">
-						{es ? "Archivo CSV verificado" : "Verified CSV file"}
+						{t("verifiedFile")}
 						<NativeSelect
 							id="data-field-2"
 							value={file}
@@ -193,9 +174,7 @@ export function DataPage({ organizationId }: { organizationId: string }) {
 							}}
 							required
 						>
-							<NativeSelectOption value="">
-								{es ? "Seleccionar" : "Select"}
-							</NativeSelectOption>
+							<NativeSelectOption value="">{t("select")}</NativeSelectOption>
 							{files.map((f) => (
 								<NativeSelectOption key={f.id} value={f.id}>
 									{f.name}
@@ -204,7 +183,7 @@ export function DataPage({ organizationId }: { organizationId: string }) {
 						</NativeSelect>
 					</label>
 					<label htmlFor="data-field-3">
-						{es ? "Columna del nombre" : "Name column"}
+						{t("nameColumn")}
 						<Input
 							id="data-field-3"
 							name="name"
@@ -214,7 +193,7 @@ export function DataPage({ organizationId }: { organizationId: string }) {
 						/>
 					</label>
 					<label htmlFor="data-field-4">
-						{es ? "Columna del identificador" : "Slug column"}
+						{t("slugColumn")}
 						<Input
 							id="data-field-4"
 							name="slug"
@@ -224,20 +203,16 @@ export function DataPage({ organizationId }: { organizationId: string }) {
 						/>
 					</label>
 					<label htmlFor="data-field-5">
-						{es
-							? "Columna de descripción (opcional)"
-							: "Description column (optional)"}
+						{t("descriptionColumn")}
 						<Input id="data-field-5" name="description" maxLength={100} />
 					</label>
 					<label htmlFor="data-field-6">
-						{es ? "Duplicados" : "Duplicates"}
+						{t("duplicates")}
 						<NativeSelect id="data-field-6" name="duplicates">
 							<NativeSelectOption value="reject">
-								{es ? "Rechazar" : "Reject"}
+								{t("reject")}
 							</NativeSelectOption>
-							<NativeSelectOption value="skip">
-								{es ? "Omitir" : "Skip"}
-							</NativeSelectOption>
+							<NativeSelectOption value="skip">{t("skip")}</NativeSelectOption>
 						</NativeSelect>
 					</label>
 					<div className="completion-actions">
@@ -247,7 +222,7 @@ export function DataPage({ organizationId }: { organizationId: string }) {
 							value="check"
 							disabled={op.busy}
 						>
-							{es ? "Validar sin importar" : "Dry run"}
+							{t("dryRun")}
 						</Button>
 						<Button
 							type="submit"
@@ -255,21 +230,19 @@ export function DataPage({ organizationId }: { organizationId: string }) {
 							value="start"
 							disabled={op.busy}
 						>
-							{es ? "Iniciar importación" : "Start import"}
+							{t("startImport")}
 						</Button>
 					</div>
 				</form>
 				{dry && (
 					<div role="status">
-						<p>
-							{dry.length} {es ? "filas revisadas" : "rows checked"}
-						</p>
+						<p>{t("rowsChecked", { count: dry.length })}</p>
 						<ul>
 							{dry
 								.filter((r) => r.errors.length)
 								.map((r) => (
 									<li key={r.row}>
-										{es ? "Fila" : "Row"} {r.row}: {r.errors.join(", ")}
+										{t("row", { row: r.row, errors: r.errors.join(", ") })}
 									</li>
 								))}
 						</ul>
@@ -277,17 +250,13 @@ export function DataPage({ organizationId }: { organizationId: string }) {
 				)}
 			</section>
 			<section className="completion-card">
-				<h2>{es ? "Tus trabajos" : "Your jobs"}</h2>
+				<h2>{t("jobsTitle")}</h2>
 				{!loaded ? (
-					<p>{es ? "Cargando…" : "Loading…"}</p>
+					<p>{t("loading")}</p>
 				) : !jobs ? (
-					<p role="alert">
-						{es
-							? "No se pudieron cargar los trabajos."
-							: "Jobs could not be loaded."}
-					</p>
+					<p role="alert">{t("jobsFailed")}</p>
 				) : jobs.length === 0 ? (
-					<p>{es ? "No hay trabajos." : "No jobs yet."}</p>
+					<p>{t("noJobs")}</p>
 				) : (
 					<ul className="completion-list">
 						{jobs.map((j) => (
@@ -316,7 +285,7 @@ export function DataPage({ organizationId }: { organizationId: string }) {
 												)
 											}
 										>
-											{es ? "Descargar" : "Download"}
+											{t("download")}
 										</Button>
 									)}
 									{j.state === "failed" && (
@@ -332,9 +301,7 @@ export function DataPage({ organizationId }: { organizationId: string }) {
 												})
 											}
 										>
-											{es
-												? "Reintentar con acceso actual"
-												: "Retry with current access"}
+											{t("retry")}
 										</Button>
 									)}
 									{["pending", "running", "failed"].includes(j.state) && (
@@ -351,7 +318,7 @@ export function DataPage({ organizationId }: { organizationId: string }) {
 												})
 											}
 										>
-											{es ? "Cancelar" : "Cancel"}
+											{t("cancel")}
 										</Button>
 									)}
 								</div>

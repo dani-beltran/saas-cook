@@ -17,7 +17,9 @@ Date: 2026-10-19. This completion change is stacked on PR #4, `codex/phase6-plat
 
 See [completion scope and limits](completion.md), [analytics protocol/report definitions](analytics.md), [recovery runbook](recovery.md), [file formats](files.md) and [feature brief](../../feature-briefs/phase6-completion.md). Migrations `0016`–`0024` and their snapshots are additive; applied history through `0015` is unchanged. No production database, live mail recipient or live provider was modified.
 
-## Executed verification
+## Executed verification at the original completion commit
+
+These results belong to `75d327905a08b8a82662dda6fe7bfa720ab09d01`. Its [hosted CI run](https://github.com/dani-beltran/saas-cook/actions/runs/39328558040) subsequently passed all nine jobs, including the final required gate. The translation follow-up has its own evidence below.
 
 - Source formatting, strict root/web types, Knip and all four static skill/migration/API boundary checks pass.
 - Full unit suite: **168/168** across 29 files.
@@ -38,3 +40,11 @@ The [machine-readable completion record](evidence/completion.json) binds the res
 Implementation is distinct from accepting M2. PostHog tests use an explicit protocol fixture and late-write/deletion fault scenarios; no live PostHog account was configured. The adapter keeps ambiguous ingestion or unverified erasure pending. A release must validate its provider's query/deletion completion behavior and retain independent journal/analytics receipts across all restorable backups. Existing Phase 5 Stripe test evidence is historical; this change uses provider contract fixtures and does not claim a new live cancellation drill.
 
 The restore drill proves the application protocol with disposable PostgreSQL/OpenFGA/S3 services. It does not establish infrastructure recovery time, backup retention expiry, old-process isolation or a live provider's guarantees. No new full 30-minute authorization performance gate or live-agent Commercial skill behavior evaluation is claimed. Phase 6/M2 release acceptance remains open for those applicable release-evidence gates; this record does not label them optional or passed.
+
+## Translation follow-up — 2026-10-20
+
+All Phase 6 pages and shared components now use next-intl, including the predecessor search, activity, file and API-key surfaces. Per-locale JSON catalogs contain the copy; server requests, the client provider and Storybook share catalog composition. Supported locales and request fallback are centralized. Counts and row/status summaries use ICU messages.
+
+Biome, strict root/web types, Knip, all four static boundary checks, **172 unit tests across 30 files**, production build and Storybook build pass. Translation tests check matching keys/placeholders, format every registered message, and verify singular/plural and row interpolation. **Six browser tests pass** across completion (three), platform (two) and files (one), exercising real sessions/worker/S3 plus English/Spanish public server pages, receipt errors, Spanish data/preferences and existing authorization flows.
+
+The [localization evidence](evidence/localization.json) records this source fingerprint and the executed checks. Earlier implementation/integration/image results above remain tied to their original source; this UI follow-up does not re-label them as new local runs. Logs remain under ignored `artifacts/phase6-completion/localization/`.

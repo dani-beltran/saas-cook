@@ -18,3 +18,5 @@ Verification requires real PostgreSQL/OpenFGA/S3 fixtures, current permissions, 
 ## Implemented decisions
 
 The bounded provider/format scope, role-separated opt-in runtime, command upgrade, deletion cancellation boundary, retained categories, job limits and public UI are documented in [completion](../docs/phase6/completion.md). [Recovery](../docs/phase6/recovery.md) specifies independent approval and enrollment; [analytics](../docs/phase6/analytics.md) specifies the catalogue, reports and pending-erasure behavior. The [verification record](../docs/phase6/acceptance.md) separates executed application checks from provider/infrastructure and release-evaluation evidence.
+
+Phase 6 UI copy uses the `Phase6` next-intl namespaces in per-locale JSON catalogs. Server pages use `getTranslations`; client components use `useTranslations`. The request, layout and Storybook share catalog composition and the supported-locale definition. User-visible counts and interpolated messages use ICU; catalog tests check key/placeholder parity and formatting for every registered locale.

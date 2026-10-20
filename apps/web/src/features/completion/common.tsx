@@ -1,12 +1,14 @@
 "use client";
 import { createApiClient } from "@saas-cook/api/client";
 import { Button } from "@saas-cook/ui";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
+import { resolveLocale } from "../../i18n/locales";
 import "./completion.css";
 export const api = () => createApiClient(`${window.location.origin}/api/rpc`);
 export function useOperation() {
-	const es = useLocale() === "es";
+	const locale = resolveLocale(useLocale());
+	const t = useTranslations("Phase6.Common");
 	const [busy, setBusy] = useState(false),
 		[message, setMessage] = useState("");
 	async function run(work: () => Promise<unknown>) {
@@ -15,24 +17,20 @@ export function useOperation() {
 		setMessage("");
 		try {
 			await work();
-			setMessage(es ? "Operación completada." : "Operation completed.");
+			setMessage(t("completed"));
 		} catch {
-			setMessage(
-				es
-					? "No se pudo completar. Comprueba tus permisos, confirma tu identidad e inténtalo de nuevo."
-					: "Could not complete. Check your access, confirm your identity, and try again.",
-			);
+			setMessage(t("failed"));
 		} finally {
 			setBusy(false);
 		}
 	}
-	return { es, busy, message, run };
+	return { locale, busy, message, run };
 }
 export function Status({ busy, message }: { busy: boolean; message: string }) {
-	const es = useLocale() === "es";
+	const t = useTranslations("Phase6.Common");
 	return (
 		<p role="status" aria-live="polite">
-			{busy ? (es ? "Procesando…" : "Working…") : message}
+			{busy ? t("working") : message}
 		</p>
 	);
 }
@@ -56,10 +54,10 @@ export function Reload({
 	load: () => void;
 	disabled?: boolean;
 }) {
-	const es = useLocale() === "es";
+	const t = useTranslations("Phase6.Common");
 	return (
 		<Button onClick={load} disabled={disabled} variant="secondary">
-			{es ? "Actualizar" : "Refresh"}
+			{t("refresh")}
 		</Button>
 	);
 }

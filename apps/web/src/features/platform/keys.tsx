@@ -10,12 +10,11 @@ import {
 	DialogTitle,
 	Input,
 } from "@saas-cook/ui";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { DashboardShell } from "../../components/dashboard-shell";
-import { keyMessages } from "./key-messages";
 import "./platform.css";
 
 const api = () => createApiClient(`${window.location.origin}/api/rpc`);
@@ -36,8 +35,8 @@ export function KeyAdministration({
 }: {
 	organizationId: string;
 }) {
-	const locale = useLocale(),
-		copy = keyMessages[locale === "es" ? "es" : "en"];
+	const locale = useLocale();
+	const t = useTranslations("Phase6.Keys");
 	const [accounts, setAccounts] = useState<Accounts>(),
 		[cursor, setCursor] = useState<string>(),
 		[selected, setSelected] = useState<Accounts["items"][number]>(),
@@ -80,16 +79,16 @@ export function KeyAdministration({
 		<DashboardShell section="keys" organizationId={organizationId}>
 			<header className="dashboard-page-header">
 				<div>
-					<h1>{copy.title}</h1>
-					<p>{copy.hint}</p>
-					<a href={`/${locale}/account#security`}>{copy.verify}</a>
+					<h1>{t("title")}</h1>
+					<p>{t("hint")}</p>
+					<a href={`/${locale}/account#security`}>{t("verify")}</a>
 				</div>
 			</header>
 			{failed && (
 				<p role="alert">
-					{copy.failed}{" "}
+					{t("failed")}{" "}
 					<Button onClick={() => setRevision((v) => v + 1)}>
-						{copy.retry}
+						{t("retry")}
 					</Button>
 				</p>
 			)}
@@ -121,7 +120,7 @@ export function KeyAdministration({
 					}
 				})}
 			>
-				<label htmlFor="key-account-name">{copy.name}</label>
+				<label htmlFor="key-account-name">{t("name")}</label>
 				<Input
 					id="key-account-name"
 					{...register("name")}
@@ -142,15 +141,15 @@ export function KeyAdministration({
 							}
 							disabled={busy}
 						/>
-						{cap === "project:read" ? copy.readAll : copy.createAll}
+						{cap === "project:read" ? t("readAll") : t("createAll")}
 					</label>
 				))}
 				<Button disabled={busy} type="submit">
-					{copy.create}
+					{t("create")}
 				</Button>
 			</form>
 			{!accounts && !failed ? (
-				<p role="status">{copy.loading}</p>
+				<p role="status">{t("loading")}</p>
 			) : (
 				accounts && (
 					<>
@@ -158,12 +157,12 @@ export function KeyAdministration({
 							{accounts.items.map((a) => (
 								<li key={a.id}>
 									<strong>{a.name}</strong>
-									<span>{copy[a.status]}</span>
-									<Button onClick={() => setSelected(a)}>{copy.title}</Button>
+									<span>{t(a.status)}</span>
+									<Button onClick={() => setSelected(a)}>{t("title")}</Button>
 								</li>
 							))}
 						</ul>
-						{!accounts.items.length && <p>{copy.empty}</p>}
+						{!accounts.items.length && <p>{t("empty")}</p>}
 						{accounts.nextCursor && (
 							<Button
 								onClick={() => {
@@ -171,7 +170,7 @@ export function KeyAdministration({
 									setCursor(accounts.nextCursor ?? undefined);
 								}}
 							>
-								{copy.next}
+								{t("next")}
 							</Button>
 						)}
 					</>
@@ -200,8 +199,8 @@ function AccountKeys({
 	account: Accounts["items"][number];
 	changed: (account: Accounts["items"][number]) => void;
 }) {
-	const locale = useLocale(),
-		copy = keyMessages[locale === "es" ? "es" : "en"];
+	const locale = useLocale();
+	const t = useTranslations("Phase6.Keys");
 	const [keys, setKeys] = useState<Keys>(),
 		[cursor, setCursor] = useState<string>(),
 		[revision, setRevision] = useState(0),
@@ -243,12 +242,12 @@ function AccountKeys({
 				if (current) setKeys(p);
 			})
 			.catch(() => {
-				if (current) setFailure(copy.failed);
+				if (current) setFailure(t("failed"));
 			});
 		return () => {
 			current = false;
 		};
-	}, [organizationId, account.id, cursor, revision, copy.failed]);
+	}, [organizationId, account.id, cursor, revision, t]);
 	function operationKey(signature: string) {
 		if (pending.current?.signature !== signature)
 			pending.current = { signature, key: crypto.randomUUID() };
@@ -266,7 +265,7 @@ function AccountKeys({
 				setRevision((v) => v + 1);
 			}
 		} catch {
-			if (alive.current) setFailure(issuing ? copy.unavailable : copy.failed);
+			if (alive.current) setFailure(issuing ? t("unavailable") : t("failed"));
 		} finally {
 			if (alive.current) setBusy(false);
 		}
@@ -291,12 +290,12 @@ function AccountKeys({
 		if (alive.current) setSecret(response.secret);
 	}
 	const scopeLabels = {
-		"project:read": copy.read,
-		"project:create": copy.createScope,
-		"project:update": copy.update,
-		"project:delete": copy.delete,
-		"project:restore": copy.restore,
-		"project:manage": copy.manage,
+		"project:read": t("read"),
+		"project:create": t("createScope"),
+		"project:update": t("update"),
+		"project:delete": t("delete"),
+		"project:restore": t("restore"),
+		"project:manage": t("manage"),
 	};
 	return (
 		<section className="platform-activity">
@@ -310,7 +309,7 @@ function AccountKeys({
 							setRevision((v) => v + 1);
 						}}
 					>
-						{copy.retry}
+						{t("retry")}
 					</Button>
 				</p>
 			)}
@@ -320,8 +319,8 @@ function AccountKeys({
 					setConfirm({
 						message:
 							account.status === "active"
-								? copy.confirmDeactivate
-								: copy.activate,
+								? t("confirmDeactivate")
+								: t("activate"),
 						run: async () =>
 							changed(
 								await api().serviceAccounts.setStatus({
@@ -334,18 +333,18 @@ function AccountKeys({
 					})
 				}
 			>
-				{account.status === "active" ? copy.deactivate : copy.activate}
+				{account.status === "active" ? t("deactivate") : t("activate")}
 			</Button>
 			{secret ? (
 				<section role="status">
-					<p>{copy.secret}</p>
+					<p>{t("secret")}</p>
 					<Input
-						aria-label={copy.secret}
+						aria-label={t("secret")}
 						value={secret}
 						readOnly
 						autoComplete="off"
 					/>
-					<Button onClick={() => setSecret(undefined)}>{copy.dismiss}</Button>
+					<Button onClick={() => setSecret(undefined)}>{t("dismiss")}</Button>
 				</section>
 			) : (
 				<form
@@ -356,7 +355,7 @@ function AccountKeys({
 					}}
 				>
 					<fieldset disabled={busy || account.status !== "active"}>
-						<legend>{copy.scopes}</legend>
+						<legend>{t("scopes")}</legend>
 						{(Object.keys(scopeLabels) as Scope[]).map((scope) => (
 							<label key={scope} htmlFor={`key-scope-${account.id}-${scope}`}>
 								<Checkbox
@@ -371,7 +370,7 @@ function AccountKeys({
 								{scopeLabels[scope]}
 							</label>
 						))}
-						<label htmlFor={`key-expiry-${account.id}`}>{copy.expires}</label>
+						<label htmlFor={`key-expiry-${account.id}`}>{t("expires")}</label>
 						<Input
 							id={`key-expiry-${account.id}`}
 							type="datetime-local"
@@ -380,13 +379,13 @@ function AccountKeys({
 							onChange={(event) => setExpires(event.target.value)}
 						/>
 						<Button type="submit" disabled={!scopes.length}>
-							{copy.issue}
+							{t("issue")}
 						</Button>
 					</fieldset>
 				</form>
 			)}
 			{!keys && !failure ? (
-				<p role="status">{copy.loading}</p>
+				<p role="status">{t("loading")}</p>
 			) : (
 				keys && (
 					<>
@@ -396,10 +395,10 @@ function AccountKeys({
 									<strong>{key.prefix}</strong>
 									<span>
 										{key.revokedAt
-											? copy.revoked
+											? t("revoked")
 											: Date.parse(key.expiresAt) <= Date.now()
-												? copy.expired
-												: copy.active}
+												? t("expired")
+												: t("active")}
 									</span>
 									<time dateTime={key.expiresAt}>
 										{new Date(key.expiresAt).toLocaleString(locale)}
@@ -411,18 +410,18 @@ function AccountKeys({
 												disabled={busy || Boolean(secret)}
 												onClick={() =>
 													setConfirm({
-														message: copy.confirmRotate,
+														message: t("confirmRotate"),
 														run: () => issue(key.id),
 													})
 												}
 											>
-												{copy.rotate}
+												{t("rotate")}
 											</Button>
 											<Button
 												disabled={busy || Boolean(secret)}
 												onClick={() =>
 													setConfirm({
-														message: copy.confirmRevoke,
+														message: t("confirmRevoke"),
 														run: () =>
 															api().serviceAccounts.revoke({
 																organizationId,
@@ -431,20 +430,20 @@ function AccountKeys({
 													})
 												}
 											>
-												{copy.revoke}
+												{t("revoke")}
 											</Button>
 										</>
 									)}
 								</li>
 							))}
 						</ul>
-						{!keys.items.length && <p>{copy.noKeys}</p>}
+						{!keys.items.length && <p>{t("noKeys")}</p>}
 						{keys.nextCursor && (
 							<Button
 								disabled={busy || Boolean(secret)}
 								onClick={() => setCursor(keys.nextCursor ?? undefined)}
 							>
-								{copy.next}
+								{t("next")}
 							</Button>
 						)}
 					</>
@@ -457,20 +456,20 @@ function AccountKeys({
 				}}
 			>
 				<DialogContent>
-					<DialogTitle>{copy.confirm}</DialogTitle>
+					<DialogTitle>{t("confirm")}</DialogTitle>
 					<DialogDescription>{confirm?.message}</DialogDescription>
 					{failure && <p role="alert">{failure}</p>}
 					<Button disabled={busy} onClick={() => setConfirm(undefined)}>
-						{copy.cancel}
+						{t("cancel")}
 					</Button>
 					<Button
 						disabled={busy}
 						onClick={() => {
 							if (confirm)
-								void run(confirm.run, confirm.message === copy.confirmRotate);
+								void run(confirm.run, confirm.message === t("confirmRotate"));
 						}}
 					>
-						{copy.confirm}
+						{t("confirm")}
 					</Button>
 				</DialogContent>
 			</Dialog>
