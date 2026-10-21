@@ -1,13 +1,19 @@
 import { rename, rm, writeFile } from "node:fs/promises";
+import { createPlatformRuntime } from "@saas-cook/api/platform-runtime";
 import { createAuthorizationService, getPublication } from "@saas-cook/authz";
 import { readWorkerEnv } from "@saas-cook/config/server";
 import { recordHeartbeat, recordProbe } from "@saas-cook/db";
 import { createStripeProvider } from "@saas-cook/db/billing-stripe";
 import { createBillingWorker } from "@saas-cook/db/billing-worker";
+import { backgroundActors } from "@saas-cook/db/bulk-actor";
+import { configuredFileStorage } from "@saas-cook/db/file-storage";
+import { pruneFiles } from "@saas-cook/db/files-worker";
+import { pruneActivity } from "@saas-cook/db/platform-worker";
 import {
 	createSmtpTransport,
 	deliverBillingNotices,
 	deliverIdentityEmails,
+	renderOptionalEmail,
 } from "@saas-cook/email";
 import {
 	initializeObservability,
@@ -24,7 +30,7 @@ const env = readWorkerEnv();
 initializeObservability("worker");
 const pool = new Pool({
 	connectionString: env.WORKER_DATABASE_URL,
-	max: 3,
+	max: 8,
 	connectionTimeoutMillis: 3000,
 	query_timeout: 3000,
 });
@@ -52,6 +58,7 @@ const billingWorker =
 				origin: env.APP_ORIGIN,
 			})
 		: undefined;
+const fileStorage = configuredFileStorage(env);
 const mailTransport = createSmtpTransport({
 	host: env.SMTP_HOST,
 	port: env.SMTP_PORT,
@@ -60,6 +67,30 @@ const mailTransport = createSmtpTransport({
 	username: env.SMTP_USERNAME,
 	password: env.SMTP_PASSWORD,
 });
+const platformModules = createPlatformRuntime(
+	env,
+	pool,
+	controlPool,
+	backgroundActors(pool, () =>
+		getPublication(controlPool, env.INSTALLATION_ID),
+	),
+	async (m) => {
+		const content = await renderOptionalEmail({
+			locale: m.locale,
+			url: new URL(
+				`/${m.locale}/organizations/${m.organizationId}/data`,
+				env.APP_ORIGIN,
+			).href,
+			unsubscribeUrl: new URL(
+				`/${m.locale}/unsubscribe#${m.unsubscribe}`,
+				env.APP_ORIGIN,
+			).href,
+		});
+		await mailTransport({ id: m.id, to: m.to, ...content });
+	},
+);
+let modulesTimer: NodeJS.Timeout | undefined,
+	pendingModules: Promise<void> | undefined;
 async function ready() {
 	const publication = await getPublication(controlPool, env.INSTALLATION_ID);
 	const binding = await pool.query(
@@ -93,6 +124,8 @@ let timer: NodeJS.Timeout | undefined;
 let pendingHeartbeat: Promise<void> = Promise.resolve();
 let pendingBilling: Promise<void> | undefined;
 let billingTimer: NodeJS.Timeout | undefined;
+let platformTimer: NodeJS.Timeout | undefined;
+let pendingPlatform: Promise<void> | undefined;
 async function billingTick() {
 	await ready();
 	await billingWorker?.tick();
@@ -123,11 +156,16 @@ async function stop(code: number) {
 	stopping = true;
 	clearInterval(timer);
 	clearInterval(billingTimer);
+	clearInterval(platformTimer);
+	clearInterval(modulesTimer);
 	const deadline = setTimeout(() => process.exit(1), 12_000);
 	try {
 		await boss.stop({ graceful: true, timeout: 8_000 });
 		await pendingHeartbeat.catch(() => {});
 		await pendingBilling?.catch(() => {});
+		await pendingPlatform?.catch(() => {});
+		await pendingModules?.catch(() => {});
+		await platformModules?.close();
 		await pool.end();
 		await controlPool.end();
 		await rm(heartbeatPath, { force: true });
@@ -191,6 +229,30 @@ try {
 				})
 				.finally(() => {
 					pendingBilling = undefined;
+				});
+	}, 5000);
+	// Projection retention is optional work; its failures cannot block billing notices.
+	platformTimer = setInterval(() => {
+		if (!pendingPlatform)
+			pendingPlatform = ready()
+				.then(() => pruneActivity(pool, authorization.publication))
+				.then(() => pruneFiles(pool, fileStorage, authorization.publication))
+				.catch(() => {
+					logEvent("worker.platform_retention_failed");
+				})
+				.finally(() => {
+					pendingPlatform = undefined;
+				});
+	}, 60_000);
+	modulesTimer = setInterval(() => {
+		if (!pendingModules)
+			pendingModules = ready()
+				.then(() => platformModules?.tick())
+				.catch(() => {
+					logEvent("worker.platform_pending");
+				})
+				.finally(() => {
+					pendingModules = undefined;
 				});
 	}, 5000);
 	logEvent("worker.ready");

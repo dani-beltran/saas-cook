@@ -1,15 +1,20 @@
 import { oc } from "@orpc/contract";
 import { z } from "zod";
+import { operationKey, publicId, resourceSlug } from "./inputs/common";
+import {
+	projectDescription,
+	projectStatus,
+	resourceName,
+} from "./inputs/resources";
 
-const organizationId = z.uuid();
-const operationKey = z.string().min(8).max(120);
-const name = z.string().trim().min(2).max(80);
-const slug = z.string().regex(/^[a-z0-9][a-z0-9-]{1,62}$/);
+const organizationId = publicId;
+const name = resourceName;
+const slug = resourceSlug;
 const version = z.number().int().min(1).max(Number.MAX_SAFE_INTEGER);
 const cursor = z.string().min(1).max(2048).optional();
 const limit = z.coerce.number<number>().int().min(1).max(50).optional();
-const status = z.enum(["active", "completed", "archived"]);
-const errorData = z.object({ requestId: z.uuid() });
+const status = projectStatus;
+const errorData = z.object({ requestId: publicId });
 const protectedOperation = oc.errors({
 	UNAUTHORIZED: { status: 401, data: errorData },
 	FORBIDDEN: { status: 403, data: errorData },
@@ -31,24 +36,24 @@ const protectedOperation = oc.errors({
 });
 // These allowlists deliberately exclude internal policy state, keys and storage rows.
 const projectDto = z.object({
-	id: z.uuid(),
+	id: publicId,
 	organizationId,
 	name: z.string(),
 	slug: z.string(),
 	description: z.string(),
 	status,
-	ownerMembershipId: z.uuid().nullable(),
+	ownerMembershipId: publicId.nullable(),
 	version,
 	createdAt: z.string(),
 	updatedAt: z.string(),
 	deletedAt: z.string().nullable(),
 });
-const projectReference = { organizationId, id: z.uuid() };
+const projectReference = { organizationId, id: publicId };
 const projectVersion = { ...projectReference, version };
 const projectPath = "/organizations/{organizationId}/projects";
 const grantSubject = z.strictObject({
 	kind: z.enum(["membership", "team"]),
-	id: z.uuid(),
+	id: publicId,
 });
 export const resourcesContract = {
 	projects: {
@@ -98,7 +103,7 @@ export const resourcesContract = {
 					organizationId,
 					name,
 					slug,
-					description: z.string().max(4000).optional(),
+					description: projectDescription.optional(),
 					operationKey,
 				}),
 			)
@@ -113,7 +118,7 @@ export const resourcesContract = {
 				z.strictObject({
 					...projectVersion,
 					name: name.optional(),
-					description: z.string().max(4000).optional(),
+					description: projectDescription.optional(),
 					status: status.optional(),
 				}),
 			)
@@ -146,21 +151,21 @@ export const resourcesContract = {
 			.input(
 				z.strictObject({
 					organizationId,
-					resourceId: z.uuid(),
+					resourceId: publicId,
 					subject: grantSubject,
 					relation: z.enum(["viewer", "editor", "manager", "denied"]),
 					expiresAt: z.iso.datetime().optional(),
 					operationKey,
 				}),
 			)
-			.output(z.object({ id: z.uuid() })),
+			.output(z.object({ id: publicId })),
 		revoke: protectedOperation
 			.route({
 				method: "DELETE",
 				path: "/organizations/{organizationId}/resource-grants/{grantId}",
 				summary: "Revoke an existing resource grant synchronously",
 			})
-			.input(z.strictObject({ organizationId, grantId: z.uuid() }))
+			.input(z.strictObject({ organizationId, grantId: publicId }))
 			.output(z.object({ ok: z.literal(true) })),
 	},
 };
@@ -174,14 +179,14 @@ const scope = z.enum([
 ]);
 const scopes = z.array(scope).min(1).max(6);
 const accountDto = z.object({
-	id: z.uuid(),
+	id: publicId,
 	name: z.string(),
 	status: z.enum(["active", "inactive"]),
 	capabilities: z.array(z.string()),
 	version,
 });
 const issuedKeyDto = z.object({
-	id: z.uuid(),
+	id: publicId,
 	secret: z.string(),
 	prefix: z.string(),
 	expiresAt: z.string(),
@@ -214,7 +219,7 @@ export const serviceAccountContract = {
 		.input(
 			z.strictObject({
 				organizationId,
-				id: z.uuid(),
+				id: publicId,
 				status: z.enum(["active", "inactive"]),
 				version,
 			}),
@@ -229,7 +234,7 @@ export const serviceAccountContract = {
 		.input(
 			z.strictObject({
 				organizationId,
-				serviceAccountId: z.uuid(),
+				serviceAccountId: publicId,
 				operationKey,
 				scopes,
 				expiresAt: z.iso.datetime(),
@@ -245,7 +250,7 @@ export const serviceAccountContract = {
 		.input(
 			z.strictObject({
 				organizationId,
-				keyId: z.uuid(),
+				keyId: publicId,
 				operationKey,
 				expiresAt: z.iso.datetime(),
 			}),
@@ -257,7 +262,7 @@ export const serviceAccountContract = {
 			path: `${keyPath}/{keyId}`,
 			summary: "Revoke an API key",
 		})
-		.input(z.strictObject({ organizationId, keyId: z.uuid() }))
+		.input(z.strictObject({ organizationId, keyId: publicId }))
 		.output(z.object({ ok: z.literal(true) })),
 };
 export type ProjectDto = z.infer<typeof projectDto>;

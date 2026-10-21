@@ -210,6 +210,7 @@ export const securityAudit = identity.table(
 export const emailDelivery = identity.table(
 	"email_delivery",
 	{
+		recipientHash: text("recipient_hash"),
 		id: uuid("id").primaryKey(),
 		encryptedPayload: text("encrypted_payload").notNull(),
 		expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),

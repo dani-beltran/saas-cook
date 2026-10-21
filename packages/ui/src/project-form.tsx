@@ -1,21 +1,21 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import {
+	type ProjectFormValues,
+	projectFormFields as schema,
+} from "@saas-cook/api-contracts/inputs/resources";
 import { useTranslations } from "next-intl";
 import { useId } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
+
+export type { ProjectFormValues } from "@saas-cook/api-contracts/inputs/resources";
+
 import { Button } from "./button";
 import { Input } from "./input";
 import { NativeSelect, NativeSelectOption } from "./native-select";
 import { Textarea } from "./textarea";
 
-export interface ProjectFormValues {
-	name: string;
-	slug: string;
-	description: string;
-	status: "active" | "completed" | "archived";
-}
 export function ProjectForm({
 	initial,
 	busy = false,
@@ -29,12 +29,6 @@ export function ProjectForm({
 }) {
 	const t = useTranslations("Projects");
 	const id = useId();
-	const schema = z.object({
-		name: z.string().trim().min(2, t("nameInvalid")).max(80, t("nameInvalid")),
-		slug: z.string().regex(/^[a-z0-9][a-z0-9-]{1,62}$/, t("slugInvalid")),
-		description: z.string().max(4000, t("descriptionInvalid")),
-		status: z.enum(["active", "completed", "archived"]),
-	});
 	const {
 		register,
 		handleSubmit,
@@ -70,7 +64,7 @@ export function ProjectForm({
 				/>
 				{errors.name && (
 					<p id={`${id}-name-error`} role="alert" className="text-destructive">
-						{errors.name.message}
+						{t("nameInvalid")}
 					</p>
 				)}
 			</div>
@@ -94,7 +88,7 @@ export function ProjectForm({
 							role="alert"
 							className="text-destructive"
 						>
-							{errors.slug.message}
+							{t("slugInvalid")}
 						</p>
 					)}
 				</div>
@@ -117,7 +111,7 @@ export function ProjectForm({
 						role="alert"
 						className="text-destructive"
 					>
-						{errors.description.message}
+						{t("descriptionInvalid")}
 					</p>
 				)}
 			</div>

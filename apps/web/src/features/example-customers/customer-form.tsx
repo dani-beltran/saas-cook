@@ -1,17 +1,13 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { customerFormFields as schema } from "@saas-cook/api-contracts/example-customers";
 import { Button, Input, NativeSelect, NativeSelectOption } from "@saas-cook/ui";
 import { useId } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
+import type { z } from "zod";
 import type { CustomerCopy } from "./messages";
 
-export type CustomerFormValues = {
-	name: string;
-	email: string;
-	company: string;
-	status: "lead" | "active" | "inactive";
-};
+export type CustomerFormValues = z.infer<typeof schema>;
 export function CustomerForm({
 	copy,
 	initial,
@@ -26,18 +22,6 @@ export function CustomerForm({
 	onCancel: () => void;
 }) {
 	const id = useId();
-	const schema = z.strictObject({
-		name: z.string().trim().min(1, copy.nameInvalid).max(120, copy.nameInvalid),
-		email: z
-			.string()
-			.trim()
-			.max(254, copy.emailInvalid)
-			.pipe(z.email(copy.emailInvalid)),
-		company: z.string().trim().max(120, copy.companyInvalid),
-		status: z.enum(["lead", "active", "inactive"], {
-			error: copy.statusInvalid,
-		}),
-	});
 	const {
 		register,
 		handleSubmit,
@@ -88,7 +72,7 @@ export function CustomerForm({
 							role="alert"
 							className="customers-error"
 						>
-							{errors[field]?.message}
+							{copy[`${field}Invalid`]}
 						</p>
 					)}
 				</div>

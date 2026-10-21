@@ -1,0 +1,64 @@
+{
+	"checkedAt": "2026-10-21T09:32:45.175Z",
+	"parentCommit": "a17eab76fb9b4c67bf1dbaa76b2231de302e6573",
+	"implementationSha256": "ed939d5d7ab557df70efcbe56b17b4f5a6ca1a6538f1e6164bfa9fb831ac60d2",
+	"sourceDirtyAtVerification": true,
+	"scope": "Split delivery-task completion into domain features and APIs",
+	"features": [
+		"data-jobs",
+		"privacy",
+		"organization-settings",
+		"notifications",
+		"public-pages"
+	],
+	"rpcGroups": [
+		"dataJobs",
+		"privacy",
+		"organizationSettings",
+		"notifications",
+		"analytics"
+	],
+	"restCompatibility": {
+		"retainedOperations": 31,
+		"retiredRpcNamespace": "completion",
+		"status": "pre-release rename; existing REST methods, paths and schemas retained"
+	},
+	"checks": {
+		"source": "passed",
+		"types": "passed",
+		"knip": "passed",
+		"unit": {
+			"passed": 172,
+			"files": 30
+		},
+		"integration": {
+			"passed": 218,
+			"files": 37
+		},
+		"browser": {
+			"passed": 6,
+			"suites": ["data-jobs", "public-pages", "platform", "files"]
+		},
+		"skills": {
+			"passed": 6
+		},
+		"productionBuild": "passed",
+		"storybookBuild": "passed",
+		"image": {
+			"passed": 17,
+			"identity": "sha256:c8eec94a984b1b5781598f671c2023a3d3367d90b7e612a67c7109880e8ff1f0",
+			"implementationSha256": "ed939d5d7ab557df70efcbe56b17b4f5a6ca1a6538f1e6164bfa9fb831ac60d2",
+			"architecture": "arm64",
+			"runtimeNode": "24.22.0"
+		},
+		"imagePolicy": {
+			"scope": "image",
+			"target": "saas-cook:feature-domains",
+			"status": "passed",
+			"blocked": [],
+			"checkedAt": "2026-10-21T09:32:14.463Z"
+		}
+	},
+	"previousHeadCi": "https://github.com/dani-beltran/saas-cook/actions/runs/39375891387",
+	"releaseAcceptance": "No change to the provider/infrastructure/performance/evaluation limits in acceptance.md."
+}

@@ -17,6 +17,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useLocale } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { DashboardShell } from "../../components/dashboard-shell";
+import { ResourceActivity } from "../platform/activity";
 import { CustomerForm, type CustomerFormValues } from "./customer-form";
 import { CustomerTable } from "./customer-table";
 import { type CustomerCopy, customerMessages } from "./messages";
@@ -527,6 +528,12 @@ function Directory({
 								</>
 							) : editor.action === "view" && editor.customer ? (
 								<>
+									<ResourceActivity
+										key={editor.customer.id}
+										organizationId={organizationId}
+										resourceType="customer"
+										resourceId={editor.customer.id}
+									/>
 									<dl className="customers-details">
 										{(
 											[

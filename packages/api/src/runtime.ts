@@ -9,11 +9,15 @@ import { createBillingService } from "@saas-cook/db/billing";
 import { createStripeProvider } from "@saas-cook/db/billing-stripe";
 import { acceptStripeWebhook } from "@saas-cook/db/billing-worker";
 import { createExampleCustomersService } from "@saas-cook/db/example-customers";
+import { configuredFileStorage } from "@saas-cook/db/file-storage";
+import { createFileService } from "@saas-cook/db/files";
+import { createPlatformService } from "@saas-cook/db/platform";
 import { createResourceService } from "@saas-cook/db/resources";
 import { createTenancyService } from "@saas-cook/db/tenancy";
 import { enqueueIdentityEmail } from "@saas-cook/email";
 import { getOperationContext } from "@saas-cook/observability";
 import { Pool } from "pg";
+import { createPlatformRuntime } from "./platform-runtime";
 
 function createRuntime() {
 	const env = readWebEnv();
@@ -101,8 +105,32 @@ function createRuntime() {
 					: env.DEFAULT_PROJECT_CAPACITY,
 		},
 	);
+	const platformModules = createPlatformRuntime(
+		env,
+		applicationPool,
+		controlPool,
+		identity.backgroundActor,
+	);
 	const keys = createApiKeyService({ pool: applicationPool, authorization });
 	return {
+		platformModules,
+		feedbackSecret: env.OPTIONAL_EMAIL_FEEDBACK_SECRET,
+		files: createFileService(
+			applicationPool,
+			{ authorize: authorization.authorizeResource },
+			{
+				storage: configuredFileStorage(env),
+				capacityBytes: env.FILES_CAPACITY_BYTES,
+			},
+		),
+		platform: createPlatformService(
+			applicationPool,
+			{
+				authorize: authorization.authorizeResource,
+				check: authorization.checkResource,
+			},
+			{ cursorSecret: env.AUTH_SECRET },
+		),
 		billing,
 		async webhook(raw: Buffer, signature: string) {
 			if (!provider) throw new Error("Billing disabled");
@@ -123,6 +151,7 @@ function createRuntime() {
 		origin: env.APP_ORIGIN,
 		async close() {
 			await Promise.all([
+				platformModules?.close(),
 				applicationPool.end(),
 				identityPool.end(),
 				controlPool.end(),

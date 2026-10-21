@@ -131,6 +131,10 @@ export async function bootstrap(
 				`model-sha256:${modelHash}`,
 			],
 		);
+		await control.query(
+			"INSERT INTO control.journal_heads(installation_id) VALUES($1) ON CONFLICT DO NOTHING",
+			[options.installationId],
+		);
 		await control.query("COMMIT");
 		return "completed";
 	} catch (error) {

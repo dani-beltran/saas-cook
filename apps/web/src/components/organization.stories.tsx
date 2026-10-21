@@ -2,7 +2,7 @@ import type { OrganizationSnapshotDto } from "@saas-cook/api-contracts";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { NextIntlClientProvider, useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
-import { accountMessages } from "../i18n/account";
+import { localeMessages } from "../i18n/catalogs";
 import { organizationDashboardCopy } from "../i18n/organization-dashboard";
 import { ConfirmDialog, MemberRow, TeamCard } from "./organization";
 import "./dashboard.css";
@@ -166,7 +166,7 @@ const meta = {
 			return (
 				<NextIntlClientProvider
 					locale={locale}
-					messages={{ Account: accountMessages[locale] }}
+					messages={localeMessages(locale)}
 					timeZone="UTC"
 				>
 					<Story />

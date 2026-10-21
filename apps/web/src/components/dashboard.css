@@ -138,6 +138,26 @@
 	margin-top: auto;
 	padding-top: 36px;
 }
+.dashboard-footer-links {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 4px 20px;
+	padding: 0 8px 12px;
+	margin-bottom: 8px;
+	border-bottom: 1px solid var(--sidebar-border);
+}
+.dashboard-footer-links a {
+	padding: 6px 0;
+	font-size: 12px;
+	line-height: 20px;
+	color: var(--muted-foreground);
+	text-underline-offset: 3px;
+}
+.dashboard-footer-links a:is(:hover, :focus-visible) {
+	color: var(--foreground);
+	text-decoration: underline;
+}
 .dashboard-user {
 	display: flex;
 	align-items: center;

@@ -1,0 +1,6 @@
+{
+	"completed": "Operation completed.",
+	"failed": "Could not complete. Check your access, confirm your identity, and try again.",
+	"working": "Working…",
+	"refresh": "Refresh"
+}

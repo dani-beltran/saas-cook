@@ -4,6 +4,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { createServer } from "node:net";
 import { setTimeout as delay } from "node:timers/promises";
 import type { FullConfig } from "@playwright/test";
+import { createTestFileStorage } from "../../packages/testing/src/file-storage";
 import { createTestInstallation } from "../../packages/testing/src/installation";
 
 export default async function setup(config: FullConfig) {
@@ -19,14 +20,29 @@ export default async function setup(config: FullConfig) {
 		});
 	});
 	const installation = await createTestInstallation();
+	let storage: Awaited<ReturnType<typeof createTestFileStorage>> | undefined;
 	const previousEnv = Object.fromEntries(
 		Object.keys(installation.env).map((key) => [key, process.env[key]]),
 	);
 	Object.assign(process.env, installation.env);
-	let server: ChildProcess | undefined;
+	let server: ChildProcess | undefined, worker: ChildProcess | undefined;
 	let logs = "";
 	async function cleanup() {
 		try {
+			if (
+				worker?.pid &&
+				worker.exitCode === null &&
+				worker.signalCode === null
+			) {
+				const closed = once(worker, "exit");
+				worker.kill("SIGTERM");
+				const deadline = setTimeout(() => worker?.kill("SIGKILL"), 10000);
+				try {
+					await closed;
+				} finally {
+					clearTimeout(deadline);
+				}
+			}
 			if (
 				server?.pid &&
 				server.exitCode === null &&
@@ -50,15 +66,58 @@ export default async function setup(config: FullConfig) {
 				if (value === undefined) delete process.env[key];
 				else process.env[key] = value;
 			}
-			await installation.cleanup();
+			try {
+				await storage?.cleanup();
+			} finally {
+				await installation.cleanup();
+			}
 		}
 	}
 	try {
+		storage = await createTestFileStorage(baseURL);
+		const lifecycle = new URL(installation.env.DATABASE_URL),
+			journal = new URL(installation.controlUrl);
+		lifecycle.username = "saas_cook_lifecycle";
+		journal.username = "saas_cook_journal_writer";
+		const platformEnv = {
+			PLATFORM_ENABLED: "true",
+			APP_ENV: "test",
+			LIFECYCLE_DATABASE_URL: lifecycle.toString(),
+			JOURNAL_DATABASE_URL: journal.toString(),
+			OUTGOING_ALLOWED_HOSTS: "hooks.example.test",
+		};
+		if (
+			process.env.E2E_REPORT_GROUP === "data-jobs" ||
+			process.env.E2E_PLATFORM_WORKER === "1"
+		) {
+			worker = spawn(process.execPath, ["dist/worker.mjs"], {
+				env: {
+					...installation.env,
+					...storage.env,
+					...platformEnv,
+					PATH: process.env.PATH,
+					APP_ORIGIN: baseURL,
+					SMTP_HOST: "127.0.0.1",
+					SMTP_PORT: "1026",
+					WORKER_HEARTBEAT_PATH: `/tmp/phase6-browser-${installation.env.INSTALLATION_ID}.json`,
+				},
+				stdio: ["ignore", "pipe", "pipe"],
+			});
+			worker.stdout?.on("data", (b) => {
+				logs += b;
+			});
+			worker.stderr?.on("data", (b) => {
+				logs += b;
+			});
+		}
+
 		server = spawn(
 			process.execPath,
 			["apps/web/.next/standalone/apps/web/server.js"],
 			{
 				env: {
+					...storage.env,
+					...platformEnv,
 					PATH: process.env.PATH,
 					NODE_ENV: "production",
 					HOSTNAME: "127.0.0.1",

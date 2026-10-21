@@ -1,0 +1,189 @@
+{
+	"About": {
+		"help": "Ayuda",
+		"description": "Un espacio compartido para organizar proyectos y clientes, gestionar el acceso y trabajar con tus datos.",
+		"signIn": "Entrar o crear una cuenta",
+		"howItWorks": "Cómo funciona",
+		"controlsTitle": "Control de la organización",
+		"controlsDescription": "Los permisos se comprueban para cada operación. Los propietarios pueden gestionar miembros, consultar la facturación y preparar exportaciones o solicitudes de eliminación.",
+		"configurationNotice": "Las integraciones y los servicios opcionales dependen de la configuración de cada instalación."
+	},
+	"Help": {
+		"back": "Volver a la aplicación",
+		"title": "Centro de ayuda",
+		"documentation": "Documentación",
+		"pageNavigation": "Navegación de ayuda",
+		"language": "Idioma de la documentación",
+		"languages": {
+			"en": "English",
+			"es": "Español"
+		},
+		"skip": "Saltar a las guías",
+		"eyebrow": "Guías y soporte",
+		"intro": "Pasos prácticos para gestionar tu cuenta, trabajar con los datos de tu organización y resolver problemas habituales. Elige un tema para empezar.",
+		"index": "En esta página",
+		"availability": "Algunas herramientas dependen de tus permisos y de los servicios activados en esta instalación. Si una función no está disponible, pide al propietario de tu organización o al administrador de la instalación que revise el acceso y la configuración.",
+		"shortcuts": {
+			"gettingStarted": "Configura tu cuenta",
+			"imports": "Importa un CSV",
+			"troubleshooting": "Resuelve un problema"
+		},
+		"openPrivacy": "Abrir privacidad",
+		"backToTop": "Volver arriba",
+		"gettingStarted": {
+			"title": "Primeros pasos",
+			"intro": "Crea una cuenta verificada y después únete a una organización o crea una. Tu cuenta es personal; la pertenencia a una organización controla el acceso al trabajo compartido.",
+			"steps": {
+				"account": "Abre la página de cuenta y elige Crear cuenta. Introduce tu nombre, correo y contraseña con su confirmación, y envía el formulario.",
+				"verify": "Abre el correo de verificación y sigue su enlace. Confirma la acción en la página que se abre. Si el enlace ha caducado, envía de nuevo el formulario Crear cuenta con la misma dirección para solicitar otro correo de verificación.",
+				"signIn": "Inicia sesión con tu correo verificado y contraseña. Si usas un enlace por correo o una llave de acceso registrada, elige ese método. Completa la verificación con el autenticador o un código de recuperación si se solicita.",
+				"organization": "En Cuenta, abre el área de organizaciones para crear una o consultar tus membresías. Si has recibido una invitación, entra con la dirección invitada y acepta la invitación de forma explícita."
+			},
+			"note": "Un enlace de verificación confirma una dirección de correo; una invitación solo concede pertenencia a la organización cuando se acepta. Revisa la carpeta de spam si no encuentras un correo esperado.",
+			"action": "Abrir tu cuenta"
+		},
+		"organizations": {
+			"title": "Organizaciones y proyectos",
+			"intro": "El selector de organización determina dónde trabajas. El acceso se comprueba en cada acción, por lo que dos miembros pueden ver proyectos distintos.",
+			"steps": {
+				"context": "Elige la organización correcta en la barra lateral antes de crear, editar, importar o exportar datos. Usa Cuenta para volver a tus ajustes personales o gestionar tus membresías.",
+				"members": "Los propietarios y administradores gestionan invitaciones, miembros y equipos en Configuración de la organización. Invita al correo correcto con el rol adecuado; el destinatario debe aceptar. La pertenencia a equipos y los permisos de proyecto afectan al acceso por separado.",
+				"project": "Abre Proyectos y elige Crear proyecto. Introduce un nombre y un slug único en minúsculas, con una descripción opcional. Para modificarlo después, elige Editar en el proyecto y guarda los cambios.",
+				"find": "Usa Buscar para encontrar nombres de proyectos y clientes accesibles, o busca dentro de Proyectos. Continúa con Cargar más proyectos cuando esté disponible, aunque la página actual esté vacía. Abre Actividad donde se ofrezca para consultar los cambios permitidos."
+			},
+			"note": "Si al guardar se indica que el elemento ha cambiado, actualízalo y revisa su última versión antes de reintentar. Copia antes el texto que no hayas guardado. Ser miembro no da acceso por sí solo a todos los proyectos privados."
+		},
+		"files": {
+			"title": "Subir y verificar archivos",
+			"intro": "Los archivos de proyecto admiten texto UTF-8 y CSV privados. Deben verificarse antes de usarlos en importaciones o descargarlos.",
+			"steps": {
+				"open": "Elige tu organización, abre Proyectos y selecciona Editar en el proyecto que debe contener el archivo. Busca la sección Archivos.",
+				"choose": "Usa Elegir archivo para seleccionar un .txt o .csv de entre 1 byte y 1 MiB. Guarda primero las hojas de cálculo como CSV UTF-8; no se admiten libros de hojas de cálculo, PDF, archivos comprimidos ni binarios.",
+				"verify": "Elige Subir y verificar y espera a que el archivo aparezca como Listo. Si permanece Pendiente de verificación y se ofrece Finalizar verificación, selecciónalo para terminar la subida existente.",
+				"download": "Elige Descargar junto a un archivo listo. Si la lista no se actualiza tras la subida, usa Recargar. Para importar desde un archivo, selecciona su proyecto y el archivo verificado en la página Datos."
+			},
+			"note": "Los archivos listos caducan a los 30 días; los intentos sin finalizar o rechazados pueden limpiarse después de 20 minutos. Conserva tu propia copia. Las subidas requieren permiso de edición del proyecto y las descargas, permiso de lectura vigente."
+		},
+		"imports": {
+			"title": "Importar proyectos desde CSV",
+			"intro": "Las importaciones crean proyectos a partir de un CSV verificado. Valida sin importar para revisar errores antes de iniciar el trabajo.",
+			"steps": {
+				"prepare": "Prepara un CSV UTF-8 con una fila de encabezados y un máximo de 1000 filas de datos, 20 columnas y 1 MiB en total. Cada campo admite hasta 4000 caracteres. Incluye un nombre de proyecto y un slug único en minúsculas por fila.",
+				"upload": "Sube y verifica el CSV en la sección Archivos de un proyecto existente. Ese proyecto contiene el archivo de origen; los proyectos importados pertenecen directamente a la organización seleccionada.",
+				"select": "Abre Datos en la barra lateral de la organización. En Importar proyectos, elige el proyecto de origen y el archivo CSV verificado. Solo aparecen los archivos cuya verificación ha finalizado.",
+				"map": "Introduce los nombres exactos de los encabezados CSV para las columnas de nombre y slug. Añade una columna de descripción solo si la necesitas. Elige Rechazar para tratar los slugs duplicados como errores u Omitir para saltarlos.",
+				"validate": "Elige Validar sin importar y lee los errores por fila. Corrige los nombres, slugs o asignaciones en el archivo de origen, sube y verifica el CSV corregido, selecciónalo y vuelve a validarlo.",
+				"start": "Elige Iniciar importación cuando estés listo. Sigue el progreso en Tus trabajos. Puedes cancelar trabajos pendientes, en curso o fallidos. Si un trabajo falla, resuelve la causa, vuelve a iniciar sesión si es necesario y elige Reintentar con acceso actual."
+			},
+			"exampleTitle": "Ejemplo de CSV",
+			"example": "name,slug,description\nRediseño web,redisenyo-web,Planificar la nueva web\nEstudio de clientes,estudio-clientes,Recoger notas de entrevistas",
+			"exampleHint": "En este ejemplo, asigna la columna de nombre a name, la de slug a slug y la de descripción a description. Los encabezados deben coincidir con los de tu archivo.",
+			"note": "La validación sin importar no crea proyectos ni reserva capacidad. El acceso, la validez de la sesión y los límites se comprueban de nuevo durante el trabajo. Cancelar detiene el trabajo restante; no elimina las filas ya importadas."
+		},
+		"exports": {
+			"title": "Exportar datos de la organización",
+			"intro": "Las exportaciones son instantáneas descargables de los datos a los que tienes acceso en ese momento. Son exportaciones limitadas, no copias de seguridad completas.",
+			"steps": {
+				"choose": "Elige la organización y abre Datos. Selecciona Proyectos CSV para las filas de proyectos, Organización JSON para los registros admitidos o Registro de auditoría JSON para el registro restringido.",
+				"wait": "Busca la exportación en Tus trabajos y espera a que termine. La página actualiza el progreso automáticamente; Actualizar también recarga la lista. Un trabajo fallido muestra errores y puede ofrecer Reintentar con acceso actual.",
+				"download": "Cuando termine, selecciona Descargar. Guarda el archivo en un lugar adecuado para su contenido. Descarga por separado los archivos de los proyectos mientras conserves el acceso.",
+				"refresh": "Descarga la exportación antes de 24 horas. Si caduca, cambian los datos de origen o tus permisos, crea una nueva. Volver a iniciar sesión no recupera una exportación caducada."
+			},
+			"note": "Organización JSON incluye registros admitidos y metadatos de archivos, no sus contenidos, credenciales, secretos de proveedores ni evidencias financieras. Cada colección tiene un límite de 1000 filas y el archivo, de 1 MiB. Exportar auditoría requiere además un permiso explícito concedido por un propietario."
+		},
+		"privacy": {
+			"title": "Privacidad y notificaciones",
+			"intro": "Privacidad y preferencias reúne tu exportación personal, las notificaciones opcionales y tus preferencias de analítica.",
+			"steps": {
+				"open": "Abre Cuenta y selecciona la pestaña Privacidad. Las preferencias personales se aplican a tu cuenta; las de analítica de la organización se gestionan por separado en Integraciones y datos.",
+				"notifications": "En Notificaciones opcionales, elige si quieres recibir un correo al terminar un trabajo de datos y si quieres ver avisos en la aplicación. Los cambios se guardan automáticamente. Lee el mensaje de estado antes de salir.",
+				"analytics": "En Analítica del producto, elige si permites la analítica opcional. Si la recopilación está desactivada en esta instalación, tu preferencia se guarda igualmente; seleccionarla no activa la recopilación por sí sola.",
+				"personalExport": "En Tus datos, selecciona Exportar mis datos para descargar tu perfil, preferencias y membresías. Usa la página Datos de la organización si necesitas sus registros."
+			},
+			"note": "Las preferencias opcionales no desactivan los avisos obligatorios de seguridad o facturación. Una baja, rebote o queja puede mantener desactivado el correo opcional. Los avisos de trabajos aparecen en Ayuda y notificaciones y se conservan siete días."
+		},
+		"deletion": {
+			"title": "Preparar la eliminación de una cuenta u organización",
+			"intro": "La eliminación separa la preparación de la confirmación. Revisa el alcance y los requisitos de propiedad antes de continuar.",
+			"steps": {
+				"export": "Descarga primero los datos y archivos que necesites. Para tu cuenta, abre Cuenta y selecciona Privacidad. Para una organización, abre Integraciones y datos y sigue el enlace Exportación y eliminación de la organización.",
+				"ownership": "Para eliminar tu cuenta, selecciona Comprobar propiedad. Resuelve cada elemento que necesite sucesor o eliminación: completa la transferencia a un sucesor activo y verificado, conserva otro propietario actual o termina antes la eliminación de esa organización. No basta con una propuesta de transferencia pendiente.",
+				"identity": "Usa Confirma tu identidad antes de continuar para abrir la reautenticación de la cuenta. Los pasos sensibles de eliminación requieren una confirmación reciente de identidad. Vuelve a la página de privacidad al terminar.",
+				"prepare": "Elige Preparar solicitud de eliminación. Prepararla no inicia la eliminación. Revisa la solicitud o elige Cancelar solicitud mientras siga pendiente de confirmación.",
+				"receipt": "Guarda el enlace Estado de eliminación antes de confirmar. Incluye un recibo que permite consultar el progreso cuando termine el acceso a tu cuenta. Abre el enlace guardado y elige Consultar estado para ver actualizaciones.",
+				"confirm": "Lee y marca la casilla de consentimiento explícito y elige Confirmar eliminación solo cuando estés listo. La confirmación revoca el acceso e inicia la eliminación irreversible. Las organizaciones compartidas y sus suscripciones continúan si solo eliminas tu cuenta personal."
+			},
+			"note": "Las solicitudes confirmadas no pueden cancelarse. Pueden conservarse registros restringidos de seguridad y financieros. La limpieza de proveedores o la cancelación de suscripciones puede quedar pendiente y el estado no certifica el borrado de copias de seguridad. Contacta con el administrador de la instalación si el progreso queda bloqueado."
+		},
+		"keys": {
+			"title": "Claves API y cuentas de servicio",
+			"intro": "Las claves API permiten a una cuenta de servicio ejecutar operaciones de Proyecto declaradas, con alcances limitados y permisos vigentes de la organización.",
+			"steps": {
+				"open": "Elige la organización y abre Claves API. Usa una cuenta de propietario o administrador con permiso de gestión y confirma tu identidad si se solicita autenticación reciente.",
+				"account": "Introduce un nombre y elige Crear cuenta de servicio. Revisa el acceso a proyectos; permite la lectura o creación en toda la organización solo si la integración lo necesita.",
+				"issue": "Selecciona los permisos y la caducidad de la clave y elige Emitir clave. Copia el secreto de inmediato al almacenamiento seguro de credenciales del servidor de tu integración. Solo se muestra una vez.",
+				"rotate": "Usa Rotar clave para sustituir una credencial, Revocar clave para detener una clave o Desactivar cuenta para revocar todas las de esa cuenta de servicio. Actualiza las integraciones afectadas tras la rotación."
+			},
+			"note": "La rotación desactiva la clave anterior de inmediato. Si se pierde la respuesta que contiene el secreto, actualiza la lista y revoca o rota la clave; no puede recuperarse. No incluyas claves en código del navegador, capturas ni mensajes de soporte. No sustituyen al inicio de sesión personal para privacidad o configuración."
+		},
+		"integrations": {
+			"title": "Integraciones, webhooks y auditoría",
+			"intro": "Usa Integraciones y datos para las conexiones de la organización y el acceso restringido a auditoría. Estas herramientas requieren permisos de gestión vigentes.",
+			"steps": {
+				"prepare": "Confirma tu identidad antes de los cambios sensibles. Pide al administrador de la instalación que autorice el dominio HTTPS público exacto del destino antes de crear una conexión o webhook.",
+				"webhook": "En Webhooks salientes, introduce un nombre, una URL y un evento admitido y elige Crear webhook. Guarda el secreto de un solo uso. Configura el receptor para verificar entregas firmadas y devolver el desafío de verificación; después elige Verificar. Usa Entregas para consultar los intentos.",
+				"integration": "En Integraciones, introduce la URL autorizada, el token del proveedor y los alcances separados por comas y elige Conectar. El destino debe admitir connection.health. Usa Comprobar estado, Rotar token o Desconectar para mantener la conexión.",
+				"audit": "En Registro de auditoría restringido, un propietario debe conceder el permiso adicional a un propietario o administrador elegible. Después usa Consultar auditoría y Eventos anteriores para revisar registros. Las exportaciones de auditoría necesitan ese mismo permiso."
+			},
+			"note": "Los secretos de webhooks y los tokens de proveedores son credenciales. Guárdalos de forma segura y no los incluyas en solicitudes de soporte. Desconectar revoca la integración local; no elimina la cuenta del proveedor externo. Pide ayuda al desarrollador del receptor para verificar las firmas de webhooks."
+		},
+		"billing": {
+			"title": "Facturación y uso",
+			"intro": "Las herramientas de facturación dependen de la configuración de la instalación y de tus permisos de facturación en la organización.",
+			"steps": {
+				"review": "Elige la organización y abre Facturación para revisar el plan actual, el estado de la suscripción y los planes disponibles. Algunas instalaciones usan límites locales sin un proveedor de pagos conectado.",
+				"change": "Para un cambio de pago disponible, revisa el plan y la cantidad antes de abrir el pago o el portal del proveedor. Vuelve a la aplicación y espera al estado de suscripción confirmado.",
+				"usage": "Abre Uso para revisar el periodo actual, el consumo y los límites. Si un proyecto o una importación está bloqueado por capacidad, pide a un administrador de la organización que revise el límite antes de reintentar.",
+				"invoices": "Revisa las facturas disponibles en Facturación. Usa el portal cuando se ofrezca para las acciones admitidas por el proveedor. Si el pago o la suscripción siguen pendientes, consulta a la persona responsable de la facturación de tu organización."
+			},
+			"note": "Volver del pago no concede acceso de pago por sí solo. Los cambios de suscripción se aplican tras la confirmación del proveedor. Eliminar una organización puede dejar la cancelación pendiente hasta el final del periodo contratado; preparar la eliminación no cancela la facturación de inmediato."
+		},
+		"troubleshooting": {
+			"title": "Solución de problemas",
+			"intro": "Empieza por el síntoma que corresponda. Si el problema continúa, reúne la información indicada más abajo antes de pedir ayuda.",
+			"signIn": {
+				"question": "No puedo iniciar sesión o el enlace de correo ha caducado.",
+				"answer": "Comprueba que usas la dirección con la que te registraste o recibiste la invitación. Si el enlace de verificación de cuenta ha caducado, envía Crear cuenta de nuevo con la misma dirección. Para acceder o restablecer la contraseña, solicita otro enlace con la opción correspondiente de la página de cuenta. Usa el correo más reciente y revisa el spam. Completa la verificación con autenticador o código de recuperación que se solicite. Si no puedes usar un factor obligatorio, utiliza la recuperación de cuenta o contacta con el administrador de la instalación."
+			},
+			"access": {
+				"question": "Una página o acción indica que no tengo acceso.",
+				"answer": "Comprueba primero la organización seleccionada. Pide a un propietario o administrador que confirme tu membresía activa, los permisos de proyecto o equipo y la capacidad disponible. Las acciones sensibles pueden requerir iniciar sesión de nuevo o confirmar tu identidad. La auditoría necesita un permiso independiente. Actualiza tras los cambios de acceso; haber visto antes un elemento no garantiza que sigas teniendo permiso."
+			},
+			"file": {
+				"question": "Mi archivo se rechaza o nunca aparece como listo.",
+				"answer": "Comprueba la extensión, la codificación UTF-8 y el límite de 1 MiB. Convierte la hoja de cálculo a CSV en lugar de subir el libro. Finaliza la verificación si se ofrece esa acción y recarga la lista. Si nadie puede subir archivos, pide al administrador de la instalación que revise la configuración de almacenamiento y el estado del servicio."
+			},
+			"job": {
+				"question": "Una importación ha fallado o no avanza.",
+				"answer": "Lee los errores por fila y comprueba el CSV, la asignación de encabezados, la política de duplicados y los límites de la organización. Validar sin importar ayuda a detectar filas no válidas antes de iniciar una importación corregida. Si el trabajo fallido admite reanudación, recupera el acceso o inicia sesión de nuevo y elige Reintentar con acceso actual. Cancelar no revierte las filas ya guardadas. Si el trabajo sigue pendiente, pide al administrador que revise el proceso en segundo plano."
+			},
+			"export": {
+				"question": "No puedo descargar mi exportación.",
+				"answer": "Las exportaciones caducan a las 24 horas y las descargas comprueban tu sesión, permisos y datos de origen actuales. Inicia sesión de nuevo si es necesario y genera otra exportación cuando cambien los datos o el acceso. Descarga los archivos por separado; Organización JSON solo incluye sus metadatos. Las exportaciones grandes fallan de forma explícita en lugar de omitir registros sin avisar."
+			},
+			"preference": {
+				"question": "Una preferencia no carga o el correo opcional está desactivado.",
+				"answer": "Usa Intentar de nuevo en la sección afectada. Si falla el guardado, confirma tu sesión y recarga para comprobar el valor realmente almacenado. El correo opcional puede seguir suprimido tras una baja, rebote o queja. Los avisos obligatorios de seguridad y facturación siguen reglas distintas; la analítica también depende de la configuración de la instalación."
+			}
+		},
+		"contact": {
+			"title": "¿Sigues necesitando ayuda?",
+			"intro": "Contacta con el propietario de tu organización para permisos y membresías, o con el administrador de la instalación para recuperación de acceso, disponibilidad de servicios y eliminaciones bloqueadas. Incluye:",
+			"context": "El nombre de la organización, la página que usabas y la hora aproximada del problema, con tu zona horaria.",
+			"steps": "Qué intentaste, qué esperabas y el texto exacto del error. Oculta los datos privados de cualquier captura.",
+			"identifier": "El identificador de la solicitud fallida, si se mostró. Compártelo en lugar del contenido de peticiones o respuestas.",
+			"security": "Nunca compartas contraseñas, enlaces de un solo uso, claves API, tokens de proveedores, secretos del autenticador, códigos de recuperación ni enlaces con recibos de eliminación. La recuperación de propietario exige verificación independiente del administrador; un mensaje de soporte no concede acceso."
+		},
+		"backToIndex": "Volver al índice"
+	}
+}

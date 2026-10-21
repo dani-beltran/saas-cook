@@ -150,3 +150,17 @@ it("keeps Foundation credential-free and validates enabled Stripe mode plus loca
 		).toThrow();
 	expect(publicConfig(billing)).not.toHaveProperty("STRIPE_SECRET_KEY");
 });
+
+it("keeps storage disabled by default and refuses incomplete file credentials without exposing secrets", () => {
+	expect(readWebEnv(valid).FILES_ENABLED).toBe("false");
+	expect(() =>
+		readWebEnv({
+			...valid,
+			FILES_ENABLED: "true",
+			FILES_S3_UPLOAD_SECRET: "sensitive",
+		}),
+	).toThrow("Invalid file storage configuration");
+	expect(
+		publicConfig({ ...valid, FILES_S3_UPLOAD_SECRET: "sensitive" }),
+	).not.toHaveProperty("FILES_S3_UPLOAD_SECRET");
+});

@@ -124,3 +124,36 @@ export function humanOperation<T>(
 		},
 	);
 }
+
+function enabled() {
+	const r = applicationRuntime().platformModules;
+	if (!r) throw new ORPCError("SERVICE_UNAVAILABLE");
+	return r;
+}
+/**
+ * Runs an explicitly registered receipt-only operation without creating an authenticated principal.
+ * @param context - Request context; bearer authorization and foreign origins are rejected.
+ * @param work - Callback limited by router registration to deletion status or optional-email unsubscribe.
+ * @returns The callback result when platform modules are enabled and its receipt is valid.
+ * @throws ORPCError with FORBIDDEN for invalid requests, unavailable modules or callback failures.
+ */
+export async function publicOperation<T>(
+	context: RequestContext,
+	work: (
+		r: NonNullable<ReturnType<typeof applicationRuntime>["platformModules"]>,
+	) => Promise<T>,
+) {
+	try {
+		const request = context.request;
+		if (!request || request.headers.has("authorization"))
+			throw new Error("Denied");
+		const origin = request.headers.get("origin");
+		if (origin && origin !== applicationRuntime().origin)
+			throw new Error("Denied");
+		return await work(enabled());
+	} catch {
+		throw new ORPCError("FORBIDDEN", {
+			data: { requestId: context.requestId },
+		});
+	}
+}

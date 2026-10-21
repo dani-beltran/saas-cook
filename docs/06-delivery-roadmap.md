@@ -18,6 +18,8 @@ Phase 4's [authoring skills and deterministic checks](phase4/README.md) pass the
 
 **Phase 5 is completed and accepted for its documented scope as of 2026-10-19.** Its additional `R-SKILLS` gate [passed on 2026-10-19](phase5/evaluation.md): two independent candidates pass the five declared Commercial tasks, preserved repeats/resume, evaluator-owned checks and actual Stripe test-API supplements on their recorded SDK 22.6.2 baseline. The subsequent final-source hosted Checkout repeat passed all 11 checks with Stripe SDK 23.0.0 / `2026-09-30.endive`. [Phase 5 hosted CI and current dependency/image security gates](phase5/acceptance.md#hosted-ci-and-security-gate--completed-2026-10-19) passed in [run 39271661736](https://github.com/dani-beltran/saas-cook/actions/runs/39271661736); M2 Commercial still requires Phase 6.
 
+**Phase 6 implementation now includes the remaining platform and recovery modules; release acceptance remains open.** [Current implementation and evidence](phase6/acceptance.md) tracks PR #4 plus its completion change: bulk data, deletion/journal/recovery, analytics, notifications, webhooks, integrations, flags, restricted audit and help/public UI. M2 requires the complete acceptance evidence; local fixtures do not establish live-provider or infrastructure recovery guarantees.
+
 ## 6.2 Phases and acceptance gates
 
 | Phase | Deliverables | Depends on | Exit gate | Effort estimate |

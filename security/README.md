@@ -30,3 +30,20 @@ with OpenSSL 3.5.7-1~deb13u3 and Node.js 24.22.0 to address the image's
 OpenSSL finding. Image acceptance asserts that exact Node version. These changes do not waive any findings:
 the unchanged dependency and image gates must scan the updated graph and image
 with current vulnerability data before release acceptance.
+
+## 2026-10-21 CI dependency repair
+
+PR #5's dependency scan blocked on three HIGH findings in `bun.lock`:
+`CVE-2026-111755` and `CVE-2026-111756` in `follow-redirects` 1.16.0, and
+`CVE-2026-112942` in Vite 8.3.0. The exact `follow-redirects` override selects
+1.16.1 for Axios's compatible range. See the upstream
+[sensitive-header escaping advisory](https://github.com/follow-redirects/follow-redirects/security/advisories/GHSA-8r9p-f939-6h3c)
+and [array-header advisory](https://github.com/follow-redirects/follow-redirects/security/advisories/GHSA-q3jh-wrc6-jgq8).
+
+Vite is explicitly pinned as a root development dependency at 8.3.3, the patched
+release identified by the upstream
+[editor-path advisory](https://github.com/vitejs/launch-editor/security/advisories/GHSA-587h-7wmj-h5pm).
+Vitest and Storybook require Vite as a peer. An override alone left Bun's
+previously resolved peer at 8.3.0; the explicit dependency updates the actual
+installed and locked graph. Keep this peer pin when maintaining those tools.
+The scanner version, severity policy and empty exception list are unchanged.

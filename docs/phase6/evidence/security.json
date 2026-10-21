@@ -1,0 +1,16 @@
+{
+	"dependencies": {
+		"scope": "dependencies",
+		"target": ".",
+		"status": "passed",
+		"blocked": [],
+		"checkedAt": "2026-10-19T18:11:41.697Z"
+	},
+	"image": {
+		"scope": "image",
+		"target": "saas-cook:phase6-platform",
+		"status": "passed",
+		"blocked": [],
+		"checkedAt": "2026-10-19T18:11:43.304Z"
+	}
+}

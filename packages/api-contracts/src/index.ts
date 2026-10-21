@@ -1,6 +1,14 @@
 import { oc } from "@orpc/contract";
 import { z } from "zod";
+import { analyticsContract } from "./analytics";
 import { billingContract } from "./billing";
+import { dataJobsContract } from "./data-jobs";
+import { filesContract } from "./files";
+import { publicId } from "./inputs/common";
+import { notificationsContract } from "./notifications";
+import { organizationSettingsContract } from "./organization-settings";
+import { platformContract } from "./platform";
+import { privacyContract } from "./privacy";
 
 export type {
 	BillingCommand,
@@ -24,10 +32,17 @@ export const diagnosticInput = z.strictObject({
 export const diagnosticDto = z.object({
 	message: z.string(),
 	locale: z.enum(["en", "es"]),
-	requestId: z.uuid(),
+	requestId: publicId,
 });
-const errorData = z.object({ requestId: z.uuid() });
+const errorData = z.object({ requestId: publicId });
 export const contract = {
+	dataJobs: dataJobsContract,
+	privacy: privacyContract,
+	analytics: analyticsContract,
+	notifications: notificationsContract,
+	organizationSettings: organizationSettingsContract,
+	files: filesContract,
+	platform: platformContract,
 	billing: billingContract,
 	exampleCustomers: exampleCustomersContract,
 	organizations: tenancyContract,

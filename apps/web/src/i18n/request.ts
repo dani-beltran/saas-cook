@@ -1,8 +1,8 @@
-import { messages } from "@saas-cook/ui/messages";
 import { getRequestConfig } from "next-intl/server";
+import { localeMessages } from "./catalogs";
+import { resolveLocale } from "./locales";
 
 export default getRequestConfig(async ({ requestLocale }) => {
-	const requested = await requestLocale;
-	const locale = requested === "es" ? "es" : "en";
-	return { locale, messages: messages[locale], timeZone: "UTC" };
+	const locale = resolveLocale(await requestLocale);
+	return { locale, messages: localeMessages(locale), timeZone: "UTC" };
 });

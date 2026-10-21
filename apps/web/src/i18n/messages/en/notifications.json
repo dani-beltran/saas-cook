@@ -1,0 +1,27 @@
+{
+	"Preferences": {
+		"notificationsTitle": "Optional notifications",
+		"email": "Email when data jobs finish",
+		"inApp": "In-app notifications",
+		"suppressed": "Optional email is suppressed after an unsubscribe, bounce, or complaint.",
+		"mandatoryNotice": "Mandatory security and billing notices follow their own rules.",
+		"description": "Choose where to receive updates about your data jobs. Changes are saved automatically.",
+		"emailDescription": "Receive an email when an import or export finishes.",
+		"inAppDescription": "See updates in Help and notifications in your dashboard.",
+		"loading": "Loading notification preferences…",
+		"unavailable": "Your notification preferences could not be loaded. Try again to review them.",
+		"retry": "Try again"
+	},
+	"Center": {
+		"title": "Help and notifications",
+		"help": "Help center",
+		"contact": "For help with this organization, contact your installation administrator and share only the failed request identifier.",
+		"noNotifications": "You have no notifications.",
+		"jobFinished": "A data job has finished.",
+		"markRead": "Mark read"
+	},
+	"Unsubscribe": {
+		"title": "Unsubscribe from optional email",
+		"confirm": "Confirm unsubscribe"
+	}
+}

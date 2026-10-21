@@ -8,7 +8,9 @@
 		"./commands": "./src/commands.ts",
 		"./model": "./src/model.ts",
 		"./operator": "./src/operator.ts",
-		"./control": "./src/control.ts"
+		"./control": "./src/control.ts",
+		"./journal": "./src/journal.ts",
+		"./recovery": "./src/recovery.ts"
 	},
 	"scripts": {
 		"typecheck": "tsc --noEmit"

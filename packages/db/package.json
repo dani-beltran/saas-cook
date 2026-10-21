@@ -15,7 +15,25 @@
 		"./billing": "./src/billing/service.ts",
 		"./billing-worker": "./src/billing/worker.ts",
 		"./billing-stripe": "./src/billing/stripe.ts",
-		"./usage": "./src/billing/usage.ts"
+		"./usage": "./src/billing/usage.ts",
+		"./platform": "./src/platform/service.ts",
+		"./platform-worker": "./src/platform/worker.ts",
+		"./files-worker": "./src/files/worker.ts",
+		"./files": "./src/files/service.ts",
+		"./file-storage": "./src/files/storage.ts",
+		"./bulk": "./src/bulk/service.ts",
+		"./lifecycle": "./src/lifecycle/service.ts",
+		"./lifecycle-cleanup": "./src/lifecycle/cleanup.ts",
+		"./lifecycle-recovery": "./src/lifecycle/recovery.ts",
+		"./analytics": "./src/analytics/service.ts",
+		"./analytics-provider": "./src/analytics/provider.ts",
+		"./analytics-worker": "./src/analytics/worker.ts",
+		"./analytics-reports": "./src/analytics/reports.ts",
+		"./settings": "./src/settings/service.ts",
+		"./endpoint-transport": "./src/settings/network.ts",
+		"./notifications": "./src/settings/notifications.ts",
+		"./flags": "./src/settings/flags.ts",
+		"./bulk-actor": "./src/bulk/actor.ts"
 	},
 	"scripts": {
 		"typecheck": "tsc --noEmit"
@@ -25,6 +43,8 @@
 		"pg": "8.23.0",
 		"@saas-cook/api-contracts": "workspace:*",
 		"stripe": "23.0.0",
+		"@aws-sdk/client-s3": "3.1137.0",
+		"@aws-sdk/s3-request-presigner": "3.1137.0",
 		"zod": "4.6.5"
 	},
 	"devDependencies": {

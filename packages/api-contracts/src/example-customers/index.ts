@@ -1,23 +1,27 @@
 import { oc } from "@orpc/contract";
 import { z } from "zod";
+import { operationKey, publicId } from "../inputs/common";
 
 export const customerStatus = z.enum(["lead", "active", "inactive"]);
 const version = z.number().int().min(1).max(2147483647);
-const operationKey = z.string().min(8).max(120);
-export const customerFields = z.strictObject({
+export const customerFormFields = z.strictObject({
 	name: z.string().trim().min(1).max(120),
 	email: z.string().trim().max(254).pipe(z.email()),
-	company: z.string().trim().max(120).prefault(""),
+	company: z.string().trim().max(120),
+	status: customerStatus,
+});
+export const customerFields = customerFormFields.extend({
+	company: customerFormFields.shape.company.prefault(""),
 	status: customerStatus.prefault("lead"),
 });
 export const customerCreate = customerFields.extend({ operationKey });
-export const customerReference = z.strictObject({ id: z.uuid() });
+export const customerReference = z.strictObject({ id: publicId });
 export const customerDelete = customerReference.extend({
 	version,
 	operationKey,
 });
 export const customerUpdate = customerFields.extend({
-	id: z.uuid(),
+	id: publicId,
 	version,
 	operationKey,
 });
@@ -33,8 +37,8 @@ export const customerQuery = z.strictObject({
 	cursor: z.string().min(1).max(2048).optional(),
 });
 export const customerDto = z.strictObject({
-	id: z.uuid(),
-	organizationId: z.uuid(),
+	id: publicId,
+	organizationId: publicId,
 	name: z.string().min(1).max(120),
 	email: z.email().max(254),
 	company: z.string().max(120).nullable(),
@@ -48,7 +52,7 @@ export const customerPage = z.strictObject({
 	items: z.array(customerDto).max(50),
 	nextCursor: z.string().nullable(),
 });
-const errors = z.object({ requestId: z.uuid() });
+const errors = z.object({ requestId: publicId });
 const protectedOperation = oc.errors({
 	UNAUTHORIZED: { status: 401, data: errors },
 	FORBIDDEN: { status: 403, data: errors },
@@ -67,7 +71,7 @@ const protectedOperation = oc.errors({
 	},
 	SERVICE_UNAVAILABLE: { status: 503, data: errors },
 });
-const context = { organizationId: z.uuid() };
+const context = { organizationId: publicId };
 const path = "/organizations/{organizationId}/example-customers";
 export const exampleCustomersContract = {
 	list: protectedOperation

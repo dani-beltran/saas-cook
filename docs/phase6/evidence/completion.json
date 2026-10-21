@@ -1,0 +1,74 @@
+{
+	"basePullRequest": 4,
+	"baseBranch": "codex/phase6-platform-modules",
+	"baseCommit": "e8827f78deb6f2b01d741868507adce4b94361e7",
+	"sourceDirtyAtVerification": true,
+	"implementationSha256": "3db35725c7dbb1f2450657f2325aa3e0d763b29e8842296d2617526299f63575",
+	"host": "Codex desktop",
+	"model": "GPT-6 family per session; exact deployment ID and reasoning effort not exposed",
+	"subagents": 0,
+	"node": "24.19.0",
+	"bun": "1.4.2",
+	"checks": {
+		"source": "passed",
+		"types": "passed",
+		"knip": "passed",
+		"unit": {
+			"passed": 168,
+			"files": 29
+		},
+		"integration": {
+			"status": "passed",
+			"passed": 215,
+			"files": 37
+		},
+		"browser": {
+			"passed": 49
+		},
+		"skills": {
+			"passed": 6
+		},
+		"storybook": "passed",
+		"productionBuild": "passed",
+		"image": {
+			"passed": 17,
+			"identity": "sha256:752859e7fecfb89d57096d6f2afa0c247192d6bbfe7b86ec54278772d576d4e0",
+			"architecture": "arm64",
+			"runtimeNode": "24.22.0"
+		},
+		"dependencyPolicy": {
+			"scope": "dependencies",
+			"target": ".",
+			"status": "passed",
+			"blocked": [],
+			"checkedAt": "2026-10-19T21:21:50.691Z"
+		},
+		"imagePolicy": {
+			"scope": "image",
+			"target": "saas-cook:phase6-completion",
+			"status": "passed",
+			"blocked": [],
+			"checkedAt": "2026-10-19T21:29:25.184Z"
+		},
+		"authorizationSmoke": {
+			"status": "passed",
+			"attempts": 3171,
+			"successes": 3171,
+			"scope": "smoke only; does not satisfy R-AUTHZ-PERF",
+			"implementationSha256": "3db35725c7dbb1f2450657f2325aa3e0d763b29e8842296d2617526299f63575",
+			"sourceStable": true
+		}
+	},
+	"acceptance": "Implementation verification; Phase 6/M2 release acceptance remains open. See acceptance.md for live-provider, infrastructure, full performance and skill-evaluation limits.",
+	"inputs": {
+		"AGENTS.md": "41d35f603203c9740771da714bd14cd34786f5d606bb9eceea6daff3436d4990",
+		".agents/skills/saas-add-feature/SKILL.md": "bc024fa1e39539041406b3f5d21c6c31f2d0c30df0a023d5ee7169c19961df16",
+		".agents/skills/saas-evolve-feature/SKILL.md": "e751fca5c992a8eb5816ad69a6569853ff4991472f7103679269786861f10301",
+		".agents/skills/saas-add-dashboard-page/SKILL.md": "a3438b7546328a3c533269ff2840d86401fcfe229ec662e655f3a9fdf522c09d",
+		".agents/skills/saas-add-email/SKILL.md": "5a6f40cc284be759a5a10d96d403a33c74a387f611a9a3d3b3596f90a0929cc9",
+		".agents/skills/saas-verify-feature/SKILL.md": "b04e4f07b2a155c895ba16a82dba04c93e45c087e15658b1a0e38e190d223d62",
+		"docs/development/feature-workflow.md": "7fac71e08c7c7c88060e0b010593cd36bc57e8918cc83ff4c5c48ed08bfbad64",
+		"docs/development/verification.md": "30b4682074ca3cd9a70617d50ea4e4cd3920a0911a3c29900473974548da9ae6",
+		"feature-briefs/phase6-completion.md": "7ba2b3cc4c8a2357a31f6858fb06f6a325f5bcf360dd7cb5f83185f613dcd438"
+	}
+}

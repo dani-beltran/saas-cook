@@ -97,14 +97,19 @@ it("upgrades a populated 0007 predecessor without changing identity, Project, hi
 					"SELECT count(*) FROM drizzle.__drizzle_migrations",
 				)
 			).rows[0].count,
-		).toBe("11");
+		).toBe("25");
 		expect(
 			(
 				await migrator.query(
-					"SELECT has_table_privilege('saas_cook_web','tenancy.example_customers','DELETE') AS remove,has_column_privilege('saas_cook_web','tenancy.example_customers','organization_id','UPDATE') AS move,has_table_privilege('saas_cook_worker','tenancy.example_customers','SELECT') AS worker",
+					"SELECT has_table_privilege('saas_cook_web','tenancy.example_customers','DELETE') AS remove,has_column_privilege('saas_cook_web','tenancy.example_customers','organization_id','UPDATE') AS move,has_table_privilege('saas_cook_worker','tenancy.example_customers','SELECT') AS worker,has_table_privilege('saas_cook_worker','tenancy.example_customers','INSERT,UPDATE,DELETE') AS worker_write",
 				)
 			).rows[0],
-		).toEqual({ remove: false, move: false, worker: false });
+		).toEqual({
+			remove: false,
+			move: false,
+			worker: true,
+			worker_write: false,
+		});
 	} finally {
 		await migrator?.end();
 		await dropTestDatabase(admin, database);

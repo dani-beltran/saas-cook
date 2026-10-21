@@ -1,0 +1,64 @@
+.feature-card {
+	border: 1px solid var(--border);
+	border-radius: 12px;
+	padding: 1.5rem;
+	margin-block: 1.25rem;
+	background: var(--card);
+}
+.feature-card h2 {
+	font-size: 1.15rem;
+	font-weight: 600;
+	margin-bottom: 1rem;
+}
+.feature-form {
+	display: grid;
+	gap: 1rem;
+	max-width: 42rem;
+	margin-block: 1rem;
+}
+.feature-form label {
+	display: grid;
+	gap: 0.4rem;
+}
+.feature-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.65rem;
+	margin-block: 0.75rem;
+}
+.feature-list {
+	display: grid;
+	gap: 1rem;
+	list-style: none;
+	padding: 0;
+}
+.feature-list > li {
+	border-top: 1px solid var(--border);
+	padding-top: 1rem;
+	overflow-wrap: anywhere;
+}
+.feature-secret {
+	display: block;
+	overflow-wrap: anywhere;
+	padding: 1rem;
+	background: var(--muted);
+	user-select: all;
+}
+.feature-table {
+	width: 100%;
+	text-align: left;
+	border-collapse: collapse;
+}
+.feature-table td,
+.feature-table th {
+	padding: 0.5rem;
+	border-bottom: 1px solid var(--border);
+}
+.feature-scroll {
+	overflow-x: auto;
+}
+.feature-check {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+}

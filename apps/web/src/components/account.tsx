@@ -1,11 +1,12 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createApiClient } from "@saas-cook/api/client";
+import { organizationFields } from "@saas-cook/api-contracts/inputs/tenancy";
 import { Button, Input } from "@saas-cook/ui";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { PrivacySettings } from "../features/privacy/page";
 import { accountDashboardMessages } from "../i18n/account-dashboard";
 import { identityClient } from "../lib/identity-client";
 import { IdentityRequestError, identityRequest } from "../lib/identity-request";
@@ -31,10 +32,16 @@ type Notice = {
 	kind: "success" | "error";
 	reauthenticate?: boolean;
 };
-type AccountSection = "identity" | "organizations" | "security" | "sessions";
+type AccountSection =
+	| "identity"
+	| "organizations"
+	| "privacy"
+	| "security"
+	| "sessions";
 
 export function Account() {
 	const t = useTranslations("Account");
+	const navigation = useTranslations("Navigation");
 	const locale = useLocale();
 	const copy = accountDashboardMessages[locale === "es" ? "es" : "en"];
 	const { data: session, isPending, refetch } = identityClient.useSession();
@@ -48,13 +55,19 @@ export function Account() {
 	);
 	const [section, setSection] = useState<AccountSection>("identity");
 	const activeSection =
-		pendingMfa && (section === "organizations" || section === "sessions")
+		pendingMfa &&
+		(section === "organizations" ||
+			section === "privacy" ||
+			section === "sessions")
 			? "security"
 			: section;
 	const tabs = [
 		{ id: "identity", label: copy.identity },
 		...(!pendingMfa
-			? [{ id: "organizations", label: t("organizations") } as const]
+			? [
+					{ id: "organizations", label: t("organizations") } as const,
+					{ id: "privacy", label: navigation("privacy") } as const,
+				]
 			: []),
 		{ id: "security", label: t("security") },
 		...(!pendingMfa ? [{ id: "sessions", label: t("sessions") } as const] : []),
@@ -63,7 +76,11 @@ export function Account() {
 		function readSection() {
 			const hash = window.location.hash.slice(1);
 			if (hash === "identity" || hash === "security") setSection(hash);
-			else if (hash === "organizations" || hash === "sessions")
+			else if (
+				hash === "organizations" ||
+				hash === "privacy" ||
+				hash === "sessions"
+			)
 				setSection(pendingMfa ? "security" : hash);
 			else if (hash === "reauthenticate") setSection("security");
 			else if (!hash) setSection(pendingMfa ? "security" : "identity");
@@ -108,16 +125,7 @@ export function Account() {
 		backupCodes: string[];
 	} | null>(null);
 	const organizationForm = useForm<{ name: string; slug: string }>({
-		resolver: zodResolver(
-			z.object({
-				name: z
-					.string()
-					.trim()
-					.min(1, copy.nameInvalid)
-					.max(80, copy.nameInvalid),
-				slug: z.string().regex(/^[a-z0-9][a-z0-9-]{1,62}$/, copy.slugInvalid),
-			}),
-		),
+		resolver: zodResolver(organizationFields),
 		defaultValues: { name: "", slug: "" },
 	});
 	const resetOrganization = organizationForm.reset;
@@ -503,7 +511,7 @@ export function Account() {
 											role="alert"
 											className="text-destructive"
 										>
-											{organizationForm.formState.errors.name.message}
+											{copy.nameInvalid}
 										</span>
 									)}
 								</div>
@@ -532,7 +540,7 @@ export function Account() {
 											role="alert"
 											className="text-destructive"
 										>
-											{organizationForm.formState.errors.slug.message}
+											{copy.slugInvalid}
 										</span>
 									)}
 								</div>
@@ -541,6 +549,15 @@ export function Account() {
 								</Button>
 							</form>
 							{feedback("organizations")}
+						</div>
+						<div
+							className="dashboard-section"
+							id="privacy"
+							role="tabpanel"
+							aria-labelledby="account-tab-privacy"
+							hidden={activeSection !== "privacy"}
+						>
+							<PrivacySettings key={currentIdentity} />
 						</div>
 					</>
 				)}
