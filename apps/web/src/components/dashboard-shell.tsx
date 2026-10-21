@@ -440,9 +440,7 @@ export function DashboardFrame({
 			<div className="dashboard-body">
 				<div className="dashboard-location">
 					<span>
-						{section === "account"
-							? copy.personal
-							: (current?.name ?? copy.selected)}
+						{!organizationId ? copy.personal : (current?.name ?? copy.selected)}
 					</span>
 					<span aria-hidden="true">/</span>
 					<strong>{sectionLabel}</strong>
