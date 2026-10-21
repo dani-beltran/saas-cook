@@ -1,6 +1,6 @@
 # Independent Backoffice
 
-Status: **planned; documentation only**, 2026-09-27. No application, migration, provider integration or infrastructure is delivered by this brief. The [roadmap](../docs/06-delivery-roadmap.md#67-backoffice-planned-delivery-and-acceptance) is the acceptance register; [architecture](../docs/backoffice/architecture.md) owns the proposed design and [development plan](../docs/backoffice/development-plan.md) owns work sequencing and evidence. Existing platform contracts remain authoritative until their explicitly scheduled amendments are reviewed.
+Status: **first slice implemented; release acceptance pending**. Baseline and first slice refreshed 2026-10-21. [Implementation and operation](../docs/backoffice/implementation.md) describe the separate staff app, additive schema and audited exact-ID lookup. [Verification](../docs/backoffice/acceptance.md) distinguishes executed checks from open deployment/image gates; broader product scope remains planned. The [roadmap](../docs/06-delivery-roadmap.md#67-backoffice-planned-delivery-and-acceptance) is the acceptance register; [architecture](../docs/backoffice/architecture.md) owns the proposed design and [development plan](../docs/backoffice/development-plan.md) owns work sequencing and evidence. Existing platform contracts remain authoritative until their explicitly scheduled amendments are reviewed.
 
 ## Outcome and assumptions
 
@@ -18,7 +18,7 @@ Planning assumptions, subject to the decisions below:
 
 ## Capability and priority matrix
 
-All rows describe planned behavior. `C-*` identifies product scope; work IDs and gates resolve in the [traceability table](../docs/backoffice/development-plan.md#requirement-traceability).
+Rows describe the full target behavior; the implemented first slice is limited to invited staff sign-in and audited exact-ID organization metadata. `C-*` identifies product scope; work IDs and gates resolve in the [traceability table](../docs/backoffice/development-plan.md#requirement-traceability).
 
 | ID | Capability and user outcome | Priority / work | Prerequisite and boundary |
 | --- | --- | --- | --- |
@@ -110,6 +110,8 @@ Keep payment/refund/credit/dispute cash measures separate from recurring run rat
 These choices do not block documenting the architecture. Each becomes an explicit implementation/release prerequisite where indicated, not an implicit approval or license assumption.
 
 ## First implementation slice
+
+The [current gap inventory](../docs/backoffice/development-plan.md#current-implementation-and-remaining-gaps) accounts for accepted Phase 5 billing and implemented Phase 6 services without accepting their open release gates or any Backoffice behavior. The [implementation ticket](../docs/backoffice/development-plan.md#concrete-first-implementation-ticket) owns entry decisions, DTO scope, sequencing, exclusions and acceptance evidence. Reuse these domain services; staff authority and independent packaging remain new work.
 
 Implement BO-01's secure shell plus BO-02.1's **masked organization lookup by exact ID**, after BO-00 decisions and the Foundation prerequisite. A registered operator signs in at the separate host, opens one organization overview containing ID/name/lifecycle and local seat summary, and sees a correlation reference. Reads are audited; an offboarded operator, wrong network, customer cookie, wrong scope or unavailable readiness/audit boundary receives no data. This slice has no tenant mutations or commercial panels.
 

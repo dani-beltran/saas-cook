@@ -1,0 +1,25 @@
+{
+	"Backoffice": {
+		"title": "Administración interna",
+		"intro": "Acceso privado a metadatos de organizaciones. Cada consulta queda auditada.",
+		"signIn": "Acceder con una clave de acceso",
+		"enroll": "Registrar la clave de acceso invitada",
+		"invitation": "Código de invitación",
+		"organization": "ID de organización",
+		"case": "Referencia del caso",
+		"lookup": "Consultar organización",
+		"signOut": "Cerrar sesión",
+		"working": "Procesando…",
+		"ready": "Sesión iniciada. Introduce el ID de organización y la referencia del caso.",
+		"enrolled": "Clave registrada. Inicia sesión para continuar.",
+		"denied": "Acceso no disponible. Comprueba tu sesión, permisos y red, o contacta con seguridad.",
+		"empty": "No hay ninguna organización seleccionada.",
+		"name": "Nombre",
+		"lifecycle": "Estado",
+		"seats": "Plazas: {occupied} de {capacity}",
+		"unlimited": "sin límite",
+		"timestamp": "Fecha de la fuente",
+		"audit": "Referencia de auditoría",
+		"invalid": "Introduce un UUID de organización y una referencia de caso válidos."
+	}
+}

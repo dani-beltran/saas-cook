@@ -21,6 +21,7 @@
         "@react-email/components": "1.0.12",
         "@react-email/render": "2.1.0",
         "@saas-cook/authz": "workspace:*",
+        "@saas-cook/backoffice": "workspace:*",
         "@saas-cook/config": "workspace:*",
         "@saas-cook/db": "workspace:*",
         "@saas-cook/email": "workspace:*",
@@ -56,6 +57,30 @@
         "vite": "8.3.3",
         "vitest": "5.0.1",
         "zod": "4.6.5",
+      },
+    },
+    "apps/backoffice": {
+      "name": "@saas-cook/backoffice-app",
+      "version": "0.1.0",
+      "dependencies": {
+        "@better-auth/passkey": "1.7.5",
+        "@hookform/resolvers": "5.9.1",
+        "@saas-cook/auth": "workspace:*",
+        "@saas-cook/backoffice": "workspace:*",
+        "@saas-cook/backoffice-contracts": "workspace:*",
+        "@saas-cook/config": "workspace:*",
+        "@saas-cook/ui": "workspace:*",
+        "better-auth": "1.7.5",
+        "next": "16.3.8",
+        "next-intl": "4.14.6",
+        "react": "19.3.0",
+        "react-dom": "19.3.0",
+        "react-hook-form": "7.88.0",
+      },
+      "devDependencies": {
+        "@types/react": "19.3.0",
+        "@types/react-dom": "19.3.0",
+        "typescript": "7.0.2",
       },
     },
     "apps/web": {
@@ -163,6 +188,25 @@
       "devDependencies": {
         "@types/pg": "8.23.1",
         "typescript": "7.0.2",
+      },
+    },
+    "packages/backoffice": {
+      "name": "@saas-cook/backoffice",
+      "version": "0.1.0",
+      "dependencies": {
+        "@saas-cook/auth": "workspace:*",
+        "@saas-cook/authz": "workspace:*",
+        "@saas-cook/backoffice-contracts": "workspace:*",
+        "@saas-cook/config": "workspace:*",
+        "pg": "8.23.0",
+        "zod": "4.6.5",
+      },
+    },
+    "packages/backoffice-contracts": {
+      "name": "@saas-cook/backoffice-contracts",
+      "version": "0.1.0",
+      "dependencies": {
+        "zod": "4.6.5",
       },
     },
     "packages/config": {
@@ -942,6 +986,12 @@
     "@saas-cook/auth": ["@saas-cook/auth@workspace:packages/auth"],
 
     "@saas-cook/authz": ["@saas-cook/authz@workspace:packages/authz"],
+
+    "@saas-cook/backoffice": ["@saas-cook/backoffice@workspace:packages/backoffice"],
+
+    "@saas-cook/backoffice-app": ["@saas-cook/backoffice-app@workspace:apps/backoffice"],
+
+    "@saas-cook/backoffice-contracts": ["@saas-cook/backoffice-contracts@workspace:packages/backoffice-contracts"],
 
     "@saas-cook/config": ["@saas-cook/config@workspace:packages/config"],
 

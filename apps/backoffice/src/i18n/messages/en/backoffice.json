@@ -1,0 +1,25 @@
+{
+	"Backoffice": {
+		"title": "Staff backoffice",
+		"intro": "Private organization metadata access. Every lookup is audited.",
+		"signIn": "Sign in with a passkey",
+		"enroll": "Enroll invited passkey",
+		"invitation": "Invitation code",
+		"organization": "Organization ID",
+		"case": "Case reference",
+		"lookup": "Look up organization",
+		"signOut": "Sign out",
+		"working": "Working…",
+		"ready": "Signed in. Enter an organization ID and case reference.",
+		"enrolled": "Passkey enrolled. Sign in to continue.",
+		"denied": "Access unavailable. Check your session, scope and network, or contact your security administrator.",
+		"empty": "No organization selected.",
+		"name": "Name",
+		"lifecycle": "Lifecycle",
+		"seats": "Seats: {occupied} of {capacity}",
+		"unlimited": "unlimited",
+		"timestamp": "Source timestamp",
+		"audit": "Audit reference",
+		"invalid": "Enter a valid organization UUID and case reference."
+	}
+}

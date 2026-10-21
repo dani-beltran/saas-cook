@@ -1,5 +1,9 @@
 # 0. Project overview
 
+## Backoffice first-slice extension
+
+The customer deployment retains its combined web/worker image. The optional [Backoffice first slice](backoffice/implementation.md) adds an independently built private staff application/image; its implementation and release evidence are tracked separately from customer milestones.
+
 An implementation plan for a reusable enterprise SaaS template built with **Next.js, React 19, TypeScript, shadcn/ui, Tailwind CSS, Better Auth, Drizzle ORM, PostgreSQL, and oRPC**, using **Bun** for package management and **Stripe** for payments and billing.
 
 **Status:** Phase 0 validation and Phase 1 repository/runtime implementation are complete for their documented scope. The [Phase 1 guide](phase1/README.md) covers the runnable shell, worker, API skeleton, combined image and local acceptance evidence. Identity, tenant access and production authorization are Phase 2 work.

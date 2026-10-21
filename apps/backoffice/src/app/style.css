@@ -1,0 +1,66 @@
+:root {
+	font-family: system-ui, sans-serif;
+	color: #1b2937;
+	background: #f4f6f8;
+	color-scheme: light dark;
+}
+body {
+	margin: 0;
+}
+main {
+	max-width: 46rem;
+	margin: 3rem auto;
+	padding: 1.5rem;
+}
+section,
+form {
+	padding: 1.25rem;
+	margin: 1rem 0;
+	border: 1px solid #8795a3;
+	border-radius: 0.5rem;
+}
+label {
+	display: block;
+	margin: 1rem 0;
+}
+input {
+	display: block;
+	box-sizing: border-box;
+	width: 100%;
+	font: inherit;
+	padding: 0.6rem;
+	border: 1px solid #8795a3;
+	border-radius: 0.3rem;
+}
+button {
+	font: inherit;
+	padding: 0.6rem 1rem;
+	margin: 0.25rem;
+	cursor: pointer;
+}
+button:disabled {
+	cursor: wait;
+	opacity: 0.65;
+}
+a:focus-visible,
+button:focus-visible,
+input:focus-visible {
+	outline: 3px solid #547bdf;
+	outline-offset: 3px;
+}
+dd {
+	margin: 0.2rem 0 1rem;
+	overflow-wrap: anywhere;
+}
+@media (prefers-color-scheme: dark) {
+	:root {
+		background: #131d27;
+		color: #edf2f7;
+	}
+}
+@media (max-width: 600px) {
+	main {
+		margin: 0;
+		padding: 1rem;
+	}
+}

@@ -5,13 +5,15 @@ const config: KnipConfig = {
 	ignoreIssues: { "spikes/phase0/authz/protocol.ts": ["types"] },
 	workspaces: {
 		".": {
+			// System OpenSSL generates disposable one-day TLS certificates for the BO browser fixture.
+			ignoreBinaries: ["openssl"],
 			entry: [
 				"scripts/phase0/{api-smoke,toolchain}.ts",
 				"scripts/phase1/{authz-validate,build-runtime,command,dev,image-test,security-scan}.ts",
 				"scripts/phase1/**/*.test.ts",
 				"scripts/phase4/**/*.test.ts",
 				"spikes/phase0/**/*.test.{ts,tsx}",
-				"infra/docker/{entrypoint.mjs,healthcheck.cjs,supervisor.ts}",
+				"infra/docker/{entrypoint.mjs,healthcheck.cjs,supervisor.ts,backoffice-start.ts}",
 			],
 			project: [
 				"scripts/**/*.ts",
@@ -20,7 +22,11 @@ const config: KnipConfig = {
 				"*.config.ts",
 			],
 			playwright: {
-				config: ["playwright.config.ts", "playwright.theme.config.ts"],
+				config: [
+					"playwright.config.ts",
+					"playwright.theme.config.ts",
+					"playwright.backoffice.config.ts",
+				],
 			},
 			vitest: { config: ["vitest.config.ts", "vitest.phase0.config.ts"] },
 			// Retained Phase 0 install/version evidence is read dynamically by
