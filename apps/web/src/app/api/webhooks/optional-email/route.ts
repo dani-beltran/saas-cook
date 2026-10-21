@@ -1,5 +1,12 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { applicationRuntime } from "@saas-cook/api/runtime";
+import { publicId } from "@saas-cook/api-contracts/inputs/common";
+import { z } from "zod";
+
+const feedbackInput = z.strictObject({
+	id: publicId,
+	reason: z.enum(["bounce", "complaint"]),
+});
 export const runtime = "nodejs";
 /** Provider bridge signs "timestamp.raw-body"; payload is a notification UUID and monotonic suppression reason. */
 export async function POST(request: Request) {
@@ -35,13 +42,7 @@ export async function POST(request: Request) {
 			.digest();
 		if (!timingSafeEqual(expected, Buffer.from(signature, "hex")))
 			throw new Error("Invalid feedback");
-		const value = JSON.parse(body);
-		if (
-			Object.keys(value).some((k) => !["id", "reason"].includes(k)) ||
-			!/^[a-f0-9-]{36}$/.test(value.id) ||
-			!["bounce", "complaint"].includes(value.reason)
-		)
-			throw new Error("Invalid feedback");
+		const value = feedbackInput.parse(JSON.parse(body));
 		await app.ready();
 		await app.platformModules.notifications.feedback(value.id);
 		return Response.json(

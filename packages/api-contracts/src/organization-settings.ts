@@ -1,12 +1,19 @@
 import { z } from "zod";
+import { initialVersion, operationKey, publicId } from "./inputs/common";
+import {
+	auditQuery,
+	integrationCommandInput,
+	integrationInput,
+	webhookInput,
+} from "./inputs/organization-settings";
 import { platformOperation as op } from "./platform";
 
-const org = { organizationId: z.uuid() };
-const id = { id: z.uuid() };
-const key = { operationKey: z.string().min(8).max(120) };
-const version = { version: z.number().int().min(0) };
+const org = { organizationId: publicId };
+const id = { id: publicId };
+const key = { operationKey: operationKey };
+const version = { version: initialVersion };
 const endpoint = z.strictObject({
-	id: z.uuid(),
+	id: publicId,
 	name: z.string(),
 	url: z.url(),
 	events: z.array(z.string()),
@@ -14,7 +21,7 @@ const endpoint = z.strictObject({
 	version: z.number().int(),
 });
 const connection = z.strictObject({
-	id: z.uuid(),
+	id: publicId,
 	name: z.string(),
 	provider: z.literal("https-api"),
 	url: z.url(),
@@ -24,7 +31,7 @@ const connection = z.strictObject({
 	checkedAt: z.iso.datetime().nullable(),
 });
 const changed = z.object({
-	id: z.uuid(),
+	id: publicId,
 	version: z.number().int(),
 	secret: z.string().nullable().optional(),
 	state: z.string().optional(),
@@ -33,7 +40,7 @@ const page = z.strictObject({
 	items: z
 		.array(
 			z.strictObject({
-				id: z.uuid(),
+				id: publicId,
 				actor: z.string(),
 				action: z.string(),
 				targetId: z.string(),
@@ -51,25 +58,7 @@ export const organizationSettingsContract = {
 		.output(z.array(endpoint).max(10)),
 	createWebhook: op
 		.route({ method: "POST", path: "/platform/webhookCreate" })
-		.input(
-			z.strictObject({
-				...org,
-				name: z.string().trim().min(1).max(80),
-				url: z.url().max(500),
-				events: z
-					.array(
-						z.enum([
-							"project.created",
-							"project.updated",
-							"project.deleted",
-							"bulk.completed",
-						]),
-					)
-					.min(1)
-					.max(4),
-				...key,
-			}),
-		)
+		.input(webhookInput.extend(org))
 		.output(changed),
 	webhookCommand: op
 		.route({ method: "POST", path: "/platform/webhookCommand" })
@@ -85,12 +74,12 @@ export const organizationSettingsContract = {
 		.output(changed),
 	webhookDeliveries: op
 		.route({ method: "GET", path: "/platform/webhookDeliveries" })
-		.input(z.strictObject({ ...org, endpointId: z.uuid() }))
+		.input(z.strictObject({ ...org, endpointId: publicId }))
 		.output(
 			z
 				.array(
 					z.strictObject({
-						id: z.uuid(),
+						id: publicId,
 						event: z.string(),
 						state: z.string(),
 						attempts: z.number().int(),
@@ -106,32 +95,11 @@ export const organizationSettingsContract = {
 		.output(z.array(connection).max(10)),
 	createIntegration: op
 		.route({ method: "POST", path: "/platform/integrationCreate" })
-		.input(
-			z.strictObject({
-				...org,
-				name: z.string().trim().min(1).max(80),
-				url: z.url().max(500),
-				token: z.string().min(16).max(4096),
-				scopes: z
-					.array(z.string().regex(/^[a-z][a-z0-9:._-]{0,60}$/))
-					.min(1)
-					.max(20),
-				...key,
-			}),
-		)
+		.input(integrationInput.extend(org))
 		.output(changed),
 	integrationCommand: op
 		.route({ method: "POST", path: "/platform/integrationCommand" })
-		.input(
-			z.strictObject({
-				...org,
-				...id,
-				...version,
-				...key,
-				action: z.enum(["check", "rotate", "revoke"]),
-				token: z.string().min(16).max(4096).optional(),
-			}),
-		)
+		.input(integrationCommandInput.safeExtend(org))
 		.output(changed),
 	auditGrants: op
 		.route({ method: "GET", path: "/platform/auditGrants" })
@@ -140,7 +108,7 @@ export const organizationSettingsContract = {
 			z
 				.array(
 					z.strictObject({
-						membershipId: z.uuid(),
+						membershipId: publicId,
 						role: z.string(),
 						enabled: z.boolean(),
 						version: z.number().int(),
@@ -153,7 +121,7 @@ export const organizationSettingsContract = {
 		.input(
 			z.strictObject({
 				...org,
-				membershipId: z.uuid(),
+				membershipId: publicId,
 				enabled: z.boolean(),
 				...version,
 				...key,
@@ -162,13 +130,7 @@ export const organizationSettingsContract = {
 		.output(z.object({ version: z.number().int() })),
 	audit: op
 		.route({ method: "GET", path: "/platform/audit" })
-		.input(
-			z.strictObject({
-				...org,
-				limit: z.coerce.number().int().min(1).max(50).optional(),
-				cursor: z.string().max(2048).optional(),
-			}),
-		)
+		.input(auditQuery.extend(org))
 		.output(page),
 	flags: op
 		.route({ method: "GET", path: "/platform/flags" })

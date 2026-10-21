@@ -1,12 +1,18 @@
 import { oc } from "@orpc/contract";
 import { z } from "zod";
+import { operationKey, publicId } from "./inputs/common";
+import {
+	invitationFields,
+	organizationFields,
+	seatCapacity,
+	teamFields,
+} from "./inputs/tenancy";
 
 const role = z.enum(["owner", "admin", "member", "billing"]);
 const outgoingRole = z.enum(["admin", "member", "billing", "inactive"]);
-const operationKey = z.string().min(8).max(120);
-const organizationId = z.uuid();
+const organizationId = publicId;
 const organizationDto = z.object({
-	id: z.uuid(),
+	id: publicId,
 	slug: z.string(),
 	name: z.string(),
 	status: z.string(),
@@ -19,7 +25,7 @@ const organizationDto = z.object({
 		.optional(),
 });
 const membershipDto = z.object({
-	id: z.uuid(),
+	id: publicId,
 	userId: z.string(),
 	email: z.email(),
 	role,
@@ -32,7 +38,7 @@ const organizationSnapshotDto = z.object({
 	members: z.array(membershipDto),
 	invitations: z.array(
 		z.object({
-			id: z.uuid(),
+			id: publicId,
 			email: z.string(),
 			role,
 			status: z.string(),
@@ -41,16 +47,16 @@ const organizationSnapshotDto = z.object({
 	),
 	teams: z.array(
 		z.object({
-			id: z.uuid(),
+			id: publicId,
 			name: z.string(),
-			membershipIds: z.array(z.uuid()),
+			membershipIds: z.array(publicId),
 		}),
 	),
 	transfers: z.array(
 		z.object({
-			id: z.uuid(),
-			fromMembershipId: z.uuid(),
-			toMembershipId: z.uuid(),
+			id: publicId,
+			fromMembershipId: publicId,
+			toMembershipId: publicId,
 			outgoingRole,
 			status: z.string(),
 			expiresAt: z.string(),
@@ -68,18 +74,17 @@ const organizationCommand = z.discriminatedUnion("action", [
 	}),
 	z.strictObject({
 		action: z.literal("capacity"),
-		capacity: z.number().int().min(0).max(100000),
+		capacity: seatCapacity,
 		operationKey,
 	}),
 	z.strictObject({
 		action: z.literal("cancelInvitation"),
-		invitationId: z.uuid(),
+		invitationId: publicId,
 		operationKey,
 	}),
 	z.strictObject({
 		action: z.literal("invite"),
-		email: z.email(),
-		role: role.exclude(["owner"]),
+		...invitationFields.shape,
 		operationKey,
 	}),
 	z.strictObject({
@@ -89,7 +94,7 @@ const organizationCommand = z.discriminatedUnion("action", [
 	}),
 	z.strictObject({
 		action: z.literal("membership"),
-		membershipId: z.uuid(),
+		membershipId: publicId,
 		status: z.enum(["active", "inactive"]),
 		role,
 		billable: z.boolean(),
@@ -97,40 +102,40 @@ const organizationCommand = z.discriminatedUnion("action", [
 	}),
 	z.strictObject({
 		action: z.literal("createTeam"),
-		name: z.string().trim().min(1).max(80),
+		...teamFields.shape,
 		operationKey,
 	}),
 	z.strictObject({
 		action: z.literal("removeTeam"),
-		teamId: z.uuid(),
+		teamId: publicId,
 		operationKey,
 	}),
 	z.strictObject({
 		action: z.literal("addTeamMember"),
-		teamId: z.uuid(),
-		membershipId: z.uuid(),
+		teamId: publicId,
+		membershipId: publicId,
 		operationKey,
 	}),
 	z.strictObject({
 		action: z.literal("removeTeamMember"),
-		teamId: z.uuid(),
-		membershipId: z.uuid(),
+		teamId: publicId,
+		membershipId: publicId,
 		operationKey,
 	}),
 	z.strictObject({
 		action: z.literal("startTransfer"),
-		recipientMembershipId: z.uuid(),
+		recipientMembershipId: publicId,
 		outgoingRole: outgoingRole.optional(),
 		operationKey,
 	}),
 	z.strictObject({
 		action: z.literal("acceptTransfer"),
-		transferId: z.uuid(),
+		transferId: publicId,
 		operationKey,
 	}),
 	z.strictObject({
 		action: z.literal("cancelTransfer"),
-		transferId: z.uuid(),
+		transferId: publicId,
 		operationKey,
 	}),
 ]);
@@ -166,14 +171,8 @@ export const tenancyContract = {
 			path: "/organizations",
 			summary: "Create an organization and admit its owner atomically",
 		})
-		.input(
-			z.strictObject({
-				name: z.string().trim().min(1).max(80),
-				slug: z.string().regex(/^[a-z0-9][a-z0-9-]{1,62}$/),
-				operationKey,
-			}),
-		)
-		.output(z.object({ id: z.uuid() })),
+		.input(organizationFields.extend({ operationKey }))
+		.output(z.object({ id: publicId })),
 	get: protectedOperation
 		.route({
 			method: "GET",

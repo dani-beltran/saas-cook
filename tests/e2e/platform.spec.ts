@@ -5,6 +5,28 @@ import {
 	customerFixtureRuntime,
 } from "../../packages/testing/src/example-customers/fixture";
 
+test("organization routes reject malformed IDs before rendering feature pages", async ({
+	request,
+}) => {
+	for (const suffix of [
+		"",
+		"/data",
+		"/privacy",
+		"/settings",
+		"/keys",
+		"/search",
+		"/billing",
+		"/usage",
+		"/customers",
+		"/projects",
+	]) {
+		const response = await request.get(
+			`/en/organizations/${"-".repeat(36)}${suffix}`,
+		);
+		expect(response.status(), suffix || "/").toBe(404);
+	}
+});
+
 test("search and activity use real sessions, isolate tenants, support keyboard and Spanish mobile", async ({
 	page,
 	baseURL,

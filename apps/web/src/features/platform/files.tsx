@@ -1,5 +1,6 @@
 "use client";
 import { createApiClient } from "@saas-cook/api/client";
+import { fileMetadata } from "@saas-cook/api-contracts/files";
 import { Button, Input } from "@saas-cook/ui";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
@@ -57,12 +58,18 @@ export function ProjectFiles({
 		}
 	}
 	async function upload() {
-		if (
-			!file ||
-			file.size < 1 ||
-			file.size > 1048576 ||
-			!/\.(txt|csv)$/i.test(file.name)
-		) {
+		if (!file) {
+			setError(t("invalid"));
+			return;
+		}
+		const metadata = fileMetadata.safeParse({
+			name: file.name,
+			bytes: file.size,
+			contentType: file.name.toLowerCase().endsWith(".csv")
+				? "text/csv"
+				: "text/plain",
+		});
+		if (!metadata.success) {
 			setError(t("invalid"));
 			return;
 		}
@@ -78,11 +85,7 @@ export function ProjectFiles({
 				organizationId,
 				projectId,
 				operationKey: operation.current,
-				name: file.name,
-				bytes: file.size,
-				contentType: file.name.toLowerCase().endsWith(".csv")
-					? "text/csv"
-					: "text/plain",
+				...metadata.data,
 				sha256,
 			});
 			const response = await fetch(attempt.url, {

@@ -1,5 +1,9 @@
 import { oc } from "@orpc/contract";
 import { z } from "zod";
+import { billingCommand, billingSelection } from "./inputs/billing";
+import { publicId } from "./inputs/common";
+
+export { billingCommand, billingSelection } from "./inputs/billing";
 
 const limit = z.union([
 	z.strictObject({
@@ -13,27 +17,6 @@ const features = z.strictObject({
 	projectCreates: limit,
 	seats: z.number().int().nonnegative(),
 });
-export const billingSelection = z.strictObject({
-	planVersionId: z.string().min(1).max(60),
-	quantity: z.number().int().min(1).max(100000),
-});
-export const billingCommand = z.discriminatedUnion("kind", [
-	z.strictObject({
-		kind: z.literal("checkout"),
-		operationKey: z.string().min(1).max(128),
-		selection: billingSelection,
-		locale: z.enum(["en", "es"]),
-	}),
-	z.strictObject({
-		kind: z.literal("change"),
-		operationKey: z.string().min(1).max(128),
-		previewId: z.uuid(),
-	}),
-	z.strictObject({
-		kind: z.enum(["cancel", "portal"]),
-		operationKey: z.string().min(1).max(128),
-	}),
-]);
 const billingSnapshot = z.strictObject({
 	enabled: z.boolean(),
 	sourceVersion: z.number().int(),
@@ -97,7 +80,7 @@ const billingSnapshot = z.strictObject({
 	),
 	commands: z.array(
 		z.strictObject({
-			id: z.uuid(),
+			id: publicId,
 			kind: z.string(),
 			state: z.string(),
 			errorCode: z.string().nullable(),
@@ -118,7 +101,7 @@ const billingSnapshot = z.strictObject({
 	}),
 });
 const billingPreview = z.strictObject({
-	id: z.uuid(),
+	id: publicId,
 	amount: z.number().int(),
 	currency: z.string(),
 	effectiveAt: z.iso.datetime(),
@@ -127,14 +110,14 @@ const billingPreview = z.strictObject({
 	sourceVersion: z.number().int(),
 });
 const errors = {
-	UNAUTHORIZED: { data: z.object({ requestId: z.uuid() }) },
-	FORBIDDEN: { data: z.object({ requestId: z.uuid() }) },
-	CONFLICT: { data: z.object({ requestId: z.uuid() }) },
-	PRECONDITION_FAILED: { data: z.object({ requestId: z.uuid() }) },
-	SERVICE_UNAVAILABLE: { data: z.object({ requestId: z.uuid() }) },
+	UNAUTHORIZED: { data: z.object({ requestId: publicId }) },
+	FORBIDDEN: { data: z.object({ requestId: publicId }) },
+	CONFLICT: { data: z.object({ requestId: publicId }) },
+	PRECONDITION_FAILED: { data: z.object({ requestId: publicId }) },
+	SERVICE_UNAVAILABLE: { data: z.object({ requestId: publicId }) },
 };
 const base = oc.errors(errors),
-	org = z.strictObject({ organizationId: z.uuid() });
+	org = z.strictObject({ organizationId: publicId });
 export const billingContract = {
 	get: base
 		.route({
@@ -159,7 +142,7 @@ export const billingContract = {
 			summary: "Persist an authorized idempotent billing command",
 		})
 		.input(org.extend({ command: billingCommand }))
-		.output(z.strictObject({ id: z.uuid(), state: z.string() })),
+		.output(z.strictObject({ id: publicId, state: z.string() })),
 };
 export type BillingSnapshot = z.infer<typeof billingSnapshot>;
 export type BillingPreview = z.infer<typeof billingPreview>;

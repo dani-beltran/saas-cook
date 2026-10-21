@@ -1,3 +1,4 @@
+import { publicId } from "@saas-cook/api-contracts/inputs/common";
 import { notFound } from "next/navigation";
 import { OrganizationSettingsPage } from "../../../../../features/organization-settings/page";
 export const dynamic = "force-dynamic";
@@ -12,7 +13,7 @@ export default async function Page({
 	params: Promise<{ organizationId: string }>;
 }) {
 	const { organizationId } = await params;
-	if (!/^[a-f0-9-]{36}$/i.test(organizationId)) notFound();
+	if (!publicId.safeParse(organizationId).success) notFound();
 	return (
 		<OrganizationSettingsPage
 			key={organizationId}

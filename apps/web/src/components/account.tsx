@@ -1,11 +1,11 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createApiClient } from "@saas-cook/api/client";
+import { organizationFields } from "@saas-cook/api-contracts/inputs/tenancy";
 import { Button, Input } from "@saas-cook/ui";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { PrivacySettings } from "../features/privacy/page";
 import { accountDashboardMessages } from "../i18n/account-dashboard";
 import { identityClient } from "../lib/identity-client";
@@ -125,16 +125,7 @@ export function Account() {
 		backupCodes: string[];
 	} | null>(null);
 	const organizationForm = useForm<{ name: string; slug: string }>({
-		resolver: zodResolver(
-			z.object({
-				name: z
-					.string()
-					.trim()
-					.min(1, copy.nameInvalid)
-					.max(80, copy.nameInvalid),
-				slug: z.string().regex(/^[a-z0-9][a-z0-9-]{1,62}$/, copy.slugInvalid),
-			}),
-		),
+		resolver: zodResolver(organizationFields),
 		defaultValues: { name: "", slug: "" },
 	});
 	const resetOrganization = organizationForm.reset;
@@ -520,7 +511,7 @@ export function Account() {
 											role="alert"
 											className="text-destructive"
 										>
-											{organizationForm.formState.errors.name.message}
+											{copy.nameInvalid}
 										</span>
 									)}
 								</div>
@@ -549,7 +540,7 @@ export function Account() {
 											role="alert"
 											className="text-destructive"
 										>
-											{organizationForm.formState.errors.slug.message}
+											{copy.slugInvalid}
 										</span>
 									)}
 								</div>

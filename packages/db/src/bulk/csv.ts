@@ -1,3 +1,8 @@
+import { resourceSlug } from "@saas-cook/api-contracts/inputs/common";
+import {
+	type BulkMapping,
+	bulkMapping,
+} from "@saas-cook/api-contracts/inputs/data-jobs";
 import { ResourceError } from "../resources";
 export function parseCsv(text: string): string[][] {
 	if (Buffer.byteLength(text) > 1048576 || text.includes("\0"))
@@ -69,15 +74,17 @@ function csvCell(value: unknown) {
 export const csvDocument = (headers: string[], rows: unknown[][]) =>
 	[headers, ...rows].map((row) => row.map(csvCell).join(",")).join("\r\n") +
 	"\r\n";
-export function mappedProjects(
-	text: string,
-	mapping: { name: string; slug: string; description?: string },
-) {
+/**
+ * Maps bounded CSV columns into Project candidates without writing data.
+ * @param text - CSV document with unique headers and at most 1,000 data rows.
+ * @param mapping - Shared input fields naming distinct columns in the document.
+ * @returns Candidates with row numbers and field/duplicate errors for a dry run.
+ * @throws ResourceError when the document or column mapping is invalid or too large.
+ */
+export function mappedProjects(text: string, mapping: BulkMapping) {
 	const [headers, ...rows] = parseCsv(text);
 	if (
-		Object.keys(mapping).some(
-			(k) => !["name", "slug", "description"].includes(k),
-		) ||
+		!bulkMapping.safeParse(mapping).success ||
 		new Set(Object.values(mapping)).size !== Object.values(mapping).length ||
 		Object.values(mapping).some((k) => !headers.includes(k))
 	)
@@ -91,7 +98,7 @@ export function mappedProjects(
 				: "";
 		const errors: string[] = [];
 		if (!name || name.length > 120) errors.push("name");
-		if (!/^[a-z0-9][a-z0-9-]{1,62}$/.test(slug)) errors.push("slug");
+		if (!resourceSlug.safeParse(slug).success) errors.push("slug");
 		if (description.length > 4000) errors.push("description");
 		if (slugs.has(slug)) errors.push("duplicate");
 		slugs.add(slug);

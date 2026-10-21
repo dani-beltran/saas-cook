@@ -1,6 +1,7 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createApiClient } from "@saas-cook/api/client";
+import { resourceName } from "@saas-cook/api-contracts/inputs/resources";
 import {
 	Button,
 	Checkbox,
@@ -29,7 +30,7 @@ type Scope =
 	| "project:delete"
 	| "project:restore"
 	| "project:manage";
-const form = z.object({ name: z.string().trim().min(1).max(120) });
+const form = z.object({ name: resourceName });
 export function KeyAdministration({
 	organizationId,
 }: {

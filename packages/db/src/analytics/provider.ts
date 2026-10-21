@@ -58,7 +58,7 @@ export function posthogProvider(options: {
 		return response.json() as Promise<Record<string, unknown>>;
 	}
 	async function confirmIngested(id: string) {
-		if (!/^[a-f0-9-]{36}$/.test(id))
+		if (!publicId.safeParse(id).success)
 			throw new Error("Invalid analytics event identity");
 		const result = await request(`/api/projects/${options.projectId}/query/`, {
 			query: {
@@ -152,3 +152,5 @@ export function posthogProvider(options: {
 		},
 	};
 }
+
+import { publicId } from "@saas-cook/api-contracts/inputs/common";

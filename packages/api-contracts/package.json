@@ -7,7 +7,15 @@
 		".": "./src/index.ts",
 		"./example-customers": "./src/example-customers/index.ts",
 		"./platform": "./src/platform.ts",
-		"./files": "./src/files.ts"
+		"./files": "./src/files.ts",
+		"./inputs/common": "./src/inputs/common.ts",
+		"./inputs/data-jobs": "./src/inputs/data-jobs.ts",
+		"./inputs/organization-settings": "./src/inputs/organization-settings.ts",
+		"./inputs/privacy": "./src/inputs/privacy.ts",
+		"./inputs/analytics": "./src/inputs/analytics.ts",
+		"./inputs/billing": "./src/inputs/billing.ts",
+		"./inputs/resources": "./src/inputs/resources.ts",
+		"./inputs/tenancy": "./src/inputs/tenancy.ts"
 	},
 	"scripts": {
 		"typecheck": "tsc --noEmit"

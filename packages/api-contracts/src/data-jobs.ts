@@ -1,30 +1,13 @@
 import { z } from "zod";
+import { publicId } from "./inputs/common";
+import { bulkInput, bulkKind } from "./inputs/data-jobs";
 import { platformOperation as op } from "./platform";
 
-const org = { organizationId: z.uuid() };
-const id = { id: z.uuid() };
-const key = { operationKey: z.string().min(8).max(120) };
-const mapping = z.strictObject({
-	name: z.string().min(1).max(100),
-	slug: z.string().min(1).max(100),
-	description: z.string().min(1).max(100).optional(),
-});
-const bulkInput = {
-	kind: z.enum([
-		"projects.import",
-		"projects.export",
-		"organization.export",
-		"audit.export",
-	]),
-	...key,
-	projectId: z.uuid().optional(),
-	fileId: z.uuid().optional(),
-	mapping: mapping.optional(),
-	duplicates: z.enum(["reject", "skip"]).optional(),
-};
+const org = { organizationId: publicId };
+const id = { id: publicId };
 const job = z.strictObject({
-	id: z.uuid(),
-	kind: bulkInput.kind,
+	id: publicId,
+	kind: bulkKind,
 	state: z.string(),
 	progress: z.number().int(),
 	total: z.number().int(),
@@ -40,7 +23,7 @@ export const dataJobsContract = {
 		.output(z.array(job).max(20)),
 	dryRun: op
 		.route({ method: "POST", path: "/platform/bulkDryRun" })
-		.input(z.strictObject({ ...org, ...bulkInput }))
+		.input(bulkInput.safeExtend(org))
 		.output(
 			z
 				.array(
@@ -53,7 +36,7 @@ export const dataJobsContract = {
 		),
 	start: op
 		.route({ method: "POST", path: "/platform/bulkStart" })
-		.input(z.strictObject({ ...org, ...bulkInput }))
+		.input(bulkInput.safeExtend(org))
 		.output(job),
 	cancel: op
 		.route({ method: "POST", path: "/platform/bulkCancel" })

@@ -1,4 +1,9 @@
 "use client";
+import {
+	integrationCommandInput,
+	integrationInput,
+	webhookInput,
+} from "@saas-cook/api-contracts/inputs/organization-settings";
 import { Button, Input, NativeSelect, NativeSelectOption } from "@saas-cook/ui";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
@@ -134,16 +139,12 @@ export function OrganizationSettingsPage({
 						void op.run(async () => {
 							const r = await api().organizationSettings.createWebhook({
 								organizationId,
-								name: String(f.get("name")),
-								url: String(f.get("url")),
-								events: [
-									f.get("event") as
-										| "project.created"
-										| "project.updated"
-										| "project.deleted"
-										| "bulk.completed",
-								],
-								operationKey: crypto.randomUUID(),
+								...webhookInput.parse({
+									name: String(f.get("name")),
+									url: String(f.get("url")),
+									events: [f.get("event")],
+									operationKey: crypto.randomUUID(),
+								}),
 							});
 							setSecret(r.secret);
 							form.reset();
@@ -265,13 +266,15 @@ export function OrganizationSettingsPage({
 						void op.run(async () => {
 							await api().organizationSettings.createIntegration({
 								organizationId,
-								name: String(f.get("name")),
-								url: String(f.get("url")),
-								token: String(f.get("token")),
-								scopes: String(f.get("scopes"))
-									.split(",")
-									.map((v) => v.trim()),
-								operationKey: crypto.randomUUID(),
+								...integrationInput.parse({
+									name: String(f.get("name")),
+									url: String(f.get("url")),
+									token: String(f.get("token")),
+									scopes: String(f.get("scopes"))
+										.split(",")
+										.map((v) => v.trim()),
+									operationKey: crypto.randomUUID(),
+								}),
 							});
 							form.reset();
 							await load();
@@ -360,11 +363,13 @@ export function OrganizationSettingsPage({
 											void op.run(async () => {
 												await api().organizationSettings.integrationCommand({
 													organizationId,
-													id: c.id,
-													version: c.version,
-													action: "rotate",
-													token,
-													operationKey: crypto.randomUUID(),
+													...integrationCommandInput.parse({
+														id: c.id,
+														version: c.version,
+														action: "rotate",
+														token,
+														operationKey: crypto.randomUUID(),
+													}),
 												});
 												form.reset();
 												await load();

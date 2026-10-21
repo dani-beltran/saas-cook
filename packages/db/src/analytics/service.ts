@@ -1,4 +1,8 @@
 import { createHash, createHmac } from "node:crypto";
+import {
+	type AnalyticsPreferenceInput,
+	analyticsPreferenceInput,
+} from "@saas-cook/api-contracts/inputs/analytics";
 import type { Pool, PoolClient } from "pg";
 import { ResourceError, type ResourceHooks } from "../resources";
 import { type TenantActor, withTenantTransaction } from "../tenancy";
@@ -199,13 +203,9 @@ export function createAnalyticsService(
 		async setPreference(
 			a: TenantActor,
 			org: string | null,
-			input: { enabled: boolean; version: number },
+			input: AnalyticsPreferenceInput,
 		) {
-			if (
-				typeof input.enabled !== "boolean" ||
-				!Number.isSafeInteger(input.version) ||
-				input.version < 0
-			)
+			if (!analyticsPreferenceInput.safeParse(input).success)
 				throw new ResourceError("INVALID");
 			return own(
 				a,

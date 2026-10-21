@@ -187,18 +187,19 @@ export const router = api.router({
 				},
 			),
 		),
-		setPreference: api.analytics.setPreference.handler(({ context, input }) =>
-			resourceOperation(
-				context,
-				"00000000-0000-4000-8000-000000000000",
-				{ mutate: true, serviceAccounts: false },
-				async (runtime, a) => {
-					if ("kind" in a) throw new ORPCError("FORBIDDEN");
-					const r = runtime.platformModules;
-					if (!r) throw new ORPCError("SERVICE_UNAVAILABLE");
-					return r.analytics.setPreference(a, input.organizationId, input);
-				},
-			),
+		setPreference: api.analytics.setPreference.handler(
+			({ context, input: { organizationId, ...input } }) =>
+				resourceOperation(
+					context,
+					"00000000-0000-4000-8000-000000000000",
+					{ mutate: true, serviceAccounts: false },
+					async (runtime, a) => {
+						if ("kind" in a) throw new ORPCError("FORBIDDEN");
+						const r = runtime.platformModules;
+						if (!r) throw new ORPCError("SERVICE_UNAVAILABLE");
+						return r.analytics.setPreference(a, organizationId, input);
+					},
+				),
 		),
 		completeOnboarding: api.analytics.completeOnboarding.handler(
 			({ context }) =>

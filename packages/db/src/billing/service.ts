@@ -1,6 +1,16 @@
 import { createHash, randomUUID } from "node:crypto";
+import {
+	billingCommand as commandSchema,
+	billingSelection as selectionSchema,
+} from "@saas-cook/api-contracts/inputs/billing";
 import type { Pool, PoolClient } from "pg";
-import { z } from "zod";
+import type { z } from "zod";
+
+export {
+	billingCommand as commandSchema,
+	billingSelection as selectionSchema,
+} from "@saas-cook/api-contracts/inputs/billing";
+
 import {
 	appendTenantAudit,
 	assertAuthorizationCurrent,
@@ -47,27 +57,6 @@ export interface BillingHooks {
 	authorize: TenancyHooks["authorize"];
 	publication(client: PoolClient): Promise<unknown>;
 }
-export const selectionSchema = z.strictObject({
-	planVersionId: z.string().min(1).max(60),
-	quantity: z.number().int().min(1).max(100000),
-});
-export const commandSchema = z.discriminatedUnion("kind", [
-	z.strictObject({
-		kind: z.literal("checkout"),
-		operationKey: z.string().min(1).max(128),
-		selection: selectionSchema,
-		locale: z.enum(["en", "es"]),
-	}),
-	z.strictObject({
-		kind: z.literal("change"),
-		operationKey: z.string().min(1).max(128),
-		previewId: z.uuid(),
-	}),
-	z.strictObject({
-		kind: z.enum(["portal", "cancel"]),
-		operationKey: z.string().min(1).max(128),
-	}),
-]);
 export async function authorizeBilling(
 	c: PoolClient,
 	actor: TenantActor,

@@ -4,6 +4,11 @@ import {
 	randomUUID,
 	timingSafeEqual,
 } from "node:crypto";
+import {
+	type DeletionRequestInput,
+	deletionRequestInput,
+	deletionStatusInput,
+} from "@saas-cook/api-contracts/inputs/privacy";
 import type { Pool, PoolClient } from "pg";
 import { ResourceError, type ResourceHooks } from "../resources";
 import {
@@ -246,18 +251,8 @@ export function createLifecycleService(
 				return obligations(c, a.userId);
 			});
 		},
-		async request(
-			a: TenantActor,
-			input: {
-				kind: "account" | "organization";
-				organizationId?: string;
-				operationKey: string;
-			},
-		) {
-			if (
-				!/^[a-zA-Z0-9_-]{8,120}$/.test(input.operationKey) ||
-				!["account", "organization"].includes(input.kind)
-			)
+		async request(a: TenantActor, input: DeletionRequestInput) {
+			if (!deletionRequestInput.safeParse(input).success)
 				throw new ResourceError("INVALID");
 			return transaction(pool, a.userId, async (c) => {
 				await own(c, a);
@@ -465,7 +460,7 @@ export function createLifecycleService(
 			return this.status(id, token(id));
 		},
 		async status(id: string, receipt: string) {
-			if (!/^[a-f0-9-]{36}$/.test(id) || !/^[A-Za-z0-9_-]{43}$/.test(receipt))
+			if (!deletionStatusInput.safeParse({ id, receipt }).success)
 				throw new ResourceError("DENIED");
 			const r = (
 				await pool.query<DeletionRow>(

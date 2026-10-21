@@ -1,7 +1,8 @@
 import { z } from "zod";
+import { analyticsPreferenceInput } from "./inputs/analytics";
+import { publicId } from "./inputs/common";
 import { platformOperation as op } from "./platform";
 
-const version = { version: z.number().int().min(0) };
 const preference = z.strictObject({
 	enabled: z.boolean(),
 	version: z.number().int(),
@@ -10,16 +11,12 @@ const preference = z.strictObject({
 export const analyticsContract = {
 	preferences: op
 		.route({ method: "POST", path: "/platform/analyticsGet" })
-		.input(z.strictObject({ organizationId: z.uuid().nullable() }))
+		.input(z.strictObject({ organizationId: publicId.nullable() }))
 		.output(preference),
 	setPreference: op
 		.route({ method: "POST", path: "/platform/analyticsSet" })
 		.input(
-			z.strictObject({
-				organizationId: z.uuid().nullable(),
-				enabled: z.boolean(),
-				...version,
-			}),
+			analyticsPreferenceInput.extend({ organizationId: publicId.nullable() }),
 		)
 		.output(preference),
 	completeOnboarding: op

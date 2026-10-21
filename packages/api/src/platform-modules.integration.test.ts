@@ -131,6 +131,61 @@ for (const transport of ["rpc", "rest"] as const) {
 			body: transport === "rpc" ? raw.json : raw,
 		};
 	};
+	it(`${transport}: rejects malformed shared inputs before performing domain work`, async () => {
+		const command = { organizationId: org, operationKey: randomUUID() };
+		const invalid: [keyof typeof operations, unknown][] = [
+			["bulkList", { organizationId: "-".repeat(36) }],
+			["bulkStart", { ...command, kind: "projects.import" }],
+			[
+				"bulkDryRun",
+				{
+					...command,
+					kind: "projects.import",
+					mapping: { name: "Name", slug: "Slug" },
+				},
+			],
+			[
+				"bulkStart",
+				{ ...command, kind: "projects.export", fileId: randomUUID() },
+			],
+			[
+				"integrationCommand",
+				{ ...command, id: randomUUID(), version: 0, action: "rotate" },
+			],
+			["deletionRequest", { kind: "organization", operationKey: randomUUID() }],
+			["deletionRequest", { kind: "account", operationKey: "invalid key" }],
+			["deletionStatus", { id: randomUUID(), receipt: "!".repeat(43) }],
+			[
+				"webhookCreate",
+				{
+					...command,
+					name: "Endpoint",
+					url: "https://hooks.example.test",
+					events: ["unknown"],
+				},
+			],
+			[
+				"integrationCreate",
+				{
+					...command,
+					name: "Connection",
+					url: "https://hooks.example.test",
+					token: "x".repeat(16),
+					scopes: ["INVALID"],
+				},
+			],
+			[
+				"analyticsSet",
+				{
+					organizationId: org,
+					enabled: true,
+					version: Number.MAX_SAFE_INTEGER + 1,
+				},
+			],
+		];
+		for (const [name, input] of invalid)
+			expect((await call(name, input)).status, name).toBe(422);
+	});
 	it(`${transport}: rejects foreign tenants, bearer fallback, CSRF, overposting and forged deletion receipts`, async () => {
 		const before = await platformModules?.analytics.preferences(owner, org);
 		expect(

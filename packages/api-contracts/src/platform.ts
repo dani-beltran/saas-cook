@@ -1,5 +1,6 @@
 import { oc } from "@orpc/contract";
 import { z } from "zod";
+import { publicId } from "./inputs/common";
 
 export const platformResourceType = z.enum(["project", "customer"]);
 const pagination = {
@@ -12,23 +13,23 @@ export const searchQuery = z.strictObject({
 	...pagination,
 });
 export const searchItem = z.strictObject({
-	id: z.uuid(),
+	id: publicId,
 	type: platformResourceType,
 	label: z.string().max(120),
 });
 export const activityQuery = z.strictObject({
 	resourceType: platformResourceType,
-	resourceId: z.uuid(),
+	resourceId: publicId,
 	...pagination,
 });
 export const activityItem = z.strictObject({
-	id: z.uuid(),
+	id: publicId,
 	action: z.enum(["created", "updated", "deleted", "restored"]),
 	actor: z.enum(["member", "service", "system"]),
 	occurredAt: z.iso.datetime(),
 	schemaVersion: z.literal(1),
 });
-const errors = z.object({ requestId: z.uuid() });
+const errors = z.object({ requestId: publicId });
 export const platformOperation = oc.errors({
 	UNAUTHORIZED: { status: 401, data: errors },
 	FORBIDDEN: { status: 403, data: errors },
@@ -49,18 +50,18 @@ export const platformOperation = oc.errors({
 	SERVICE_UNAVAILABLE: { status: 503, data: errors },
 });
 export const keyListQuery = z.strictObject({
-	serviceAccountId: z.uuid().optional(),
+	serviceAccountId: publicId.optional(),
 	...pagination,
 });
 export const accountSummary = z.strictObject({
-	id: z.uuid(),
+	id: publicId,
 	name: z.string().max(120),
 	status: z.enum(["active", "inactive"]),
 	capabilities: z.array(z.string()),
 	version: z.number().int().positive(),
 });
 export const keySummary = z.strictObject({
-	id: z.uuid(),
+	id: publicId,
 	prefix: z.string(),
 	scopes: z.array(z.string()),
 	expiresAt: z.iso.datetime(),
@@ -73,7 +74,7 @@ export const platformContract = {
 			method: "GET",
 			path: "/organizations/{organizationId}/service-accounts",
 		})
-		.input(z.strictObject({ organizationId: z.uuid(), ...pagination }))
+		.input(z.strictObject({ organizationId: publicId, ...pagination }))
 		.output(
 			z.strictObject({
 				items: z.array(accountSummary).max(50),
@@ -87,8 +88,8 @@ export const platformContract = {
 		})
 		.input(
 			keyListQuery.extend({
-				organizationId: z.uuid(),
-				serviceAccountId: z.uuid(),
+				organizationId: publicId,
+				serviceAccountId: publicId,
 			}),
 		)
 		.output(
@@ -104,7 +105,7 @@ export const platformContract = {
 			summary:
 				"Search registered resources with current access; no unrestricted totals",
 		})
-		.input(searchQuery.extend({ organizationId: z.uuid() }))
+		.input(searchQuery.extend({ organizationId: publicId }))
 		.output(
 			z.strictObject({
 				items: z.array(searchItem).max(50),
@@ -118,7 +119,7 @@ export const platformContract = {
 			summary:
 				"Read the safe activity projection under current resource access",
 		})
-		.input(activityQuery.extend({ organizationId: z.uuid() }))
+		.input(activityQuery.extend({ organizationId: publicId }))
 		.output(
 			z.strictObject({
 				items: z.array(activityItem).max(50),

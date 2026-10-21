@@ -7,6 +7,11 @@ import type {
 	OrganizationSnapshotDto,
 } from "@saas-cook/api-contracts";
 import {
+	invitationFields,
+	seatCapacity,
+	teamFields,
+} from "@saas-cook/api-contracts/inputs/tenancy";
+import {
 	Button,
 	Checkbox,
 	Dialog,
@@ -150,10 +155,7 @@ export function ConfirmDialog({
 
 function InviteForm({ busy, run }: { busy: boolean; run: Run }) {
 	const { t, copy } = useCopy();
-	const schema = z.object({
-		email: z.email(t("emailInvalid")),
-		role: z.enum(["member", "admin", "billing"]),
-	});
+	const schema = invitationFields;
 	const {
 		register,
 		handleSubmit,
@@ -189,7 +191,7 @@ function InviteForm({ busy, run }: { busy: boolean; run: Run }) {
 						role="alert"
 						id="invitation-email-error"
 					>
-						{errors.email.message}
+						{t("emailInvalid")}
 					</p>
 				)}
 			</div>
@@ -216,13 +218,7 @@ function InviteForm({ busy, run }: { busy: boolean; run: Run }) {
 
 function CreateTeamForm({ busy, run }: { busy: boolean; run: Run }) {
 	const { t, copy } = useCopy();
-	const schema = z.object({
-		name: z
-			.string()
-			.trim()
-			.min(1, copy.teamNameInvalid)
-			.max(80, copy.teamNameInvalid),
-	});
+	const schema = teamFields;
 	const {
 		register,
 		handleSubmit,
@@ -253,7 +249,7 @@ function CreateTeamForm({ busy, run }: { busy: boolean; run: Run }) {
 				/>
 				{errors.name && (
 					<p className="org-field-error" role="alert" id="team-name-error">
-						{errors.name.message}
+						{copy.teamNameInvalid}
 					</p>
 				)}
 			</div>
@@ -274,13 +270,7 @@ function CapacityForm({
 	run: Run;
 }) {
 	const { t, copy } = useCopy();
-	const schema = z.object({
-		capacity: z
-			.number()
-			.int(copy.capacityInvalid)
-			.min(seats.occupied, copy.capacityInvalid)
-			.max(100000, copy.capacityInvalid),
-	});
+	const schema = z.object({ capacity: seatCapacity.min(seats.occupied) });
 	const {
 		register,
 		handleSubmit,
@@ -316,7 +306,7 @@ function CapacityForm({
 				/>
 				{errors.capacity && (
 					<p className="org-field-error" role="alert" id="seat-capacity-error">
-						{errors.capacity.message}
+						{copy.capacityInvalid}
 					</p>
 				)}
 			</div>

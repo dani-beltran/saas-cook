@@ -1,5 +1,6 @@
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { channel } from "node:diagnostics_channel";
+import { resourceSlug } from "@saas-cook/api-contracts/inputs/common";
 import type { Pool, PoolClient } from "pg";
 
 import { commercialFeatures } from "./billing/policy";
@@ -483,7 +484,7 @@ export function createTenancyService(
 		) {
 			validateKey(input.operationKey);
 			if (
-				!/^[a-z0-9][a-z0-9-]{1,62}$/.test(input.slug) ||
+				!resourceSlug.safeParse(input.slug).success ||
 				!input.name.trim() ||
 				input.name.length > 120
 			)
@@ -925,7 +926,7 @@ export function createTenancyService(
 			if (
 				!input.name.trim() ||
 				input.name.length > 120 ||
-				!/^[a-z0-9][a-z0-9-]{1,62}$/.test(input.slug)
+				!resourceSlug.safeParse(input.slug).success
 			)
 				throw new TenancyError("INVALID");
 			return withTenantTransaction(

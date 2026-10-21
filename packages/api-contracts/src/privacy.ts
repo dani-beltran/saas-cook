@@ -1,10 +1,11 @@
 import { z } from "zod";
+import { publicId } from "./inputs/common";
+import { deletionRequestInput, deletionStatusInput } from "./inputs/privacy";
 import { platformOperation as op } from "./platform";
 
-const id = { id: z.uuid() };
-const key = { operationKey: z.string().min(8).max(120) };
+const id = { id: publicId };
 const deletion = z.strictObject({
-	id: z.uuid(),
+	id: publicId,
 	subjectKind: z.enum(["account", "organization"]),
 	state: z.enum([
 		"awaiting_prerequisites",
@@ -38,8 +39,8 @@ export const privacyContract = {
 			z
 				.array(
 					z.strictObject({
-						organizationId: z.uuid(),
-						membershipId: z.uuid(),
+						organizationId: publicId,
+						membershipId: publicId,
 						name: z.string(),
 						role: z.string(),
 						requiresSuccessor: z.boolean(),
@@ -49,13 +50,7 @@ export const privacyContract = {
 		),
 	requestDeletion: op
 		.route({ method: "POST", path: "/platform/deletionRequest" })
-		.input(
-			z.strictObject({
-				kind: z.enum(["account", "organization"]),
-				organizationId: z.uuid().optional(),
-				...key,
-			}),
-		)
+		.input(deletionRequestInput)
 		.output(deletion.extend({ receipt: z.string() })),
 	confirmDeletion: op
 		.route({ method: "POST", path: "/platform/deletionConfirm" })
@@ -67,6 +62,6 @@ export const privacyContract = {
 		.output(deletion),
 	deletionStatus: op
 		.route({ method: "POST", path: "/platform/deletionStatus" })
-		.input(z.strictObject({ ...id, receipt: z.string().min(43).max(43) }))
+		.input(deletionStatusInput)
 		.output(deletion),
 };

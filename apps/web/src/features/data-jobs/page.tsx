@@ -1,4 +1,5 @@
 "use client";
+import { bulkInput } from "@saas-cook/api-contracts/inputs/data-jobs";
 import { Button, Input, NativeSelect, NativeSelectOption } from "@saas-cook/ui";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
@@ -120,8 +121,7 @@ export function DataJobsPage({ organizationId }: { organizationId: string }) {
 						const f = new FormData(e.currentTarget),
 							submitter = (e.nativeEvent as SubmitEvent)
 								.submitter as HTMLButtonElement;
-						const input = {
-							organizationId,
+						const raw = {
 							kind: "projects.import" as const,
 							projectId: project,
 							fileId: file,
@@ -139,6 +139,7 @@ export function DataJobsPage({ organizationId }: { organizationId: string }) {
 							operationKey: crypto.randomUUID(),
 						};
 						void op.run(async () => {
+							const input = { ...bulkInput.parse(raw), organizationId };
 							if (submitter.value === "check")
 								setDry(await api().dataJobs.dryRun(input));
 							else {

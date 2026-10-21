@@ -1,10 +1,11 @@
 import { oc } from "@orpc/contract";
 import { z } from "zod";
+import { operationKey, publicId } from "./inputs/common";
 
-const reference = { organizationId: z.uuid(), projectId: z.uuid() };
+const reference = { organizationId: publicId, projectId: publicId };
 export const uploadInput = z.strictObject({
-	projectId: z.uuid(),
-	operationKey: z.string().min(8).max(120),
+	projectId: publicId,
+	operationKey: operationKey,
 	name: z
 		.string()
 		.trim()
@@ -18,16 +19,22 @@ export const uploadInput = z.strictObject({
 	bytes: z.number().int().min(1).max(1048576),
 	sha256: z.string().regex(/^[a-f0-9]{64}$/),
 });
+/** Metadata checked before the browser reads and hashes an upload. */
+export const fileMetadata = uploadInput.pick({
+	name: true,
+	contentType: true,
+	bytes: true,
+});
 export const fileDto = z.strictObject({
-	id: z.uuid(),
-	projectId: z.uuid(),
+	id: publicId,
+	projectId: publicId,
 	name: z.string(),
 	contentType: z.enum(["text/plain", "text/csv"]),
 	bytes: z.number().int(),
 	state: z.enum(["staging", "available", "rejected", "deleted"]),
 	expiresAt: z.iso.datetime(),
 });
-const data = z.object({ requestId: z.uuid() });
+const data = z.object({ requestId: publicId });
 const operation = oc.errors({
 	UNAUTHORIZED: { status: 401, data },
 	FORBIDDEN: { status: 403, data },
@@ -55,7 +62,7 @@ export const filesContract = {
 		.output(z.array(fileDto).max(100)),
 	initiate: operation
 		.route({ method: "POST", path })
-		.input(uploadInput.extend({ organizationId: z.uuid() }))
+		.input(uploadInput.extend({ organizationId: publicId }))
 		.output(
 			z.strictObject({
 				file: fileDto,
@@ -69,10 +76,10 @@ export const filesContract = {
 		),
 	finalize: operation
 		.route({ method: "POST", path: `${path}/{id}/finalize` })
-		.input(z.strictObject({ ...reference, id: z.uuid() }))
+		.input(z.strictObject({ ...reference, id: publicId }))
 		.output(fileDto),
 	download: operation
 		.route({ method: "GET", path: `${path}/{id}/download` })
-		.input(z.strictObject({ ...reference, id: z.uuid() }))
+		.input(z.strictObject({ ...reference, id: publicId }))
 		.output(z.strictObject({ file: fileDto, base64: z.string().max(1398104) })),
 };

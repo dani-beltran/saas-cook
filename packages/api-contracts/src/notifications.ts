@@ -1,9 +1,10 @@
 import { z } from "zod";
+import { initialVersion, publicId } from "./inputs/common";
 import { platformOperation as op } from "./platform";
 
-const org = { organizationId: z.uuid() };
-const id = { id: z.uuid() };
-const version = { version: z.number().int().min(0) };
+const org = { organizationId: publicId };
+const id = { id: publicId };
+const version = { version: initialVersion };
 const ok = z.object({ ok: z.literal(true) });
 const notificationPreferences = z.strictObject({
 	email: z.boolean(),
@@ -35,9 +36,9 @@ export const notificationsContract = {
 			z
 				.array(
 					z.strictObject({
-						id: z.uuid(),
+						id: publicId,
 						kind: z.literal("bulk.completed"),
-						referenceId: z.uuid(),
+						referenceId: publicId,
 						read: z.boolean(),
 						createdAt: z.iso.datetime(),
 					}),

@@ -1,6 +1,12 @@
 import { createHash, randomUUID } from "node:crypto";
+import {
+	type BulkInput,
+	bulkInput,
+} from "@saas-cook/api-contracts/inputs/data-jobs";
 import type { Pool, PoolClient } from "pg";
-import { z } from "zod";
+
+export type { BulkInput } from "@saas-cook/api-contracts/inputs/data-jobs";
+
 import type { createFileService } from "../files/service";
 import type { FileStorage, StoredObject } from "../files/storage";
 import { privatePayloads } from "../platform/crypto";
@@ -18,32 +24,6 @@ import {
 } from "../tenancy";
 import { csvDocument, mappedProjects } from "./csv";
 
-const inputSchema = z
-	.strictObject({
-		kind: z.enum([
-			"projects.import",
-			"projects.export",
-			"organization.export",
-			"audit.export",
-		]),
-		operationKey: z.string().min(8).max(120),
-		projectId: z.uuid().optional(),
-		fileId: z.uuid().optional(),
-		mapping: z
-			.strictObject({
-				name: z.string().min(1).max(100),
-				slug: z.string().min(1).max(100),
-				description: z.string().min(1).max(100).optional(),
-			})
-			.optional(),
-		duplicates: z.enum(["reject", "skip"]).optional(),
-	})
-	.refine((i) =>
-		i.kind === "projects.import"
-			? Boolean(i.projectId && i.fileId && i.mapping && i.duplicates)
-			: !i.projectId && !i.fileId && !i.mapping && !i.duplicates,
-	);
-export type BulkInput = z.infer<typeof inputSchema>;
 type Actor = TenantActor & { sessionId: string; recoveryEpoch: string };
 type Job = {
 	id: string;
@@ -189,7 +169,7 @@ export function createBulkService(
 	}
 	const service = {
 		async dryRun(a: TenantActor, org: string, raw: BulkInput) {
-			const i = inputSchema.parse(raw);
+			const i = bulkInput.parse(raw);
 			return (await inspect(a, org, i)).map((r) => ({
 				row: r.row,
 				errors: r.errors,
@@ -197,7 +177,7 @@ export function createBulkService(
 		},
 		async start(a: TenantActor, org: string, raw: BulkInput) {
 			actor(a);
-			const i = inputSchema.parse(raw);
+			const i = bulkInput.parse(raw);
 			if (!options.storage?.writeExport) throw new ResourceError("DISABLED");
 			let total = 0;
 			if (i.kind === "projects.import") {

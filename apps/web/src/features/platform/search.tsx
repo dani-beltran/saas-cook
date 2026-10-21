@@ -1,6 +1,10 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createApiClient } from "@saas-cook/api/client";
+import {
+	platformResourceType,
+	searchQuery,
+} from "@saas-cook/api-contracts/platform";
 import { Button, Input, NativeSelect, NativeSelectOption } from "@saas-cook/ui";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
@@ -10,8 +14,8 @@ import { DashboardShell } from "../../components/dashboard-shell";
 import { ResourceActivity } from "./activity";
 
 const formSchema = z.object({
-	query: z.string().trim().min(1).max(120),
-	type: z.enum(["all", "project", "customer"]),
+	query: searchQuery.shape.query,
+	type: platformResourceType.or(z.literal("all")),
 });
 type Fields = z.infer<typeof formSchema>;
 type Page = Awaited<

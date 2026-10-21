@@ -1,6 +1,15 @@
 import { createHash, createHmac, randomBytes, randomUUID } from "node:crypto";
+import {
+	type AuditQuery,
+	auditQuery,
+	type IntegrationCommandInput,
+	type IntegrationInput,
+	integrationCommandInput,
+	integrationInput,
+	type WebhookInput,
+	webhookInput,
+} from "@saas-cook/api-contracts/inputs/organization-settings";
 import type { Pool, PoolClient } from "pg";
-import { z } from "zod";
 import { privatePayloads } from "../platform/crypto";
 import { platformCursors } from "../platform/cursor";
 import { ResourceError, type ResourceHooks } from "../resources";
@@ -11,28 +20,6 @@ import {
 } from "../tenancy";
 import { type EndpointTransport, endpointUrl } from "./network";
 
-const events = [
-	"project.created",
-	"project.updated",
-	"project.deleted",
-	"bulk.completed",
-] as const;
-const webhook = z.strictObject({
-	name: z.string().trim().min(1).max(80),
-	url: z.url().max(500),
-	events: z.array(z.enum(events)).min(1).max(4),
-	operationKey: z.string().min(8).max(120),
-});
-const integration = z.strictObject({
-	name: z.string().trim().min(1).max(80),
-	url: z.url().max(500),
-	token: z.string().min(16).max(4096),
-	scopes: z
-		.array(z.string().regex(/^[a-z][a-z0-9:._-]{0,60}$/))
-		.min(1)
-		.max(20),
-	operationKey: z.string().min(8).max(120),
-});
 const digest = (v: unknown) =>
 	createHash("sha256").update(JSON.stringify(v)).digest("hex");
 function fresh(a: TenantActor) {
@@ -193,12 +180,8 @@ export function createSettingsService(
 					}[],
 			);
 		},
-		async addWebhook(
-			a: TenantActor,
-			org: string,
-			raw: z.infer<typeof webhook>,
-		) {
-			const i = webhook.parse(raw);
+		async addWebhook(a: TenantActor, org: string, raw: WebhookInput) {
+			const i = webhookInput.parse(raw);
 			endpointUrl(i.url, options.allowedHosts);
 			return tx(a, org, true, (c) =>
 				operation(
@@ -350,12 +333,8 @@ export function createSettingsService(
 				})),
 			);
 		},
-		async addIntegration(
-			a: TenantActor,
-			org: string,
-			raw: z.infer<typeof integration>,
-		) {
-			const i = integration.parse(raw);
+		async addIntegration(a: TenantActor, org: string, raw: IntegrationInput) {
+			const i = integrationInput.parse(raw);
 			endpointUrl(i.url, options.allowedHosts);
 			return tx(a, org, true, (c) =>
 				operation(
@@ -403,18 +382,9 @@ export function createSettingsService(
 		async integrationCommand(
 			a: TenantActor,
 			org: string,
-			input: {
-				id: string;
-				version: number;
-				operationKey: string;
-				action: "check" | "rotate" | "revoke";
-				token?: string;
-			},
+			input: IntegrationCommandInput,
 		) {
-			if (
-				input.action === "rotate" &&
-				(!input.token || input.token.length < 16 || input.token.length > 4096)
-			)
+			if (!integrationCommandInput.safeParse(input).success)
 				throw new ResourceError("INVALID");
 			return tx(a, org, true, (c) =>
 				operation(
@@ -544,16 +514,12 @@ export function createSettingsService(
 				}),
 			);
 		},
-		async audit(
-			a: TenantActor,
-			org: string,
-			input: { limit?: number; cursor?: string },
-		) {
-			const limit = input.limit ?? 30;
-			if (!Number.isInteger(limit) || limit < 1 || limit > 50)
-				throw new ResourceError("INVALID");
+		async audit(a: TenantActor, org: string, input: AuditQuery) {
+			const parsed = auditQuery.safeParse(input);
+			if (!parsed.success) throw new ResourceError("INVALID");
+			const { limit = 30, cursor } = parsed.data;
 			return tx(a, org, false, async (c) => {
-				const rows = await auditRows(c, a, org, limit, input.cursor);
+				const rows = await auditRows(c, a, org, limit, cursor);
 				await appendTenantAudit(
 					c,
 					org,
