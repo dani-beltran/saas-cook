@@ -1,18 +1,133 @@
 {
 	"schemaVersion": 1,
+	"checkedAt": "2026-10-21T15:50:04.742698+00:00",
 	"implementationSha256": "18515fc44a16fa34832990bea378b895ee7666cfc466a01f2848b7b8345d1dea",
 	"acceptanceClosed": false,
-	"posthog": {
-		"checkedAt": "2026-10-21T15:36:52.441Z",
-		"status": "blocked",
-		"existingSubject": "synthetic-acceptance-114c3509-44ad-4c7f-99c4-cba92192dce9",
-		"verifiedErasure": false,
-		"freshEventStillPresent": true,
-		"newSubjectsCreated": 0,
-		"evidence": "artifacts/phase6-acceptance/posthog-recheck-before-push.log"
-	},
+	"implementationCommit": "94fbb74848c341a6012943856b2c1be3c4163aa4",
+	"branch": "codex/phase6-m2-acceptance",
 	"hostedCi": {
-		"status": "pending authorized branch publication and workflow dispatch"
+		"runId": 39627583945,
+		"url": "https://github.com/dani-beltran/saas-cook/actions/runs/39627583945",
+		"status": "completed",
+		"conclusion": "success",
+		"jobs": [
+			{
+				"name": "unit",
+				"status": "completed",
+				"conclusion": "success"
+			},
+			{
+				"name": "production",
+				"status": "completed",
+				"conclusion": "success"
+			},
+			{
+				"name": "monetization",
+				"status": "completed",
+				"conclusion": "success"
+			},
+			{
+				"name": "integration",
+				"status": "completed",
+				"conclusion": "success"
+			},
+			{
+				"name": "source",
+				"status": "completed",
+				"conclusion": "success"
+			},
+			{
+				"name": "image",
+				"status": "completed",
+				"conclusion": "success"
+			},
+			{
+				"name": "storybook",
+				"status": "completed",
+				"conclusion": "success"
+			},
+			{
+				"name": "browser",
+				"status": "completed",
+				"conclusion": "success"
+			},
+			{
+				"name": "required",
+				"status": "completed",
+				"conclusion": "success"
+			}
+		]
 	},
-	"scope": "Publication follow-up; previous closure audit remains a point-in-time record."
+	"hostedImage": {
+		"sourceCommit": "94fbb74848c341a6012943856b2c1be3c4163aa4",
+		"implementationSha256": "18515fc44a16fa34832990bea378b895ee7666cfc466a01f2848b7b8345d1dea",
+		"image": "sha256:fdba2d51ee0650e5d2b60e0ef54cf009a31e0eb17d7f985e34e60a91a145d54f",
+		"architecture": "amd64",
+		"checks": [
+			"non-root",
+			"fifteen-packaged-commands-and-missing-credential-refusal",
+			"invalid-config-rejected-before-children",
+			"isolated-packaged-migration-and-replay",
+			"real-model-bootstrap-resumes-identical-independent-epoch-and-publishes",
+			"existing-and-restored-application-data-cannot-bootstrap-as-fresh",
+			"compiled-identity-route-loads-native-avatar-dependencies",
+			"pinned-runtime-and-native-image-library",
+			"native-avatar-jpeg-png-webp-orientation-resize-metadata-strip",
+			"startup-static-public-assets-and-combined-health",
+			"packaged-platform-session-export-worker-s3-and-journaled-deletion",
+			"child-identity-database-and-control-credential-separation",
+			"stale-heartbeat-is-unhealthy",
+			"graceful-shutdown-and-redacted-logs",
+			"web-failure-stops-container",
+			"worker-failure-stops-container",
+			"independent-epoch-mismatch-closes-health-worker-and-publication"
+		],
+		"security": "passed",
+		"fileSha256": {
+			"artifacts/phase6-acceptance/hosted/94fbb74/image/security/image-policy.json": "c5e120ab285be95d991444e766c6bf5a34dc55a8347c22f4a8c4b25aeaf5a799",
+			"artifacts/phase6-acceptance/hosted/94fbb74/image/security/image.json": "9400938948469fc50202cdc281defc702554c1e504e8e5c8fc325d44595fe6c6",
+			"artifacts/phase6-acceptance/hosted/94fbb74/image/image/acceptance.json": "d906b75ff6e7cb8ea86eab68ebff86b96ac8201092750dffcc0e2bdc91dfbaf7",
+			"artifacts/phase6-acceptance/hosted/94fbb74/image/image/services.log": "dc47d06545042a5ce11d09a1caff7daaaea6d0e839a372976eb8354535936bbb",
+			"artifacts/phase6-acceptance/hosted/94fbb74/image/image/serve.log": "ee8bbeacebbef1b13faa6ac4b2b5140b7635951565e7f9807725640f97fdcff9",
+			"artifacts/phase6-acceptance/hosted/94fbb74/image/image/inspect.json": "6feaa37ba3674e5a503f57a873b815e0633b24221e33a1f1dfb60be7e2dec324"
+		}
+	},
+	"posthog": {
+		"checkedAt": "2026-10-21T15:49:40.251Z",
+		"subject": "synthetic-acceptance-114c3509-44ad-4c7f-99c4-cba92192dce9",
+		"eventId": "503e1703-afb3-4809-9029-2aa0089d82c8",
+		"receipt": {
+			"personIds": ["87ec1ed7-121e-5bf0-9489-70ad907e4e0b"],
+			"requestedAt": "2026-10-21T12:02:58.050Z"
+		},
+		"status": "pending",
+		"adapterConfirmedErasure": false,
+		"uncachedFreshQueryStillFindsEvent": true,
+		"snapshot": "artifacts/phase6-acceptance/posthog-snapshots/2026-10-21T15-49-40.251Z/latest.json",
+		"newSubjectsCreated": 0,
+		"lateUncertainDrill": "blocked until existing erasure is verified; not executed",
+		"deletionStatus": {
+			"count": 1,
+			"next": null,
+			"previous": null,
+			"results": [
+				{
+					"person_uuid": "87ec1ed7-121e-5bf0-9489-70ad907e4e0b",
+					"created_at": "2026-10-21T12:02:58.165573Z",
+					"status": "pending",
+					"delete_verified_at": null
+				}
+			]
+		}
+	},
+	"continuation": "Current run only; user declined hourly scheduling. No automation created.",
+	"scope": "Publication follow-up; previous closure audit remains a point-in-time record. Application, migrations, skills and evaluator controls unchanged by this documentation follow-up.",
+	"evidenceSha256": {
+		"artifacts/phase6-acceptance/publication-ci-final.json": "71af49f214c567f8384dab5991f90a3562869cb29bf96b45e5b4b75cc1455f02",
+		"artifacts/phase6-acceptance/hosted/94fbb74/image-audit.json": "4f2f1845ab7c169d6f54c6fb760f0234e81cf129df9e54f9ef4766c5dec0cf29",
+		"artifacts/phase6-acceptance/posthog-snapshots/2026-10-21T15-49-40.251Z/latest.json": "7d4d73a0944d9b1431df55503f27ffe1e76d94a5bb202d79fa68cfe8393e60cd",
+		"artifacts/phase6-acceptance/posthog-snapshots/2026-10-21T15-49-40.251Z/observations.jsonl": "4f500a6ee8a1f39efc630a2234c688e6b48be4c347da6fddccb2dc4f7fe6e40b",
+		"artifacts/phase6-acceptance/posthog-recheck-before-push.log": "83674537f43e8980570ecf8d23ee6e440e4f378356e63ddac18c9023a18fdc7e",
+		"artifacts/phase6-acceptance/posthog-recheck-during-ci.log": "a9543b4eb66f327a9d68b544fac8bdfec90568a7a202b9e32e5528f088f0a71e"
+	}
 }
