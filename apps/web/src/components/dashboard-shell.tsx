@@ -44,6 +44,65 @@ function NavigationIcon({
 		| "settings"
 		| "privacy";
 }) {
+	const icons = {
+		account: (
+			<>
+				<circle cx="12" cy="8" r="3.5" />
+				<path d="M5 21v-3a7 7 0 0 1 14 0v3" />
+			</>
+		),
+		organization: (
+			<path d="M4 21V4a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v17M2 21h20M9 21v-5h6v5M8 7h2m4 0h2M8 11h2m4 0h2" />
+		),
+		projects: (
+			<>
+				<rect x="3" y="3" width="7" height="7" rx="1.5" />
+				<rect x="14" y="3" width="7" height="7" rx="1.5" />
+				<rect x="3" y="14" width="7" height="7" rx="1.5" />
+				<rect x="14" y="14" width="7" height="7" rx="1.5" />
+			</>
+		),
+		customers: (
+			<>
+				<circle cx="9" cy="8" r="3" />
+				<path d="M3 21v-3a6 6 0 0 1 12 0v3M16 5a3 3 0 0 1 0 6M18 15a5 5 0 0 1 3 4v2" />
+			</>
+		),
+		billing: (
+			<>
+				<rect x="2" y="4" width="20" height="16" rx="2" />
+				<path d="M2 9h20M6 15h4" />
+			</>
+		),
+		usage: <path d="M3 3v18h18M7 17v-5M12 17V8M17 17V4" />,
+		search: (
+			<>
+				<circle cx="10.5" cy="10.5" r="7.5" />
+				<path d="m16 16 5 5" />
+			</>
+		),
+		keys: (
+			<>
+				<circle cx="7.5" cy="15.5" r="4.5" />
+				<path d="m11 12 9-9h2v4h-3v3h-3l-2 2" />
+			</>
+		),
+		data: <path d="M8 3v14m-5-5 5 5 5-5M16 21V7m-5 5 5-5 5 5" />,
+		settings: (
+			<>
+				<path d="M4 3v8m0 6v4M12 3v2m0 6v10M20 3v10m0 6v2" />
+				<circle cx="4" cy="14" r="3" />
+				<circle cx="12" cy="8" r="3" />
+				<circle cx="20" cy="16" r="3" />
+			</>
+		),
+		privacy: (
+			<>
+				<path d="m12 2 8 4v6c0 5-8 10-8 10S4 17 4 12V6l8-4Z" />
+				<path d="m8 12 3 3 5-6" />
+			</>
+		),
+	};
 	return (
 		<svg
 			width="18"
@@ -54,21 +113,7 @@ function NavigationIcon({
 			strokeWidth="1.5"
 			aria-hidden="true"
 		>
-			{kind === "account" || kind === "customers" ? (
-				<>
-					<circle cx="12" cy="8" r="3.5" />
-					<path d="M5 21v-3a7 7 0 0 1 14 0v3" />
-				</>
-			) : kind === "projects" ? (
-				<>
-					<rect x="3" y="3" width="7" height="7" rx="1.5" />
-					<rect x="14" y="3" width="7" height="7" rx="1.5" />
-					<rect x="3" y="14" width="7" height="7" rx="1.5" />
-					<rect x="14" y="14" width="7" height="7" rx="1.5" />
-				</>
-			) : (
-				<path d="M4 21V4a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v17M2 21h20M9 21v-5h6v5M8 7h2m4 0h2M8 11h2m4 0h2" />
-			)}
+			{icons[kind]}
 		</svg>
 	);
 }
