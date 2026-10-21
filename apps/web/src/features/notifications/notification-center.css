@@ -1,0 +1,38 @@
+.notification-center > summary {
+	font-size: 13px;
+	font-weight: 500;
+	line-height: 1.5;
+}
+.notification-center-content {
+	display: grid;
+	gap: 16px;
+	padding-top: 20px;
+	font-size: 13px;
+	line-height: 1.65;
+	color: var(--muted-foreground);
+}
+.notification-center-content > p {
+	max-width: 65ch;
+	margin: 0;
+}
+.notification-center-link {
+	color: var(--foreground);
+	font-weight: 500;
+	text-decoration: underline;
+	text-decoration-color: var(--muted-foreground);
+	text-underline-offset: 3px;
+}
+.notification-center-link:is(:hover, :focus-visible) {
+	color: var(--primary);
+	text-decoration-color: currentColor;
+}
+.notification-center-content .feature-list {
+	margin: 0;
+}
+.notification-center-content .feature-list > li {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
