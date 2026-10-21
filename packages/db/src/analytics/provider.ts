@@ -26,7 +26,12 @@ export interface AnalyticsProvider {
 	): Promise<AnalyticsDeletion>;
 	deletionComplete(receipt: AnalyticsDeletion): Promise<boolean>;
 }
-/** PostHog protocol adapter. An ambiguous ingestion is never reported as erased. */
+/**
+ * Create the HTTPS PostHog adapter with separate ingestion and query/deletion credentials.
+ * Requests use the optional fetch transport (the global transport by default) and a
+ * three-second deadline. Capture throws while ingestion is unconfirmed; callers must
+ * retain uncertain attempts. Deletion completes only on a verified provider receipt.
+ */
 export function posthogProvider(options: {
 	host: string;
 	projectId: string;
@@ -61,12 +66,15 @@ export function posthogProvider(options: {
 		if (!publicId.safeParse(id).success)
 			throw new Error("Invalid analytics event identity");
 		const result = await request(`/api/projects/${options.projectId}/query/`, {
+			// Default query refresh may reuse a negative result from before ingestion.
+			refresh: "force_blocking",
 			query: {
 				kind: "HogQLQuery",
 				query: `SELECT uuid FROM events WHERE uuid = '${id}' LIMIT 1`,
 			},
 		});
 		return (
+			result.is_cached !== true &&
 			Array.isArray(result.results) &&
 			result.results.some((r) => Array.isArray(r) && r[0] === id)
 		);

@@ -904,9 +904,9 @@ test("Project dashboard validates, edits, detects conflicts and restores localiz
 	await editing
 		.getByRole("button", { name: "Save changes", exact: true })
 		.click();
-	await expect(editing.getByRole("status")).toContainText(
-		"This item has changed",
-	);
+	await expect(
+		editing.getByRole("status").filter({ hasText: "This item has changed" }),
+	).toContainText("This item has changed");
 	await editing.getByRole("button", { name: "Cancel", exact: true }).click();
 	await page.getByRole("button", { name: "Refresh", exact: true }).click();
 	await expect(card).toContainText("Concurrent server change");

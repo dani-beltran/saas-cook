@@ -1,0 +1,18 @@
+{
+	"schemaVersion": 1,
+	"implementationSha256": "18515fc44a16fa34832990bea378b895ee7666cfc466a01f2848b7b8345d1dea",
+	"acceptanceClosed": false,
+	"posthog": {
+		"checkedAt": "2026-10-21T15:36:52.441Z",
+		"status": "blocked",
+		"existingSubject": "synthetic-acceptance-114c3509-44ad-4c7f-99c4-cba92192dce9",
+		"verifiedErasure": false,
+		"freshEventStillPresent": true,
+		"newSubjectsCreated": 0,
+		"evidence": "artifacts/phase6-acceptance/posthog-recheck-before-push.log"
+	},
+	"hostedCi": {
+		"status": "pending authorized branch publication and workflow dispatch"
+	},
+	"scope": "Publication follow-up; previous closure audit remains a point-in-time record."
+}
