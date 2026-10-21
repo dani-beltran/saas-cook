@@ -6,7 +6,8 @@ export async function POST(request: Request) {
 	try {
 		const app = applicationRuntime(),
 			secret = app.feedbackSecret;
-		if (!secret || !app.completion) return new Response(null, { status: 503 });
+		if (!secret || !app.platformModules)
+			return new Response(null, { status: 503 });
 		const reader = request.body?.getReader();
 		if (!reader) return new Response(null, { status: 400 });
 		let body = "";
@@ -42,7 +43,7 @@ export async function POST(request: Request) {
 		)
 			throw new Error("Invalid feedback");
 		await app.ready();
-		await app.completion.notifications.feedback(value.id);
+		await app.platformModules.notifications.feedback(value.id);
 		return Response.json(
 			{ accepted: true },
 			{ headers: { "cache-control": "no-store" } },

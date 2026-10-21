@@ -14,7 +14,7 @@ export function ProjectFiles({
 	organizationId: string;
 	projectId: string;
 }) {
-	const t = useTranslations("Phase6.Files");
+	const t = useTranslations("ProjectFiles");
 	const [rows, setRows] = useState<Rows>(),
 		[file, setFile] = useState<File>(),
 		[busy, setBusy] = useState(false),

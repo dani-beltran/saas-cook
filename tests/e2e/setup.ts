@@ -87,7 +87,7 @@ export default async function setup(config: FullConfig) {
 			OUTGOING_ALLOWED_HOSTS: "hooks.example.test",
 		};
 		if (
-			process.env.E2E_REPORT_GROUP === "completion" ||
+			process.env.E2E_REPORT_GROUP === "data-jobs" ||
 			process.env.E2E_PLATFORM_WORKER === "1"
 		) {
 			worker = spawn(process.execPath, ["dist/worker.mjs"], {

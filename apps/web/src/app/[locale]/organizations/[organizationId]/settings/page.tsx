@@ -1,6 +1,11 @@
 import { notFound } from "next/navigation";
-import { OrganizationSettings } from "../../../../../features/completion/settings";
+import { OrganizationSettingsPage } from "../../../../../features/organization-settings/page";
 export const dynamic = "force-dynamic";
+/**
+ * Renders the feature selected by this framework route.
+ * @param props - params resolves the locale and/or organization ID from the route.
+ * @returns The domain feature page; its services own access checks and error feedback.
+ */
 export default async function Page({
 	params,
 }: {
@@ -9,7 +14,7 @@ export default async function Page({
 	const { organizationId } = await params;
 	if (!/^[a-f0-9-]{36}$/i.test(organizationId)) notFound();
 	return (
-		<OrganizationSettings
+		<OrganizationSettingsPage
 			key={organizationId}
 			organizationId={organizationId}
 		/>

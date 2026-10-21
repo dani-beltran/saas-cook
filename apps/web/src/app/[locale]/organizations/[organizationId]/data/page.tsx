@@ -1,6 +1,11 @@
 import { notFound } from "next/navigation";
-import { DataPage } from "../../../../../features/completion/data";
+import { DataJobsPage } from "../../../../../features/data-jobs/page";
 export const dynamic = "force-dynamic";
+/**
+ * Renders the feature selected by this framework route.
+ * @param props - params resolves the locale and/or organization ID from the route.
+ * @returns The domain feature page; its services own access checks and error feedback.
+ */
 export default async function Page({
 	params,
 }: {
@@ -8,5 +13,5 @@ export default async function Page({
 }) {
 	const { organizationId } = await params;
 	if (!/^[a-f0-9-]{36}$/i.test(organizationId)) notFound();
-	return <DataPage key={organizationId} organizationId={organizationId} />;
+	return <DataJobsPage key={organizationId} organizationId={organizationId} />;
 }

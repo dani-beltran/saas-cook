@@ -3,21 +3,27 @@ import { Button, Input, NativeSelect, NativeSelectOption } from "@saas-cook/ui";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { DashboardShell } from "../../components/dashboard-shell";
-import { api, Reload, Status, useOperation } from "./common";
+import { Reload, Status, useOperation } from "../../components/feature-ui";
+import { api } from "../../lib/api-client";
 
-type Client = ReturnType<typeof api>["completion"];
+type Client = ReturnType<typeof api>["organizationSettings"];
 type Endpoint = Awaited<ReturnType<Client["webhooks"]>>;
 type Connections = Awaited<ReturnType<Client["integrations"]>>;
 type Grants = Awaited<ReturnType<Client["auditGrants"]>>;
 type Audit = Awaited<ReturnType<Client["audit"]>>;
-export function OrganizationSettings({
+/**
+ * Displays webhooks, integrations, restricted audit access and organization analytics preferences.
+ * @param props - organizationId selects the organization; it never grants access.
+ * @returns A localized dashboard page. Current session/permission failures are shown through operation status.
+ */
+export function OrganizationSettingsPage({
 	organizationId,
 }: {
 	organizationId: string;
 }) {
 	const op = useOperation();
 	const { locale } = op;
-	const t = useTranslations("Phase6.Settings");
+	const t = useTranslations("OrganizationSettings");
 	const [webhooks, setWebhooks] = useState<Endpoint>(),
 		[integrations, setIntegrations] = useState<Connections>(),
 		[grants, setGrants] = useState<Grants>(),
@@ -26,14 +32,16 @@ export function OrganizationSettings({
 		[deliveries, setDeliveries] =
 			useState<Awaited<ReturnType<Client["webhookDeliveries"]>>>(),
 		[preference, setPreference] =
-			useState<Awaited<ReturnType<Client["analyticsGet"]>>>();
+			useState<
+				Awaited<ReturnType<ReturnType<typeof api>["analytics"]["preferences"]>>
+			>();
 	const load = async () => {
-		const c = api().completion;
+		const c = api().organizationSettings;
 		const results = await Promise.all([
 			c.webhooks({ organizationId }),
 			c.integrations({ organizationId }),
 			c.auditGrants({ organizationId }),
-			c.analyticsGet({ organizationId }),
+			api().analytics.preferences({ organizationId }),
 		]);
 		setWebhooks(results[0]);
 		setIntegrations(results[1]);
@@ -42,12 +50,12 @@ export function OrganizationSettings({
 	};
 	useEffect(() => {
 		let active = true;
-		const c = api().completion;
+		const c = api().organizationSettings;
 		void Promise.all([
 			c.webhooks({ organizationId }),
 			c.integrations({ organizationId }),
 			c.auditGrants({ organizationId }),
-			c.analyticsGet({ organizationId }),
+			api().analytics.preferences({ organizationId }),
 		])
 			.then(([w, i, g, p]) => {
 				if (active) {
@@ -75,13 +83,13 @@ export function OrganizationSettings({
 			</p>
 			<Status {...op} />
 			{secret && (
-				<section className="completion-card" aria-label={t("secretTitle")}>
+				<section className="feature-card" aria-label={t("secretTitle")}>
 					<p>{t("saveSecret")}</p>
-					<code className="completion-secret">{secret}</code>
+					<code className="feature-secret">{secret}</code>
 					<Button onClick={() => setSecret(null)}>{t("dismiss")}</Button>
 				</section>
 			)}
-			<section className="completion-card">
+			<section className="feature-card">
 				<h2>{t("analyticsTitle")}</h2>
 				{preference ? (
 					<>
@@ -90,7 +98,7 @@ export function OrganizationSettings({
 								? t("configured")
 								: t("collectionDisabled")}
 						</p>
-						<label className="completion-check">
+						<label className="feature-check">
 							<input
 								type="checkbox"
 								checked={preference.enabled}
@@ -98,7 +106,7 @@ export function OrganizationSettings({
 								onChange={(e) =>
 									void op.run(async () =>
 										setPreference(
-											await api().completion.analyticsSet({
+											await api().analytics.setPreference({
 												organizationId,
 												enabled: e.target.checked,
 												version: preference.version,
@@ -114,17 +122,17 @@ export function OrganizationSettings({
 					<p>{t("unavailable")}</p>
 				)}
 			</section>
-			<section className="completion-card">
+			<section className="feature-card">
 				<h2>{t("webhooksTitle")}</h2>
 				<p>{t("webhooksHint")}</p>
 				<form
-					className="completion-form"
+					className="feature-form"
 					onSubmit={(e) => {
 						e.preventDefault();
 						const form = e.currentTarget,
 							f = new FormData(form);
 						void op.run(async () => {
-							const r = await api().completion.webhookCreate({
+							const r = await api().organizationSettings.createWebhook({
 								organizationId,
 								name: String(f.get("name")),
 								url: String(f.get("url")),
@@ -177,14 +185,14 @@ export function OrganizationSettings({
 						{t("createWebhook")}
 					</Button>
 				</form>
-				<ul className="completion-list">
+				<ul className="feature-list">
 					{webhooks?.map((w) => (
 						<li key={w.id}>
 							<strong>{w.name}</strong>
 							<p>
 								{w.url} · {w.state}
 							</p>
-							<div className="completion-actions">
+							<div className="feature-actions">
 								{w.state !== "revoked" &&
 									(["verify", "rotate", "revoke"] as const).map((action, i) => (
 										<Button
@@ -193,13 +201,14 @@ export function OrganizationSettings({
 											disabled={op.busy}
 											onClick={() =>
 												void op.run(async () => {
-													const r = await api().completion.webhookCommand({
-														organizationId,
-														id: w.id,
-														version: w.version,
-														action,
-														operationKey: crypto.randomUUID(),
-													});
+													const r =
+														await api().organizationSettings.webhookCommand({
+															organizationId,
+															id: w.id,
+															version: w.version,
+															action,
+															operationKey: crypto.randomUUID(),
+														});
 													setSecret(r.secret);
 													await load();
 												})
@@ -214,7 +223,7 @@ export function OrganizationSettings({
 									onClick={() =>
 										void op.run(async () =>
 											setDeliveries(
-												await api().completion.webhookDeliveries({
+												await api().organizationSettings.webhookDeliveries({
 													organizationId,
 													endpointId: w.id,
 												}),
@@ -230,7 +239,7 @@ export function OrganizationSettings({
 				</ul>
 				{webhooks?.length === 0 && <p>{t("noWebhooks")}</p>}
 				{deliveries && (
-					<ul className="completion-list">
+					<ul className="feature-list">
 						{deliveries.length === 0 ? (
 							<li>{t("noDeliveries")}</li>
 						) : (
@@ -244,17 +253,17 @@ export function OrganizationSettings({
 					</ul>
 				)}
 			</section>
-			<section className="completion-card">
+			<section className="feature-card">
 				<h2>{t("integrationsTitle")}</h2>
 				<p>{t("integrationsHint")}</p>
 				<form
-					className="completion-form"
+					className="feature-form"
 					onSubmit={(e) => {
 						e.preventDefault();
 						const form = e.currentTarget,
 							f = new FormData(form);
 						void op.run(async () => {
-							await api().completion.integrationCreate({
+							await api().organizationSettings.createIntegration({
 								organizationId,
 								name: String(f.get("name")),
 								url: String(f.get("url")),
@@ -308,7 +317,7 @@ export function OrganizationSettings({
 						{t("connect")}
 					</Button>
 				</form>
-				<ul className="completion-list">
+				<ul className="feature-list">
 					{integrations?.map((c) => (
 						<li key={c.id}>
 							<strong>{c.name}</strong>
@@ -317,7 +326,7 @@ export function OrganizationSettings({
 							</p>
 							{c.state !== "revoked" && (
 								<>
-									<div className="completion-actions">
+									<div className="feature-actions">
 										{(["check", "revoke"] as const).map((action, i) => (
 											<Button
 												key={action}
@@ -325,13 +334,15 @@ export function OrganizationSettings({
 												disabled={op.busy}
 												onClick={() =>
 													void op.run(async () => {
-														await api().completion.integrationCommand({
-															organizationId,
-															id: c.id,
-															version: c.version,
-															action,
-															operationKey: crypto.randomUUID(),
-														});
+														await api().organizationSettings.integrationCommand(
+															{
+																organizationId,
+																id: c.id,
+																version: c.version,
+																action,
+																operationKey: crypto.randomUUID(),
+															},
+														);
 														await load();
 													})
 												}
@@ -341,13 +352,13 @@ export function OrganizationSettings({
 										))}
 									</div>
 									<form
-										className="completion-form"
+										className="feature-form"
 										onSubmit={(e) => {
 											e.preventDefault();
 											const form = e.currentTarget,
 												token = String(new FormData(form).get("token"));
 											void op.run(async () => {
-												await api().completion.integrationCommand({
+												await api().organizationSettings.integrationCommand({
 													organizationId,
 													id: c.id,
 													version: c.version,
@@ -383,10 +394,10 @@ export function OrganizationSettings({
 				</ul>
 				{integrations?.length === 0 && <p>{t("noIntegrations")}</p>}
 			</section>
-			<section className="completion-card">
+			<section className="feature-card">
 				<h2>{t("auditTitle")}</h2>
 				<p>{t("auditHint")}</p>
-				<ul className="completion-list">
+				<ul className="feature-list">
 					{grants?.map((g) => (
 						<li key={g.membershipId}>
 							<span>
@@ -397,7 +408,7 @@ export function OrganizationSettings({
 								variant="secondary"
 								onClick={() =>
 									void op.run(async () => {
-										await api().completion.auditGrant({
+										await api().organizationSettings.grantAudit({
 											organizationId,
 											membershipId: g.membershipId,
 											enabled: !g.enabled,
@@ -417,7 +428,9 @@ export function OrganizationSettings({
 					disabled={op.busy}
 					onClick={() =>
 						void op.run(async () =>
-							setAudit(await api().completion.audit({ organizationId })),
+							setAudit(
+								await api().organizationSettings.audit({ organizationId }),
+							),
 						)
 					}
 				>
@@ -425,8 +438,8 @@ export function OrganizationSettings({
 				</Button>
 				{audit && (
 					<>
-						<div className="completion-scroll">
-							<table className="completion-table">
+						<div className="feature-scroll">
+							<table className="feature-table">
 								<caption>{t("securityEvents")}</caption>
 								<thead>
 									<tr>
@@ -457,7 +470,7 @@ export function OrganizationSettings({
 								onClick={() =>
 									void op.run(async () =>
 										setAudit(
-											await api().completion.audit({
+											await api().organizationSettings.audit({
 												organizationId,
 												cursor: audit.nextCursor ?? undefined,
 											}),

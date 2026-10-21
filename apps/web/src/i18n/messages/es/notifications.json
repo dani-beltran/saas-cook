@@ -1,0 +1,21 @@
+{
+	"Preferences": {
+		"notificationsTitle": "Notificaciones opcionales",
+		"email": "Correo al terminar trabajos de datos",
+		"inApp": "Notificaciones en la aplicación",
+		"suppressed": "El correo opcional está suprimido por una baja, rebote o queja.",
+		"mandatoryNotice": "Los avisos obligatorios de seguridad y facturación siguen sus propias reglas."
+	},
+	"Center": {
+		"title": "Ayuda y notificaciones",
+		"help": "Centro de ayuda",
+		"contact": "Para ayuda con esta organización, contacta con el administrador de tu instalación y comparte solo el identificador de la solicitud fallida.",
+		"noNotifications": "No tienes notificaciones.",
+		"jobFinished": "Un trabajo de datos ha terminado.",
+		"markRead": "Marcar como leído"
+	},
+	"Unsubscribe": {
+		"title": "Desactivar correo opcional",
+		"confirm": "Confirmar baja"
+	}
+}

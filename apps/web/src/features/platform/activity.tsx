@@ -65,7 +65,7 @@ export function ActivityView({
 	onNext: () => void;
 }) {
 	const locale = useLocale();
-	const t = useTranslations("Phase6.Platform");
+	const t = useTranslations("Discovery");
 
 	return (
 		<section aria-label={t("activity")} className="platform-activity">

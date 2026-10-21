@@ -1,4 +1,4 @@
-# Phase 6 completion modules
+# Platform modules
 
 The follow-up to PR #4 targets `codex/phase6-platform-modules`. These ordinary TypeScript services use the existing API boundary, tenant RLS, current OpenFGA model, lifecycle fences, audit/outbox and capacity services. No new permission model or generated feature framework is introduced. See [verification](acceptance.md), [recovery](recovery.md) and [analytics](analytics.md).
 
@@ -44,6 +44,21 @@ Audit query/export requires current organization manage permission **and** an ex
 
 ## Translation authoring
 
-All Phase 6 screens, including the predecessor search/activity/files/API-key components, use next-intl’s `Phase6` namespaces. Edit `apps/web/src/i18n/messages/en/phase6.json` and `apps/web/src/i18n/messages/es/phase6.json`; page components contain translation keys. Server pages use `getTranslations`, client components use `useTranslations`, and `i18n/catalogs.ts` supplies the same selected catalog to the request, layout and Storybook. Counts and row summaries use complete ICU messages so translators control word order and plural forms.
+All Phase 6 screens, including the predecessor search/activity/files/API-key components, use next-intl namespaces named for each feature. Edit the per-feature JSON files under `apps/web/src/i18n/messages/en/` and `apps/web/src/i18n/messages/es/`; page components contain translation keys. Server pages use `getTranslations`, client components use `useTranslations`, and `i18n/catalogs.ts` supplies the same selected catalog to the request, layout and Storybook. Counts and row summaries use complete ICU messages so translators control word order and plural forms.
 
-To add a UI language, register it in `i18n/locales.ts`, add its Phase 6 catalog and include it in `i18n/catalogs.ts`, together with translations for the application’s existing shared/account surfaces. The catalogue unit suite checks keys, placeholders and runtime formatting for all registered locales. Other application modules and email/API locale contracts still declare their own supported languages and must also be extended before enabling a new language across the entire product.
+To add a UI language, register it in `i18n/locales.ts`, add its feature catalogs and include it in `i18n/catalogs.ts`, together with translations for the application’s existing shared/account surfaces. The catalogue unit suite checks keys, placeholders and runtime formatting for all registered locales. Other application modules and email/API locale contracts still declare their own supported languages and must also be extended before enabling a new language across the entire product.
+
+## Feature ownership and API compatibility
+
+| Feature | UI source | Typed API |
+| --- | --- | --- |
+| Data jobs | `apps/web/src/features/data-jobs` | `dataJobs.list/dryRun/start/cancel/resume/download` |
+| Privacy and deletion | `apps/web/src/features/privacy` | `privacy.exportAccount/previewDeletion/requestDeletion/confirmDeletion/cancelDeletion/deletionStatus` |
+| Organization settings | `apps/web/src/features/organization-settings` | `organizationSettings` (webhooks, integrations, audit and flags) |
+| Notifications | `apps/web/src/features/notifications` | `notifications.preferences/savePreferences/list/markRead/unsubscribe` |
+| Public pages | `apps/web/src/features/public-pages` | Static About/Help pages and a shared public page shell |
+| Analytics | Existing analytics services | `analytics.preferences/setPreference/completeOnboarding` |
+
+Each API domain has its own contract file in `packages/api-contracts/src`. The runtime’s `platformModules` collection coordinates domain services and owns their shared infrastructure lifecycle; it is not a customer feature. Generic operation/status controls and visual styles live in `components/feature-ui`; browser client/download helpers live in `lib`.
+
+The old `completion` RPC namespace was introduced on this unmerged PR and is retired before release. Update typed callers to the domain paths above; no deprecated alias is retained. All 31 existing `/api/v1/platform/...` REST URLs and their methods, input/output schemas and authorization semantics are preserved. Browser URLs, database migrations, queued event kinds such as `bulk.completed`, storage identities and deletion receipts are unchanged. The old phase wrapper in translation messages is replaced by `DataJobs`, `Privacy`, `OrganizationSettings`, `Notifications`, `PublicPages` and feature-specific shared namespaces.

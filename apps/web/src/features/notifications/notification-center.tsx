@@ -2,25 +2,34 @@
 import { Button } from "@saas-cook/ui";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
-import { api } from "./common";
-export function WorkspaceHelp({ organizationId }: { organizationId?: string }) {
+import { api } from "../../lib/api-client";
+/**
+ * Displays in-app notifications and contextual help for the selected organization.
+ * @param props - Optional organizationId scopes reads; no organization means no tenant requests.
+ * @returns An expandable notification center. Unavailable feeds remain empty and grant no access.
+ */
+export function NotificationCenter({
+	organizationId,
+}: {
+	organizationId?: string;
+}) {
 	const locale = useLocale();
-	const t = useTranslations("Phase6.Widget");
+	const t = useTranslations("Notifications.Center");
 	const [notices, setNotices] = useState<
-			Awaited<ReturnType<ReturnType<typeof api>["completion"]["notifications"]>>
+			Awaited<ReturnType<ReturnType<typeof api>["notifications"]["list"]>>
 		>([]),
 		[contact, setContact] = useState(false);
 	useEffect(() => {
 		let active = true;
 		if (organizationId) {
 			void api()
-				.completion.notifications({ organizationId })
+				.notifications.list({ organizationId })
 				.then((r) => {
 					if (active) setNotices(r);
 				})
 				.catch(() => {});
 			void api()
-				.completion.flags({ organizationId })
+				.organizationSettings.flags({ organizationId })
 				.then((r) => {
 					if (active) setContact(r.helpContact);
 				})
@@ -31,7 +40,7 @@ export function WorkspaceHelp({ organizationId }: { organizationId?: string }) {
 		};
 	}, [organizationId]);
 	return (
-		<details className="completion-card">
+		<details className="feature-card">
 			<summary>
 				{t("title")}
 				{notices.some((n) => !n.read) ? " •" : ""}
@@ -43,7 +52,7 @@ export function WorkspaceHelp({ organizationId }: { organizationId?: string }) {
 			{notices.length === 0 ? (
 				<p>{t("noNotifications")}</p>
 			) : (
-				<ul className="completion-list">
+				<ul className="feature-list">
 					{notices.map((n) => (
 						<li key={n.id}>
 							<a href={`/${locale}/organizations/${organizationId}/data`}>
@@ -55,7 +64,7 @@ export function WorkspaceHelp({ organizationId }: { organizationId?: string }) {
 									onClick={() => {
 										if (organizationId)
 											void api()
-												.completion.notificationRead({
+												.notifications.markRead({
 													organizationId,
 													id: n.id,
 												})
@@ -79,3 +88,5 @@ export function WorkspaceHelp({ organizationId }: { organizationId?: string }) {
 		</details>
 	);
 }
+
+import "../../components/feature-ui.css";

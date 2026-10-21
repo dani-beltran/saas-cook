@@ -150,8 +150,8 @@ const adapters: Record<string, string> = {
 	"organizations.command": "organizationCommand",
 	"diagnostics.echo": "echoDiagnostic",
 	// Capability receipts can only read deletion status or suppress optional email.
-	"completion.deletionStatus": "publicOperation",
-	"completion.unsubscribe": "publicOperation",
+	"privacy.deletionStatus": "publicOperation",
+	"notifications.unsubscribe": "publicOperation",
 };
 
 /** AST validation is supplemental; the command also executes the actual transport/service tests. */

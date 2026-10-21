@@ -1,72 +1,63 @@
-.completion-card {
+.feature-card {
 	border: 1px solid var(--border);
 	border-radius: 12px;
 	padding: 1.5rem;
 	margin-block: 1.25rem;
 	background: var(--card);
 }
-.completion-card h2 {
+.feature-card h2 {
 	font-size: 1.15rem;
 	font-weight: 600;
 	margin-bottom: 1rem;
 }
-.completion-form {
+.feature-form {
 	display: grid;
 	gap: 1rem;
 	max-width: 42rem;
 	margin-block: 1rem;
 }
-.completion-form label {
+.feature-form label {
 	display: grid;
 	gap: 0.4rem;
 }
-.completion-actions {
+.feature-actions {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 0.65rem;
 	margin-block: 0.75rem;
 }
-.completion-list {
+.feature-list {
 	display: grid;
 	gap: 1rem;
 	list-style: none;
 	padding: 0;
 }
-.completion-list > li {
+.feature-list > li {
 	border-top: 1px solid var(--border);
 	padding-top: 1rem;
 	overflow-wrap: anywhere;
 }
-.completion-secret {
+.feature-secret {
 	display: block;
 	overflow-wrap: anywhere;
 	padding: 1rem;
 	background: var(--muted);
 	user-select: all;
 }
-.completion-table {
+.feature-table {
 	width: 100%;
 	text-align: left;
 	border-collapse: collapse;
 }
-.completion-table td,
-.completion-table th {
+.feature-table td,
+.feature-table th {
 	padding: 0.5rem;
 	border-bottom: 1px solid var(--border);
 }
-.completion-public {
-	max-width: 50rem;
-	margin: 4rem auto;
-	padding: 1.5rem;
-}
-.completion-public h1 {
-	font-size: 2rem;
-	font-weight: 600;
-}
-.completion-scroll {
+.feature-scroll {
 	overflow-x: auto;
 }
-.completion-check {
+.feature-check {
 	display: flex;
 	align-items: center;
 	gap: 0.6rem;

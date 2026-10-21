@@ -15,7 +15,7 @@ Date: 2026-10-19. This completion change is stacked on PR #4, `codex/phase6-plat
 | Audit/help/public UI | Dedicated owner-granted audit authorization, bounded query/export, localized data/settings/privacy/receipt/help/about flows. |
 | R-SEARCH / R-ACTIVITY / R-KEYS | PR #4 implementation remains the base; regression suites cover current permission and lifecycle behavior. |
 
-See [completion scope and limits](completion.md), [analytics protocol/report definitions](analytics.md), [recovery runbook](recovery.md), [file formats](files.md) and [feature brief](../../feature-briefs/phase6-completion.md). Migrations `0016`–`0024` and their snapshots are additive; applied history through `0015` is unchanged. No production database, live mail recipient or live provider was modified.
+See [module scope and limits](platform-modules.md), [analytics protocol/report definitions](analytics.md), [recovery runbook](recovery.md), [file formats](files.md) and [feature brief](../../feature-briefs/phase6-platform-modules.md). Migrations `0016`–`0024` and their snapshots are additive; applied history through `0015` is unchanged. No production database, live mail recipient or live provider was modified.
 
 ## Executed verification at the original completion commit
 
@@ -48,3 +48,13 @@ All Phase 6 pages and shared components now use next-intl, including the predece
 Biome, strict root/web types, Knip, all four static boundary checks, **172 unit tests across 30 files**, production build and Storybook build pass. Translation tests check matching keys/placeholders, format every registered message, and verify singular/plural and row interpolation. **Six browser tests pass** across completion (three), platform (two) and files (one), exercising real sessions/worker/S3 plus English/Spanish public server pages, receipt errors, Spanish data/preferences and existing authorization flows.
 
 The [localization evidence](evidence/localization.json) records this source fingerprint and the executed checks. Earlier implementation/integration/image results above remain tied to their original source; this UI follow-up does not re-label them as new local runs. Logs remain under ignored `artifacts/phase6-completion/localization/`.
+
+## Feature ownership refactor — 2026-10-21
+
+The executable `completion` feature and the `Phase6` translation wrapper are retired. UI ownership is now `data-jobs`, `privacy`, `organization-settings`, `notifications` and `public-pages`; generic controls/styles and browser helpers have neutral shared homes. Notification preferences/unsubscribe are separate from privacy/deletion, and About/Help use a common public-page shell. Each feature has its own English/Spanish JSON catalog.
+
+Contracts and router groups now follow `dataJobs`, `privacy`, `organizationSettings`, `notifications` and `analytics`. All 31 existing REST paths/methods and schemas remain compatible. The unreleased RPC namespace is renamed; a regression test rejects the former alias and exercises both new RPC routes and preserved REST behavior with real services. Browser URLs, migration history, queued events and receipts are preserved. See [ownership and compatibility](platform-modules.md#feature-ownership-and-api-compatibility).
+
+Executed checks pass: Biome, strict root/web types, Knip, **172 unit tests in 30 files**, **218 integration tests in 37 files**, **six browser tests**, all **six skill-boundary checks**, production/Storybook builds, **17 packaged-container checks** and the exact-image vulnerability policy. Browser coverage includes real worker import/export, audit access, notification preferences, deletion preparation, English/Spanish public and receipt pages, search/activity, API-key management and files. Full hosted CI for the previous translation head [also passed](https://github.com/dani-beltran/saas-cook/actions/runs/39375891387).
+
+The [feature-ownership evidence](evidence/feature-ownership.json) binds this refactor to the final implementation/image hashes. Logs and diagnostic attempts are retained under ignored `artifacts/phase6-feature-ownership/`. Existing release acceptance limits above still apply.

@@ -3,14 +3,19 @@ import { Button, Input, NativeSelect, NativeSelectOption } from "@saas-cook/ui";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { DashboardShell } from "../../components/dashboard-shell";
-import { api, download, Reload, Status, useOperation } from "./common";
+import { Reload, Status, useOperation } from "../../components/feature-ui";
+import { api } from "../../lib/api-client";
+import { download } from "../../lib/download";
 
-type Jobs = Awaited<
-	ReturnType<ReturnType<typeof api>["completion"]["bulkList"]>
->;
-export function DataPage({ organizationId }: { organizationId: string }) {
+type Jobs = Awaited<ReturnType<ReturnType<typeof api>["dataJobs"]["list"]>>;
+/**
+ * Displays bounded import validation, resumable jobs and authorized export downloads.
+ * @param props - organizationId selects the organization; it never grants access.
+ * @returns A localized dashboard page. Current session/permission failures are shown through operation status.
+ */
+export function DataJobsPage({ organizationId }: { organizationId: string }) {
 	const op = useOperation();
-	const t = useTranslations("Phase6.Data");
+	const t = useTranslations("DataJobs");
 	const [jobs, setJobs] = useState<Jobs>(),
 		[projects, setProjects] = useState<{ id: string; name: string }[]>([]),
 		[project, setProject] = useState(""),
@@ -19,14 +24,14 @@ export function DataPage({ organizationId }: { organizationId: string }) {
 		[dry, setDry] = useState<{ row: number; errors: string[] }[]>(),
 		[loaded, setLoaded] = useState(false);
 	const load = async () => {
-		setJobs(await api().completion.bulkList({ organizationId }));
+		setJobs(await api().dataJobs.list({ organizationId }));
 		setLoaded(true);
 	};
 	useEffect(() => {
 		let live = true;
 		const poll = () =>
 			api()
-				.completion.bulkList({ organizationId })
+				.dataJobs.list({ organizationId })
 				.then((r) => {
 					if (live) {
 						setJobs(r);
@@ -72,9 +77,9 @@ export function DataPage({ organizationId }: { organizationId: string }) {
 			</header>
 			<p>{t("expiryNotice")}</p>
 			<Status {...op} />
-			<section className="completion-card">
+			<section className="feature-card">
 				<h2>{t("exportTitle")}</h2>
-				<div className="completion-actions">
+				<div className="feature-actions">
 					{(
 						["projects.export", "organization.export", "audit.export"] as const
 					).map((kind, index) => (
@@ -83,7 +88,7 @@ export function DataPage({ organizationId }: { organizationId: string }) {
 							key={kind}
 							onClick={() =>
 								void op.run(async () => {
-									await api().completion.bulkStart({
+									await api().dataJobs.start({
 										organizationId,
 										kind,
 										operationKey: crypto.randomUUID(),
@@ -104,12 +109,12 @@ export function DataPage({ organizationId }: { organizationId: string }) {
 				</div>
 				<p>{t("auditNotice")}</p>
 			</section>
-			<section className="completion-card">
+			<section className="feature-card">
 				<h2>{t("importTitle")}</h2>
 				<p>{t("importHint")}</p>
 				<a href={`../${organizationId}/projects`}>{t("openProjects")}</a>
 				<form
-					className="completion-form"
+					className="feature-form"
 					onSubmit={(e) => {
 						e.preventDefault();
 						const f = new FormData(e.currentTarget),
@@ -135,9 +140,9 @@ export function DataPage({ organizationId }: { organizationId: string }) {
 						};
 						void op.run(async () => {
 							if (submitter.value === "check")
-								setDry(await api().completion.bulkDryRun(input));
+								setDry(await api().dataJobs.dryRun(input));
 							else {
-								await api().completion.bulkStart(input);
+								await api().dataJobs.start(input);
 								setDry(undefined);
 								await load();
 							}
@@ -215,7 +220,7 @@ export function DataPage({ organizationId }: { organizationId: string }) {
 							<NativeSelectOption value="skip">{t("skip")}</NativeSelectOption>
 						</NativeSelect>
 					</label>
-					<div className="completion-actions">
+					<div className="feature-actions">
 						<Button
 							type="submit"
 							name="action"
@@ -249,7 +254,7 @@ export function DataPage({ organizationId }: { organizationId: string }) {
 					</div>
 				)}
 			</section>
-			<section className="completion-card">
+			<section className="feature-card">
 				<h2>{t("jobsTitle")}</h2>
 				{!loaded ? (
 					<p>{t("loading")}</p>
@@ -258,7 +263,7 @@ export function DataPage({ organizationId }: { organizationId: string }) {
 				) : jobs.length === 0 ? (
 					<p>{t("noJobs")}</p>
 				) : (
-					<ul className="completion-list">
+					<ul className="feature-list">
 						{jobs.map((j) => (
 							<li key={j.id}>
 								<strong>{j.kind}</strong>
@@ -270,14 +275,14 @@ export function DataPage({ organizationId }: { organizationId: string }) {
 										{e.row}: {e.code}
 									</p>
 								))}
-								<div className="completion-actions">
+								<div className="feature-actions">
 									{j.state === "complete" && j.kind !== "projects.import" && (
 										<Button
 											disabled={op.busy}
 											onClick={() =>
 												void op.run(async () =>
 													download(
-														await api().completion.bulkDownload({
+														await api().dataJobs.download({
 															organizationId,
 															id: j.id,
 														}),
@@ -293,7 +298,7 @@ export function DataPage({ organizationId }: { organizationId: string }) {
 											disabled={op.busy}
 											onClick={() =>
 												void op.run(async () => {
-													await api().completion.bulkResume({
+													await api().dataJobs.resume({
 														organizationId,
 														id: j.id,
 													});
@@ -310,7 +315,7 @@ export function DataPage({ organizationId }: { organizationId: string }) {
 											disabled={op.busy}
 											onClick={() =>
 												void op.run(async () => {
-													await api().completion.bulkCancel({
+													await api().dataJobs.cancel({
 														organizationId,
 														id: j.id,
 													});

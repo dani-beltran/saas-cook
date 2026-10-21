@@ -1,0 +1,18 @@
+{
+	"title": "Files",
+	"hint": "UTF-8 text or CSV, up to 1 MiB. Available files expire after 30 days.",
+	"choose": "Choose file",
+	"upload": "Upload and verify",
+	"download": "Download",
+	"finish": "Finish verification",
+	"empty": "No files",
+	"retry": "Reload",
+	"failed": "The operation could not be completed. Check access or try again.",
+	"loading": "Loading…",
+	"busy": "Working…",
+	"staging": "Awaiting verification",
+	"available": "Ready",
+	"rejected": "Rejected",
+	"deleted": "Expired",
+	"invalid": "Choose a UTF-8 .txt or .csv file between 1 byte and 1 MiB."
+}

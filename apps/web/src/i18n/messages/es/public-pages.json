@@ -1,0 +1,25 @@
+{
+	"About": {
+		"help": "Ayuda",
+		"description": "Un espacio compartido para organizar proyectos y clientes, gestionar el acceso y trabajar con tus datos.",
+		"signIn": "Entrar o crear una cuenta",
+		"howItWorks": "Cómo funciona",
+		"controlsTitle": "Control de la organización",
+		"controlsDescription": "Los permisos se comprueban para cada operación. Los propietarios pueden gestionar miembros, consultar la facturación y preparar exportaciones o solicitudes de eliminación.",
+		"configurationNotice": "Las integraciones y los servicios opcionales dependen de la configuración de cada instalación."
+	},
+	"Help": {
+		"back": "Volver a la aplicación",
+		"title": "Centro de ayuda",
+		"dataTitle": "Datos y archivos",
+		"dataDescription": "En un proyecto, sube texto UTF-8 o CSV de hasta 1 MiB. Finaliza la verificación antes de usarlo. En Datos, asigna las columnas, valida sin importar y revisa los errores por fila. Los trabajos admiten hasta 1000 filas; puedes cancelar o reintentar con tus permisos actuales.",
+		"exportsDescription": "Las exportaciones caducan a las 24 horas. Si cambian tus permisos o los datos de origen, genera una nueva exportación.",
+		"privacyTitle": "Cuenta y privacidad",
+		"privacyDescription": "En Privacidad puedes cambiar las notificaciones y la analítica opcional. Antes de eliminar tu cuenta, transfiere las organizaciones de las que seas el único propietario. Una solicitud preparada se puede cancelar; una eliminación confirmada revoca el acceso y no se puede deshacer.",
+		"openPrivacy": "Abrir privacidad",
+		"integrationsTitle": "Integraciones y auditoría",
+		"integrationsDescription": "Los propietarios y administradores pueden configurar destinos HTTPS autorizados. Verifica los webhooks antes de usarlos y guarda sus secretos al crearlos o rotarlos. La auditoría necesita un permiso adicional concedido por un propietario.",
+		"accessTitle": "Acceso bloqueado",
+		"accessDescription": "Confirma tu identidad para cambios sensibles. Si una organización necesita recuperación de propietario, contacta con el administrador de tu instalación. La recuperación requiere verificación independiente; no compartas contraseñas ni códigos de recuperación."
+	}
+}

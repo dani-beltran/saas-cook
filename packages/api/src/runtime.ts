@@ -105,7 +105,7 @@ function createRuntime() {
 					: env.DEFAULT_PROJECT_CAPACITY,
 		},
 	);
-	const completion = createPlatformRuntime(
+	const platformModules = createPlatformRuntime(
 		env,
 		applicationPool,
 		controlPool,
@@ -113,7 +113,7 @@ function createRuntime() {
 	);
 	const keys = createApiKeyService({ pool: applicationPool, authorization });
 	return {
-		completion,
+		platformModules,
 		feedbackSecret: env.OPTIONAL_EMAIL_FEEDBACK_SECRET,
 		files: createFileService(
 			applicationPool,
@@ -151,7 +151,7 @@ function createRuntime() {
 		origin: env.APP_ORIGIN,
 		async close() {
 			await Promise.all([
-				completion?.close(),
+				platformModules?.close(),
 				applicationPool.end(),
 				identityPool.end(),
 				controlPool.end(),

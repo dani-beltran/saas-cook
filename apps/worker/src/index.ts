@@ -67,7 +67,7 @@ const mailTransport = createSmtpTransport({
 	username: env.SMTP_USERNAME,
 	password: env.SMTP_PASSWORD,
 });
-const completion = createPlatformRuntime(
+const platformModules = createPlatformRuntime(
 	env,
 	pool,
 	controlPool,
@@ -89,8 +89,8 @@ const completion = createPlatformRuntime(
 		await mailTransport({ id: m.id, to: m.to, ...content });
 	},
 );
-let completionTimer: NodeJS.Timeout | undefined,
-	pendingCompletion: Promise<void> | undefined;
+let modulesTimer: NodeJS.Timeout | undefined,
+	pendingModules: Promise<void> | undefined;
 async function ready() {
 	const publication = await getPublication(controlPool, env.INSTALLATION_ID);
 	const binding = await pool.query(
@@ -157,15 +157,15 @@ async function stop(code: number) {
 	clearInterval(timer);
 	clearInterval(billingTimer);
 	clearInterval(platformTimer);
-	clearInterval(completionTimer);
+	clearInterval(modulesTimer);
 	const deadline = setTimeout(() => process.exit(1), 12_000);
 	try {
 		await boss.stop({ graceful: true, timeout: 8_000 });
 		await pendingHeartbeat.catch(() => {});
 		await pendingBilling?.catch(() => {});
 		await pendingPlatform?.catch(() => {});
-		await pendingCompletion?.catch(() => {});
-		await completion?.close();
+		await pendingModules?.catch(() => {});
+		await platformModules?.close();
 		await pool.end();
 		await controlPool.end();
 		await rm(heartbeatPath, { force: true });
@@ -244,15 +244,15 @@ try {
 					pendingPlatform = undefined;
 				});
 	}, 60_000);
-	completionTimer = setInterval(() => {
-		if (!pendingCompletion)
-			pendingCompletion = ready()
-				.then(() => completion?.tick())
+	modulesTimer = setInterval(() => {
+		if (!pendingModules)
+			pendingModules = ready()
+				.then(() => platformModules?.tick())
 				.catch(() => {
 					logEvent("worker.platform_pending");
 				})
 				.finally(() => {
-					pendingCompletion = undefined;
+					pendingModules = undefined;
 				});
 	}, 5000);
 	logEvent("worker.ready");

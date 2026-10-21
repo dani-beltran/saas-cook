@@ -36,7 +36,7 @@ export function KeyAdministration({
 	organizationId: string;
 }) {
 	const locale = useLocale();
-	const t = useTranslations("Phase6.Keys");
+	const t = useTranslations("ApiKeys");
 	const [accounts, setAccounts] = useState<Accounts>(),
 		[cursor, setCursor] = useState<string>(),
 		[selected, setSelected] = useState<Accounts["items"][number]>(),
@@ -200,7 +200,7 @@ function AccountKeys({
 	changed: (account: Accounts["items"][number]) => void;
 }) {
 	const locale = useLocale();
-	const t = useTranslations("Phase6.Keys");
+	const t = useTranslations("ApiKeys");
 	const [keys, setKeys] = useState<Keys>(),
 		[cursor, setCursor] = useState<string>(),
 		[revision, setRevision] = useState(0),

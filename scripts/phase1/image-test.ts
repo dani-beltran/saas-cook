@@ -354,7 +354,7 @@ try {
 		if (cookies.length) cookie = cookies.map((v) => v.split(";")[0]).join("; ");
 		return response.json();
 	}
-	const email = `image-completion-${randomUUID()}@example.test`;
+	const email = `image-platform-${randomUUID()}@example.test`;
 	await post("/api/auth/register", {
 		email,
 		name: "Image acceptance",

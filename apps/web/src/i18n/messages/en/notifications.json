@@ -1,0 +1,21 @@
+{
+	"Preferences": {
+		"notificationsTitle": "Optional notifications",
+		"email": "Email when data jobs finish",
+		"inApp": "In-app notifications",
+		"suppressed": "Optional email is suppressed after an unsubscribe, bounce, or complaint.",
+		"mandatoryNotice": "Mandatory security and billing notices follow their own rules."
+	},
+	"Center": {
+		"title": "Help and notifications",
+		"help": "Help center",
+		"contact": "For help with this organization, contact your installation administrator and share only the failed request identifier.",
+		"noNotifications": "You have no notifications.",
+		"jobFinished": "A data job has finished.",
+		"markRead": "Mark read"
+	},
+	"Unsubscribe": {
+		"title": "Unsubscribe from optional email",
+		"confirm": "Confirm unsubscribe"
+	}
+}

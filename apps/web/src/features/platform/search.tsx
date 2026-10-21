@@ -18,7 +18,7 @@ type Page = Awaited<
 	ReturnType<ReturnType<typeof createApiClient>["platform"]["search"]>
 >;
 export function PlatformSearch({ organizationId }: { organizationId: string }) {
-	const t = useTranslations("Phase6.Platform");
+	const t = useTranslations("Discovery");
 	const [query, setQuery] = useState<Fields>(),
 		[cursor, setCursor] = useState<string>(),
 		[page, setPage] = useState<Page>(),

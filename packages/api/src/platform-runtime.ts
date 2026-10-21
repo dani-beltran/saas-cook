@@ -20,6 +20,16 @@ import { createResourceService } from "@saas-cook/db/resources";
 import { createSettingsService } from "@saas-cook/db/settings";
 import { type TenantActor, withTenantTransaction } from "@saas-cook/db/tenancy";
 import { Pool } from "pg";
+/**
+ * Creates opt-in domain services and coordinates their restricted database pools and worker consumers.
+ * @param env - Validated platform configuration; PLATFORM_ENABLED=false disables these services.
+ * @param pool - Restricted application pool used for ordinary tenant operations.
+ * @param control - Independent control-reader pool used for current readiness and retained receipts.
+ * @param resolveActor - Resolves a queued job's current session assurance before effects.
+ * @param send - Optional worker email transport; web processes do not supply one.
+ * @returns Domain services, tick and close methods, or undefined when disabled. Call close on shutdown.
+ * Database/provider errors propagate from service calls; tick reports pending work after isolating consumers.
+ */
 export function createPlatformRuntime(
 	env: ReturnType<typeof readWebEnv> | ReturnType<typeof readWorkerEnv>,
 	pool: Pool,
@@ -160,10 +170,10 @@ export function createPlatformRuntime(
 		send,
 	});
 	return {
-		bulk,
-		settings,
+		dataJobs: bulk,
+		organizationSettings: settings,
 		analytics,
-		lifecycle,
+		privacy: lifecycle,
 		notifications,
 		cleanup,
 		async flags(a: TenantActor, org: string) {

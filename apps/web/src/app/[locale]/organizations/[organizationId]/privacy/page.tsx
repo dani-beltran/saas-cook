@@ -1,6 +1,11 @@
 import { notFound } from "next/navigation";
-import { PrivacyPage } from "../../../../../features/completion/privacy";
+import { PrivacyPage } from "../../../../../features/privacy/page";
 export const dynamic = "force-dynamic";
+/**
+ * Renders the feature selected by this framework route.
+ * @param props - params resolves the locale and/or organization ID from the route.
+ * @returns The domain feature page; its services own access checks and error feedback.
+ */
 export default async function Page({
 	params,
 }: {

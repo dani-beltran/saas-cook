@@ -1,9 +1,13 @@
 import { oc } from "@orpc/contract";
 import { z } from "zod";
+import { analyticsContract } from "./analytics";
 import { billingContract } from "./billing";
-import { completionContract } from "./completion";
+import { dataJobsContract } from "./data-jobs";
 import { filesContract } from "./files";
+import { notificationsContract } from "./notifications";
+import { organizationSettingsContract } from "./organization-settings";
 import { platformContract } from "./platform";
+import { privacyContract } from "./privacy";
 
 export type {
 	BillingCommand,
@@ -31,7 +35,11 @@ export const diagnosticDto = z.object({
 });
 const errorData = z.object({ requestId: z.uuid() });
 export const contract = {
-	completion: completionContract,
+	dataJobs: dataJobsContract,
+	privacy: privacyContract,
+	analytics: analyticsContract,
+	notifications: notificationsContract,
+	organizationSettings: organizationSettingsContract,
 	files: filesContract,
 	platform: platformContract,
 	billing: billingContract,

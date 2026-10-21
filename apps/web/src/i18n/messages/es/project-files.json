@@ -1,0 +1,18 @@
+{
+	"title": "Archivos",
+	"hint": "Texto UTF-8 o CSV, hasta 1 MiB. Los archivos caducan a los 30 días.",
+	"choose": "Elegir archivo",
+	"upload": "Subir y verificar",
+	"download": "Descargar",
+	"finish": "Finalizar verificación",
+	"empty": "No hay archivos",
+	"retry": "Recargar",
+	"failed": "No se pudo completar la operación. Comprueba el acceso o inténtalo de nuevo.",
+	"loading": "Cargando…",
+	"busy": "Procesando…",
+	"staging": "Pendiente de verificación",
+	"available": "Listo",
+	"rejected": "Rechazado",
+	"deleted": "Caducado",
+	"invalid": "Elige un archivo UTF-8 .txt o .csv de entre 1 byte y 1 MiB."
+}

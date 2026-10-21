@@ -10,7 +10,7 @@ import {
 	useEffect,
 	useState,
 } from "react";
-import { WorkspaceHelp } from "../features/completion/widget";
+import { NotificationCenter } from "../features/notifications/notification-center";
 import { dashboardMessages } from "../i18n/dashboard";
 import { resolveLocale } from "../i18n/locales";
 import { identityClient } from "../lib/identity-client";
@@ -186,7 +186,7 @@ export function DashboardFrame({
 }) {
 	const locale = resolveLocale(useLocale());
 	const copy = dashboardMessages[locale];
-	const phase6 = useTranslations("Phase6.Navigation");
+	const phase6 = useTranslations("Navigation");
 	const sectionLabel =
 		section === "search" ||
 		section === "keys" ||
@@ -406,7 +406,7 @@ export function DashboardFrame({
 					className="dashboard-content"
 				>
 					{children}
-					<WorkspaceHelp organizationId={organizationId} />
+					<NotificationCenter organizationId={organizationId} />
 				</main>
 			</div>
 		</div>

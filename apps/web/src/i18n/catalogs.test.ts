@@ -1,6 +1,6 @@
 import { createTranslator } from "next-intl";
 import { describe, expect, it } from "vitest";
-import { localeMessages } from "./catalogs";
+import { featureMessages } from "./catalogs";
 import { defaultLocale, isLocale, locales, resolveLocale } from "./locales";
 
 function entries(
@@ -20,19 +20,18 @@ function placeholders(message: string) {
 	].sort();
 }
 
-describe("Phase 6 translation catalogs", () => {
-	const reference = new Map(entries(localeMessages(defaultLocale).Phase6));
+describe("Feature translation catalogs", () => {
+	const reference = new Map(entries(featureMessages(defaultLocale)));
 	for (const locale of locales) {
 		it(`${locale} has matching keys/placeholders and formats every message`, () => {
-			const messages = localeMessages(locale);
-			const catalog = entries(messages.Phase6);
+			const messages = featureMessages(locale);
+			const catalog = entries(messages);
 			expect(catalog.map(([key]) => key).sort()).toEqual(
 				[...reference.keys()].sort(),
 			);
 			const t = createTranslator({
 				locale,
 				messages,
-				namespace: "Phase6",
 				onError(error) {
 					throw error;
 				},
@@ -57,20 +56,18 @@ describe("Phase 6 translation catalogs", () => {
 	it("formats singular/plural counts and interpolated row errors", () => {
 		const en = createTranslator({
 			locale: "en",
-			messages: localeMessages("en"),
-			namespace: "Phase6",
+			messages: featureMessages("en"),
 		});
 		const es = createTranslator({
 			locale: "es",
-			messages: localeMessages("es"),
-			namespace: "Phase6",
+			messages: featureMessages("es"),
 		});
-		expect(en("Data.rowsChecked", { count: 1 })).toBe("1 row checked");
-		expect(en("Data.rowsChecked", { count: 2 })).toBe("2 rows checked");
-		expect(es("Data.rowsChecked", { count: 1 })).toBe("1 fila revisada");
-		expect(es("Data.rowsChecked", { count: 2 })).toBe("2 filas revisadas");
-		expect(es("Settings.attempts", { count: 1 })).toBe("1 intento");
-		expect(es("Data.row", { row: 4, errors: "duplicado" })).toBe(
+		expect(en("DataJobs.rowsChecked", { count: 1 })).toBe("1 row checked");
+		expect(en("DataJobs.rowsChecked", { count: 2 })).toBe("2 rows checked");
+		expect(es("DataJobs.rowsChecked", { count: 1 })).toBe("1 fila revisada");
+		expect(es("DataJobs.rowsChecked", { count: 2 })).toBe("2 filas revisadas");
+		expect(es("OrganizationSettings.attempts", { count: 1 })).toBe("1 intento");
+		expect(es("DataJobs.row", { row: 4, errors: "duplicado" })).toBe(
 			"Fila 4: duplicado",
 		);
 	});

@@ -17,156 +17,219 @@ import {
 
 const api = implement(contract).$context<RequestContext>();
 export const router = api.router({
-	completion: {
-		personalExport: api.completion.personalExport.handler(({ context }) =>
+	dataJobs: {
+		list: api.dataJobs.list.handler(({ context, input: { organizationId } }) =>
+			resourceOperation(
+				context,
+				organizationId,
+				{ mutate: false, serviceAccounts: false },
+				async (runtime, a) => {
+					if ("kind" in a) throw new ORPCError("FORBIDDEN");
+					const r = runtime.platformModules;
+					if (!r) throw new ORPCError("SERVICE_UNAVAILABLE");
+					return r.dataJobs.list(a, organizationId);
+				},
+			),
+		),
+		dryRun: api.dataJobs.dryRun.handler(
+			({ context, input: { organizationId, ...input } }) =>
+				resourceOperation(
+					context,
+					organizationId,
+					{ mutate: true, serviceAccounts: false },
+					async (runtime, a) => {
+						if ("kind" in a) throw new ORPCError("FORBIDDEN");
+						const r = runtime.platformModules;
+						if (!r) throw new ORPCError("SERVICE_UNAVAILABLE");
+						return r.dataJobs.dryRun(a, organizationId, input);
+					},
+				),
+		),
+		start: api.dataJobs.start.handler(
+			({ context, input: { organizationId, ...input } }) =>
+				resourceOperation(
+					context,
+					organizationId,
+					{ mutate: true, serviceAccounts: false },
+					async (runtime, a) => {
+						if ("kind" in a) throw new ORPCError("FORBIDDEN");
+						const r = runtime.platformModules;
+						if (!r) throw new ORPCError("SERVICE_UNAVAILABLE");
+						return r.dataJobs.start(a, organizationId, input);
+					},
+				),
+		),
+		cancel: api.dataJobs.cancel.handler(
+			({ context, input: { organizationId, ...input } }) =>
+				resourceOperation(
+					context,
+					organizationId,
+					{ mutate: true, serviceAccounts: false },
+					async (runtime, a) => {
+						if ("kind" in a) throw new ORPCError("FORBIDDEN");
+						const r = runtime.platformModules;
+						if (!r) throw new ORPCError("SERVICE_UNAVAILABLE");
+						return r.dataJobs.cancel(a, organizationId, input.id);
+					},
+				),
+		),
+		resume: api.dataJobs.resume.handler(
+			({ context, input: { organizationId, ...input } }) =>
+				resourceOperation(
+					context,
+					organizationId,
+					{ mutate: true, serviceAccounts: false },
+					async (runtime, a) => {
+						if ("kind" in a) throw new ORPCError("FORBIDDEN");
+						const r = runtime.platformModules;
+						if (!r) throw new ORPCError("SERVICE_UNAVAILABLE");
+						return r.dataJobs.resume(a, organizationId, input.id);
+					},
+				),
+		),
+		download: api.dataJobs.download.handler(
+			({ context, input: { organizationId, ...input } }) =>
+				resourceOperation(
+					context,
+					organizationId,
+					{ mutate: true, serviceAccounts: false },
+					async (runtime, a) => {
+						if ("kind" in a) throw new ORPCError("FORBIDDEN");
+						const r = runtime.platformModules;
+						if (!r) throw new ORPCError("SERVICE_UNAVAILABLE");
+						return r.dataJobs.download(a, organizationId, input.id);
+					},
+				),
+		),
+	},
+	privacy: {
+		exportAccount: api.privacy.exportAccount.handler(({ context }) =>
 			resourceOperation(
 				context,
 				"00000000-0000-4000-8000-000000000000",
 				{ mutate: true, serviceAccounts: false },
 				(r, a) => {
-					if ("kind" in a || !r.completion) throw new ORPCError("FORBIDDEN");
-					return r.completion.lifecycle.personalExport(a);
+					if ("kind" in a || !r.platformModules)
+						throw new ORPCError("FORBIDDEN");
+					return r.platformModules.privacy.personalExport(a);
 				},
 			),
 		),
-		bulkList: api.completion.bulkList.handler(
-			({ context, input: { organizationId } }) =>
-				resourceOperation(
-					context,
-					organizationId,
-					{ mutate: false, serviceAccounts: false },
-					async (runtime, a) => {
-						if ("kind" in a) throw new ORPCError("FORBIDDEN");
-						const r = runtime.completion;
-						if (!r) throw new ORPCError("SERVICE_UNAVAILABLE");
-						return r.bulk.list(a, organizationId);
-					},
-				),
-		),
-		bulkDryRun: api.completion.bulkDryRun.handler(
-			({ context, input: { organizationId, ...input } }) =>
-				resourceOperation(
-					context,
-					organizationId,
-					{ mutate: true, serviceAccounts: false },
-					async (runtime, a) => {
-						if ("kind" in a) throw new ORPCError("FORBIDDEN");
-						const r = runtime.completion;
-						if (!r) throw new ORPCError("SERVICE_UNAVAILABLE");
-						return r.bulk.dryRun(a, organizationId, input);
-					},
-				),
-		),
-		bulkStart: api.completion.bulkStart.handler(
-			({ context, input: { organizationId, ...input } }) =>
-				resourceOperation(
-					context,
-					organizationId,
-					{ mutate: true, serviceAccounts: false },
-					async (runtime, a) => {
-						if ("kind" in a) throw new ORPCError("FORBIDDEN");
-						const r = runtime.completion;
-						if (!r) throw new ORPCError("SERVICE_UNAVAILABLE");
-						return r.bulk.start(a, organizationId, input);
-					},
-				),
-		),
-		bulkCancel: api.completion.bulkCancel.handler(
-			({ context, input: { organizationId, ...input } }) =>
-				resourceOperation(
-					context,
-					organizationId,
-					{ mutate: true, serviceAccounts: false },
-					async (runtime, a) => {
-						if ("kind" in a) throw new ORPCError("FORBIDDEN");
-						const r = runtime.completion;
-						if (!r) throw new ORPCError("SERVICE_UNAVAILABLE");
-						return r.bulk.cancel(a, organizationId, input.id);
-					},
-				),
-		),
-		bulkResume: api.completion.bulkResume.handler(
-			({ context, input: { organizationId, ...input } }) =>
-				resourceOperation(
-					context,
-					organizationId,
-					{ mutate: true, serviceAccounts: false },
-					async (runtime, a) => {
-						if ("kind" in a) throw new ORPCError("FORBIDDEN");
-						const r = runtime.completion;
-						if (!r) throw new ORPCError("SERVICE_UNAVAILABLE");
-						return r.bulk.resume(a, organizationId, input.id);
-					},
-				),
-		),
-		bulkDownload: api.completion.bulkDownload.handler(
-			({ context, input: { organizationId, ...input } }) =>
-				resourceOperation(
-					context,
-					organizationId,
-					{ mutate: true, serviceAccounts: false },
-					async (runtime, a) => {
-						if ("kind" in a) throw new ORPCError("FORBIDDEN");
-						const r = runtime.completion;
-						if (!r) throw new ORPCError("SERVICE_UNAVAILABLE");
-						return r.bulk.download(a, organizationId, input.id);
-					},
-				),
-		),
-		analyticsGet: api.completion.analyticsGet.handler(({ context, input }) =>
+		previewDeletion: api.privacy.previewDeletion.handler(({ context }) =>
 			resourceOperation(
 				context,
 				"00000000-0000-4000-8000-000000000000",
 				{ mutate: true, serviceAccounts: false },
 				async (runtime, a) => {
 					if ("kind" in a) throw new ORPCError("FORBIDDEN");
-					const r = runtime.completion;
+					const r = runtime.platformModules;
+					if (!r) throw new ORPCError("SERVICE_UNAVAILABLE");
+					return r.privacy.preview(a);
+				},
+			),
+		),
+		requestDeletion: api.privacy.requestDeletion.handler(({ context, input }) =>
+			resourceOperation(
+				context,
+				"00000000-0000-4000-8000-000000000000",
+				{ mutate: true, serviceAccounts: false },
+				async (runtime, a) => {
+					if ("kind" in a) throw new ORPCError("FORBIDDEN");
+					const r = runtime.platformModules;
+					if (!r) throw new ORPCError("SERVICE_UNAVAILABLE");
+					return r.privacy.request(a, input);
+				},
+			),
+		),
+		confirmDeletion: api.privacy.confirmDeletion.handler(({ context, input }) =>
+			resourceOperation(
+				context,
+				"00000000-0000-4000-8000-000000000000",
+				{ mutate: true, serviceAccounts: false },
+				async (runtime, a) => {
+					if ("kind" in a) throw new ORPCError("FORBIDDEN");
+					const r = runtime.platformModules;
+					if (!r) throw new ORPCError("SERVICE_UNAVAILABLE");
+					return r.privacy.confirm(a, input.id);
+				},
+			),
+		),
+		cancelDeletion: api.privacy.cancelDeletion.handler(({ context, input }) =>
+			resourceOperation(
+				context,
+				"00000000-0000-4000-8000-000000000000",
+				{ mutate: true, serviceAccounts: false },
+				async (runtime, a) => {
+					if ("kind" in a) throw new ORPCError("FORBIDDEN");
+					const r = runtime.platformModules;
+					if (!r) throw new ORPCError("SERVICE_UNAVAILABLE");
+					return r.privacy.cancel(a, input.id);
+				},
+			),
+		),
+		deletionStatus: api.privacy.deletionStatus.handler(({ context, input }) =>
+			publicOperation(context, (r) =>
+				r.privacy.status(input.id, input.receipt),
+			),
+		),
+	},
+	analytics: {
+		preferences: api.analytics.preferences.handler(({ context, input }) =>
+			resourceOperation(
+				context,
+				"00000000-0000-4000-8000-000000000000",
+				{ mutate: true, serviceAccounts: false },
+				async (runtime, a) => {
+					if ("kind" in a) throw new ORPCError("FORBIDDEN");
+					const r = runtime.platformModules;
 					if (!r) throw new ORPCError("SERVICE_UNAVAILABLE");
 					return r.analytics.preferences(a, input.organizationId);
 				},
 			),
 		),
-		analyticsSet: api.completion.analyticsSet.handler(({ context, input }) =>
+		setPreference: api.analytics.setPreference.handler(({ context, input }) =>
 			resourceOperation(
 				context,
 				"00000000-0000-4000-8000-000000000000",
 				{ mutate: true, serviceAccounts: false },
 				async (runtime, a) => {
 					if ("kind" in a) throw new ORPCError("FORBIDDEN");
-					const r = runtime.completion;
+					const r = runtime.platformModules;
 					if (!r) throw new ORPCError("SERVICE_UNAVAILABLE");
 					return r.analytics.setPreference(a, input.organizationId, input);
 				},
 			),
 		),
-		onboarding: api.completion.onboarding.handler(({ context }) =>
-			resourceOperation(
-				context,
-				"00000000-0000-4000-8000-000000000000",
-				{ mutate: true, serviceAccounts: false },
-				async (runtime, a) => {
-					if ("kind" in a) throw new ORPCError("FORBIDDEN");
-					const r = runtime.completion;
-					if (!r) throw new ORPCError("SERVICE_UNAVAILABLE");
-					return r.analytics.onboarding(a);
-				},
-			),
-		),
-		notificationPreferences: api.completion.notificationPreferences.handler(
+		completeOnboarding: api.analytics.completeOnboarding.handler(
 			({ context }) =>
 				resourceOperation(
 					context,
 					"00000000-0000-4000-8000-000000000000",
-					{ mutate: false, serviceAccounts: false },
+					{ mutate: true, serviceAccounts: false },
 					async (runtime, a) => {
 						if ("kind" in a) throw new ORPCError("FORBIDDEN");
-						const r = runtime.completion;
+						const r = runtime.platformModules;
 						if (!r) throw new ORPCError("SERVICE_UNAVAILABLE");
-						return r.notifications.preferences(a);
+						return r.analytics.onboarding(a);
 					},
 				),
 		),
-		notificationSave: api.completion.notificationSave.handler(
+	},
+	notifications: {
+		preferences: api.notifications.preferences.handler(({ context }) =>
+			resourceOperation(
+				context,
+				"00000000-0000-4000-8000-000000000000",
+				{ mutate: false, serviceAccounts: false },
+				async (runtime, a) => {
+					if ("kind" in a) throw new ORPCError("FORBIDDEN");
+					const r = runtime.platformModules;
+					if (!r) throw new ORPCError("SERVICE_UNAVAILABLE");
+					return r.notifications.preferences(a);
+				},
+			),
+		),
+		savePreferences: api.notifications.savePreferences.handler(
 			({ context, input }) =>
 				resourceOperation(
 					context,
@@ -174,13 +237,13 @@ export const router = api.router({
 					{ mutate: true, serviceAccounts: false },
 					async (runtime, a) => {
 						if ("kind" in a) throw new ORPCError("FORBIDDEN");
-						const r = runtime.completion;
+						const r = runtime.platformModules;
 						if (!r) throw new ORPCError("SERVICE_UNAVAILABLE");
 						return r.notifications.setPreferences(a, input);
 					},
 				),
 		),
-		notifications: api.completion.notifications.handler(
+		list: api.notifications.list.handler(
 			({ context, input: { organizationId } }) =>
 				resourceOperation(
 					context,
@@ -188,13 +251,13 @@ export const router = api.router({
 					{ mutate: false, serviceAccounts: false },
 					async (runtime, a) => {
 						if ("kind" in a) throw new ORPCError("FORBIDDEN");
-						const r = runtime.completion;
+						const r = runtime.platformModules;
 						if (!r) throw new ORPCError("SERVICE_UNAVAILABLE");
 						return r.notifications.list(a, organizationId);
 					},
 				),
 		),
-		notificationRead: api.completion.notificationRead.handler(
+		markRead: api.notifications.markRead.handler(
 			({ context, input: { organizationId, ...input } }) =>
 				resourceOperation(
 					context,
@@ -202,79 +265,20 @@ export const router = api.router({
 					{ mutate: true, serviceAccounts: false },
 					async (runtime, a) => {
 						if ("kind" in a) throw new ORPCError("FORBIDDEN");
-						const r = runtime.completion;
+						const r = runtime.platformModules;
 						if (!r) throw new ORPCError("SERVICE_UNAVAILABLE");
 						return r.notifications.markRead(a, organizationId, input.id);
 					},
 				),
 		),
-		deletionPreview: api.completion.deletionPreview.handler(({ context }) =>
-			resourceOperation(
-				context,
-				"00000000-0000-4000-8000-000000000000",
-				{ mutate: true, serviceAccounts: false },
-				async (runtime, a) => {
-					if ("kind" in a) throw new ORPCError("FORBIDDEN");
-					const r = runtime.completion;
-					if (!r) throw new ORPCError("SERVICE_UNAVAILABLE");
-					return r.lifecycle.preview(a);
-				},
-			),
-		),
-		deletionRequest: api.completion.deletionRequest.handler(
-			({ context, input }) =>
-				resourceOperation(
-					context,
-					"00000000-0000-4000-8000-000000000000",
-					{ mutate: true, serviceAccounts: false },
-					async (runtime, a) => {
-						if ("kind" in a) throw new ORPCError("FORBIDDEN");
-						const r = runtime.completion;
-						if (!r) throw new ORPCError("SERVICE_UNAVAILABLE");
-						return r.lifecycle.request(a, input);
-					},
-				),
-		),
-		deletionConfirm: api.completion.deletionConfirm.handler(
-			({ context, input }) =>
-				resourceOperation(
-					context,
-					"00000000-0000-4000-8000-000000000000",
-					{ mutate: true, serviceAccounts: false },
-					async (runtime, a) => {
-						if ("kind" in a) throw new ORPCError("FORBIDDEN");
-						const r = runtime.completion;
-						if (!r) throw new ORPCError("SERVICE_UNAVAILABLE");
-						return r.lifecycle.confirm(a, input.id);
-					},
-				),
-		),
-		deletionCancel: api.completion.deletionCancel.handler(
-			({ context, input }) =>
-				resourceOperation(
-					context,
-					"00000000-0000-4000-8000-000000000000",
-					{ mutate: true, serviceAccounts: false },
-					async (runtime, a) => {
-						if ("kind" in a) throw new ORPCError("FORBIDDEN");
-						const r = runtime.completion;
-						if (!r) throw new ORPCError("SERVICE_UNAVAILABLE");
-						return r.lifecycle.cancel(a, input.id);
-					},
-				),
-		),
-		deletionStatus: api.completion.deletionStatus.handler(
-			({ context, input }) =>
-				publicOperation(context, (r) =>
-					r.lifecycle.status(input.id, input.receipt),
-				),
-		),
-		unsubscribe: api.completion.unsubscribe.handler(({ context, input }) =>
+		unsubscribe: api.notifications.unsubscribe.handler(({ context, input }) =>
 			publicOperation(context, (r) =>
 				r.notifications.unsubscribe(input.receipt),
 			),
 		),
-		webhooks: api.completion.webhooks.handler(
+	},
+	organizationSettings: {
+		webhooks: api.organizationSettings.webhooks.handler(
 			({ context, input: { organizationId } }) =>
 				resourceOperation(
 					context,
@@ -282,13 +286,13 @@ export const router = api.router({
 					{ mutate: false, serviceAccounts: false },
 					async (runtime, a) => {
 						if ("kind" in a) throw new ORPCError("FORBIDDEN");
-						const r = runtime.completion;
+						const r = runtime.platformModules;
 						if (!r) throw new ORPCError("SERVICE_UNAVAILABLE");
-						return r.settings.webhooks(a, organizationId);
+						return r.organizationSettings.webhooks(a, organizationId);
 					},
 				),
 		),
-		webhookCreate: api.completion.webhookCreate.handler(
+		createWebhook: api.organizationSettings.createWebhook.handler(
 			({ context, input: { organizationId, ...input } }) =>
 				resourceOperation(
 					context,
@@ -296,13 +300,13 @@ export const router = api.router({
 					{ mutate: true, serviceAccounts: false },
 					async (runtime, a) => {
 						if ("kind" in a) throw new ORPCError("FORBIDDEN");
-						const r = runtime.completion;
+						const r = runtime.platformModules;
 						if (!r) throw new ORPCError("SERVICE_UNAVAILABLE");
-						return r.settings.addWebhook(a, organizationId, input);
+						return r.organizationSettings.addWebhook(a, organizationId, input);
 					},
 				),
 		),
-		webhookCommand: api.completion.webhookCommand.handler(
+		webhookCommand: api.organizationSettings.webhookCommand.handler(
 			({ context, input: { organizationId, ...input } }) =>
 				resourceOperation(
 					context,
@@ -310,13 +314,17 @@ export const router = api.router({
 					{ mutate: true, serviceAccounts: false },
 					async (runtime, a) => {
 						if ("kind" in a) throw new ORPCError("FORBIDDEN");
-						const r = runtime.completion;
+						const r = runtime.platformModules;
 						if (!r) throw new ORPCError("SERVICE_UNAVAILABLE");
-						return r.settings.webhookCommand(a, organizationId, input);
+						return r.organizationSettings.webhookCommand(
+							a,
+							organizationId,
+							input,
+						);
 					},
 				),
 		),
-		webhookDeliveries: api.completion.webhookDeliveries.handler(
+		webhookDeliveries: api.organizationSettings.webhookDeliveries.handler(
 			({ context, input: { organizationId, ...input } }) =>
 				resourceOperation(
 					context,
@@ -324,13 +332,17 @@ export const router = api.router({
 					{ mutate: false, serviceAccounts: false },
 					async (runtime, a) => {
 						if ("kind" in a) throw new ORPCError("FORBIDDEN");
-						const r = runtime.completion;
+						const r = runtime.platformModules;
 						if (!r) throw new ORPCError("SERVICE_UNAVAILABLE");
-						return r.settings.deliveries(a, organizationId, input.endpointId);
+						return r.organizationSettings.deliveries(
+							a,
+							organizationId,
+							input.endpointId,
+						);
 					},
 				),
 		),
-		integrations: api.completion.integrations.handler(
+		integrations: api.organizationSettings.integrations.handler(
 			({ context, input: { organizationId } }) =>
 				resourceOperation(
 					context,
@@ -338,13 +350,13 @@ export const router = api.router({
 					{ mutate: false, serviceAccounts: false },
 					async (runtime, a) => {
 						if ("kind" in a) throw new ORPCError("FORBIDDEN");
-						const r = runtime.completion;
+						const r = runtime.platformModules;
 						if (!r) throw new ORPCError("SERVICE_UNAVAILABLE");
-						return r.settings.integrations(a, organizationId);
+						return r.organizationSettings.integrations(a, organizationId);
 					},
 				),
 		),
-		integrationCreate: api.completion.integrationCreate.handler(
+		createIntegration: api.organizationSettings.createIntegration.handler(
 			({ context, input: { organizationId, ...input } }) =>
 				resourceOperation(
 					context,
@@ -352,13 +364,17 @@ export const router = api.router({
 					{ mutate: true, serviceAccounts: false },
 					async (runtime, a) => {
 						if ("kind" in a) throw new ORPCError("FORBIDDEN");
-						const r = runtime.completion;
+						const r = runtime.platformModules;
 						if (!r) throw new ORPCError("SERVICE_UNAVAILABLE");
-						return r.settings.addIntegration(a, organizationId, input);
+						return r.organizationSettings.addIntegration(
+							a,
+							organizationId,
+							input,
+						);
 					},
 				),
 		),
-		integrationCommand: api.completion.integrationCommand.handler(
+		integrationCommand: api.organizationSettings.integrationCommand.handler(
 			({ context, input: { organizationId, ...input } }) =>
 				resourceOperation(
 					context,
@@ -366,13 +382,17 @@ export const router = api.router({
 					{ mutate: true, serviceAccounts: false },
 					async (runtime, a) => {
 						if ("kind" in a) throw new ORPCError("FORBIDDEN");
-						const r = runtime.completion;
+						const r = runtime.platformModules;
 						if (!r) throw new ORPCError("SERVICE_UNAVAILABLE");
-						return r.settings.integrationCommand(a, organizationId, input);
+						return r.organizationSettings.integrationCommand(
+							a,
+							organizationId,
+							input,
+						);
 					},
 				),
 		),
-		auditGrants: api.completion.auditGrants.handler(
+		auditGrants: api.organizationSettings.auditGrants.handler(
 			({ context, input: { organizationId } }) =>
 				resourceOperation(
 					context,
@@ -380,13 +400,13 @@ export const router = api.router({
 					{ mutate: false, serviceAccounts: false },
 					async (runtime, a) => {
 						if ("kind" in a) throw new ORPCError("FORBIDDEN");
-						const r = runtime.completion;
+						const r = runtime.platformModules;
 						if (!r) throw new ORPCError("SERVICE_UNAVAILABLE");
-						return r.settings.auditGrants(a, organizationId);
+						return r.organizationSettings.auditGrants(a, organizationId);
 					},
 				),
 		),
-		auditGrant: api.completion.auditGrant.handler(
+		grantAudit: api.organizationSettings.grantAudit.handler(
 			({ context, input: { organizationId, ...input } }) =>
 				resourceOperation(
 					context,
@@ -394,13 +414,13 @@ export const router = api.router({
 					{ mutate: true, serviceAccounts: false },
 					async (runtime, a) => {
 						if ("kind" in a) throw new ORPCError("FORBIDDEN");
-						const r = runtime.completion;
+						const r = runtime.platformModules;
 						if (!r) throw new ORPCError("SERVICE_UNAVAILABLE");
-						return r.settings.grantAudit(a, organizationId, input);
+						return r.organizationSettings.grantAudit(a, organizationId, input);
 					},
 				),
 		),
-		audit: api.completion.audit.handler(
+		audit: api.organizationSettings.audit.handler(
 			({ context, input: { organizationId, ...input } }) =>
 				resourceOperation(
 					context,
@@ -408,13 +428,13 @@ export const router = api.router({
 					{ mutate: false, serviceAccounts: false },
 					async (runtime, a) => {
 						if ("kind" in a) throw new ORPCError("FORBIDDEN");
-						const r = runtime.completion;
+						const r = runtime.platformModules;
 						if (!r) throw new ORPCError("SERVICE_UNAVAILABLE");
-						return r.settings.audit(a, organizationId, input);
+						return r.organizationSettings.audit(a, organizationId, input);
 					},
 				),
 		),
-		flags: api.completion.flags.handler(
+		flags: api.organizationSettings.flags.handler(
 			({ context, input: { organizationId } }) =>
 				resourceOperation(
 					context,
@@ -422,7 +442,7 @@ export const router = api.router({
 					{ mutate: false, serviceAccounts: false },
 					async (runtime, a) => {
 						if ("kind" in a) throw new ORPCError("FORBIDDEN");
-						const r = runtime.completion;
+						const r = runtime.platformModules;
 						if (!r) throw new ORPCError("SERVICE_UNAVAILABLE");
 						return r.flags(a, organizationId);
 					},
