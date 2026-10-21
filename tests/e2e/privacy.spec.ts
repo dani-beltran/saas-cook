@@ -41,6 +41,13 @@ test("privacy settings recover from loading failures, persist preferences and gu
 			{ times: 1 },
 		);
 		await page.goto("/en/privacy");
+		await expect(page).toHaveURL(/\/en\/account#privacy$/);
+		await expect(
+			page.getByRole("tab", { name: "Privacy", selected: true }),
+		).toBeVisible();
+		await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+			"Your account",
+		);
 		const notifications = page.getByRole("region", {
 			name: "Optional notifications",
 			exact: true,
@@ -100,6 +107,9 @@ test("privacy settings recover from loading failures, persist preferences and gu
 		await page.keyboard.press("Enter");
 		await expect(deletion).toContainText("Needs successor or deletion");
 		await expect(prepare).toBeDisabled();
+		await page.getByRole("tab", { name: "Security", exact: true }).click();
+		await page.getByRole("tab", { name: "Privacy", exact: true }).click();
+		await expect(deletion).toContainText("Needs successor or deletion");
 		await page.evaluate(() => window.scrollTo(0, 0));
 		await page.screenshot({
 			path: info.outputPath("privacy-account-desktop.png"),
