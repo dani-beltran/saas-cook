@@ -17,6 +17,7 @@ import { createTenancyService } from "@saas-cook/db/tenancy";
 import { enqueueIdentityEmail } from "@saas-cook/email";
 import { getOperationContext } from "@saas-cook/observability";
 import { Pool } from "pg";
+import { createPlatformRuntime } from "./platform-runtime";
 
 function createRuntime() {
 	const env = readWebEnv();
@@ -104,8 +105,16 @@ function createRuntime() {
 					: env.DEFAULT_PROJECT_CAPACITY,
 		},
 	);
+	const platformModules = createPlatformRuntime(
+		env,
+		applicationPool,
+		controlPool,
+		identity.backgroundActor,
+	);
 	const keys = createApiKeyService({ pool: applicationPool, authorization });
 	return {
+		platformModules,
+		feedbackSecret: env.OPTIONAL_EMAIL_FEEDBACK_SECRET,
 		files: createFileService(
 			applicationPool,
 			{ authorize: authorization.authorizeResource },
@@ -142,6 +151,7 @@ function createRuntime() {
 		origin: env.APP_ORIGIN,
 		async close() {
 			await Promise.all([
+				platformModules?.close(),
 				applicationPool.end(),
 				identityPool.end(),
 				controlPool.end(),

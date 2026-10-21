@@ -1,0 +1,6 @@
+{
+	"completed": "Operación completada.",
+	"failed": "No se pudo completar. Comprueba tus permisos, confirma tu identidad e inténtalo de nuevo.",
+	"working": "Procesando…",
+	"refresh": "Actualizar"
+}

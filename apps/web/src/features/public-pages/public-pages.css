@@ -1,0 +1,9 @@
+.public-page {
+	max-width: 50rem;
+	margin: 4rem auto;
+	padding: 1.5rem;
+}
+.public-page h1 {
+	font-size: 2rem;
+	font-weight: 600;
+}

@@ -2,7 +2,7 @@
 
 import { createApiClient } from "@saas-cook/api/client";
 import { Button, NativeSelect, NativeSelectOption } from "@saas-cook/ui";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import {
 	createContext,
 	type ReactNode,
@@ -10,7 +10,9 @@ import {
 	useEffect,
 	useState,
 } from "react";
+import { NotificationCenter } from "../features/notifications/notification-center";
 import { dashboardMessages } from "../i18n/dashboard";
+import { resolveLocale } from "../i18n/locales";
 import { identityClient } from "../lib/identity-client";
 import "./dashboard.css";
 import { UserAvatar } from "./user-avatar";
@@ -37,8 +39,70 @@ function NavigationIcon({
 		| "billing"
 		| "usage"
 		| "search"
-		| "keys";
+		| "keys"
+		| "data"
+		| "settings"
+		| "privacy";
 }) {
+	const icons = {
+		account: (
+			<>
+				<circle cx="12" cy="8" r="3.5" />
+				<path d="M5 21v-3a7 7 0 0 1 14 0v3" />
+			</>
+		),
+		organization: (
+			<path d="M4 21V4a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v17M2 21h20M9 21v-5h6v5M8 7h2m4 0h2M8 11h2m4 0h2" />
+		),
+		projects: (
+			<>
+				<rect x="3" y="3" width="7" height="7" rx="1.5" />
+				<rect x="14" y="3" width="7" height="7" rx="1.5" />
+				<rect x="3" y="14" width="7" height="7" rx="1.5" />
+				<rect x="14" y="14" width="7" height="7" rx="1.5" />
+			</>
+		),
+		customers: (
+			<>
+				<circle cx="9" cy="8" r="3" />
+				<path d="M3 21v-3a6 6 0 0 1 12 0v3M16 5a3 3 0 0 1 0 6M18 15a5 5 0 0 1 3 4v2" />
+			</>
+		),
+		billing: (
+			<>
+				<rect x="2" y="4" width="20" height="16" rx="2" />
+				<path d="M2 9h20M6 15h4" />
+			</>
+		),
+		usage: <path d="M3 3v18h18M7 17v-5M12 17V8M17 17V4" />,
+		search: (
+			<>
+				<circle cx="10.5" cy="10.5" r="7.5" />
+				<path d="m16 16 5 5" />
+			</>
+		),
+		keys: (
+			<>
+				<circle cx="7.5" cy="15.5" r="4.5" />
+				<path d="m11 12 9-9h2v4h-3v3h-3l-2 2" />
+			</>
+		),
+		data: <path d="M8 3v14m-5-5 5 5 5-5M16 21V7m-5 5 5-5 5 5" />,
+		settings: (
+			<>
+				<path d="M4 3v8m0 6v4M12 3v2m0 6v10M20 3v10m0 6v2" />
+				<circle cx="4" cy="14" r="3" />
+				<circle cx="12" cy="8" r="3" />
+				<circle cx="20" cy="16" r="3" />
+			</>
+		),
+		privacy: (
+			<>
+				<path d="m12 2 8 4v6c0 5-8 10-8 10S4 17 4 12V6l8-4Z" />
+				<path d="m8 12 3 3 5-6" />
+			</>
+		),
+	};
 	return (
 		<svg
 			width="18"
@@ -49,21 +113,7 @@ function NavigationIcon({
 			strokeWidth="1.5"
 			aria-hidden="true"
 		>
-			{kind === "account" || kind === "customers" ? (
-				<>
-					<circle cx="12" cy="8" r="3.5" />
-					<path d="M5 21v-3a7 7 0 0 1 14 0v3" />
-				</>
-			) : kind === "projects" ? (
-				<>
-					<rect x="3" y="3" width="7" height="7" rx="1.5" />
-					<rect x="14" y="3" width="7" height="7" rx="1.5" />
-					<rect x="3" y="14" width="7" height="7" rx="1.5" />
-					<rect x="14" y="14" width="7" height="7" rx="1.5" />
-				</>
-			) : (
-				<path d="M4 21V4a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v17M2 21h20M9 21v-5h6v5M8 7h2m4 0h2M8 11h2m4 0h2" />
-			)}
+			{icons[kind]}
 		</svg>
 	);
 }
@@ -82,7 +132,10 @@ export function DashboardShell({
 		| "billing"
 		| "usage"
 		| "search"
-		| "keys";
+		| "keys"
+		| "data"
+		| "settings"
+		| "privacy";
 	organizationId?: string;
 	children: ReactNode;
 	onLocaleChange?: (locale: "en" | "es") => void;
@@ -158,7 +211,10 @@ export function DashboardFrame({
 		| "billing"
 		| "usage"
 		| "search"
-		| "keys";
+		| "keys"
+		| "data"
+		| "settings"
+		| "privacy";
 	organizationId?: string;
 	children: ReactNode;
 	organizations: Array<{ id: string; name: string }>;
@@ -173,8 +229,16 @@ export function DashboardFrame({
 	onRetry: () => void;
 	onLocaleChange?: (locale: "en" | "es") => void;
 }) {
-	const locale = useLocale() === "es" ? "es" : "en";
+	const locale = resolveLocale(useLocale());
 	const copy = dashboardMessages[locale];
+	const phase6 = useTranslations("Navigation");
+	const sectionLabel =
+		section === "search" ||
+		section === "keys" ||
+		section === "data" ||
+		section === "privacy"
+			? phase6(section)
+			: copy[section];
 	const name = useContext(AppName);
 	const [open, setOpen] = useState(false);
 	const current = organizations.find((item) => item.id === organizationId);
@@ -259,7 +323,7 @@ export function DashboardFrame({
 						onChange={(event) => {
 							if (event.target.value)
 								window.location.assign(
-									`/${locale}/organizations/${event.target.value}${section === "projects" ? "/projects" : section === "customers" ? "/customers" : section === "billing" ? "/billing" : section === "usage" ? "/usage" : section === "search" ? "/search" : section === "keys" ? "/keys" : ""}`,
+									`/${locale}/organizations/${event.target.value}${section === "projects" ? "/projects" : section === "customers" ? "/customers" : section === "billing" ? "/billing" : section === "usage" ? "/usage" : section === "search" ? "/search" : section === "keys" ? "/keys" : section === "data" ? "/data" : section === "settings" ? "/settings" : section === "privacy" ? "/privacy" : ""}`,
 								);
 						}}
 					>
@@ -296,7 +360,7 @@ export function DashboardFrame({
 					{organizationId && (
 						<>
 							<p className="dashboard-nav-label">{copy.work}</p>
-							{link("search", copy.search, `${organizationPath}/search`)}
+							{link("search", phase6("search"), `${organizationPath}/search`)}
 							{link("projects", copy.projects, `${organizationPath}/projects`)}
 							{link(
 								"customers",
@@ -305,7 +369,13 @@ export function DashboardFrame({
 							)}
 							{link("billing", copy.billing, `${organizationPath}/billing`)}
 							{link("usage", copy.usage, `${organizationPath}/usage`)}
-							{link("keys", copy.keys, `${organizationPath}/keys`)}
+							{link("keys", phase6("keys"), `${organizationPath}/keys`)}
+							{link("data", phase6("data"), `${organizationPath}/data`)}
+							{link(
+								"settings",
+								phase6("settings"),
+								`${organizationPath}/settings`,
+							)}
 							{link("organization", copy.settings, organizationPath)}
 						</>
 					)}
@@ -323,13 +393,18 @@ export function DashboardFrame({
 				</nav>
 				<div className="dashboard-sidebar-footer">
 					{user && (
-						<a href={`/${locale}/account`} className="dashboard-user">
-							<UserAvatar user={user} />
-							<span>
-								<strong>{user.name || copy.account}</strong>
-								<small>{user.email}</small>
-							</span>
-						</a>
+						<>
+							<div className="dashboard-footer-links">
+								<a href={`/${locale}/help`}>{phase6("help")}</a>
+							</div>
+							<a href={`/${locale}/account`} className="dashboard-user">
+								<UserAvatar user={user} />
+								<span>
+									<strong>{user.name || copy.account}</strong>
+									<small>{user.email}</small>
+								</span>
+							</a>
+						</>
 					)}
 					<div className="dashboard-preferences">
 						<label className="sr-only" htmlFor="dashboard-language">
@@ -364,12 +439,10 @@ export function DashboardFrame({
 			<div className="dashboard-body">
 				<div className="dashboard-location">
 					<span>
-						{section === "account"
-							? copy.personal
-							: (current?.name ?? copy.selected)}
+						{!organizationId ? copy.personal : (current?.name ?? copy.selected)}
 					</span>
 					<span aria-hidden="true">/</span>
-					<strong>{copy[section]}</strong>
+					<strong>{sectionLabel}</strong>
 				</div>
 				<main
 					id="dashboard-content"
@@ -377,6 +450,7 @@ export function DashboardFrame({
 					className="dashboard-content"
 				>
 					{children}
+					<NotificationCenter organizationId={organizationId} />
 				</main>
 			</div>
 		</div>

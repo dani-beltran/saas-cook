@@ -1,0 +1,206 @@
+.dashboard-content:has(> .privacy-page) {
+	max-width: 996px;
+}
+.privacy-page {
+	max-width: 900px;
+	margin-inline: auto;
+}
+.privacy-header {
+	margin-bottom: 28px;
+}
+.privacy-header p {
+	margin-top: 10px;
+}
+.privacy-page p {
+	font-size: 13px;
+	line-height: 1.65;
+	color: var(--muted-foreground);
+	max-width: 72ch;
+}
+.privacy-panel {
+	border: 1px solid var(--border);
+	border-radius: var(--panel-radius);
+	padding: 24px;
+	margin-bottom: 20px;
+	background: var(--card);
+}
+.privacy-panel h2 {
+	margin-bottom: 6px;
+}
+.privacy-panel h3 {
+	font-size: 13px;
+	font-weight: 550;
+}
+.privacy-setting-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 20px;
+}
+.privacy-setting-row > div {
+	min-width: 0;
+}
+.privacy-setting-row > :is(button, a) {
+	flex-shrink: 0;
+}
+.privacy-link {
+	font-size: 13px;
+	font-weight: 500;
+	color: var(--foreground);
+	text-decoration: underline;
+	text-decoration-color: var(--muted-foreground);
+	text-underline-offset: 3px;
+	overflow-wrap: anywhere;
+}
+.privacy-link:is(:hover, :focus-visible) {
+	color: var(--primary);
+	text-decoration-color: currentColor;
+}
+.privacy-choice {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	margin-top: 20px;
+	font-size: 13px;
+	line-height: 1.6;
+	cursor: pointer;
+}
+.privacy-choice [data-slot="checkbox"] {
+	margin-top: 3px;
+}
+.privacy-panel .privacy-note {
+	margin: 10px 0 0 28px;
+	font-size: 12px;
+}
+.privacy-inline-feedback {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 16px;
+	margin-top: 16px;
+}
+.privacy-feedback:has(p:not(:empty)) {
+	padding: 12px 16px;
+	margin-top: 16px;
+	border: 1px solid var(--border);
+	border-radius: var(--control-radius);
+	background: var(--muted);
+}
+.privacy-danger {
+	border-color: color-mix(in srgb, var(--destructive) 35%, var(--border));
+}
+.privacy-danger-heading > h2 {
+	color: var(--destructive);
+}
+.privacy-retention {
+	margin-top: 20px;
+	padding: 16px;
+	border-radius: var(--control-radius);
+	background: var(--muted);
+}
+.privacy-retention p {
+	margin-top: 6px;
+	font-size: 12px;
+}
+.privacy-steps {
+	list-style: decimal;
+	padding-left: 20px;
+	margin-top: 24px;
+}
+.privacy-steps > li {
+	padding-left: 8px;
+	margin-top: 24px;
+}
+.privacy-steps > li::marker {
+	color: var(--muted-foreground);
+	font-size: 12px;
+}
+.privacy-steps h3 {
+	margin-bottom: 4px;
+}
+.privacy-confirmation > .privacy-link,
+.privacy-steps > li > .privacy-link {
+	display: inline-block;
+	margin-top: 10px;
+}
+.privacy-ownership {
+	margin-top: 16px;
+}
+.privacy-ownership ul {
+	list-style: none;
+	margin-top: 12px;
+	padding: 0;
+}
+.privacy-ownership li {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	gap: 8px 20px;
+	padding: 12px 0;
+	border-top: 1px solid var(--border);
+}
+.privacy-ownership li > span {
+	color: var(--muted-foreground);
+	font-size: 12px;
+}
+.privacy-page .privacy-blocked {
+	color: var(--destructive);
+}
+.privacy-action-footer {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 24px;
+	margin-top: 24px;
+	padding-top: 20px;
+	border-top: 1px solid var(--border);
+}
+.privacy-action-footer p {
+	max-width: 54ch;
+	font-size: 12px;
+}
+.privacy-action-footer button {
+	flex-shrink: 0;
+}
+.privacy-confirmation {
+	margin-top: 24px;
+	padding-top: 20px;
+	border-top: 1px solid var(--border);
+}
+.privacy-confirmation > p {
+	margin-top: 8px;
+}
+.privacy-consent {
+	padding: 16px;
+	border: 1px solid var(--border);
+	border-radius: var(--control-radius);
+	background: var(--muted);
+}
+.privacy-actions {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	gap: 12px;
+	margin-top: 20px;
+}
+@media (max-width: 760px) {
+	.privacy-panel {
+		padding: 20px;
+	}
+	.privacy-setting-row,
+	.privacy-action-footer {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 16px;
+	}
+	.privacy-setting-row > :is(button, a) {
+		flex-shrink: 1;
+	}
+	.privacy-actions {
+		justify-content: flex-start;
+	}
+	.privacy-page button {
+		white-space: normal;
+		text-align: left;
+	}
+}

@@ -1,0 +1,26 @@
+{
+	"checkedAt": "2026-10-20T05:37:17.007Z",
+	"parentCommit": "75d327905a08b8a82662dda6fe7bfa720ab09d01",
+	"implementationSha256": "47c1dc2b5064e3bd3764b355315fedd83e5e63a4789420b7c902f6e5b3870462",
+	"sourceDirtyAtVerification": true,
+	"scope": "Phase 6 next-intl catalogs and page/component refactor",
+	"locales": ["en", "es"],
+	"checks": {
+		"source": "passed",
+		"types": "passed",
+		"knip": "passed",
+		"staticBoundaries": 4,
+		"unit": {
+			"passed": 172,
+			"files": 30
+		},
+		"browser": {
+			"passed": 6,
+			"suites": ["completion", "platform", "files"]
+		},
+		"productionBuild": "passed",
+		"storybookBuild": "passed"
+	},
+	"previousCompletionCi": "https://github.com/dani-beltran/saas-cook/actions/runs/39328558040",
+	"localBackendIntegrationOrImageRerun": false
+}

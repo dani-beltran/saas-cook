@@ -1,26 +1,28 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createApiClient } from "@saas-cook/api/client";
+import {
+	platformResourceType,
+	searchQuery,
+} from "@saas-cook/api-contracts/platform";
 import { Button, Input, NativeSelect, NativeSelectOption } from "@saas-cook/ui";
-import { useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { DashboardShell } from "../../components/dashboard-shell";
 import { ResourceActivity } from "./activity";
-import { platformMessages } from "./messages";
 
 const formSchema = z.object({
-	query: z.string().trim().min(1).max(120),
-	type: z.enum(["all", "project", "customer"]),
+	query: searchQuery.shape.query,
+	type: platformResourceType.or(z.literal("all")),
 });
 type Fields = z.infer<typeof formSchema>;
 type Page = Awaited<
 	ReturnType<ReturnType<typeof createApiClient>["platform"]["search"]>
 >;
 export function PlatformSearch({ organizationId }: { organizationId: string }) {
-	const locale = useLocale(),
-		copy = platformMessages[locale === "es" ? "es" : "en"];
+	const t = useTranslations("Discovery");
 	const [query, setQuery] = useState<Fields>(),
 		[cursor, setCursor] = useState<string>(),
 		[page, setPage] = useState<Page>(),
@@ -64,8 +66,8 @@ export function PlatformSearch({ organizationId }: { organizationId: string }) {
 		<DashboardShell section="search" organizationId={organizationId}>
 			<header className="dashboard-page-header">
 				<div>
-					<h1>{copy.search}</h1>
-					<p>{copy.hint}</p>
+					<h1>{t("search")}</h1>
+					<p>{t("hint")}</p>
 				</div>
 			</header>
 			<form
@@ -75,7 +77,7 @@ export function PlatformSearch({ organizationId }: { organizationId: string }) {
 					setQuery(value);
 				})}
 			>
-				<label htmlFor="platform-query">{copy.query}</label>
+				<label htmlFor="platform-query">{t("query")}</label>
 				<Input
 					id="platform-query"
 					maxLength={120}
@@ -84,42 +86,42 @@ export function PlatformSearch({ organizationId }: { organizationId: string }) {
 					required
 				/>
 				<label className="sr-only" htmlFor="platform-type">
-					{copy.all}
+					{t("all")}
 				</label>
 				<NativeSelect id="platform-type" {...register("type")}>
-					<NativeSelectOption value="all">{copy.all}</NativeSelectOption>
+					<NativeSelectOption value="all">{t("all")}</NativeSelectOption>
 					<NativeSelectOption value="project">
-						{copy.project}
+						{t("project")}
 					</NativeSelectOption>
 					<NativeSelectOption value="customer">
-						{copy.customer}
+						{t("customer")}
 					</NativeSelectOption>
 				</NativeSelect>
-				<Button type="submit">{copy.search}</Button>
+				<Button type="submit">{t("search")}</Button>
 			</form>
 			{failed ? (
 				<p role="alert">
-					{copy.failed}{" "}
-					<Button onClick={() => setRetry((v) => v + 1)}>{copy.retry}</Button>
+					{t("failed")}{" "}
+					<Button onClick={() => setRetry((v) => v + 1)}>{t("retry")}</Button>
 				</p>
 			) : query && !page ? (
-				<p role="status">{copy.loading}</p>
+				<p role="status">{t("loading")}</p>
 			) : page ? (
-				<section aria-label={copy.search}>
-					{!page.items.length && <p role="status">{copy.empty}</p>}
+				<section aria-label={t("search")}>
+					{!page.items.length && <p role="status">{t("empty")}</p>}
 					<ul className="platform-results">
 						{page.items.map((item) => (
 							<li key={`${item.type}:${item.id}`}>
-								<strong>{item.label}</strong> · {copy[item.type]}{" "}
+								<strong>{item.label}</strong> · {t(item.type)}{" "}
 								<Button onClick={() => setSelected(item)}>
-									{copy.activity}
+									{t("activity")}
 								</Button>
 							</li>
 						))}
 					</ul>
 					{page.nextCursor && (
 						<Button onClick={() => setCursor(page.nextCursor ?? undefined)}>
-							{copy.next}
+							{t("next")}
 						</Button>
 					)}
 				</section>
@@ -127,7 +129,7 @@ export function PlatformSearch({ organizationId }: { organizationId: string }) {
 			{selected && (
 				<section>
 					<h2>{selected.label}</h2>
-					<Button onClick={() => setSelected(undefined)}>{copy.close}</Button>
+					<Button onClick={() => setSelected(undefined)}>{t("close")}</Button>
 					<ResourceActivity
 						key={`${selected.type}:${selected.id}`}
 						organizationId={organizationId}

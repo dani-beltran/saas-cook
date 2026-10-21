@@ -1,0 +1,64 @@
+# Platform modules
+
+The follow-up to PR #4 targets `codex/phase6-platform-modules`. These ordinary TypeScript services use the existing API boundary, tenant RLS, current OpenFGA model, lifecycle fences, audit/outbox and capacity services. No new permission model or generated feature framework is introduced. See [verification](acceptance.md), [recovery](recovery.md) and [analytics](analytics.md).
+
+## Runtime and upgrade
+
+`PLATFORM_ENABLED=false` is the default. Enabling it requires `LIFECYCLE_DATABASE_URL` (exact restricted `saas_cook_lifecycle` role) and `JOURNAL_DATABASE_URL` (independent `saas_cook_journal_writer` role). The regular web/worker and control-reader credentials remain distinct. The worker receives current session assurance through a narrow database function, never identity credentials or raw session tokens. Five-second ticks run independent bounded consumers for lifecycle cleanup, bulk jobs, notifications/webhooks and analytics, so one provider outage does not block the others.
+
+For a fresh disposable environment, `infra/postgres/init.sql` and `infra/control/init.sql` provision the new roles. For an existing installation, its database administrator must provision the same non-owner, non-superuser, non-BYPASSRLS roles with independent real credentials and database CONNECT permission. Do not replay the disposable init scripts against existing data. Apply application migrations through `0024` with the migrator, run `bun run control:schema` with only the control administrator, then enable the new binaries. This command creates/upgrades independent tables without changing readiness or epochs. Applied migrations through `0015` are unchanged. Migration `0023` expires predecessor encrypted identity emails that lack a recipient index; affected users request a new link. New indexed messages can be erased by recipient before profile anonymization.
+
+## Data jobs
+
+`/[locale]/organizations/[organizationId]/data` provides CSV column mapping, dry-run errors and reject/skip duplicate rules. Import sources must be verified immutable Project files. Limits are 1 MiB, 1,000 rows, 20 columns, 4,000 characters per field, 20 retained jobs per organization and 20 imported rows per worker pass. Every row uses the ordinary Project creation and quota service with a stable operation key; interruption does not duplicate committed rows. Session expiry, revocation, quota or permission changes stop work. A failed job can be resumed only under the current requesting user's session. Provider failures retry with bounded backoff up to five attempts.
+
+Exports include authorized Projects as CSV, organization data as JSON, or a separately authorized audit log as JSON. CSV values neutralize spreadsheet formula prefixes. Organization JSON includes Projects, example customers, memberships, teams and file metadata with authenticated download paths. It excludes credential values, provider secrets, financial evidence and file bytes; download file contents separately while authorized. Exports cap each collection at 1,000 rows and the serialized artifact at 1 MiB; oversized exports fail explicitly. These are bounded exports, not a backup format.
+
+The worker captures encrypted drafts and writes immutable S3 objects. Downloads recheck current actor, organization, resource versions and permissions against the manifest. Jobs and artifacts expire after 24 hours, and physical cleanup precedes reservation release. Bulk jobs require the [configured file adapter](files.md). Deletion waits until 20 minutes after file initiation before clearing objects, covering the maximum URL reissue window; new positive work is already blocked by the frozen tenant. Storage transport deadlines and isolated old processes remain deployment requirements.
+
+## Privacy and deletion
+
+Personal `privacy` and organization `privacy` routes expose exports, ownership obligations, retained categories and a two-step deletion confirmation. An own-account export includes only the requester's profile/preferences and memberships. A sole owner must complete an accepted transfer to an active verified successor, retain another current owner, or finish the separately authorized organization deletion first. Nomination alone is insufficient.
+
+Cancellation is supported while awaiting prerequisites. Confirmation freezes identity or organization, revokes credentials and records intent. The independent journal must acknowledge scheduling before purge starts. An unavailable journal leaves a durable `journal_pending` request. Account closure releases seats and grants through shared transitions while preserving continuing organizations, their subscriptions and service accounts. Integration and webhook credentials belonging to a deleted organization are cleared and further deliveries canceled.
+
+Cleanup records independent progress for files, analytics, billing, integrations and local data. Stripe cancellation is reconciled against provider truth and can remain pending through the paid period. Missing cleanup configuration and ambiguous provider effects remain pending. Profile/avatar, account preferences and private exports are removed; organization deletion also removes tenant content, searchable records, activity and queued payloads. Restricted audit/security actor IDs, membership/seat tombstones, financial records and minimal lifecycle receipts are retained. This is an explicit product retention scope, not a legal retention period. Backup expiry is always reported separately as unconfirmed.
+
+The receipt URL stores a scoped status token in its fragment. The public status endpoint returns only state, cleanup steps and retained categories; it cannot authenticate or authorize product actions. Keep the receipt before confirming account deletion. Post-confirmation cancellation/re-admission is deliberately unsupported.
+
+## Notifications, webhooks, integrations and flags
+
+Optional `bulk.completed` notifications are deduplicated from committed audit events, available in the dashboard help widget, and retained seven days. In-app preference defaults on; optional email defaults off. Authoritative user preferences, locale, current membership/lifecycle and readiness are checked at delivery. Typed React Email messages use the existing SMTP transport, stable message IDs, eight bounded retries and mandatory identity/billing policies remain independent. Unsubscribe requires explicit confirmation; bounce/complaint suppression is sticky and idempotent.
+
+An installation's mail-provider bridge sends bounded JSON `{id, reason}` to `/api/webhooks/optional-email`, where reason is `bounce` or `complaint`. It signs `timestamp + '.' + rawBody` with HMAC-SHA256 using `OPTIONAL_EMAIL_FEEDBACK_SECRET`; the `x-email-timestamp` and `x-email-signature` headers carry Unix seconds and the hexadecimal signature. Timestamps must be within five minutes. The `id` is a notification UUID and determines the recipient server-side. Do not forward full provider payloads or recipient addresses.
+
+Organization settings support outgoing webhook creation, signed challenge verification, event allowlists, one-time secret display, rotation/revocation and bounded delivery diagnostics. Secrets are encrypted with scoped AES-GCM; rotation retains the previous secret for 24 hours. Deliveries have stable IDs and HMAC signatures, eight retries, a three-second HTTP deadline and 16 KiB request/8 KiB response bounds. The `x-saas-delivery` header carries the ID and `x-saas-signature` carries `t=SECONDS,v1=HEX`. Verify the signature over `timestamp + '.' + deliveryId + '.' + body`; receive the signed verification challenge and echo it before activation. Receivers must deduplicate delivery IDs. Exact public HTTPS hostnames must be configured in `OUTGOING_ALLOWED_HOSTS`; DNS is revalidated and pinned on every attempt, private/reserved addresses and redirects are rejected.
+
+The initial `https-api` integration stores an encrypted token and declared scopes for a verified public HTTPS endpoint. It supports a bounded health POST, rotation and local revocation. It does not provision third-party accounts or execute arbitrary integration actions. Organization deletion revokes local access and deletes the token; provider account deletion is not implied.
+
+`flags:set --file FILE` uses the separate platform-operator role. Versioned `help.contact` configuration includes owner, environment, expiry within 90 days, included/excluded organization IDs and deterministic rollout percentage. Missing, disabled, expired or wrong-environment flags are false. The flag exposes contact guidance in the help widget; it never grants authorization or paid access.
+
+## Audit and UI
+
+Audit query/export requires current organization manage permission **and** an explicit owner-granted audit permission. Owners can grant/revoke it for current owners/admins. Bounded opaque cursors bind requester, organization and query. Queries themselves are audited; DTOs expose event IDs, actor IDs, action, target and timestamp, not unrestricted changes or secrets. Data/settings/privacy, receipt/unsubscribe, help and public about routes support English/Spanish and existing responsive themes. Public help contains instructions, not claims that unavailable enterprise modules are implemented.
+
+## Translation authoring
+
+All Phase 6 screens, including the predecessor search/activity/files/API-key components, use next-intl namespaces named for each feature. Edit the per-feature JSON files under `apps/web/src/i18n/messages/en/` and `apps/web/src/i18n/messages/es/`; page components contain translation keys. Server pages use `getTranslations`, client components use `useTranslations`, and `i18n/catalogs.ts` supplies the same selected catalog to the request, layout and Storybook. Counts and row summaries use complete ICU messages so translators control word order and plural forms.
+
+To add a UI language, register it in `i18n/locales.ts`, add its feature catalogs and include it in `i18n/catalogs.ts`, together with translations for the application’s existing shared/account surfaces. The catalogue unit suite checks keys, placeholders and runtime formatting for all registered locales. Other application modules and email/API locale contracts still declare their own supported languages and must also be extended before enabling a new language across the entire product.
+
+## Feature ownership and API compatibility
+
+| Feature | UI source | Typed API |
+| --- | --- | --- |
+| Data jobs | `apps/web/src/features/data-jobs` | `dataJobs.list/dryRun/start/cancel/resume/download` |
+| Privacy and deletion | `apps/web/src/features/privacy` | `privacy.exportAccount/previewDeletion/requestDeletion/confirmDeletion/cancelDeletion/deletionStatus` |
+| Organization settings | `apps/web/src/features/organization-settings` | `organizationSettings` (webhooks, integrations, audit and flags) |
+| Notifications | `apps/web/src/features/notifications` | `notifications.preferences/savePreferences/list/markRead/unsubscribe` |
+| Public pages | `apps/web/src/features/public-pages` | Static About/Help pages and a shared public page shell |
+| Analytics | Existing analytics services | `analytics.preferences/setPreference/completeOnboarding` |
+
+Each API domain has its own contract file in `packages/api-contracts/src`. The runtime’s `platformModules` collection coordinates domain services and owns their shared infrastructure lifecycle; it is not a customer feature. Generic operation/status controls and visual styles live in `components/feature-ui`; browser client/download helpers live in `lib`.
+
+The old `completion` RPC namespace was introduced on this unmerged PR and is retired before release. Update typed callers to the domain paths above; no deprecated alias is retained. All 31 existing `/api/v1/platform/...` REST URLs and their methods, input/output schemas and authorization semantics are preserved. Browser URLs, database migrations, queued event kinds such as `bulk.completed`, storage identities and deletion receipts are unchanged. The old phase wrapper in translation messages is replaced by `DataJobs`, `Privacy`, `OrganizationSettings`, `Notifications`, `PublicPages` and feature-specific shared namespaces.

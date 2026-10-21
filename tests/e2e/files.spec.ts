@@ -47,6 +47,14 @@ test("Project text uploads verify immutable bytes and download through a current
 		await page.getByRole("button", { name: "Edit", exact: true }).click();
 		const region = page.getByRole("region", { name: "Files", exact: true });
 		await expect(region).toContainText("No files");
+		await region.getByLabel("Choose file").setInputFiles({
+			name: `${"x".repeat(120)}.txt`,
+			mimeType: "text/plain",
+			buffer: Buffer.from("Invalid filename length\n"),
+		});
+		await region.getByRole("button", { name: "Upload and verify" }).click();
+		await expect(region.getByRole("alert")).toBeVisible();
+		await expect(region).toContainText("No files");
 		const contents = Buffer.from("Verified text\n");
 		await region.getByLabel("Choose file").setInputFiles({
 			name: "receipt.txt",

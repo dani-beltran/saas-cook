@@ -147,8 +147,20 @@ test("account tabs show one section, support keyboard navigation and preserve dr
 		await page.goto(`/${locale}/account`);
 		const names =
 			locale === "en"
-				? ["Account identity", "Organizations", "Security", "Sessions"]
-				: ["Identidad de la cuenta", "Organizaciones", "Seguridad", "Sesiones"];
+				? [
+						"Account identity",
+						"Organizations",
+						"Privacy",
+						"Security",
+						"Sessions",
+					]
+				: [
+						"Identidad de la cuenta",
+						"Organizaciones",
+						"Privacidad",
+						"Seguridad",
+						"Sesiones",
+					];
 		const tabs = page.getByRole("tab");
 		await expect(tabs).toHaveText(names);
 		const expectSection = async (index: number) => {
@@ -161,17 +173,17 @@ test("account tabs show one section, support keyboard navigation and preserve dr
 			);
 		};
 		await expectSection(0);
-		for (const index of [1, 2, 3, 0]) {
+		for (const index of [1, 2, 3, 4, 0]) {
 			await tabs.nth(index).click();
 			await expectSection(index);
 		}
 		await tabs.first().press("ArrowLeft");
-		await expectSection(3);
+		await expectSection(4);
 		await expect(tabs.last()).toBeFocused();
 		await tabs.last().press("ArrowRight");
 		await expectSection(0);
 		await tabs.first().press("End");
-		await expectSection(3);
+		await expectSection(4);
 		await tabs.last().press("Home");
 		await expectSection(0);
 		await tabs.first().press("ArrowRight");
@@ -186,12 +198,16 @@ test("account tabs show one section, support keyboard navigation and preserve dr
 		await expect(organizationName).toHaveValue("Unfinished organization");
 		await page.reload();
 		await expectSection(1);
+		await page.goto(`/${locale}/account#privacy`);
+		await expectSection(2);
+		await page.reload();
+		await expectSection(2);
 		await page.goto(`/${locale}/account#security`);
-		await expectSection(2);
-		await page.goto(`/${locale}/account#sessions`);
 		await expectSection(3);
+		await page.goto(`/${locale}/account#sessions`);
+		await expectSection(4);
 		await page.goto(`/${locale}/account#reauthenticate`);
-		await expectSection(2);
+		await expectSection(3);
 		await expect(page.locator("#reauthenticate")).toBeVisible();
 		await page.goto(`/${locale}/account#organizations`);
 		await expectSection(1);

@@ -5,6 +5,7 @@ import {
 	randomBytes,
 	randomUUID,
 } from "node:crypto";
+import { publicId, resourceSlug } from "@saas-cook/api-contracts/inputs/common";
 import type { Pool, PoolClient } from "pg";
 import { assertLimit, commercialFeatures } from "./billing/policy";
 import { reserveProjectUsage, settleProjectUsage } from "./billing/usage";
@@ -114,10 +115,7 @@ const actorId = (a: ResourceActor) =>
 const hash = (v: string) => createHash("sha256").update(v).digest("hex");
 const cursorFallback = randomBytes(32);
 function validId(id: string) {
-	if (
-		!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
-	)
-		throw new ResourceError("INVALID");
+	if (!publicId.safeParse(id).success) throw new ResourceError("INVALID");
 }
 function validText(value: string, min: number, max: number) {
 	if (
@@ -140,8 +138,7 @@ function validVersion(version: number) {
 }
 function validNameSlug(name: string, slug: string) {
 	validText(name, 1, 120);
-	if (!/^[a-z0-9][a-z0-9-]{1,62}$/.test(slug))
-		throw new ResourceError("INVALID");
+	if (!resourceSlug.safeParse(slug).success) throw new ResourceError("INVALID");
 }
 export type CapacityPolicy =
 	| { kind: "missing" | "disabled" | "unlimited" }

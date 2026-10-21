@@ -6,6 +6,7 @@ import type {
 	BillingPreview,
 	BillingSnapshot,
 } from "@saas-cook/api-contracts";
+import { billingSelection as schema } from "@saas-cook/api-contracts/inputs/billing";
 import {
 	Button,
 	Input,
@@ -21,17 +22,13 @@ import {
 import { useLocale } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
+import type { z } from "zod";
 import { DashboardShell } from "../../components/dashboard-shell";
 import { billingMessages } from "./messages";
 import { formatBillingAmount } from "./money";
 import "./billing.css";
 
 type Locale = "en" | "es";
-const schema = z.strictObject({
-	planVersionId: z.string().min(1),
-	quantity: z.number().int().min(1).max(100000),
-});
 function failure(error: unknown, locale: Locale) {
 	const t = billingMessages[locale],
 		code = (error as { code?: string })?.code;

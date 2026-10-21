@@ -1,0 +1,27 @@
+{
+	"Preferences": {
+		"notificationsTitle": "Notificaciones opcionales",
+		"email": "Correo al terminar trabajos de datos",
+		"inApp": "Notificaciones en la aplicación",
+		"suppressed": "El correo opcional está suprimido por una baja, rebote o queja.",
+		"mandatoryNotice": "Los avisos obligatorios de seguridad y facturación siguen sus propias reglas.",
+		"description": "Elige dónde recibir actualizaciones de tus trabajos de datos. Los cambios se guardan automáticamente.",
+		"emailDescription": "Recibe un correo cuando termine una importación o exportación.",
+		"inAppDescription": "Consulta las actualizaciones en Ayuda y notificaciones del panel.",
+		"loading": "Cargando preferencias de notificaciones…",
+		"unavailable": "No se han podido cargar tus preferencias de notificaciones. Inténtalo de nuevo para revisarlas.",
+		"retry": "Intentar de nuevo"
+	},
+	"Center": {
+		"title": "Ayuda y notificaciones",
+		"help": "Centro de ayuda",
+		"contact": "Para ayuda con esta organización, contacta con el administrador de tu instalación y comparte solo el identificador de la solicitud fallida.",
+		"noNotifications": "No tienes notificaciones.",
+		"jobFinished": "Un trabajo de datos ha terminado.",
+		"markRead": "Marcar como leído"
+	},
+	"Unsubscribe": {
+		"title": "Desactivar correo opcional",
+		"confirm": "Confirmar baja"
+	}
+}

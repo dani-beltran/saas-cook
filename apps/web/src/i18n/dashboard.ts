@@ -2,8 +2,6 @@ import { customerMessages } from "../features/example-customers/messages";
 export const dashboardMessages = {
 	en: {
 		account: "Account",
-		search: "Search",
-		keys: "API keys",
 		billing: "Billing",
 		usage: "Usage",
 		organization: "Organization",
@@ -28,8 +26,6 @@ export const dashboardMessages = {
 	},
 	es: {
 		account: "Cuenta",
-		search: "Buscar",
-		keys: "Claves API",
 		billing: "Facturación",
 		usage: "Uso",
 		organization: "Organización",

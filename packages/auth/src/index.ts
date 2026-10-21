@@ -1352,7 +1352,38 @@ CASE WHEN pg_input_is_valid(value,'jsonb') THEN value::jsonb->>'userId'=$1 OR va
 		assertCurrent,
 		throttle,
 	});
-	return { handler, session, assertCurrent, auth, personalSettings };
+	async function backgroundActor(sessionId: string, userId: string) {
+		const epoch = await ready();
+		const row = (
+			await pool.query(
+				`SELECT s.id,s.user_id,s.authentication_method,s.authenticated_at,s.user_verified,s.mfa,s.credential_epoch,s.recovery_epoch,u.email,u.name,u.two_factor_enabled FROM identity.session s JOIN identity."user" u ON u.id=s.user_id WHERE s.id=$1 AND s.user_id=$2 AND s.expires_at>clock_timestamp() AND s.credential_epoch=u.credential_epoch AND s.recovery_epoch=$3 AND u.lifecycle_status='active' AND u.email_verified AND (NOT u.two_factor_enabled OR s.mfa)`,
+				[sessionId, userId, epoch],
+			)
+		).rows[0];
+		if (!row) throw new Error("Session no longer active");
+		const actor: SessionIdentity = {
+			userId: row.user_id,
+			sessionId: row.id,
+			email: row.email,
+			name: row.name,
+			method: row.authentication_method,
+			authenticatedAt: row.authenticated_at,
+			userVerified: row.user_verified,
+			mfa: row.mfa,
+			credentialEpoch: Number(row.credential_epoch),
+			recoveryEpoch: row.recovery_epoch,
+			twoFactorEnabled: row.two_factor_enabled,
+		};
+		return { ...actor, assertCurrent: () => assertCurrent(actor) };
+	}
+	return {
+		handler,
+		session,
+		assertCurrent,
+		auth,
+		personalSettings,
+		backgroundActor,
+	};
 }
 
 export type { PersonalSettings } from "./personal-settings";

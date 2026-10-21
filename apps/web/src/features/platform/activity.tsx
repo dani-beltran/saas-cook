@@ -1,9 +1,8 @@
 "use client";
 import { createApiClient } from "@saas-cook/api/client";
 import { Button } from "@saas-cook/ui";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
-import { platformMessages } from "./messages";
 import "./platform.css";
 
 type Page = Awaited<
@@ -65,25 +64,25 @@ export function ActivityView({
 	onRetry: () => void;
 	onNext: () => void;
 }) {
-	const locale = useLocale(),
-		copy = platformMessages[locale === "es" ? "es" : "en"];
+	const locale = useLocale();
+	const t = useTranslations("Discovery");
 
 	return (
-		<section aria-label={copy.activity} className="platform-activity">
-			<h2>{copy.activity}</h2>
+		<section aria-label={t("activity")} className="platform-activity">
+			<h2>{t("activity")}</h2>
 			{failed ? (
 				<p role="alert">
-					{copy.failed} <Button onClick={onRetry}>{copy.retry}</Button>
+					{t("failed")} <Button onClick={onRetry}>{t("retry")}</Button>
 				</p>
 			) : !page ? (
-				<p role="status">{copy.loading}</p>
+				<p role="status">{t("loading")}</p>
 			) : (
 				<>
-					{!page.items.length && <p role="status">{copy.noActivity}</p>}
+					{!page.items.length && <p role="status">{t("noActivity")}</p>}
 					<ol>
 						{page.items.map((item) => (
 							<li key={item.id}>
-								<strong>{copy[item.action]}</strong> · {copy[item.actor]} ·{" "}
+								<strong>{t(item.action)}</strong> · {t(item.actor)} ·{" "}
 								<time dateTime={item.occurredAt}>
 									{new Intl.DateTimeFormat(locale, {
 										dateStyle: "medium",
@@ -95,7 +94,7 @@ export function ActivityView({
 							</li>
 						))}
 					</ol>
-					{page.nextCursor && <Button onClick={onNext}>{copy.next}</Button>}
+					{page.nextCursor && <Button onClick={onNext}>{t("next")}</Button>}
 				</>
 			)}
 		</section>

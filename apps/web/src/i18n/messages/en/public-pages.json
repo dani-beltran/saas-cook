@@ -1,0 +1,189 @@
+{
+	"About": {
+		"help": "Help",
+		"description": "A shared workspace to organize projects and customers, manage access, and work with your data.",
+		"signIn": "Sign in or create an account",
+		"howItWorks": "How it works",
+		"controlsTitle": "Organization controls",
+		"controlsDescription": "Permissions are checked for each operation. Owners can manage members, review billing, and prepare exports or deletion requests.",
+		"configurationNotice": "Integrations and optional services depend on each installation’s configuration."
+	},
+	"Help": {
+		"back": "Back to application",
+		"title": "Help center",
+		"documentation": "Docs",
+		"pageNavigation": "Help navigation",
+		"language": "Documentation language",
+		"languages": {
+			"en": "English",
+			"es": "Español"
+		},
+		"skip": "Skip to guides",
+		"eyebrow": "Guides and support",
+		"intro": "Practical steps for managing your account, working with organization data, and resolving common problems. Choose a topic to get started.",
+		"index": "On this page",
+		"availability": "Some tools depend on your permissions and the services enabled for your installation. If a feature is unavailable, ask your organization owner or installation administrator to check access and configuration.",
+		"shortcuts": {
+			"gettingStarted": "Set up your account",
+			"imports": "Import a CSV",
+			"troubleshooting": "Resolve a problem"
+		},
+		"openPrivacy": "Open privacy",
+		"backToTop": "Back to top",
+		"gettingStarted": {
+			"title": "Getting started",
+			"intro": "Create a verified account, then join or create an organization. Your account is personal; organization membership controls access to shared work.",
+			"steps": {
+				"account": "Open the account page and choose Create account. Enter your name, email address, and a password with its confirmation, then submit the form.",
+				"verify": "Open the verification email and follow its link. Confirm the action on the page that opens. If the link has expired, submit the Create account form again with the same email address to request a new verification email.",
+				"signIn": "Sign in with your verified email and password. If you use an email sign-in link or an enrolled passkey, choose that method instead. Complete any authenticator or recovery-code step requested.",
+				"organization": "From Account, open the organizations area to create an organization or view your memberships. If you were invited, sign in with the invited address and explicitly accept the invitation."
+			},
+			"note": "A verification link confirms an email address; an organization invitation grants membership only after it is accepted. Check your spam folder if an expected email is missing.",
+			"action": "Open your account"
+		},
+		"organizations": {
+			"title": "Organizations and projects",
+			"intro": "The organization selector determines where you are working. Access is checked for each action, so two members may see different projects.",
+			"steps": {
+				"context": "Choose the intended organization in the sidebar before creating, editing, importing, or exporting data. Use Account to return to personal settings or manage your organization memberships.",
+				"members": "Owners and administrators manage invitations, members, and teams in Organization settings. Invite the correct email address and role; the recipient must accept. Team membership and project sharing affect access separately.",
+				"project": "Open Projects and choose Create project. Enter a name and a unique lowercase slug, with an optional description. To make changes later, choose Edit on the project and save your changes.",
+				"find": "Use Search to find accessible project and customer names, or search within Projects. Continue with Load more projects when available, even if the current page is empty. Open Activity where available to review permitted changes."
+			},
+			"note": "If a save reports that an item changed, refresh it and review the latest version before retrying. Copy any unsaved text first. Ordinary membership alone does not reveal every private project."
+		},
+		"files": {
+			"title": "Upload and verify files",
+			"intro": "Project files support private UTF-8 text and CSV. Files must be verified before they can be used for imports or downloaded.",
+			"steps": {
+				"open": "Choose your organization, open Projects, and select Edit on the project that should hold the file. Find the Files section.",
+				"choose": "Use Choose file to select a .txt or .csv file between 1 byte and 1 MiB. Save spreadsheets as UTF-8 CSV first; spreadsheet workbooks, PDFs, archives, and binary files are not supported.",
+				"verify": "Choose Upload and verify and wait for the file to show Ready. If it remains Awaiting verification and Finish verification is offered, select it to finish the existing upload.",
+				"download": "Choose Download beside a ready file. If the list appears stale after an upload, use Reload. To use a file for an import, select its project and verified file on the Data page."
+			},
+			"note": "Ready files expire after 30 days; unfinished or rejected attempts are eligible for cleanup after 20 minutes. Keep your own copy. Uploads require project edit access, and downloads require current read access."
+		},
+		"imports": {
+			"title": "Import projects from CSV",
+			"intro": "Imports create projects from a verified CSV file. Use a dry run to inspect validation errors before starting work.",
+			"steps": {
+				"prepare": "Prepare a UTF-8 CSV with a header row and at most 1,000 data rows, 20 columns, and 1 MiB total. Each field may contain at most 4,000 characters. Include a project name and unique lowercase slug for each row.",
+				"upload": "Upload and verify the CSV in an existing project’s Files section. This project holds the source file; imported projects belong directly to the selected organization.",
+				"select": "Open Data in the organization sidebar. Under Import projects, choose the Source project and Verified CSV file. Only files that completed verification appear.",
+				"map": "Enter the exact CSV header names for Name column and Slug column. Add a Description column only if needed. Choose Reject to treat duplicate slugs as errors, or Skip to omit duplicates.",
+				"validate": "Choose Dry run and read the row errors. Correct invalid names, slugs, or mappings in your source file, upload and verify the corrected CSV, select it, and validate again.",
+				"start": "Choose Start import when you are ready. Follow progress in Your jobs. You may cancel work that is still pending, running, or failed. For a failed job, resolve the cause, sign in again if needed, and choose Retry with current access."
+			},
+			"exampleTitle": "Example CSV",
+			"example": "name,slug,description\nWebsite refresh,website-refresh,Plan the new website\nCustomer research,customer-research,Collect interview notes",
+			"exampleHint": "For this example, map Name column to name, Slug column to slug, and Description column to description. Header names must match your own file.",
+			"note": "A dry run does not create projects or reserve capacity. Access, session validity, and project limits are checked again during the job. Canceling stops further work; it does not remove rows already imported."
+		},
+		"exports": {
+			"title": "Export organization data",
+			"intro": "Exports are downloadable snapshots of data you are currently allowed to access. They are bounded exports, not full backups.",
+			"steps": {
+				"choose": "Choose the organization and open Data. Select Projects CSV for project rows, Organization JSON for supported organization records, or Audit log JSON for the restricted audit log.",
+				"wait": "Find the export in Your jobs and wait for it to complete. The page refreshes progress automatically; Refresh also reloads the list. A failed job displays errors and may offer Retry with current access.",
+				"download": "When the job is complete, select Download. Save the file somewhere appropriate for its contents. Download any project file contents separately while you still have access.",
+				"refresh": "Download within 24 hours. If the export expires, the underlying data changes, or your permissions change, create a new export. Signing in again does not restore an expired artifact."
+			},
+			"note": "Organization JSON includes supported records and file metadata, not file bytes, credentials, provider secrets, or financial evidence. Each collection is limited to 1,000 rows and the artifact to 1 MiB. Audit export also requires an explicit permission granted by an owner."
+		},
+		"privacy": {
+			"title": "Privacy and notifications",
+			"intro": "Privacy and preferences keeps your personal export, optional notifications, and analytics choices in one place.",
+			"steps": {
+				"open": "Open Account and select the Privacy tab. Personal preferences apply to your account; organization analytics choices are managed separately in Integrations and data.",
+				"notifications": "Under Optional notifications, choose whether to receive an email when a data job finishes and whether to see in-app updates. Changes save automatically. Read the status message before leaving the page.",
+				"analytics": "Under Product analytics, choose whether to allow optional product analytics. If collection is disabled for this installation, your preference is still saved; selecting it does not enable collection by itself.",
+				"personalExport": "Under Your data, select Export my account data to download your profile, preferences, and memberships. Use the organization Data page instead when you need organization records."
+			},
+			"note": "Optional notification choices do not turn off mandatory security or billing messages. Unsubscribe, bounce, or complaint suppression can keep optional email disabled. In-app job notices appear under Help and notifications and are retained for seven days."
+		},
+		"deletion": {
+			"title": "Prepare account or organization deletion",
+			"intro": "Deletion has separate preparation and confirmation steps. Review the scope and ownership requirements before continuing.",
+			"steps": {
+				"export": "Download the data and files you need first. For your account, open Account and select Privacy. For an organization, open Integrations and data and follow Organization export and deletion.",
+				"ownership": "For account deletion, select Check ownership. Resolve every Needs successor or deletion item: complete a transfer to an active verified successor, retain another current owner, or complete the organization’s separate deletion first. A pending transfer nomination is not enough.",
+				"identity": "Use Confirm your identity before continuing to open account reauthentication. Sensitive deletion steps require a recent identity confirmation. Return to the privacy page after completing it.",
+				"prepare": "Choose Prepare deletion request. Preparing does not start deletion. Review the request, or choose Cancel request while it is still awaiting confirmation.",
+				"receipt": "Save the Deletion status link before you confirm. It contains a receipt that can show this request’s progress after account access ends. Open that saved link and choose Check status to view updates.",
+				"confirm": "Read and select the explicit consent checkbox, then choose Confirm deletion only when you are ready. Confirmation revokes access and starts irreversible deletion. Shared organizations and their subscriptions continue when only your personal account is deleted."
+			},
+			"note": "Confirmed requests cannot be canceled. Restricted security and financial records may be retained. Provider cleanup or subscription cancellation can remain pending, and backup erasure is not certified by the status page. Contact the installation administrator if progress remains blocked."
+		},
+		"keys": {
+			"title": "API keys and service accounts",
+			"intro": "API keys let a service account perform declared Project operations with limited scopes and current organization permissions.",
+			"steps": {
+				"open": "Choose the organization and open API keys. Use an owner or administrator account with management access, and confirm your identity if fresh authentication is requested.",
+				"account": "Enter a Service account name and choose Create service account. Review the account’s project access; allow organization-wide read or creation only when required for the integration.",
+				"issue": "Select the required Key permissions and expiry, then choose Issue key. Copy the secret immediately into your integration’s secure server-side credential storage. It is shown only once.",
+				"rotate": "Use Rotate key to replace a credential, Revoke key to stop one key, or Deactivate account to revoke all keys for that service account. Update affected integrations after rotation."
+			},
+			"note": "Rotation stops the old key immediately. If a secret response is lost, refresh the list and revoke or rotate it; it cannot be retrieved. Keep keys out of browser code, screenshots, and support messages. They do not replace human sign-in for privacy or organization settings."
+		},
+		"integrations": {
+			"title": "Integrations, webhooks, and audit",
+			"intro": "Use Integrations and data for organization connections and restricted audit access. These tools require current management permissions.",
+			"steps": {
+				"prepare": "Confirm your identity before sensitive changes. Ask your installation administrator to allow the destination’s exact public HTTPS domain before creating a connection or webhook.",
+				"webhook": "Under Outgoing webhooks, enter a name, URL, and supported event, then choose Create webhook. Save the one-time secret. Configure the receiver to verify signed deliveries and echo the verification challenge, then choose Verify. Use Deliveries to inspect attempts.",
+				"integration": "Under Integrations, enter the approved URL, provider token, and comma-separated scopes, then choose Connect. The endpoint must support connection.health. Use Check health, Rotate token, or Disconnect to maintain the connection.",
+				"audit": "Under Restricted audit log, an owner must grant the additional audit permission to an eligible owner or administrator. After that, use Query audit log and Older events to review records. The same extra permission is needed for audit exports."
+			},
+			"note": "Webhook secrets and provider tokens are credentials. Save them securely and never include them in a support request. Disconnecting revokes the local integration; it does not delete an external provider account. Ask the receiver’s developer for help with signed webhook verification."
+		},
+		"billing": {
+			"title": "Billing and usage",
+			"intro": "Billing tools appear according to your installation’s configuration and your organization’s billing permissions.",
+			"steps": {
+				"review": "Choose the organization and open Billing to review the current plan, subscription state, and available plans. Some installations use local limits without a connected payment provider.",
+				"change": "For an available paid change, review the plan and quantity before opening the provider’s checkout or billing portal. Return to the application and wait for the confirmed subscription state.",
+				"usage": "Open Usage to review the current period, consumption, and limits. If a project or import is blocked by capacity, ask an organization administrator to review the limit before retrying.",
+				"invoices": "Review available invoices in Billing. Use the billing portal when offered for supported provider actions. If payment or subscription status remains pending, ask the person responsible for your organization’s billing."
+			},
+			"note": "Returning from checkout does not grant paid access on its own. Subscription changes take effect after provider confirmation. Deleting an organization can leave cancellation pending through the contracted period; preparing deletion is not an immediate billing cancellation."
+		},
+		"troubleshooting": {
+			"title": "Troubleshooting",
+			"intro": "Start with the matching symptom. If the problem remains, gather the information listed below before asking for help.",
+			"signIn": {
+				"question": "I cannot sign in or my email link expired.",
+				"answer": "Check that you are using the address you registered or were invited with. For an expired account-verification link, submit Create account again with the same email address. For sign-in or password reset, request a new link using the matching option on the account page. Use the newest email and check your spam folder. Complete any authenticator or recovery-code step requested. If you cannot access a required factor, use account recovery or contact your installation administrator."
+			},
+			"access": {
+				"question": "A page or action says access is denied.",
+				"answer": "First check the selected organization. Ask an owner or administrator to confirm your active membership, project or team grants, and available capacity. Sensitive actions may require signing in again or confirming your identity. An audit permission must be granted separately. Refresh after access changes; a previously visible item does not guarantee that access is still valid."
+			},
+			"file": {
+				"question": "My file upload is rejected or never becomes ready.",
+				"answer": "Check the extension, UTF-8 encoding, and 1 MiB size limit. Convert a spreadsheet to CSV instead of uploading the workbook. Finish verification if that action is available, then reload the list. If uploads are unavailable for everyone, ask the installation administrator to check file storage configuration and service health."
+			},
+			"job": {
+				"question": "An import failed or stopped making progress.",
+				"answer": "Read the job’s row errors and check the source CSV, header mapping, duplicate policy, and organization limits. A dry run helps find invalid rows before starting a corrected import. For a resumable failed job, restore current access or sign in again and choose Retry with current access. Already committed rows are not undone by cancellation. If progress stays pending, ask the installation administrator to check the background worker."
+			},
+			"export": {
+				"question": "My export download is unavailable.",
+				"answer": "Exports expire after 24 hours and downloads check your current session, permissions, and source data. Sign in again if needed and generate a new export after data or access changes. Download files separately; organization JSON contains their metadata only. Large exports fail explicitly instead of silently omitting records."
+			},
+			"preference": {
+				"question": "A preference will not load or optional email is disabled.",
+				"answer": "Use Try again in the affected preferences section. If a save fails, confirm your session and reload to check the value actually stored. Optional email may remain suppressed after an unsubscribe, bounce, or complaint. Mandatory security and billing notices follow separate rules; analytics collection also depends on installation configuration."
+			}
+		},
+		"contact": {
+			"title": "Still need help?",
+			"intro": "Contact your organization owner for membership and project access, or your installation administrator for sign-in recovery, service availability, and blocked deletion. Include:",
+			"context": "The organization name, the page you were using, and the approximate time of the problem, with your time zone.",
+			"steps": "What you tried, what you expected, and the exact error text. Redact private data from any screenshot.",
+			"identifier": "The failed request identifier if one was shown. Share it instead of raw request or response contents.",
+			"security": "Never share passwords, one-time links, API keys, provider tokens, authenticator secrets, recovery codes, or a deletion receipt URL. Owner recovery uses independent administrator verification; a support message alone does not grant access."
+		},
+		"backToIndex": "Back to index"
+	}
+}

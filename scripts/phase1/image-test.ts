@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
-import { randomUUID } from "node:crypto";
+import { createHmac, randomUUID } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
 import { setTimeout as delay } from "node:timers/promises";
 import { promisify } from "node:util";
+import { createTestFileStorage } from "../../packages/testing/src/file-storage";
 import { sourceFingerprint } from "./source-fingerprint";
 
 const exec = promisify(execFile);
@@ -24,6 +25,7 @@ const checks: string[] = [];
 let createdDatabase = false;
 let createdRestore = false;
 let storeId: string | undefined;
+let storage: Awaited<ReturnType<typeof createTestFileStorage>> | undefined;
 async function docker(args: string[]) {
 	return (
 		await exec("docker", args, { timeout: 90_000, maxBuffer: 4 * 1024 * 1024 })
@@ -99,6 +101,12 @@ async function start() {
 		"-e",
 		`WORKER_DATABASE_URL=${database("saas_cook_worker")}`,
 		"-e",
+		"PLATFORM_ENABLED=true",
+		"-e",
+		`LIFECYCLE_DATABASE_URL=${database("saas_cook_lifecycle")}`,
+		"-e",
+		`JOURNAL_DATABASE_URL=${controlDatabase("saas_cook_journal_writer")}`,
+		"-e",
 		`IDENTITY_DATABASE_URL=${database("saas_cook_identity")}`,
 		"-e",
 		`AUTH_SECRET=${authSecret}`,
@@ -116,6 +124,10 @@ async function start() {
 		"SMTP_PORT=1025",
 		"-e",
 		"APP_ORIGIN=http://localhost:3000",
+		...Object.entries({
+			...storage?.env,
+			FILES_S3_ENDPOINT: "http://storage:8333",
+		}).flatMap(([key, value]) => ["-e", `${key}=${value}`]),
 		image,
 	]);
 	containers.push(id);
@@ -169,13 +181,18 @@ try {
 		"billing-reconcile",
 		"billing-diagnostics",
 		"usage-rebuild",
+		"control-schema",
+		"recovery",
+		"recovery-fingerprint",
+		"analytics-report",
+		"flags-set",
 	]) {
 		assert(
 			(await docker(["run", "--rm", image, mode, "--help"])).includes(mode),
 		);
 		if (mode !== "migrate") await rejected(["run", "--rm", image, mode]);
 	}
-	checks.push("ten-packaged-commands-and-missing-credential-refusal");
+	checks.push("fifteen-packaged-commands-and-missing-credential-refusal");
 	await rejected(["run", "--rm", image]);
 	await rejected([
 		"run",
@@ -266,6 +283,7 @@ try {
 		"require('/app/apps/web/.next/server/app/api/health/route.js').routeModule.ensureUserland().catch(()=>process.exit(1))",
 	]);
 	checks.push("compiled-identity-route-loads-native-avatar-dependencies");
+	storage = await createTestFileStorage("http://localhost:3000");
 	const id = await start();
 	assert.equal(
 		await docker(["exec", id, "/nodejs/bin/node", "--version"]),
@@ -304,6 +322,133 @@ try {
 	assert.equal((await fetch(`${origin}/foundation.svg`)).status, 200);
 	assert.equal((await fetch(`${origin}/api/health`)).status, 200);
 	checks.push("startup-static-public-assets-and-combined-health");
+	// Exercise the shipped API and worker with real identity, quota, S3 and journal effects.
+	let cookie = "";
+	async function post(path: string, body: unknown) {
+		const timestamp = String(Math.floor(Date.now() / 1000));
+		const attestation = {
+			"x-common-saas-source": "192.0.2.10",
+			"x-common-saas-source-time": timestamp,
+			"x-common-saas-source-signature": createHmac("sha256", ingressSecret)
+				.update(
+					`common-saas-ingress:v1\n${timestamp}\nPOST\n${path}\n192.0.2.10`,
+				)
+				.digest("hex"),
+		};
+		const response = await fetch(`${origin}${path}`, {
+			method: "POST",
+			headers: {
+				...attestation,
+				origin: "http://localhost:3000",
+				"content-type": "application/json",
+				cookie,
+			},
+			body: JSON.stringify(body),
+		});
+		assert.equal(
+			response.status,
+			200,
+			`Packaged platform request failed: ${path}`,
+		);
+		const cookies = response.headers.getSetCookie();
+		if (cookies.length) cookie = cookies.map((v) => v.split(";")[0]).join("; ");
+		return response.json();
+	}
+	const email = `image-platform-${randomUUID()}@example.test`;
+	await post("/api/auth/register", {
+		email,
+		name: "Image acceptance",
+		password: "Synthetic image password 2026!",
+		locale: "en",
+	});
+	let token: string | undefined;
+	for (let attempt = 0; attempt < 40 && !token; attempt++) {
+		const mail = await (
+			await fetch(
+				`http://127.0.0.1:8026/api/v1/search?query=${encodeURIComponent(`to:${email}`)}`,
+			)
+		).json();
+		for (const message of mail.messages ?? []) {
+			const detail = await (
+				await fetch(`http://127.0.0.1:8026/api/v1/message/${message.ID}`)
+			).json();
+			token = String(detail.Text).match(
+				/\/auth\/confirm\?token=([A-Za-z0-9_-]+)/,
+			)?.[1];
+			if (token) break;
+		}
+		if (!token) await delay(500);
+	}
+	assert(
+		token,
+		"Packaged worker must deliver identity verification to local Mailpit",
+	);
+	await post("/api/auth/confirm", { token });
+	const organization = await post("/api/v1/organizations", {
+		name: "Image platform",
+		slug: `image-${randomUUID()}`,
+		operationKey: randomUUID(),
+	});
+	await post(`/api/v1/organizations/${organization.id}/projects`, {
+		name: "Image exported project",
+		slug: "image-exported",
+		operationKey: randomUUID(),
+	});
+	const job = await post("/api/v1/platform/bulkStart", {
+		organizationId: organization.id,
+		kind: "organization.export",
+		operationKey: randomUUID(),
+	});
+	let download: Response | undefined;
+	for (let attempt = 0; attempt < 40; attempt++) {
+		download = await fetch(`${origin}/api/v1/platform/bulkDownload`, {
+			method: "POST",
+			headers: {
+				origin: "http://localhost:3000",
+				"content-type": "application/json",
+				cookie,
+			},
+			body: JSON.stringify({ organizationId: organization.id, id: job.id }),
+		});
+		if (download.ok) break;
+		await delay(500);
+	}
+	assert(
+		download?.ok,
+		"Packaged worker must complete an immutable organization export",
+	);
+	const exported = await download.json();
+	assert(
+		Buffer.from(exported.base64, "base64")
+			.toString()
+			.includes("Image exported project"),
+	);
+	const request = await post("/api/v1/platform/deletionRequest", {
+		kind: "organization",
+		organizationId: organization.id,
+		operationKey: randomUUID(),
+	});
+	await post("/api/v1/platform/deletionConfirm", { id: request.id });
+	let state = "";
+	for (let attempt = 0; attempt < 40; attempt++) {
+		state = (
+			await post("/api/v1/platform/deletionStatus", {
+				id: request.id,
+				receipt: request.receipt,
+			})
+		).state;
+		if (state === "complete") break;
+		await delay(500);
+	}
+	assert.equal(
+		state,
+		"complete",
+		"Packaged worker must journal and finish organization cleanup",
+	);
+	checks.push(
+		"packaged-platform-session-export-worker-s3-and-journaled-deletion",
+	);
+
 	await node(
 		id,
 		"const fs=require('node:fs');const web=fs.readFileSync('/tmp/saas-cook-web.pid','utf8');const worker=fs.readFileSync('/tmp/saas-cook-worker.pid','utf8');const w=fs.readFileSync('/proc/'+web+'/environ','utf8');const j=fs.readFileSync('/proc/'+worker+'/environ','utf8');if(w.includes('WORKER_DATABASE_URL=')||j.includes('DATABASE_URL=postgres://saas_cook_web')||j.includes('IDENTITY_DATABASE_URL=')||j.includes('AUTH_INGRESS_SECRET=')||!w.includes('AUTH_INGRESS_SECRET=')||w.includes('CONTROL_ADMIN_DATABASE_URL=')||j.includes('CONTROL_ADMIN_DATABASE_URL='))process.exit(1)",
@@ -418,6 +563,7 @@ try {
 	throw error;
 } finally {
 	for (const id of containers) await docker(["rm", "-f", id]).catch(() => {});
+	await storage?.cleanup();
 	if (createdRestore)
 		await sql(
 			"postgres",
@@ -438,6 +584,6 @@ try {
 	await sql(
 		"control-postgres",
 		"saas_cook_control",
-		`DELETE FROM control.operator_approvals WHERE installation_id IN ('${installationId}','${restoredInstallationId}'); DELETE FROM control.security_events WHERE installation_id IN ('${installationId}','${restoredInstallationId}'); DELETE FROM control.installations WHERE installation_id IN ('${installationId}','${restoredInstallationId}')`,
+		`DELETE FROM control.analytics_attempts WHERE installation_id IN ('${installationId}','${restoredInstallationId}'); DELETE FROM control.analytics_subjects WHERE installation_id IN ('${installationId}','${restoredInstallationId}'); DELETE FROM control.deletion_journal WHERE installation_id IN ('${installationId}','${restoredInstallationId}'); DELETE FROM control.journal_heads WHERE installation_id IN ('${installationId}','${restoredInstallationId}'); DELETE FROM control.recovery_runs WHERE installation_id IN ('${installationId}','${restoredInstallationId}'); DELETE FROM control.operator_approvals WHERE installation_id IN ('${installationId}','${restoredInstallationId}'); DELETE FROM control.security_events WHERE installation_id IN ('${installationId}','${restoredInstallationId}'); DELETE FROM control.installations WHERE installation_id IN ('${installationId}','${restoredInstallationId}')`,
 	).catch(() => {});
 }
