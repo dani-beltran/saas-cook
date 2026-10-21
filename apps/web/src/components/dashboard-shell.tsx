@@ -394,8 +394,10 @@ export function DashboardFrame({
 				<div className="dashboard-sidebar-footer">
 					{user && (
 						<>
-							<a href={`/${locale}/privacy`}>{phase6("privacy")}</a>
-							<a href={`/${locale}/help`}>{phase6("help")}</a>
+							<div className="dashboard-footer-links">
+								<a href={`/${locale}/privacy`}>{phase6("privacy")}</a>
+								<a href={`/${locale}/help`}>{phase6("help")}</a>
+							</div>
 							<a href={`/${locale}/account`} className="dashboard-user">
 								<UserAvatar user={user} />
 								<span>
