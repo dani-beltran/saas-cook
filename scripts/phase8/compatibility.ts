@@ -21,7 +21,7 @@ try {
 	const backoffice = files.length
 		? JSON.parse(await readFile(files[1], "utf8"))
 		: await compatibilityManifest("backoffice");
-	assertCompatiblePair(customer, backoffice);
+	await assertCompatiblePair(customer, backoffice);
 	checks.push({ name: "exact-contract-pair", passed: true });
 	if (!files.length) {
 		await writeCompatibilityManifest(
