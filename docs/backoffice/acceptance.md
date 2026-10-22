@@ -2,6 +2,26 @@
 
 Status: **implemented; blocked local validation completed; release acceptance pending**. This is a working-tree follow-up to `94507a78d7f17f4c134570f0bcab8d70862c272b`. The canonical gate register remains [the roadmap](../06-delivery-roadmap.md#backoffice-acceptance-register). No full BO gate, Phase 6/M2 release gate or production deployment is accepted by this record.
 
+## Full organization names within assigned scope — 2026-10-22
+
+The user authorized replacing directory name masking with full organization names.
+The directory output now exposes `name`, read from the existing organization
+metadata allowlist; server, strict contracts, browser and stories change together.
+This supersedes the organization-label masking policy in earlier records. It does
+not alter account/member/contact field policies, scoped grants, FGA, cursors,
+session/epoch fences, expiry guards or audit-before-disclosure.
+
+Passed source (four pre-existing informational suggestions), strict types, Knip,
+190 unit/catalog tests, all 16 real PostgreSQL/FGA Backoffice integration tests,
+Backoffice production build, Storybook, static skill/migration checks and the HTTPS
+browser journey. Directory integration now verifies exact full names, the explicit
+field allowlist and durable page/target disclosure audits; wrong-scope, cursor,
+offboarding, expiry and audit-outage cases remain passing. The browser verifies
+full-name table rendering and no unassigned organization name, alongside existing
+pagination/detail/authentication cases. Evidence is under
+`artifacts/backoffice/full-names/`. No database migration, model publication or
+credential change is needed; images/hosted release gates were not rerun.
+
 ## Separate organization detail route — 2026-10-22
 
 The organization overview now has a dedicated localized

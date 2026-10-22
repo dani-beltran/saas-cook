@@ -79,7 +79,7 @@ function Icon({
  * Presents the localized staff workspace using shared controls and theme tokens.
  * Props supply form state, validated lookup metadata and action callbacks; this
  * component grants no authority and performs no service requests itself.
- * Returns responsive forms, live feedback and a masked organization overview.
+ * Returns responsive forms, live feedback and a organization overview.
  */
 export function BackofficeView({
 	busy,

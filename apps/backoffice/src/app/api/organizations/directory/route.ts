@@ -1,7 +1,7 @@
 import { boundedOperatorRequest } from "@saas-cook/auth/operator-request";
 import { publicRequest } from "../../../../lib/request";
 import { backoffice } from "../../../../lib/runtime";
-/** Returns only the strict masked directory DTO; body and failures never enter application logs. */
+/** Returns only the strict scoped directory DTO; body and failures never enter application logs. */
 export async function POST(request: Request) {
 	try {
 		request = publicRequest(request);

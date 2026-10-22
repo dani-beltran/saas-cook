@@ -64,7 +64,7 @@ describe("scoped live organization directory", () => {
 		await runtime?.close();
 		await f?.cleanup();
 	});
-	it("returns only masked granted fields, stable pages, live timestamps and committed audit", async () => {
+	it("returns full names only within current grants, stable pages, live timestamps and committed audit", async () => {
 		const seen: string[] = [];
 		let cursor: string | undefined;
 		do {
@@ -74,15 +74,17 @@ describe("scoped live organization directory", () => {
 			expect(Object.keys(page.items[0]).sort()).toEqual([
 				"id",
 				"lifecycle",
-				"maskedName",
+				"name",
 				"sourceTimestamp",
 			]);
-			expect(page.items[0].maskedName).toBe("P•••");
+			expect(page.items[0].name).toBe(
+				`Private customer ${ids.indexOf(page.items[0].id)}`,
+			);
 			expect(Date.parse(page.items[0].sourceTimestamp)).toBeGreaterThanOrEqual(
 				start - 1000,
 			);
 			expect(page.freshness.kind).toBe("live");
-			expect(JSON.stringify(page)).not.toContain("Private customer");
+			expect(JSON.stringify(page)).not.toContain("Other organization");
 			expect(
 				(
 					await f.migration.query(
@@ -91,6 +93,14 @@ describe("scoped live organization directory", () => {
 					)
 				).rows[0].outcome,
 			).toBe("allowed");
+			expect(
+				(
+					await f.migration.query(
+						"SELECT target_id FROM backoffice.audit_events WHERE actor_id=$1 AND action='organization.read' AND target_id=$2 AND case_reference=$3 AND outcome='allowed'",
+						[f.operatorId, page.items[0].id, query.caseReference],
+					)
+				).rowCount,
+			).toBeGreaterThan(0);
 			seen.push(page.items[0].id);
 			cursor = page.nextCursor ?? undefined;
 		} while (cursor);

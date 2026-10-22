@@ -162,3 +162,21 @@ explicitly advances the supported schema pair. Apply it before the new BO binary
 no backfill, operator model publication, credential re-enrollment or new secret is
 needed. Old lookup binaries remain compatible with schema 0026. New directory
 binaries fail readiness on 0025. No prior migration or snapshot is rewritten.
+
+
+## Organization name disclosure revision — 2026-10-22
+
+The user authorized full organization names in the assigned-organization table.
+This supersedes the masked-name rule for BO-02.1 directory organization labels.
+It does not change account, member, contact or provider field policies or any
+reveal/export grant. Directory input filters, current exact-grant/FGA checks,
+recovery/session fences, encrypted cursors, before-disclosure page/target audits
+and transaction-wide expiry remain enforced.
+
+The unpublished PR directory DTO changes `maskedName` to `name`; the server,
+strict output schema, browser and stories are deployed together in the BO image.
+The value comes directly from the already allowlisted organization metadata
+service and React renders it as text. No extra fields, database migration,
+backfill, model publication or credential change is needed. Existing lookup
+behavior is preserved. Historical verification entries describe their recorded
+masked implementation, not the revised disclosure policy.

@@ -35,13 +35,13 @@ export const organizationDirectoryInput = z.strictObject({
 	pageSize: z.number().int().min(1).max(50),
 	cursor: z.string().min(1).max(2048).optional(),
 });
-/** Masked list projection, with a live-read timestamp rather than a projection freshness claim. */
+/** Allowlisted organization list projection, with a live-read timestamp rather than a projection freshness claim. */
 export const organizationDirectoryOutput = z.strictObject({
 	items: z
 		.array(
 			z.strictObject({
 				id: z.uuid(),
-				maskedName: z.string(),
+				name: z.string(),
 				lifecycle: organizationLifecycle,
 				sourceTimestamp: z.iso.datetime(),
 			}),

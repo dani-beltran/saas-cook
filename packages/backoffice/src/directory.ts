@@ -124,7 +124,7 @@ export function createOrganizationDirectory(options: {
 							continue;
 						items.push({
 							id: row.id,
-							maskedName: `${Array.from(String(row.name).trim())[0] ?? ""}•••`,
+							name: row.name,
 							lifecycle: row.lifecycle,
 							sourceTimestamp: row.source_timestamp.toISOString(),
 						});
