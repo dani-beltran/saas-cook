@@ -1,12 +1,9 @@
 import { defineConfig, devices } from "@playwright/test";
+import { playwrightEvidencePaths } from "./scripts/phase8/verification-artifacts";
 
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3102";
 
-const group = process.env.E2E_REPORT_GROUP;
-const results = group
-	? `artifacts/playwright-results/${group}`
-	: "artifacts/playwright-results";
-const report = group ? `artifacts/playwright/${group}` : "artifacts/playwright";
+const reports = playwrightEvidencePaths("browser", process.env);
 
 export default defineConfig({
 	testDir: "./tests/e2e",
@@ -15,10 +12,10 @@ export default defineConfig({
 	retries: process.env.CI ? 1 : 0,
 	reporter: [
 		["list"],
-		["html", { open: "never", outputFolder: report }],
-		["json", { outputFile: `${results}/results.json` }],
+		["html", { open: "never", outputFolder: reports.html }],
+		["json", { outputFile: reports.json }],
 	],
-	outputDir: results,
+	outputDir: reports.results,
 	use: { baseURL, trace: "retain-on-failure" },
 	projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
 	globalSetup: process.env.PLAYWRIGHT_BASE_URL

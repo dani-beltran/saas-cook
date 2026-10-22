@@ -1,4 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
+import { playwrightEvidencePaths } from "./scripts/phase8/verification-artifacts";
+
+const reports = playwrightEvidencePaths("theme", process.env);
 
 export default defineConfig({
 	testDir: "./tests/theme",
@@ -6,10 +9,10 @@ export default defineConfig({
 	forbidOnly: Boolean(process.env.CI),
 	reporter: [
 		["list"],
-		["html", { open: "never", outputFolder: "artifacts/theme/report" }],
-		["json", { outputFile: "artifacts/theme/results.json" }],
+		["html", { open: "never", outputFolder: reports.html }],
+		["json", { outputFile: reports.json }],
 	],
-	outputDir: "artifacts/theme/results",
+	outputDir: reports.results,
 	use: { baseURL: "http://127.0.0.1:6106", trace: "retain-on-failure" },
 	projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
 	webServer: {

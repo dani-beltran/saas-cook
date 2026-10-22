@@ -4,6 +4,10 @@ import { createWriteStream } from "node:fs";
 import { mkdir } from "node:fs/promises";
 import { finished } from "node:stream/promises";
 import { evidenceSource, writeEvidence } from "./evidence";
+import {
+	collectVerificationArtifacts,
+	verificationEnvironment,
+} from "./verification-artifacts";
 
 // Only repository-owned checks can be selected; this is not an arbitrary shell runner.
 const commands: Record<string, string[][]> = {
@@ -35,11 +39,14 @@ const directory = `artifacts/phase8/checks/${gate}-${randomUUID()}`;
 await mkdir(directory, { recursive: true });
 try {
 	for (const [index, args] of commands[gate].entries()) {
-		const file = `${directory}/${index}.log`;
+		const commandDirectory = `${directory}/${index}`;
+		await mkdir(commandDirectory, { recursive: true });
+		const file = `${commandDirectory}/command.log`;
+		const commandStartedAt = Date.now();
 		const output = createWriteStream(file, { flags: "wx" });
 		const passed = await new Promise<boolean>((resolve) => {
 			const child = spawn("bun", ["run", ...args], {
-				env: { ...process.env, NO_COLOR: "1" },
+				env: verificationEnvironment(commandDirectory, process.env),
 				stdio: ["ignore", "pipe", "pipe"],
 				timeout: 40 * 60_000,
 			});
@@ -51,6 +58,15 @@ try {
 		output.end();
 		await finished(output);
 		artifacts.push(file);
+		artifacts.push(
+			...(
+				await collectVerificationArtifacts(
+					args[0],
+					commandDirectory,
+					commandStartedAt,
+				)
+			).filter((artifact) => artifact !== file),
+		);
 		checks.push({ name: args.join(" "), passed });
 		console.log(`${passed ? "passed" : "failed"}: ${args.join(" ")} - ${file}`);
 		if (!passed) throw new Error("Required check failed");
