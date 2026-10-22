@@ -1,5 +1,5 @@
 import { execFile, spawn } from "node:child_process";
-import { generateKeyPairSync, randomUUID, sign } from "node:crypto";
+import { createHash, generateKeyPairSync, randomUUID, sign } from "node:crypto";
 import { promisify } from "node:util";
 import { Pool } from "pg";
 import { expect, it } from "vitest";
@@ -15,14 +15,16 @@ import {
 	runRecovery,
 } from "../../../authz/src/recovery";
 import { dropTestDatabase } from "../../../testing/src/database";
+import { createAnalyticsService } from "../analytics/service";
+import { createResourceService } from "../resources";
 import { createDeletionCleanup } from "./cleanup";
 import { createRecoveryApplication } from "./recovery";
 import { advanceDeletion, createLifecycleService } from "./service";
 
 const exec = promisify(execFile),
 	compose = ["compose", "-f", "infra/compose.yaml", "exec", "-T", "postgres"];
-it("restores a real full application backup, replays post-backup deletions and ownership evidence, and denies restored revoked authority", async () => {
-	const f = await resourceFixture();
+it("restores a real full application backup, preserves billing facts, replays independent provider cleanup and denies restored revoked authority", async () => {
+	const f = await resourceFixture({ defaultProjectCreatesPerMonth: 20 });
 	const name = `phase6_restore_${randomUUID().replaceAll("-", "")}`,
 		source = new URL(f.installation.env.DATABASE_URL).pathname.slice(1);
 	if (!/^phase2_test_[a-f0-9]{32}$/.test(source))
@@ -41,6 +43,7 @@ it("restores a real full application backup, replays post-backup deletions and o
 	};
 	const lifecycle = role("saas_cook_lifecycle");
 	let restored: Pool | undefined,
+		restoredWeb: Pool | undefined,
 		created = false;
 	try {
 		const owner = await f.user(),
@@ -83,12 +86,42 @@ it("restores a real full application backup, replays post-backup deletions and o
 			"INSERT INTO identity.passkey(id,user_id,public_key,credential_id,counter,device_type,backed_up) VALUES($1,$2,'synthetic-old-key',$1,0,'singleDevice',false)",
 			[passkey, owner.userId],
 		);
+		for (const organization of [keep, remove]) {
+			await f.app.query(
+				"INSERT INTO tenancy.billing_invoices(organization_id,id,currency,amount_due,amount_paid,status,period_start,period_end) VALUES($1,$2,'eur',1000,1000,'paid','2026-01-01','2026-02-01')",
+				[organization, `in_retained_${organization}`],
+			);
+		}
+		const invoices = (
+			await f.app.query(
+				"SELECT * FROM tenancy.billing_invoices ORDER BY organization_id,id",
+			)
+		).rows;
+		const usage = (
+			await f.app.query("SELECT * FROM tenancy.usage_events ORDER BY sequence")
+		).rows;
+		expect(usage.length).toBeGreaterThan(0);
 		const dump = await exec(
 			"docker",
 			[...compose, "pg_dump", "-U", "postgres", "--format=custom", source],
 			{ encoding: "buffer", maxBuffer: 16 * 1024 * 1024, timeout: 30000 },
 		);
 		// These facts are deliberately newer than the application backup.
+		const postBackupSubject = createHash("sha256")
+			.update(randomUUID())
+			.digest("hex");
+		const postBackupEvent = randomUUID();
+		await control.query("SELECT control.begin_analytics($1,$2,$3,$4,$5)", [
+			f.installation.env.INSTALLATION_ID,
+			postBackupSubject,
+			owner.userId,
+			remove,
+			postBackupEvent,
+		]);
+		await control.query("SELECT control.settle_analytics($1,$2)", [
+			f.installation.env.INSTALLATION_ID,
+			postBackupEvent,
+		]);
 		await f.resources.revokeGrant(owner, keep, { grantId: direct.id });
 		await keys.revoke(owner, keep, key.id);
 		await f.identity.query("DELETE FROM identity.passkey WHERE id=$1", [
@@ -181,13 +214,80 @@ it("restores a real full application backup, replays post-backup deletions and o
 			child.stdin.end(dump.stdout);
 		});
 		restored = role("saas_cook_recovery", name);
+		restoredWeb = role("saas_cook_web", name);
 		const auth = createAuthorizationService({
 			controlPool: f.reader,
 			installationId: f.installation.env.INSTALLATION_ID,
 			openfgaUrl: f.installation.env.OPENFGA_API_URL,
 		});
+		let providerAvailable = false;
+		let providerRequests = 0;
+		const analytics = createAnalyticsService(
+			restored,
+			{ authorize: auth.authorizeResource },
+			{
+				enabled: true,
+				secret: f.installation.env.AUTH_SECRET,
+				synthetic: true,
+				ready: auth.publication,
+				registry: {
+					async register(id, user, organization, event) {
+						await control.query(
+							"SELECT control.begin_analytics($1,$2,$3,$4,$5)",
+							[
+								f.installation.env.INSTALLATION_ID,
+								id,
+								user,
+								organization,
+								event,
+							],
+						);
+					},
+					async settle(event) {
+						await control.query("SELECT control.settle_analytics($1,$2)", [
+							f.installation.env.INSTALLATION_ID,
+							event,
+						]);
+					},
+					async unsettled(subject) {
+						return (
+							await f.reader.query(
+								"SELECT id FROM control.analytics_attempts WHERE installation_id=$1 AND subject_id=$2 AND NOT settled",
+								[f.installation.env.INSTALLATION_ID, subject],
+							)
+						).rows.map((r) => r.id as string);
+					},
+					async list(kind, id) {
+						return (
+							await f.reader.query(
+								"SELECT id,user_id,organization_id FROM control.analytics_subjects WHERE installation_id=$1 AND (($2='account' AND user_id=$3) OR ($2='organization' AND organization_id::text=$3))",
+								[f.installation.env.INSTALLATION_ID, kind, id],
+							)
+						).rows;
+					},
+				},
+				provider: {
+					async capture() {
+						throw new Error("Recovery may not ingest events");
+					},
+					async requestDeletion(subject) {
+						providerRequests++;
+						expect(subject).toBe(postBackupSubject);
+						return {
+							personIds: ["synthetic-post-backup-person"],
+							requestedAt: new Date().toISOString(),
+						};
+					},
+					async deletionComplete() {
+						if (!providerAvailable)
+							throw new Error("Synthetic provider outage");
+						return true;
+					},
+				},
+			},
+		);
 		const restoredCleanup = createDeletionCleanup(restored, {
-				analytics: { suppress: async () => true },
+				analytics,
 				sourceCommit: auth.sourceCommit,
 			}),
 			application = createRecoveryApplication(restored, restoredCleanup);
@@ -244,9 +344,32 @@ it("restores a real full application backup, replays post-backup deletions and o
 			"interrupted purge",
 		);
 		await expect(call("release")).rejects.toThrow("Catch up");
+		await expect(call("replay")).rejects.toThrow("cleanup pending: analytics");
+		await expect(call("release")).rejects.toThrow("Catch up");
+		expect(providerRequests).toBe(1);
+		// The durable retry lease prevents a restarted replay from hammering the provider.
+		await expect(call("replay")).rejects.toThrow("cleanup pending: analytics");
+		expect(providerRequests).toBe(1);
+		providerAvailable = true;
+		const dependencyReturnedAt = performance.now();
+		// Advance only this fixture's verification lease instead of sleeping its one-hour backoff.
+		await restored.query(
+			"UPDATE foundation.analytics_subjects SET receipt=jsonb_set(receipt,'{verification,nextCheckAt}','\"2000-01-01T00:00:00Z\"') WHERE id=$1",
+			[postBackupSubject],
+		);
 		await call("replay");
 		await call("replay");
 		await call("release");
+		expect(performance.now() - dependencyReturnedAt).toBeLessThan(60_000);
+		expect(providerRequests).toBe(1);
+		expect(
+			(
+				await restored.query(
+					"SELECT suppressed,deletion_state FROM foundation.analytics_subjects WHERE id=$1",
+					[postBackupSubject],
+				)
+			).rows[0],
+		).toEqual({ suppressed: true, deletion_state: "complete" });
 		const restoredStatus = createLifecycleService(
 			restored,
 			{
@@ -265,8 +388,21 @@ it("restores a real full application backup, replays post-backup deletions and o
 				])
 			).rows[0].valid,
 		).toBe(true);
+		const restoredResources = createResourceService(restoredWeb, {
+			authorize: auth.authorizeResource,
+			check: auth.checkResource,
+			checkBatch: auth.checkResourceBatch,
+			sourceCommit: auth.sourceCommit,
+		});
+		for (const actor of [owner, successor, revoked])
+			await expect(
+				restoredResources.getProject(actor, keep, { id: project.id }),
+			).rejects.toThrow();
 		await expect(
-			f.resources.getProject(successor, keep, { id: project.id }),
+			createApiKeyService({
+				pool: restoredWeb,
+				authorization: auth,
+			}).authenticate(keep, key.secret),
 		).rejects.toThrow();
 		const inspect = new Pool({
 			connectionString: (() => {
@@ -276,6 +412,20 @@ it("restores a real full application backup, replays post-backup deletions and o
 			})(),
 		});
 		try {
+			expect(
+				(
+					await inspect.query(
+						"SELECT * FROM tenancy.billing_invoices ORDER BY organization_id,id",
+					)
+				).rows,
+			).toEqual(invoices);
+			expect(
+				(
+					await inspect.query(
+						"SELECT * FROM tenancy.usage_events ORDER BY sequence",
+					)
+				).rows,
+			).toEqual(usage);
 			expect(
 				(await inspect.query("SELECT * FROM identity.passkey")).rowCount,
 			).toBe(0);
@@ -325,7 +475,12 @@ it("restores a real full application backup, replays post-backup deletions and o
 			await inspect.end();
 		}
 	} finally {
-		await Promise.all([restored?.end(), lifecycle.end(), control.end()]);
+		await Promise.all([
+			restored?.end(),
+			restoredWeb?.end(),
+			lifecycle.end(),
+			control.end(),
+		]);
 		if (created) await dropTestDatabase(admin, name);
 		await admin.end();
 		await f.cleanup();
