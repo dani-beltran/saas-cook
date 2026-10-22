@@ -8,6 +8,8 @@ Proceed directly from accepted Phase 6/M2 Commercial core to Phase 8 hardening a
 
 ## Release scope
 
+Execute the [Phase 8 parallel PR plan](../phase8/development-plan.md): eight scoped PRs with explicit shared infrastructure, UI, migration and domain-service coordination. Backoffice development can continue concurrently; its release keeps its own applicable acceptance gates.
+
 Harden implemented Commercial capabilities through performance and tenant-fairness checks, sustained built-image execution, failure and expanded recovery scenarios, accessibility, supported previous-release compatibility, bootstrap/rename presets, applicable skill evaluations and production image/security verification. Retain evidence against the declared source, preset/modules, image and upgrade baseline. Resolve missing evidence and unsupported upgrade claims before release sign-off.
 
 Phase 7 SSO/SCIM, custom roles, enterprise security policies, guests, contract overrides, advanced operator governance, optional delegated support and advanced retention/legal-hold administration remain deferred. Existing Commercial authorization, seat admission, retention/hold safeguards and deletion/recovery requirements continue to apply. The revised Phase 6 asynchronous-provider acceptance criteria remain in force; this decision does not claim provider erasure completion.
