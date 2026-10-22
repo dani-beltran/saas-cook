@@ -251,6 +251,8 @@ If approved, add an explicit time-bound support principal with actual operator i
 
 ## Effort, critical path and parallel delivery
 
+The [Phase 8 parallel PR plan](../phase8/development-plan.md) defines the concurrent Commercial hardening track, shared-change ownership and BO-07 harness handoff. Backoffice feature PRs can progress under their existing prerequisites; coordinate common Docker/CI, UI, migration/model and domain-service changes through the named owning lane. Customer-only Phase 8 acceptance does not wait for optional Backoffice release, and does not accept its outstanding gates.
+
 All estimates are **incremental engineer-weeks**, including design implementation, review and meaningful tests, for engineers familiar with the repository. They assume stable existing services, one billing/help desk adapter, no data residency migration, synthetic test infrastructure and ordinary review availability. They are ranges, not dates or person-count commitments.
 
 | Phase | Incremental estimate | Largest uncertainty |
