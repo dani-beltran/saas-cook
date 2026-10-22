@@ -98,7 +98,12 @@ async function expectReadyRoute(
 				break;
 			case "privacy":
 				await expect(main.locator("#privacy-deletion-title")).toBeVisible();
-				await expect(main.locator(".privacy-link")).toHaveAttribute(
+				await expect(
+					main.getByRole("link", {
+						name: locale === "en" ? "Export data" : "Exportar datos",
+						exact: true,
+					}),
+				).toHaveAttribute(
 					"href",
 					`/${locale}${route.replace(/\/privacy$/, "/data")}`,
 				);
