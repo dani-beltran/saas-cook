@@ -1,6 +1,6 @@
 # Commercial template release sequencing
 
-Decision date: 2026-10-22. Status: planning approved; Phase 8 implementation and release acceptance remain pending. The [delivery roadmap](../docs/06-delivery-roadmap.md#commercial-release-sequence--2026-10-22) remains the acceptance register.
+Decision date: 2026-10-22. Status: planning approved; Phase 8 implementation and release acceptance remain pending. The [delivery roadmap](../06-delivery-roadmap.md#commercial-release-sequence--2026-10-22) remains the acceptance register.
 
 ## Product decision
 

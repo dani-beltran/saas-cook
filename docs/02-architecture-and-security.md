@@ -129,11 +129,11 @@ saas-cook/
     testing/                                # Factories, multi-tenant fixtures, helpers
   AGENTS.md                                # AI coding context and canonical commands
   .agents/skills/                           # Planned SKILL.md packages and references
-  feature-briefs/                           # Human-readable tasks and acceptance criteria
   .github/workflows/                        # Source checks and image build
   infra/docker/                             # Combined application image
   scripts/                                  # Build and local verification commands
   docs/                                     # Plan, ADRs, module and operator guides
+    feature-briefs/                         # Human-readable tasks and acceptance criteria
   examples/                                 # Illustrative inputs and extension recipes
   package.json                              # Bun workspaces, pinned packageManager, scripts
   bun.lock                                  # Committed dependency lockfile
@@ -262,7 +262,7 @@ task.read      = active_org_member AND (parent_project.read OR explicit_task_rea
 
 An ordinary member does not automatically read every private project. Owners/admins have the documented content-administration policy; the template can provide a stricter product variant. A viewer role is scoped to an explicitly assigned resource/container. Every grant target and group must belong to the same organization. Disable cross-organization sharing initially; guests receive explicit target-organization memberships.
 
-Projects belong directly to their existing Organization. Project viewer/editor/manager and denied relations apply to same-tenant memberships, teams or service accounts. There is no intermediate container or assignment/move operation. The [removal brief](../feature-briefs/remove-workspaces.md) records the retired Workspace access policy and supported database/model upgrade; historical models remain immutable.
+Projects belong directly to their existing Organization. Project viewer/editor/manager and denied relations apply to same-tenant memberships, teams or service accounts. There is no intermediate container or assignment/move operation. The [removal brief](feature-briefs/remove-workspaces.md) records the retired Workspace access policy and supported database/model upgrade; historical models remain immutable.
 
 The pseudocode above describes human membership; `active_org_member` includes an active global account and an active organization membership, checked under the lifecycle fences. Service accounts use an equivalent active, same-organization principal predicate and explicit resource grants; API-key scopes further restrict the result. The initial Project feature enables human/team sharing; service-account sharing is a separately declared policy capability. Register organization create/list permissions explicitly, and ensure listing permission never implies access to every listed resource.
 

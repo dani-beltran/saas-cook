@@ -8,7 +8,7 @@ or runtime customer-prompt execution is introduced.
 
 Read the [source map](../development/feature-workflow.md),
 [module inventory](../development/module-availability.md), and relevant
-[feature briefs](../../feature-briefs/phase4-project-task.md). Foundation uses
+[feature briefs](../feature-briefs/phase4-project-task.md). Foundation uses
 real local entitlements, capacity, sessions, service accounts and contextual
 OpenFGA without commercial credentials.
 

@@ -6,7 +6,7 @@ import historyReset from "./saas-cook-history-reset.json";
 
 type Journal = { entries: { idx: number; when: number; tag: string }[] };
 const directory = "packages/db/migrations";
-// Explicit disposable reset, documented in feature-briefs/saas-cook-rename.md.
+// Explicit disposable reset, documented in docs/feature-briefs/saas-cook-rename.md.
 // Exact content pairs permit only that reviewed transition, never later edits.
 const reviewedReset: Record<string, { before: string; after: string }> =
 	historyReset;

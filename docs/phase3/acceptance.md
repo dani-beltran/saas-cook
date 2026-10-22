@@ -1,6 +1,6 @@
 # Phase 3 acceptance record
 
-**Status: the Phase 3 real-feature `R-AUTHZ-PERF` gate passes for Projects directly under Organizations.** The manual run on 2026-09-27 completed the full `direct-project-v1` workload on stable source and met every latency and first-attempt availability target. The [removal brief](../../feature-briefs/remove-workspaces.md) records the successor's correctness checks. Current-image/security checks and M1 release sign-off now pass separately in the [Foundation acceptance record](../foundation/acceptance.md). Its source-delta audit carries this benchmark forward across test-only cleanup changes; this report remains unchanged and does not establish the later sustained-image gate.
+**Status: the Phase 3 real-feature `R-AUTHZ-PERF` gate passes for Projects directly under Organizations.** The manual run on 2026-09-27 completed the full `direct-project-v1` workload on stable source and met every latency and first-attempt availability target. The [removal brief](../feature-briefs/remove-workspaces.md) records the successor's correctness checks. Current-image/security checks and M1 release sign-off now pass separately in the [Foundation acceptance record](../foundation/acceptance.md). Its source-delta audit carries this benchmark forward across test-only cleanup changes; this report remains unchanged and does not establish the later sustained-image gate.
 
 ## Accepted direct-Project performance result
 
@@ -30,7 +30,7 @@ The run made **1,223,641 contextual checks**, with **five tuples** at p95/p99/ma
 
 ## Predecessor implementation and acceptance history
 
-> Workspace behavior and related verification below describe the predecessor. The [removal brief](../../feature-briefs/remove-workspaces.md) supersedes that product design. These historical checks do not verify the successor and are not reused for the accepted direct-Project benchmark above.
+> Workspace behavior and related verification below describe the predecessor. The [removal brief](../feature-briefs/remove-workspaces.md) supersedes that product design. These historical checks do not verify the successor and are not reused for the accepted direct-Project benchmark above.
 
 The 2026-09-26 benchmark met its numeric thresholds but did not sustain actual parent changes: its operation counter always selected workspace 0, so repeated moves kept the existing parent. The report's recorded `passed` status is retained as historical output, not valid `R-AUTHZ-PERF` sign-off.
 

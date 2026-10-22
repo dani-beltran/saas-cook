@@ -130,6 +130,6 @@ snapshots and journal entries remain immutable.** A later table removal needs a 
 reviewed migration with data-retention/upgrade decisions; never delete or rewrite
 `0008` from an installed application's history.
 
-See the [brief](../../../../../feature-briefs/example-customers.md) and
-[verification record](../../../../../feature-briefs/example-customers-verification.md)
+See the [brief](../../../../../docs/feature-briefs/example-customers.md) and
+[verification record](../../../../../docs/feature-briefs/example-customers-verification.md)
 for actual executed checks and their limits.

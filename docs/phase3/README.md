@@ -4,7 +4,7 @@ The active Foundation provides Projects directly under Organizations, service ac
 
 ## Running and upgrading
 
-Use the pinned Bun/Node versions and local services described in the [Phase 2 setup](../phase2/README.md). Fresh installations run `bun run db:migrate` then `bun run bootstrap`. Existing ready Phase 2 or predecessor Phase 3 installations run the maintenance sequence below. Read the [access-retirement and deployment policy](../../feature-briefs/remove-workspaces.md) before migrating populated installations:
+Use the pinned Bun/Node versions and local services described in the [Phase 2 setup](../phase2/README.md). Fresh installations run `bun run db:migrate` then `bun run bootstrap`. Existing ready Phase 2 or predecessor Phase 3 installations run the maintenance sequence below. Read the [access-retirement and deployment policy](../feature-briefs/remove-workspaces.md) before migrating populated installations:
 
 ```sh
 bun run db:migrate

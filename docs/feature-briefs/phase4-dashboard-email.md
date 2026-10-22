@@ -1,6 +1,6 @@
 # Existing-service dashboard and email evaluation brief
 
-Evaluate `saas-add-dashboard-page` and `saas-add-email` as separate bounded tasks using Foundation services. See [module availability](../docs/development/module-availability.md) and [email integration](../docs/development/email-workflow.md). These fixtures authorize source changes and synthetic local delivery only, not publication or live email.
+Evaluate `saas-add-dashboard-page` and `saas-add-email` as separate bounded tasks using Foundation services. See [module availability](../development/module-availability.md) and [email integration](../development/email-workflow.md). These fixtures authorize source changes and synthetic local delivery only, not publication or live email.
 
 ## Dashboard over existing Projects
 

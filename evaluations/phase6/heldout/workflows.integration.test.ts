@@ -305,7 +305,10 @@ it("phase6-task-05 five-observable-seeded-defects-and-diagnosis", async () => {
 		unsafe.restoreCredentials({ credential: "obsolete", verified: false })
 			.verified,
 	).toBe(true);
-	const report = await readFile("feature-briefs/commercial-review.md", "utf8");
+	const report = await readFile(
+		"docs/feature-briefs/commercial-review.md",
+		"utf8",
+	);
 	for (const pattern of [
 		/RLS|row.level/i,
 		/DTO|server.*field|extra.*field/i,

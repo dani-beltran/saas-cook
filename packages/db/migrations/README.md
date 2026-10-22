@@ -51,7 +51,7 @@ and Projects without a Workspace. Direct Project grants (including team, service
 account, expiry and denied relations) survive unchanged. Organization content
 administration remains available; members and service accounts that depended only
 on inherited access require explicit Project sharing afterward. See the
-[retirement decision](../../../feature-briefs/remove-workspaces.md).
+[retirement decision](../../../docs/feature-briefs/remove-workspaces.md).
 
 Only retired `workspace:*` and `project:move` capabilities/key scopes are removed;
 other Project scopes remain in their original order. An obsolete-only scope list

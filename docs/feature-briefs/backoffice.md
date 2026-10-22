@@ -1,6 +1,6 @@
 # Independent Backoffice
 
-Status: **planned; documentation only**, 2026-09-27. No application, migration, provider integration or infrastructure is delivered by this brief. The [roadmap](../docs/06-delivery-roadmap.md#67-backoffice-planned-delivery-and-acceptance) is the acceptance register; [architecture](../docs/backoffice/architecture.md) owns the proposed design and [development plan](../docs/backoffice/development-plan.md) owns work sequencing and evidence. Existing platform contracts remain authoritative until their explicitly scheduled amendments are reviewed.
+Status: **planned; documentation only**, 2026-09-27. No application, migration, provider integration or infrastructure is delivered by this brief. The [roadmap](../06-delivery-roadmap.md#67-backoffice-planned-delivery-and-acceptance) is the acceptance register; [architecture](../backoffice/architecture.md) owns the proposed design and [development plan](../backoffice/development-plan.md) owns work sequencing and evidence. Existing platform contracts remain authoritative until their explicitly scheduled amendments are reviewed.
 
 ## Outcome and assumptions
 
@@ -18,7 +18,7 @@ Planning assumptions, subject to the decisions below:
 
 ## Capability and priority matrix
 
-All rows describe planned behavior. `C-*` identifies product scope; work IDs and gates resolve in the [traceability table](../docs/backoffice/development-plan.md#requirement-traceability).
+All rows describe planned behavior. `C-*` identifies product scope; work IDs and gates resolve in the [traceability table](../backoffice/development-plan.md#requirement-traceability).
 
 | ID | Capability and user outcome | Priority / work | Prerequisite and boundary |
 | --- | --- | --- | --- |
@@ -60,7 +60,7 @@ Privacy verifies identity and authority for the requested right and subject. A c
 
 ## Dangerous-action policy
 
-Every dangerous action follows the [command protocol](../docs/backoffice/architecture.md#operator-command-protocol): request → validate → preview → authorize/step-up → applicable approval → execute → reconcile/retry → audit → final status. Requests and approvals bind a payload hash, exact target(s), expected versions, environment, installation/recovery epoch, effective date, limits and expiry. A changed preview needs new approval. A requester cannot approve their own request; a platform administrator has no blanket finance/privacy approval power.
+Every dangerous action follows the [command protocol](../backoffice/architecture.md#operator-command-protocol): request → validate → preview → authorize/step-up → applicable approval → execute → reconcile/retry → audit → final status. Requests and approvals bind a payload hash, exact target(s), expected versions, environment, installation/recovery epoch, effective date, limits and expiry. A changed preview needs new approval. A requester cannot approve their own request; a platform administrator has no blanket finance/privacy approval power.
 
 Proposed release defaults:
 

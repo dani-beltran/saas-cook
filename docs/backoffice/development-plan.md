@@ -1,6 +1,6 @@
 # Backoffice development plan
 
-Status: **planned; no implementation accepted**, 2026-09-27. Scope and priorities: [brief](../../feature-briefs/backoffice.md). Source inventory, proposed ADRs and technical contracts: [architecture](architecture.md). All acceptance IDs and their status are owned by the [roadmap](../06-delivery-roadmap.md#67-backoffice-planned-delivery-and-acceptance); tables here decompose work and specify evidence, not a second sign-off register.
+Status: **planned; no implementation accepted**, 2026-09-27. Scope and priorities: [brief](../feature-briefs/backoffice.md). Source inventory, proposed ADRs and technical contracts: [architecture](architecture.md). All acceptance IDs and their status are owned by the [roadmap](../06-delivery-roadmap.md#67-backoffice-planned-delivery-and-acceptance); tables here decompose work and specify evidence, not a second sign-off register.
 
 ## Prerequisites and release sequence
 
@@ -59,7 +59,7 @@ Objective: agree scope, trust boundaries and delivery changes before adding priv
 
 | Work ID | Work package / likely locations | Deliverable |
 | --- | --- | --- |
-| BO-00.1 | `feature-briefs/backoffice.md`, `docs/backoffice/architecture.md`; product/security workshop | Ratify ADRs, role/action matrix, operator schema versus private API choice, threat owners and initial release scope |
+| BO-00.1 | `docs/feature-briefs/backoffice.md`, `docs/backoffice/architecture.md`; product/security workshop | Ratify ADRs, role/action matrix, operator schema versus private API choice, threat owners and initial release scope |
 | BO-00.2 | Existing Phase 3/4 acceptance, accepted manual performance report and `scripts/phase3/benchmark.ts` | Preserve accepted Foundation/performance evidence, review its applicability to the new operator scope, and record any additional prerequisites before BO-01 |
 | BO-00.3 | Contract-amendment table in architecture; later edits to docs 00/01/02/03/04/07 and AGENTS | Review exact two-image, principal/model, operator-fence and queue/version compatibility changes |
 | BO-00.4 | `docs/backoffice` evidence/decision records | Ratify numeric budgets, staff enrollment/offboarding and emergency authority, data inventory classification, release/retention owners |
@@ -252,7 +252,7 @@ Parallel opportunities are future engineering lanes, not subagents spawned for t
 
 ## Requirement traceability
 
-Requirement `C-*` definitions are in the [brief](../../feature-briefs/backoffice.md#capability-and-priority-matrix). Gates below link to the single [canonical register](../06-delivery-roadmap.md#backoffice-acceptance-register); existing `R-*` contracts remain cumulative, not superseded.
+Requirement `C-*` definitions are in the [brief](../feature-briefs/backoffice.md#capability-and-priority-matrix). Gates below link to the single [canonical register](../06-delivery-roadmap.md#backoffice-acceptance-register); existing `R-*` contracts remain cumulative, not superseded.
 
 | Requirement | Work items | Acceptance gate(s) |
 | --- | --- | --- |
@@ -285,7 +285,7 @@ Requirement `C-*` definitions are in the [brief](../../feature-briefs/backoffice
 
 ## Concrete first implementation ticket
 
-**BO-01/02-S1: private masked organization lookup.** Review the [brief's first slice](../../feature-briefs/backoffice.md#first-implementation-slice) and implement the smallest real end-to-end query after BO-00 prerequisites. Changed areas: new app/contracts/runtime; separate staff identity/model/audit/DB role and reviewed additive migration; exact-ID directory query; dual image/build/test plumbing. Do not include commercial panels or lifecycle buttons.
+**BO-01/02-S1: private masked organization lookup.** Review the [brief's first slice](../feature-briefs/backoffice.md#first-implementation-slice) and implement the smallest real end-to-end query after BO-00 prerequisites. Changed areas: new app/contracts/runtime; separate staff identity/model/audit/DB role and reviewed additive migration; exact-ID directory query; dual image/build/test plumbing. Do not include commercial panels or lifecycle buttons.
 
 Reviewable definition of done:
 

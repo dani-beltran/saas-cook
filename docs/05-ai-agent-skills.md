@@ -32,7 +32,7 @@ AGENTS.md                                  # Stack, boundaries, Bun commands and
   saas-add-dashboard-page/SKILL.md
   saas-add-email/SKILL.md
   saas-verify-feature/SKILL.md
-feature-briefs/                              # Agreed product tasks and acceptance criteria
+docs/feature-briefs/                         # Agreed product tasks and acceptance criteria
 docs/development/                           # Shared contracts and module authoring references
 packages/testing/                           # Fixtures, fault harness, behavioral suites
 ```
