@@ -250,6 +250,7 @@ try {
 		const finishedSource = await evidenceSource();
 		assert.equal(finishedSource.commit, source.commit);
 		assert.equal(finishedSource.fingerprint, source.fingerprint);
+		assert.equal(finishedSource.dirty, source.dirty);
 	});
 } catch (error) {
 	console.error(

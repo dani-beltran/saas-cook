@@ -85,7 +85,7 @@ jobs:
           path: artifacts/vitest/
   integration:
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    timeout-minutes: 35
     env:
       TEST_DATABASE_ADMIN_URL: postgresql://postgres:local_phase1@127.0.0.1:55433/postgres
       OPENFGA_API_URL: http://127.0.0.1:18081
@@ -109,6 +109,8 @@ jobs:
       # replay and restricted-role cases; there is no released product yet.
       - run: bun run test:integration
       - run: bun run authz:validate
+      - name: Disposable template adoption and current skill boundaries
+        run: bun run phase8:template
       - name: Collect service diagnostics
         if: always()
         run: |
@@ -125,6 +127,9 @@ jobs:
             artifacts/migrations/
             artifacts/authz/
             artifacts/services/
+            artifacts/phase4/checks/
+            artifacts/phase8/
+            !artifacts/phase8/template/*/candidate/**
   browser:
     runs-on: ubuntu-24.04
     timeout-minutes: 25

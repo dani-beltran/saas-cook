@@ -32,6 +32,8 @@ The recorded Phase 6 reference deltas include AGENTS, architecture, data model, 
 
 ## Acceptance boundaries
 
+The required CI integration job runs the full command after its application suite. It retains attempt reports, logs and receipts while excluding the large disposable candidate installation from uploads. Source commit, fingerprint and dirty state must remain stable during verification.
+
 The full command requires disposable PostgreSQL/OpenFGA/S3 services already running. It does not stop services, reset ambient installations, send live notifications, provision production, poll historical provider deletion or run hosted CI. It preserves earlier attempts under unique artifact directories. Candidate dependencies/build output are ignored evidence and can be removed after inspection. Production-image compatibility, sustained workload, recovery faults, human assistive-technology review and final clean-source release acceptance belong to their separate gates.
 
 
