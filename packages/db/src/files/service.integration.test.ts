@@ -336,3 +336,141 @@ it("denies a download whose file expires while the approved object is being read
 		slow.download(owner, org, project, attempt.file.id),
 	).rejects.toThrow();
 });
+
+it("recovers storage outage and lost write/delete acknowledgements without duplicate allocation or premature release", async () => {
+	const worker = new Pool({
+		connectionString: f.installation.env.WORKER_DATABASE_URL,
+	});
+	// Drain the preceding expiry case before measuring this attempt's allocation.
+	await pruneFiles(worker, storage, f.authorization.publication);
+	const before = (
+		await f.app.query(
+			"SELECT consumed FROM tenancy.capacity_buckets WHERE organization_id=$1 AND feature='files.bytes'",
+			[org],
+		)
+	).rows[0].consumed as number;
+	const attempt = await upload();
+	const unavailableClient = new S3Client({
+		endpoint: "http://127.0.0.1:1",
+		region: "us-east-1",
+		forcePathStyle: true,
+		credentials: { accessKeyId: "synthetic", secretAccessKey: "synthetic" },
+		maxAttempts: 1,
+	});
+	const unavailable = createFileService(
+		f.web,
+		{ authorize: f.authorization.authorizeResource },
+		{
+			storage: s3FileStorage({
+				uploader: s3,
+				finalizer: unavailableClient,
+				bucket,
+			}),
+		},
+	);
+	try {
+		await expect(
+			unavailable.finalize(owner, org, project, attempt.file.id),
+		).rejects.toThrow();
+		expect(
+			(
+				await f.app.query(
+					"SELECT state,object FROM tenancy.files WHERE id=$1",
+					[attempt.file.id],
+				)
+			).rows[0],
+		).toEqual({ state: "staging", object: null });
+		let capturedVersion = "";
+		const lost = createFileService(
+			f.web,
+			{ authorize: f.authorization.authorizeResource },
+			{
+				storage: {
+					...storage,
+					async capture(...args) {
+						const result = await storage.capture(...args);
+						capturedVersion = result.version;
+						throw new Error("Synthetic lost storage acknowledgement");
+					},
+				},
+			},
+		);
+		await expect(
+			lost.finalize(owner, org, project, attempt.file.id),
+		).rejects.toThrow("lost storage acknowledgement");
+		expect(capturedVersion).not.toBe("");
+		expect(
+			(
+				await f.app.query(
+					"SELECT consumed,reserved FROM tenancy.capacity_buckets WHERE organization_id=$1 AND feature='files.bytes'",
+					[org],
+				)
+			).rows[0],
+		).toEqual({ consumed: before, reserved: bytes.length * 2 });
+		const returnedAt = performance.now();
+		await service.finalize(owner, org, project, attempt.file.id);
+		await service.finalize(owner, org, project, attempt.file.id);
+		expect(performance.now() - returnedAt).toBeLessThan(60_000);
+		expect(
+			(
+				await f.app.query(
+					"SELECT object->>'version' AS version FROM tenancy.files WHERE id=$1",
+					[attempt.file.id],
+				)
+			).rows[0].version,
+		).toBe(capturedVersion);
+		expect(
+			(
+				await f.app.query(
+					"SELECT count(*)::int AS n FROM tenancy.audit_events WHERE target_id=$1 AND action='file.available'",
+					[attempt.file.id],
+				)
+			).rows[0].n,
+		).toBe(1);
+		await f.app.query(
+			"UPDATE tenancy.files SET expires_at=now()-interval '1 second' WHERE id=$1",
+			[attempt.file.id],
+		);
+		await expect(
+			pruneFiles(
+				worker,
+				{
+					...storage,
+					async clearAttempt(...args) {
+						await storage.clearAttempt(...args);
+						throw new Error("Synthetic lost deletion acknowledgement");
+					},
+				},
+				f.authorization.publication,
+			),
+		).rejects.toThrow("lost deletion acknowledgement");
+		expect(
+			(
+				await f.app.query(
+					"SELECT consumed,reserved FROM tenancy.capacity_buckets WHERE organization_id=$1 AND feature='files.bytes'",
+					[org],
+				)
+			).rows[0],
+		).toEqual({ consumed: before + bytes.length * 2, reserved: 0 });
+		await pruneFiles(worker, storage, f.authorization.publication);
+		await pruneFiles(worker, storage, f.authorization.publication);
+		expect(
+			(
+				await f.app.query("SELECT state FROM tenancy.files WHERE id=$1", [
+					attempt.file.id,
+				])
+			).rows[0].state,
+		).toBe("deleted");
+		expect(
+			(
+				await f.app.query(
+					"SELECT consumed,reserved FROM tenancy.capacity_buckets WHERE organization_id=$1 AND feature='files.bytes'",
+					[org],
+				)
+			).rows[0],
+		).toEqual({ consumed: before, reserved: 0 });
+	} finally {
+		unavailableClient.destroy();
+		await worker.end();
+	}
+});
