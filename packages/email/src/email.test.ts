@@ -65,3 +65,25 @@ it("distinguishes password reset from passwordless recovery and preserves the MF
 	expect(reset.text).toContain("multi-factor authentication is enabled");
 	expect(reset.text).toContain("your password will stay unchanged");
 });
+
+it.each(["en", "es"] as const)(
+	"renders validated runtime branding in %s without ambient configuration",
+	async (locale) => {
+		const branded = await renderRuntimeEmail(locale, {
+			APP_NAME: 'Northstar <script>alert("x")</script> & Work',
+		});
+		expect(branded.html).toContain("Northstar &lt;script&gt;");
+		expect(branded.html).not.toContain("<script>");
+		expect(branded.text).toContain(
+			'Northstar <script>alert("x")</script> & Work',
+		);
+		expect(branded.html).toContain(`lang="${locale}"`);
+		expect((await renderRuntimeEmail(locale)).text).toContain("SaaS Cook");
+		await expect(
+			renderRuntimeEmail(locale, { APP_NAME: " " }),
+		).rejects.toThrow();
+		await expect(
+			renderRuntimeEmail(locale, { APP_NAME: "x".repeat(81) }),
+		).rejects.toThrow();
+	},
+);

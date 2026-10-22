@@ -10,6 +10,7 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
+		"@saas-cook/config": "workspace:*",
 		"@react-email/components": "1.0.12",
 		"@react-email/render": "2.1.0",
 		"react": "19.3.0",

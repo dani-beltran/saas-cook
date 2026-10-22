@@ -8,19 +8,31 @@ import {
 	Text,
 } from "@react-email/components";
 import { render } from "@react-email/render";
+import { publicConfig } from "@saas-cook/config/client";
 
 const messages = {
 	en: {
 		title: "Your application is ready",
-		body: "This is a synthetic runtime email preview. Identity email journeys arrive in Phase 2.",
+		body: "This is a synthetic runtime email preview.",
 	},
 	es: {
 		title: "Tu aplicación está lista",
-		body: "Esta es una vista previa de correo del entorno de prueba. Los flujos de identidad llegarán en la fase 2.",
+		body: "Esta es una vista previa de correo del entorno de prueba.",
 	},
 };
 export type EmailLocale = keyof typeof messages;
-export function RuntimeEmail({ locale }: { locale: EmailLocale }) {
+/**
+ * Render a synthetic preview without delivery side effects.
+ * @param props - Explicit English/Spanish locale and optional validated product name.
+ * @returns React Email markup with escaped brand text; omitted branding uses the public default.
+ */
+export function RuntimeEmail({
+	locale,
+	appName = publicConfig({}).appName,
+}: {
+	locale: EmailLocale;
+	appName?: string;
+}) {
 	const message = messages[locale];
 	return (
 		<Html lang={locale}>
@@ -41,6 +53,7 @@ export function RuntimeEmail({ locale }: { locale: EmailLocale }) {
 						maxWidth: "560px",
 					}}
 				>
+					<Text>{appName}</Text>
 					<Heading>{message.title}</Heading>
 					<Text>{message.body}</Text>
 				</Container>
@@ -48,8 +61,18 @@ export function RuntimeEmail({ locale }: { locale: EmailLocale }) {
 		</Html>
 	);
 }
-export async function renderRuntimeEmail(locale: EmailLocale) {
-	const element = <RuntimeEmail locale={locale} />;
+/**
+ * Render localized synthetic preview HTML and text, without sending or enqueueing mail.
+ * @param locale - Explicit English or Spanish catalog selection.
+ * @param env - Optional APP_NAME only; no ambient credentials or locale setting is read.
+ * @returns Subject, escaped HTML and matching plain text. Invalid APP_NAME throws before rendering.
+ */
+export async function renderRuntimeEmail(
+	locale: EmailLocale,
+	env: { APP_NAME?: string } = {},
+) {
+	const { appName } = publicConfig({ APP_NAME: env.APP_NAME });
+	const element = <RuntimeEmail locale={locale} appName={appName} />;
 	return {
 		subject: messages[locale].title,
 		html: await render(element),
