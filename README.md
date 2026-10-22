@@ -4,6 +4,8 @@ A reusable SaaS template for building subscription products with authentication,
 
 Built with **Next.js, React 19, TypeScript, shadcn/ui, Tailwind CSS, Better Auth, Drizzle ORM, PostgreSQL and oRPC**. **Bun** manages the workspace; **Node.js** runs development tools and the application.
 
+The stack also includes next-intl, React Email, Zod, React Hook Form, Vitest, Playwright, Storybook, Biome, Commitlint, Lefthook, Knip, T3 Env, GitHub Actions, LogTape, and `AGENTS.md` for AI coding context.
+
 ## What's included
 
 - Email/password registration and reset, magic links, passkeys, multi-factor authentication and account recovery.
