@@ -1195,6 +1195,10 @@ try {
 		webTelemetry.fence,
 		webTelemetry.fenceThreshold,
 	);
+	const workerFenceThreshold = fenceThresholdEvidence(
+		workerTelemetry.fence,
+		workerTelemetry.fenceThreshold,
+	);
 	const observerRevocationFence = histogramStatistics(
 		webTelemetry.revocationFence,
 		webTelemetry.maxRevocationFence,
@@ -1224,6 +1228,8 @@ try {
 		sourceCommit: stats(readiness),
 		revocation: stats(revocation),
 		observerValid:
+			observerFenceThreshold.valid &&
+			workerFenceThreshold.valid &&
 			webTelemetry.malformed === 0 &&
 			workerTelemetry.malformed === 0 &&
 			workerTelemetry.writes === 0 &&
@@ -1347,10 +1353,7 @@ try {
 						workerTelemetry.maxFence,
 					),
 					percentileRepresentation: "conservative-ceiling-ms-upper-bound",
-					threshold: fenceThresholdEvidence(
-						workerTelemetry.fence,
-						workerTelemetry.fenceThreshold,
-					),
+					threshold: workerFenceThreshold,
 				},
 			},
 			cleanup:

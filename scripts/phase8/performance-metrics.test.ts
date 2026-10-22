@@ -188,6 +188,34 @@ describe("exact fence threshold evidence", () => {
 				.fenceWait,
 		).toBe(false);
 	});
+	it("keeps proof validity mandatory independently of the fence latency result", () => {
+		const run = healthy();
+		for (const fenceThreshold of [
+			undefined,
+			{ ...run.fenceThreshold, valid: false },
+			{ ...run.fenceThreshold, count: run.fence.count + 1 },
+		]) {
+			const gates = performanceGates({
+				...run,
+				fenceThreshold: fenceThreshold as typeof run.fenceThreshold,
+			});
+			expect(gates.authorization).toBe(false);
+			expect(gates.fenceWait).toBe(false);
+		}
+		const histogram = { 111: 20 };
+		const gates = performanceGates({
+			...run,
+			fence: histogramStatistics(histogram, 110.5),
+			fenceThreshold: fenceThresholdEvidence(histogram, {
+				limitExclusiveMs: 100,
+				count: 20,
+				below: 0,
+				atOrAbove: 20,
+			}),
+		});
+		expect(gates.authorization).toBe(true);
+		expect(gates.fenceWait).toBe(false);
+	});
 	it("uses the nearest rank for a non-multiple of twenty without discarding slow samples", () => {
 		const histogram = { 99: 3151, 100: 7, 101: 160 };
 		for (const [below, passed] of [

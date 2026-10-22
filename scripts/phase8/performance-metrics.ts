@@ -116,6 +116,7 @@ export function fenceThresholdEvidence(
 	const p95Rank = counts.count - Math.floor(counts.count / 20);
 	return {
 		...counts,
+		valid: true,
 		p95Rank,
 		p95Passed: counts.count > 0 && counts.below >= p95Rank,
 		method: "raw-duration-threshold-count" as const,
@@ -163,6 +164,9 @@ export function performanceGates(run: {
 }) {
 	const under = (stats: Statistics, limit: number) =>
 		stats.count > 0 && stats.p95 !== null && stats.p95 < limit;
+	const fenceProofValid =
+		run.fenceThreshold?.valid === true &&
+		run.fenceThreshold.count === run.fence.count;
 	const mix = (names: string[]) =>
 		names.reduce((n, key) => n + (run.operations[key] ?? 0), 0) / run.attempts;
 	return {
@@ -172,15 +176,14 @@ export function performanceGates(run: {
 		readLatency: under(run.read, 500),
 		writeLatency: under(run.write, 800),
 		fenceWait:
-			run.fence.count > 0 &&
-			run.fenceThreshold.count === run.fence.count &&
-			run.fenceThreshold.p95Passed,
+			run.fence.count > 0 && fenceProofValid && run.fenceThreshold.p95Passed,
 		createToReadable: under(run.create, 2000),
 		sourceReadiness: under(run.sourceCommit, 2000),
 		authorization:
 			run.authorizationValid &&
 			run.graphEmpty &&
 			run.observerValid &&
+			fenceProofValid &&
 			run.revocation.count > 0 &&
 			run.revocationFence.count > 0,
 		sourceStable: run.sourceStable,
