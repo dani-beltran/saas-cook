@@ -15,6 +15,7 @@
 	"scripts": {
 		"phase8:image": "node --import tsx scripts/phase8/image.ts",
 		"phase8:compatibility": "node --import tsx scripts/phase8/compatibility.ts",
+		"phase8:recovery": "node --import tsx scripts/phase8/recovery.ts",
 		"phase0:test": "node node_modules/vitest/vitest.mjs run --config vitest.phase0.config.ts",
 		"phase0:typecheck": "node node_modules/typescript/bin/tsc --noEmit",
 		"phase0:build": "node node_modules/turbo/bin/turbo run build --filter=@common-sass/phase0-api",
