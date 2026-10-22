@@ -149,8 +149,8 @@ Proposed browser routes, with `[orgSlug]` resolved to an authorized immutable or
 /app/[orgSlug]/settings/webhooks
 /app/[orgSlug]/settings/integrations
 /app/[orgSlug]/settings/data
-/operator                               # Separate operator authentication boundary
-/operator/analytics                     # Product-wide reports, restricted to operators
+Private BO host /[locale]               # Optional staff passkey + exact-ID metadata lookup
+Private BO host reports                 # Later BO-07 scope; not a customer-host route
 ```
 
 Navigation responds to enabled modules and permissions. Deep links still perform all server checks. Billing managers do not automatically receive access to product content; support staff do not automatically receive customer access.

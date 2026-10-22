@@ -1,5 +1,9 @@
 # 4. Billing, usage, audit, and operations
 
+## Backoffice first-slice extension
+
+The optional [Backoffice first slice](backoffice/implementation.md) exposes metadata reads only. Existing domain workers retain billing/privacy/delivery ownership. No provider calls, BO worker, commercial changes, customer recovery execution or general replay are added. External dual-signed staff invite/offboard/re-enroll commands are a separate authority from customer signed recovery; they cannot release customer readiness.
+
 Implemented Phase 5 boundaries, configuration, exact metric contract, state policy and scoped
 commands are documented in [Phase 5 operations](phase5/README.md). Its [acceptance record](phase5/acceptance.md)
 distinguishes local and real Stripe evidence from outstanding release gates. The later modules

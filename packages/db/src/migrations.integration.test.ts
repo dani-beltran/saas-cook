@@ -79,6 +79,51 @@ async function precedingSchema(databaseUrl: string, count: number) {
 }
 
 describe("real PostgreSQL migration and runtime role boundary", () => {
+	it("upgrades the populated 0024 schema without changing customer rows or readiness", async () => {
+		const f = await fixture();
+		await precedingSchema(f.migrator, 25);
+		const c = new Pool({ connectionString: f.migrator });
+		cleanup.push(() => c.end());
+		const id = randomUUID(),
+			epoch = randomUUID(),
+			installation = randomUUID();
+		await c.query(
+			"INSERT INTO tenancy.organizations(id,name,slug) VALUES($1::uuid,'Preserved organization',$1::text)",
+			[id],
+		);
+		await c.query(
+			"INSERT INTO foundation.installation(installation_id,binding_id,recovery_epoch) VALUES($1,$2,$3)",
+			[installation, randomUUID(), epoch],
+		);
+		await c.query(
+			"INSERT INTO tenancy.seat_capacities(organization_id,capacity,occupied) VALUES($1,7,0)",
+			[id],
+		);
+		await runMigrations({ databaseUrl: f.migrator });
+		await runMigrations({ databaseUrl: f.migrator });
+		expect(
+			(
+				await c.query("SELECT name FROM tenancy.organizations WHERE id=$1", [
+					id,
+				])
+			).rows[0].name,
+		).toBe("Preserved organization");
+		expect(
+			(
+				await c.query(
+					"SELECT recovery_epoch FROM foundation.installation WHERE installation_id=$1",
+					[installation],
+				)
+			).rows[0].recovery_epoch,
+		).toBe(epoch);
+		expect(
+			(await c.query("SELECT count(*)::int AS count FROM backoffice.grants"))
+				.rows[0].count,
+		).toBe(0);
+		await expect(
+			f.web.pool.query("SELECT * FROM operator_identity.session"),
+		).rejects.toMatchObject({ code: "42501" });
+	});
 	it("retires populated Workspace access while preserving Projects, direct grants, receipts and historical payloads", async () => {
 		const f = await fixture();
 		await precedingSchema(f.migrator, 7);
@@ -477,7 +522,7 @@ describe("real PostgreSQL migration and runtime role boundary", () => {
 					"SELECT count(*)::int AS count FROM drizzle.__drizzle_migrations",
 				)
 			).rows[0],
-		).toEqual({ count: 25 });
+		).toEqual({ count: 26 });
 	});
 	it("upgrades Phase 2 to resource tables while preserving tenant and identity history", async () => {
 		const f = await fixture();

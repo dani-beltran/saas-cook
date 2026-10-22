@@ -31,7 +31,7 @@
 		"build": "node node_modules/turbo/bin/turbo run build --filter=@saas-cook/web && node --import tsx scripts/phase1/build-runtime.ts",
 		"check": "node node_modules/@biomejs/biome/bin/biome ci .",
 		"format": "node node_modules/@biomejs/biome/bin/biome check --write .",
-		"typecheck": "node node_modules/typescript/bin/tsc --noEmit && node node_modules/typescript/bin/tsc --noEmit -p apps/web/tsconfig.json",
+		"typecheck": "node node_modules/typescript/bin/tsc --noEmit && node node_modules/typescript/bin/tsc --noEmit -p apps/web/tsconfig.json && node node_modules/typescript/bin/tsc --noEmit -p apps/backoffice/tsconfig.json",
 		"commitlint": "node node_modules/@commitlint/cli/cli.js",
 		"knip": "node node_modules/knip/bin/knip.js",
 		"hooks:install": "node node_modules/lefthook/bin/index.js install",
@@ -69,7 +69,16 @@
 		"recovery:fingerprint": "node --env-file-if-exists=.env --import tsx scripts/phase6/command.ts recovery-fingerprint",
 		"analytics:report": "node --env-file-if-exists=.env --import tsx scripts/phase6/command.ts analytics-report",
 		"flags:set": "node --env-file-if-exists=.env --import tsx scripts/phase6/command.ts flags-set",
-		"control:schema": "node --env-file-if-exists=.env --import tsx scripts/phase6/command.ts control-schema"
+		"control:schema": "node --env-file-if-exists=.env --import tsx scripts/phase6/command.ts control-schema",
+		"dev:backoffice": "node --env-file-if-exists=.env node_modules/next/dist/bin/next dev apps/backoffice --hostname 127.0.0.1 --port 3001",
+		"build:customer": "node node_modules/turbo/bin/turbo run build --filter=@saas-cook/web && node --import tsx scripts/phase1/build-runtime.ts",
+		"build:backoffice": "node node_modules/turbo/bin/turbo run build --filter=@saas-cook/backoffice-app && node --import tsx scripts/backoffice/build-runtime.ts",
+		"start:backoffice": "node --env-file-if-exists=.env apps/backoffice/.next/standalone/apps/backoffice/server.js",
+		"backoffice:publish": "node --env-file-if-exists=.env --import tsx scripts/backoffice/command.ts publish",
+		"backoffice:manage": "node --env-file-if-exists=.env --import tsx scripts/backoffice/command.ts manage",
+		"image:build:backoffice": "node --import tsx scripts/backoffice/image-build.ts",
+		"test:e2e:backoffice": "node --import tsx scripts/backoffice/browser-tests.ts",
+		"test:image:backoffice": "node --import tsx scripts/backoffice/image-test.ts"
 	},
 	"devDependencies": {
 		"next": "16.3.8",
@@ -122,7 +131,8 @@
 		"@saas-cook/db": "workspace:*",
 		"@saas-cook/observability": "workspace:*",
 		"@saas-cook/authz": "workspace:*",
-		"@saas-cook/email": "workspace:*"
+		"@saas-cook/email": "workspace:*",
+		"@saas-cook/backoffice": "workspace:*"
 	},
 	"overrides": {
 		"axios": "1.20.0",

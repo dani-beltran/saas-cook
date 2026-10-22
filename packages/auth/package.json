@@ -4,7 +4,10 @@
 	"private": true,
 	"type": "module",
 	"exports": {
-		".": "./src/index.ts"
+		".": "./src/index.ts",
+		"./operator": "./src/operator/index.ts",
+		"./operator-network": "./src/operator/network.ts",
+		"./operator-request": "./src/operator/request.ts"
 	},
 	"scripts": {
 		"typecheck": "tsc --noEmit"

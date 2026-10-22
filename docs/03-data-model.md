@@ -1,5 +1,9 @@
 # 3. Data model
 
+## Backoffice first-slice extension
+
+Migration `0025_backoffice_identity` adds separate operator identity/session/passkey tables and Backoffice invitations, exact grants, append-only runtime audit, approval nonce receipts and bounded admission buckets. These global operator tables have dedicated roles, not customer tenant context. A fixed definer function exposes only organization metadata under the existing organization fence; no customer credential/content table grants are given to BO. Independent `control.operator_publications` is administered only by `control:schema`/BO publication tooling. See [schema and role operation](backoffice/implementation.md).
+
 ## 3.1 Conventions
 
 This is a logical schema specification. Implementation will translate it into Drizzle definitions, generated SQL, custom policies, and migration tests. Identity-provider and queue tables must follow the selected packages' actual schemas.
@@ -54,6 +58,8 @@ The diagram shows logical relationships, not exhaustive SQL constraints. Polymor
 Prevent voluntary removal/demotion/suspension of the final active owner under concurrent requests using an organization-level lock. Trusted security/SCIM deprovisioning overrides this rule: deactivate the membership and atomically enter `owner_recovery_required` if no active owner remains. Deny ordinary tenant operations until the dedicated, audited recovery command verifies organizational authority, admits a replacement owner, and publishes current authorization. Do not retain access merely to satisfy an owner-count invariant. Ownership transfer is a dedicated command, not an unrestricted membership PATCH. Invitation tokens, reset tokens, and API keys are never stored in plaintext application logs.
 
 ### Canonical lifecycle lock order
+
+For staff-authorized work, the independent application recovery fence precedes the BO installation operator fence (shared for reads/auth, exclusive for staff management). This operator fence precedes any customer user/organization fences below. The first slice reads only organization metadata and takes no customer user fence. Never upgrade either shared fence; no customer path acquires the BO fence.
 
 This is the authoritative lock-order contract (`R-LIFECYCLE` in the roadmap); billing, identity, recovery, and feature services reference it rather than defining their own order. All membership creation, activation, role/classification changes, and ownership transfers use one transition service. User-authorized commands and membership/ownership transitions first acquire relevant user lifecycle fences in user-ID order (shared for normal work, exclusive for account freeze), then organization locks in organization-ID order: authorization fence → lifecycle/owner row → seat-capacity row → affected memberships. This ordering also applies to invitations, SCIM admission, transfer acceptance, and resource responsibility changes; no path acquires the user fence after an organization lock. Atomically validate lifecycle/owner rules, compute the old/new billable delta, check admission, update membership and occupancy, advance authorization state, and append audit/outbox records. Bootstrap initializes the capacity row and admits the first owner atomically. Deactivation releases occupancy exactly once and never waits on a billing provider or available capacity.
 

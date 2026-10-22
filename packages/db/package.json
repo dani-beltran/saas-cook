@@ -33,7 +33,8 @@
 		"./endpoint-transport": "./src/settings/network.ts",
 		"./notifications": "./src/settings/notifications.ts",
 		"./flags": "./src/settings/flags.ts",
-		"./bulk-actor": "./src/bulk/actor.ts"
+		"./bulk-actor": "./src/bulk/actor.ts",
+		"./backoffice-schema": "./src/backoffice/schema.ts"
 	},
 	"scripts": {
 		"typecheck": "tsc --noEmit"
