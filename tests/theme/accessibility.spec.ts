@@ -46,11 +46,16 @@ for (const { locale, mode, width } of contexts) {
 		test(`${story}: ${locale} ${mode} ${width}px accessibility`, async ({
 			page,
 		}, info) => {
+			// The dev server responds before Vite finishes compiling a cold story chunk.
+			// Bound initial rendering separately while leaving time for the actual axe audit.
+			test.setTimeout(60_000);
 			await page.setViewportSize({ width, height: 900 });
 			await page.goto(
 				`/iframe.html?id=${story}&globals=locale:${locale};mode:${mode}`,
 			);
-			await expect(page.locator("#storybook-root")).not.toBeEmpty();
+			await expect(page.locator("#storybook-root")).not.toBeEmpty({
+				timeout: 30_000,
+			});
 			await expect(page.locator("html")).toHaveAttribute("lang", locale);
 			await auditAccessibility(page, info, story);
 		});
