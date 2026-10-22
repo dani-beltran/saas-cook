@@ -1,24 +1,24 @@
 # SaaS Cook
 
-A reusable SaaS template designed to give you a foundation to build your own SaaS product on. It brings together the platform features that SaaS products commonly need, so you can focus on your product’s domain, workflows, and customer experience.
+A reusable SaaS template for building subscription products with authentication, organizations, permissions, billing and background processing. You own the source and customize the branding, pricing, business rules and product features.
 
-The implemented foundation uses **Next.js, React 19, TypeScript, shadcn/ui, Tailwind CSS, Better Auth, Drizzle ORM, PostgreSQL, and oRPC**, with **Bun** for package management. Optional **Stripe** fixed/seat billing and a local usage ledger are implemented in [Phase 5](docs/phase5/README.md), with release gates tracked separately. It covers authentication with email/password registration and reset, magic links, passkeys and MFA recovery, organizations and tenant isolation, relationship-based permissions, a dashboard, background jobs, and AI agent skills for building and evolving product features. [Phase 6](docs/phase6/README.md) adds bulk data, product analytics, account/organization deletion, independent recovery, notifications, integrations and audit/help UI. Release acceptance is tracked separately; SSO and enterprise administration remain later work.
+Built with **Next.js, React 19, TypeScript, shadcn/ui, Tailwind CSS, Better Auth, Drizzle ORM, PostgreSQL and oRPC**. **Bun** manages the workspace; **Node.js** runs development tools and the application.
 
-The [required stack](docs/02-architecture-and-security.md#21-stack-decisions) also includes next-intl, React Email, Zod, React Hook Form, Vitest, Playwright, Storybook, Biome, Commitlint, Lefthook, Knip, T3 Env, GitHub Actions, LogTape, and `AGENTS.md` for AI coding context.
+## What's included
 
-The template is intended to be source code you own and customize. You supply your product-specific features, business rules, branding, and pricing.
+- Email/password registration and reset, magic links, passkeys, multi-factor authentication and account recovery.
+- Organizations, invitations, teams, tenant isolation, relationship-based permissions, service accounts and API keys.
+- A localized dashboard and reference Project feature, shared UI components, forms and Storybook.
+- Optional Stripe subscriptions and seat billing, a usage ledger and quota enforcement.
+- Private files, imports/exports, search, activity feeds, notifications, webhooks, integrations and analytics controls.
+- Account and organization deletion, recovery controls, audit records and background jobs.
+- Repository-local AI coding skills for building, evolving and verifying features.
 
-The checkout directory and root package are `saas-cook`, and active workspace packages use `@saas-cook`. The [compatibility notes](docs/00-project-overview.md#compatibility-identifiers) records compatibility identifiers retained from the original foundation.
-
-The template builds one Docker image containing the web app and background worker, with external data services configured at runtime.
-
-**Status: M1 Foundation and M2 Commercial core are accepted.** The [Foundation acceptance record](docs/foundation/acceptance.md), [Phase 5 acceptance](docs/phase5/acceptance.md) and [Phase 6 acceptance](docs/phase6/acceptance.md) record their scope and evidence. Phase 6 uses revised asynchronous-provider criteria; provider erasure remains unverified. The [next planned delivery](docs/06-delivery-roadmap.md#commercial-release-sequence--2026-10-22) is Phase 8 hardening and a Commercial template release directly after Phase 6. Phase 7 is an optional Enterprise extension deferred until later; M3 remains pending until Phase 7 and applicable Enterprise hardening pass. Optional Backoffice release remains deferred; its first slice is implemented with separate release acceptance pending.
+See [module availability](docs/development/module-availability.md) for supported capabilities, configuration requirements and limitations. The customer web app and worker ship in one Docker image, with external services configured at runtime. An optional [Backoffice application](docs/backoffice/implementation.md) provides a separate staff interface and image.
 
 ## Local development
 
-Phase 4 adds six [repository-local AI skills](docs/development/agent-skills.md), [feature briefs](docs/feature-briefs/phase4-project-task.md), deterministic migration/RLS/API checks, and an isolated behavior evaluation runner. Start with the [Phase 4 guide](docs/phase4/README.md); its [acceptance record](docs/phase4/acceptance.md) records the refreshed two-candidate evidence and its limitations. The separate [manual Phase 3 benchmark](docs/phase3/acceptance.md#accepted-direct-project-performance-result) passed the full `direct-project-v1` performance gate on 2026-09-27.
-
-With Node.js 24.19.0, Bun 1.4.2 and Docker installed:
+Install **Node.js 24.19.0**, **Bun 1.4.2** and **Docker**, then run these commands from the repository root:
 
 ```sh
 bun install --frozen-lockfile
@@ -29,9 +29,11 @@ bun run bootstrap
 bun run dev
 ```
 
+Use disposable synthetic credentials with the local services. The [runtime guide](docs/phase2/README.md) documents configuration, commands and troubleshooting.
+
 ### Create your first account
 
-A fresh installation has no pre-created account. To create an account and start using the platform:
+A fresh installation has no pre-created account:
 
 1. Open the [account page](http://localhost:3000/en/account).
 2. Choose **Create account**, enter your name, a synthetic test email such as `my-name@example.test`, and a password with its confirmation, then submit the registration form.
@@ -41,14 +43,29 @@ A fresh installation has no pre-created account. To create an account and start 
 
 For subsequent sign-ins, use your verified email and password. Email sign-in links and enrolled passkeys are also supported; email links are captured in Mailpit and require explicit confirmation. You can enroll a passkey or authenticator from your account.
 
-Local services use disposable synthetic credentials. See the [runtime guide](docs/phase2/README.md) for tests, stories, image commands and implementation boundaries.
-
 Local service data is stored in memory and is lost when the containers stop or are recreated, including registered accounts. After a reset, repeat `services:up`, `db:migrate` and `bootstrap` before `dev`, then register again. Keep the database targets in `.env` consistent with `.env.example`; Compose creates `saas_cook` and `saas_cook_control`, not temporary test databases. See [startup troubleshooting](docs/phase2/README.md#local-startup-troubleshooting) for worker failures.
 
-## Planning and design
+## Customize the template
 
-New to the project? Read the [junior developer guide](docs/08-junior-developer-guide.md) for a plain-language explanation of the project, planned features, architecture, current status, and implementation phases.
+Start with the [feature workflow](docs/development/feature-workflow.md) to understand where schema, services, API contracts, dashboard views and translations belong. Follow the [theming guide](docs/development/theming.md) to change the product's appearance and the [email guide](docs/development/email-workflow.md) for transactional messages.
 
-Start with the [project overview](docs/00-project-overview.md) for the original planning summary and an index of the documentation in [`docs/`](docs/). It explains the proposed foundation, delivery boundaries, and required design gates.
+The root package is `saas-cook`, and workspace packages use `@saas-cook`. Repository-local [AI coding skills](docs/development/agent-skills.md) support adopting or renaming the template and adding or changing features. Record product decisions in [feature briefs](docs/feature-briefs/). The [compatibility notes](docs/00-project-overview.md#compatibility-identifiers) explain retained identifiers to consider when renaming.
 
-The documentation details the [product plan](docs/01-product-plan.md), [architecture and security design](docs/02-architecture-and-security.md), data model, billing and operations, [AI agent skills](docs/05-ai-agent-skills.md), [delivery roadmap](docs/06-delivery-roadmap.md), and [Docker image build plan](docs/07-ci-and-docker-image.md).
+## Contributing
+
+Read [AGENTS.md](AGENTS.md) for repository conventions, supported commands and security boundaries. The [developer introduction](docs/08-junior-developer-guide.md), [architecture and security design](docs/02-architecture-and-security.md) and [data model](docs/03-data-model.md) explain how the project fits together. Use the [feature workflow](docs/development/feature-workflow.md), [migration instructions](packages/db/migrations/README.md) and [verification guide](docs/development/verification.md) when making changes.
+
+Common commands:
+
+| Task | Command |
+| --- | --- |
+| Source and formatting checks | `bun run check` |
+| Type checks | `bun run typecheck` |
+| Unit tests | `bun run test:unit` |
+| Integration tests with local services running | `bun run test:integration` |
+| Component development | `bun run storybook` |
+| Production build | `bun run build` |
+
+Run checks appropriate to the change; the verification guide describes browser, migration, security and image checks. Use Conventional Commits with headers of at most 100 characters, including PR titles. You can install local Git hooks with `bun run hooks:install`; CI enforces the repository policies independently.
+
+For planning, development history and acceptance evidence, consult the [delivery roadmap](docs/06-delivery-roadmap.md). The [documentation overview](docs/00-project-overview.md) links to the broader product and operations documents, and the [image guide](docs/07-ci-and-docker-image.md) covers packaging and verification.
