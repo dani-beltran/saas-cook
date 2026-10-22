@@ -4,7 +4,11 @@ import { randomUUID } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
 import { promisify } from "node:util";
 import { evidenceImage, evidenceSource, writeEvidence } from "./evidence";
-import { runWorkerCrashRecovery } from "./worker-recovery";
+import {
+	cleanupRecoveryResources,
+	registerRecoveryContainer,
+	runWorkerCrashRecovery,
+} from "./worker-recovery";
 
 const exec = promisify(execFile);
 const image = process.env.TEST_IMAGE ?? "saas-cook:phase2";
@@ -15,11 +19,11 @@ const attemptId = randomUUID();
 const source = await evidenceSource();
 let exactImage: Awaited<ReturnType<typeof evidenceImage>> | undefined;
 const containers = new Set<string>();
-async function docker(args: string[]) {
+async function docker(args: string[], timeout = 30_000) {
 	try {
 		return (
 			await exec("docker", args, {
-				timeout: 90_000,
+				timeout,
 				maxBuffer: 4 * 1024 * 1024,
 			})
 		).stdout.trim();
@@ -27,6 +31,17 @@ async function docker(args: string[]) {
 		// execFile errors include their complete argv, which contains synthetic credentials.
 		throw new Error(`Docker ${args[0]} failed during isolated recovery drill`);
 	}
+}
+async function cleanupContainers() {
+	await cleanupRecoveryResources(
+		[...containers].map((name) => ({
+			label: "Recovery container removal",
+			run: async () => {
+				await docker(["rm", "-f", name], 5_000);
+				containers.delete(name);
+			},
+		})),
+	);
 }
 function containerUrl(value: string, host: string, port: string) {
 	const url = new URL(value);
@@ -65,37 +80,42 @@ try {
 			SMTP_HOST: "mailpit",
 			SMTP_PORT: "1025",
 		};
-		const id = await docker([
-			"run",
-			"-d",
-			"--network",
-			network,
-			"--read-only",
-			"--tmpfs",
-			"/tmp:rw,nosuid,nodev,size=64m",
-			"--entrypoint",
-			"/nodejs/bin/node",
-			...Object.entries(runtime).flatMap(([key, value]) => [
-				"-e",
-				`${key}=${value}`,
+		const id = await registerRecoveryContainer(containers, (name) =>
+			docker([
+				"run",
+				"-d",
+				"--name",
+				name,
+				"--network",
+				network,
+				"--read-only",
+				"--tmpfs",
+				"/tmp:rw,nosuid,nodev,size=64m",
+				"--entrypoint",
+				"/nodejs/bin/node",
+				...Object.entries(runtime).flatMap(([key, value]) => [
+					"-e",
+					`${key}=${value}`,
+				]),
+				metadata.id,
+				"/app/dist/worker.mjs",
 			]),
-			metadata.id,
-			"/app/dist/worker.mjs",
-		]);
-		containers.add(id);
+		);
 		return {
 			async kill() {
-				await docker(["kill", "--signal=KILL", id]);
+				await docker(["kill", "--signal=KILL", id], 5_000);
 				assert.equal(
-					await docker(["wait", id]),
+					await docker(["wait", id], 5_000),
 					"137",
 					"Worker must exit from an actual SIGKILL",
 				);
-				await docker(["rm", id]);
+				await docker(["rm", id], 5_000);
 				containers.delete(id);
 			},
 		};
 	});
+	// Cleanup is part of acceptance; a successful receipt must follow it.
+	await cleanupContainers();
 	const current = await evidenceSource();
 	assert(
 		current.commit === source.commit &&
@@ -166,5 +186,5 @@ try {
 	});
 	throw error;
 } finally {
-	for (const id of containers) await docker(["rm", "-f", id]);
+	await cleanupContainers();
 }

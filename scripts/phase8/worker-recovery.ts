@@ -12,16 +12,105 @@ interface RecoveryWorker {
 }
 
 const budgetMs = 60_000;
+const queryBudgetMs = 5_000;
+const cleanupBudgetMs = 10_000;
 
-async function until(check: () => Promise<boolean>, label: string) {
-	const started = performance.now();
-	while (!(await check())) {
-		assert(
-			performance.now() - started < budgetMs,
-			`${label}: 60s budget exceeded`,
-		);
-		await delay(25);
+/**
+ * Bound a harness operation, including a successful response after its deadline.
+ * @param operation An asynchronous operation with its own I/O cancellation or timeouts.
+ * @param timeoutMs Remaining positive wall-clock budget in milliseconds.
+ * @param label Static diagnostic label; never include credentials or caller payloads.
+ * @returns The operation result only if it arrives strictly before the deadline.
+ * @throws Error on timeout or propagates the operation failure. A deadline bounds waiting;
+ * callers must additionally bound the underlying SQL, process or network operation.
+ */
+export async function withinRecoveryDeadline<T>(
+	operation: () => Promise<T>,
+	timeoutMs: number,
+	label: string,
+) {
+	const deadline = performance.now() + timeoutMs;
+	const expired = () => new Error(`${label}: recovery deadline exceeded`);
+	if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) throw expired();
+	let timer: ReturnType<typeof setTimeout> | undefined;
+	try {
+		const result = await Promise.race([
+			Promise.resolve().then(operation),
+			new Promise<never>((_, reject) => {
+				timer = setTimeout(() => reject(expired()), timeoutMs);
+			}),
+		]);
+		// A blocked event loop can deliver the operation before the timeout callback.
+		if (performance.now() >= deadline) throw expired();
+		return result;
+	} finally {
+		clearTimeout(timer);
 	}
+}
+
+/**
+ * Poll until a condition is true within one total elapsed-time budget.
+ * @param check Bounded database observation returning whether the boundary was reached.
+ * @param label Static name used in timeout diagnostics.
+ * @param timeoutMs Total budget including every check and poll delay; defaults to 60 seconds.
+ * @returns Nothing once a timely observation succeeds; rejects on a late or hung check.
+ */
+export async function waitForRecovery(
+	check: () => Promise<boolean>,
+	label: string,
+	timeoutMs = budgetMs,
+) {
+	const deadline = performance.now() + timeoutMs;
+	while (true) {
+		if (
+			await withinRecoveryDeadline(check, deadline - performance.now(), label)
+		)
+			return;
+		const remaining = deadline - performance.now();
+		if (remaining <= 0) throw new Error(`${label}: recovery deadline exceeded`);
+		await delay(Math.min(25, remaining));
+	}
+}
+
+/**
+ * Attempt every cleanup even when earlier steps fail or never settle.
+ * @param steps Named cleanup callbacks with bounded underlying I/O, in dependency order.
+ * @returns Nothing after every step succeeds; otherwise throws an AggregateError containing
+ * all observed failures. Per-step deadlines default to ten seconds and never imply success.
+ */
+export async function cleanupRecoveryResources(
+	steps: Array<{
+		label: string;
+		run: () => Promise<unknown>;
+		timeoutMs?: number;
+	}>,
+) {
+	const failures: unknown[] = [];
+	for (const { label, run, timeoutMs = cleanupBudgetMs } of steps) {
+		try {
+			await withinRecoveryDeadline(run, timeoutMs, label);
+		} catch (error) {
+			failures.push(error);
+		}
+	}
+	if (failures.length)
+		throw new AggregateError(failures, "Isolated recovery cleanup failed");
+}
+
+/**
+ * Register a unique Docker name before startup can create a container or fail.
+ * @param containers Attempt-owned names retained until confirmed removal.
+ * @param start Starts the container using the supplied name; may reject after creation.
+ * @returns Its registered name on success. Failure preserves the name for final cleanup.
+ */
+export async function registerRecoveryContainer(
+	containers: Set<string>,
+	start: (name: string) => Promise<unknown>,
+) {
+	const name = `phase8-recovery-${randomUUID()}`;
+	containers.add(name);
+	await start(name);
+	return name;
 }
 
 /**
@@ -30,21 +119,36 @@ async function until(check: () => Promise<boolean>, label: string) {
  * PostgreSQL advisory barriers stop the worker before the effect or queue acknowledgement;
  * the driver kills it, starts a replacement, and verifies bounded, exactly-once effects.
  * Returns timings against a predeclared 60-second local diagnostic recovery budget.
- * Throws on lost/duplicate effects, missing replay, or timeout, and always removes only
- * its generated application/control databases and OpenFGA store. This is not a deployment SLA.
+ * Throws on lost/duplicate effects, missing replay, timeout or failed cleanup. Cleanup always
+ * attempts only its generated databases and OpenFGA store. This is not a deployment SLA.
  */
 export async function runWorkerCrashRecovery(
 	start: (env: Record<string, string>) => Promise<RecoveryWorker>,
 ) {
 	const installation = await createTestInstallation();
-	const app = new Pool({ connectionString: installation.migrationUrl });
+	const harnessPoolOptions = {
+		max: 4,
+		connectionTimeoutMillis: queryBudgetMs,
+		query_timeout: queryBudgetMs,
+		statement_timeout: queryBudgetMs,
+		lock_timeout: queryBudgetMs,
+	};
+	const app = new Pool({
+		...harnessPoolOptions,
+		connectionString: installation.migrationUrl,
+	});
 	const admin = new Pool({
+		...harnessPoolOptions,
 		connectionString:
 			process.env.TEST_DATABASE_ADMIN_URL ??
 			"postgres://postgres:local_phase1@127.0.0.1:55433/postgres",
 	});
-	const boss = new PgBoss({
+	const queue = new Pool({
+		...harnessPoolOptions,
 		connectionString: installation.env.WORKER_DATABASE_URL,
+	});
+	const boss = new PgBoss({
+		db: { executeSql: (text, values) => queue.query(text, values) },
 		migrate: false,
 		createSchema: false,
 		supervise: false,
@@ -57,6 +161,16 @@ export async function runWorkerCrashRecovery(
 		retries: number;
 	}> = [];
 	let worker: RecoveryWorker | undefined;
+	async function killWorker() {
+		if (!worker) return;
+		const active = worker;
+		await withinRecoveryDeadline(
+			() => active.kill(),
+			20_000,
+			"Worker termination",
+		);
+		worker = undefined;
+	}
 	try {
 		await boss.start();
 		for (const boundary of [
@@ -95,8 +209,12 @@ export async function runWorkerCrashRecovery(
 					jobId,
 					"Durable job must be accepted before starting the worker",
 				);
-				worker = await start(installation.env);
-				await until(
+				worker = await withinRecoveryDeadline(
+					() => start(installation.env),
+					budgetMs,
+					"Worker start",
+				);
+				await waitForRecovery(
 					async () =>
 						(
 							await app.query(
@@ -120,8 +238,7 @@ export async function runWorkerCrashRecovery(
 					boundary === "before-effect" ? 0 : 1,
 					"The crash barrier must straddle a committed application effect",
 				);
-				await worker.kill();
-				worker = undefined;
+				await killWorker();
 				// A blocked PostgreSQL backend may not notice the killed client's socket
 				// until its statement resumes. Close precisely this fixture's waiting
 				// worker connection before releasing the barrier to retain the crash point.
@@ -135,12 +252,17 @@ export async function runWorkerCrashRecovery(
 				await app.query(`DROP TRIGGER phase8_crash_barrier ON ${table}`);
 				await app.query("DROP FUNCTION foundation.phase8_crash_barrier()");
 				const returnedAt = performance.now();
-				worker = await start(installation.env);
-				await until(
+				worker = await withinRecoveryDeadline(
+					() => start(installation.env),
+					budgetMs,
+					"Replacement worker start",
+				);
+				await waitForRecovery(
 					async () =>
 						(await boss.getJobById("runtime-probe", jobId))?.state ===
 						"completed",
 					"Replacement worker completion",
+					budgetMs - (performance.now() - returnedAt),
 				);
 				const recoveryMs = performance.now() - returnedAt;
 				assert(
@@ -158,21 +280,25 @@ export async function runWorkerCrashRecovery(
 					trace: {},
 				});
 				assert(duplicate);
-				await until(
+				await waitForRecovery(
 					async () =>
 						(await boss.getJobById("runtime-probe", duplicate))?.state ===
 						"completed",
 					"Duplicate delivery acknowledgement",
 				);
-				await worker.kill();
-				worker = await start(installation.env);
+				await killWorker();
+				worker = await withinRecoveryDeadline(
+					() => start(installation.env),
+					budgetMs,
+					"Post-acknowledgement worker start",
+				);
 				const sentinel = await boss.send("runtime-probe", {
 					id: randomUUID(),
 					requestId: randomUUID(),
 					trace: {},
 				});
 				assert(sentinel);
-				await until(
+				await waitForRecovery(
 					async () =>
 						(await boss.getJobById("runtime-probe", sentinel))?.state ===
 						"completed",
@@ -192,38 +318,58 @@ export async function runWorkerCrashRecovery(
 					1,
 				);
 				results.push({ boundary, recoveryMs, retries: recovered.retryCount });
-				await worker.kill();
-				worker = undefined;
+				await killWorker();
 			} finally {
-				try {
-					await worker?.kill();
-				} finally {
-					worker = undefined;
-					try {
-						await blocker.query("SELECT pg_advisory_unlock_all()");
-					} finally {
-						blocker.release();
-					}
-					await app.query(
-						`DROP TRIGGER IF EXISTS phase8_crash_barrier ON ${table}`,
-					);
-					await app.query(
-						"DROP FUNCTION IF EXISTS foundation.phase8_crash_barrier()",
-					);
-				}
+				await cleanupRecoveryResources([
+					{
+						label: "Barrier worker cleanup",
+						run: killWorker,
+						timeoutMs: 20_000,
+					},
+					{
+						label: "Barrier connection cleanup",
+						run: async () => {
+							try {
+								await blocker.query("SELECT pg_advisory_unlock_all()");
+							} finally {
+								// Destroy the held session even when the unlock query fails.
+								blocker.release(true);
+							}
+						},
+					},
+					{
+						label: "Barrier trigger cleanup",
+						run: () =>
+							app.query(
+								`DROP TRIGGER IF EXISTS phase8_crash_barrier ON ${table}`,
+							),
+					},
+					{
+						label: "Barrier function cleanup",
+						run: () =>
+							app.query(
+								"DROP FUNCTION IF EXISTS foundation.phase8_crash_barrier()",
+							),
+					},
+				]);
 			}
 		}
 		return { budgetMs, results };
 	} finally {
-		try {
-			await worker?.kill();
-		} finally {
-			try {
-				await boss.stop();
-			} finally {
-				await Promise.all([app.end(), admin.end()]);
-				await installation.cleanup();
-			}
-		}
+		await cleanupRecoveryResources([
+			{ label: "Final worker cleanup", run: killWorker, timeoutMs: 20_000 },
+			{
+				label: "Queue harness shutdown",
+				run: () => boss.stop({ graceful: false }),
+			},
+			{ label: "Application harness pool shutdown", run: () => app.end() },
+			{ label: "Administrator harness pool shutdown", run: () => admin.end() },
+			{ label: "Queue harness pool shutdown", run: () => queue.end() },
+			{
+				label: "Disposable installation cleanup",
+				run: installation.cleanup,
+				timeoutMs: 30_000,
+			},
+		]);
 	}
 }
