@@ -4,7 +4,7 @@ Status: first slice implemented; release acceptance remains pending. [BO-00 deci
 
 ## Scope and boundaries
 
-`apps/backoffice` serves English/Spanish public staff sign-in, invited user-verified passkey enrollment, sign-out, exact-ID organization lookup and a bounded masked organization directory. `packages/backoffice-contracts` allowlists input/output; `packages/backoffice` composes restricted services. `packages/auth/src/operator` owns separate Better Auth tables, cookies and ceremonies; `packages/authz/src/platform` owns a distinct pinned model/publication. No customer session, tenant role or API key grants staff access.
+`apps/backoffice` serves English/Spanish public staff sign-in, invited user-verified passkey enrollment, sign-out, exact-ID organization lookup and a bounded organization directory. `packages/backoffice-contracts` allowlists input/output; `packages/backoffice` composes restricted services. `packages/auth/src/operator` owns separate Better Auth tables, cookies and ceremonies; `packages/authz/src/platform` owns a distinct pinned model/publication. No customer session, tenant role or API key grants staff access.
 
 The staff workspace loads the shared UI stylesheet through the same pinned Tailwind/PostCSS pipeline as the customer app. Shared buttons, inputs, language selector, cards, badges and notices use Foundation theme tokens and system light/dark appearance. The responsive shell follows the customer dashboard's sidebar, typography and spacing without importing its customer identity runtime. English/Spanish forms include field guidance, keyboard submission, a skip link, pending/invalid/denied feedback and an empty/result overview. Backoffice presentation stories are included in the existing Storybook workspace.
 
@@ -65,8 +65,7 @@ expiry guarding to empty and populated directory pages, and advances compatibili
 to the reviewed schema through 0026. The old lookup app can run against that
 additive schema; the new app requires its directory compatibility function.
 
-Only approved exact organizations are candidates. List names are masked to one
-Unicode code point plus three bullets. UUID/lifecycle filters, UUID ordering,
+Only approved exact organizations are candidates. The table shows their full organization names under the same scoped read permission and audit boundary. UUID/lifecycle filters, UUID ordering,
 1–50 rows and up to 200 scanned candidates bound requests. The existing signed
 manager's 20-organization assignment limit is unchanged; a defensive 200-grant-row
 scope ceiling rejects unsupported assignments. Current grants, FGA, publication
@@ -102,7 +101,7 @@ receive sign-in/enrollment. The language selector retains the selected page.
 
 ## Organization table and audited row details — 2026-10-22
 
-The directory presents assigned organizations in a semantic table with masked
+The directory presents assigned organizations in a semantic table with full organization
 name, UUID, lifecycle, row observation time and View details. Previous/Next controls
 replay the page's actor/scope/query-bound cursor requests, retaining empty-page
 continuations and server page limits. Filters or case-reference changes start a

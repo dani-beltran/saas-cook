@@ -32,7 +32,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 
 /**
- * Shows a masked organization page, its observation time and bounded continuation.
+ * Shows an assigned organization page, its observation time and bounded continuation.
  * Result is server-validated metadata; the view never infers grants or total counts.
  */
 export function DirectoryResults({
@@ -72,7 +72,7 @@ export function DirectoryResults({
 					<TableCaption>{t("tableCaption")}</TableCaption>
 					<TableHeader>
 						<TableRow>
-							<TableHead scope="col">{t("maskedName")}</TableHead>
+							<TableHead scope="col">{t("name")}</TableHead>
 							<TableHead scope="col">{t("id")}</TableHead>
 							<TableHead scope="col">{t("stateLabel")}</TableHead>
 							<TableHead scope="col">{t("observed")}</TableHead>
@@ -82,7 +82,7 @@ export function DirectoryResults({
 					<TableBody>
 						{result.items.map((item) => (
 							<TableRow key={item.id}>
-								<TableCell>{item.maskedName}</TableCell>
+								<TableCell>{item.name}</TableCell>
 								<TableCell>
 									<code>{item.id}</code>
 								</TableCell>

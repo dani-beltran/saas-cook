@@ -170,7 +170,8 @@ test("invited staff passkey, audited scoped lookup, separate cookie and Spanish 
 	await expect(
 		directory.getByText("Live source", { exact: true }),
 	).toBeVisible();
-	await expect(directory).not.toContainText("Synthetic directory organization");
+	await expect(directory).toContainText("Synthetic directory organization");
+	await expect(directory).not.toContainText("Other organization");
 	const firstIds = await directory.locator("tbody tr code").allTextContents();
 	await directory.getByRole("button", { name: "Next page" }).click();
 	await expect(directory.locator("tbody tr")).toHaveCount(2);

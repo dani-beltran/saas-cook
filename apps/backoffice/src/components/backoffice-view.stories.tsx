@@ -83,7 +83,7 @@ export const Directory: Story = {
 					items: [
 						{
 							id: "11111111-1111-4111-8111-111111111111",
-							maskedName: "N•••",
+							name: "North Studio",
 							lifecycle: "active",
 							sourceTimestamp: "2026-10-22T12:00:00Z",
 						},

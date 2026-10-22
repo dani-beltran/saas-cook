@@ -47,7 +47,7 @@
 		"enrollmentHelp": "Enter the invitation code provided by your security administrator to register your passkey.",
 		"directory": {
 			"title": "Organization directory",
-			"description": "Browse your assigned organizations. Names are masked; account and contact details are omitted.",
+			"description": "Browse the organizations assigned to you. Account and contact details are omitted.",
 			"live": "Live source",
 			"checked": "Page checked at",
 			"observed": "Row observed at",
@@ -77,11 +77,11 @@
 			"unavailable": "Directory unavailable. Your session, scope or page may have changed. Search again or sign in.",
 			"stateLabel": "Lifecycle",
 			"tableCaption": "Organizations assigned to your staff account",
-			"maskedName": "Masked name",
 			"actions": "Actions",
 			"details": "View details",
 			"detailsFor": "View details for {id}",
-			"previous": "Previous page"
+			"previous": "Previous page",
+			"name": "Organization name"
 		},
 		"checkingSession": "Checking staff session…",
 		"signedOut": "Sign in or enroll your invited passkey to continue.",

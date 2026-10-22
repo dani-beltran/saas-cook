@@ -47,7 +47,7 @@
 		"enrollmentHelp": "Introduce el código de invitación facilitado por seguridad para registrar tu clave de acceso.",
 		"directory": {
 			"title": "Directorio de organizaciones",
-			"description": "Consulta las organizaciones asignadas. Los nombres están ocultos parcialmente; se omiten los datos de cuentas y contactos.",
+			"description": "Consulta las organizaciones asignadas. Se omiten los datos de cuentas y contactos.",
 			"live": "Fuente en vivo",
 			"checked": "Página consultada el",
 			"observed": "Fila consultada el",
@@ -77,11 +77,11 @@
 			"unavailable": "Directorio no disponible. Tu sesión, ámbito o página pueden haber cambiado. Busca de nuevo o inicia sesión.",
 			"stateLabel": "Estado",
 			"tableCaption": "Organizaciones asignadas a tu cuenta de personal",
-			"maskedName": "Nombre oculto",
 			"actions": "Acciones",
 			"details": "Ver detalles",
 			"detailsFor": "Ver detalles de {id}",
-			"previous": "Página anterior"
+			"previous": "Página anterior",
+			"name": "Nombre de la organización"
 		},
 		"checkingSession": "Comprobando la sesión del personal…",
 		"signedOut": "Inicia sesión o registra tu clave de acceso invitada para continuar.",
