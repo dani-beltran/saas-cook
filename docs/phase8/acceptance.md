@@ -25,6 +25,23 @@ No existing product release tags were found at implementation start. This candid
 
 Raw attempts remain under ignored `artifacts/phase8/`; CI uploads them with the tested source. Failed attempts must remain visible. The implementation smoke failed write p95 under concurrent development load; its [retained record](performance.md#development-verification) is diagnostic evidence and does not waive the target.
 
+## Implementation verification and remaining gates
+
+All eight implementation PRs were opened before hosted CI was inspected. They remain unmerged. The following records establish implementation behavior at their stated sources; they are not a combined final-source release index.
+
+| Evidence | Source and result | Retained record |
+| --- | --- | --- |
+| Full template adoption and skill applicability | `4bca5275e9e09bd58ec3b95d2a530a7dc12dc42a`: all ten adoption checks passed, including renamed frozen install/build/types, localized HTTP/email, real-service skill checks and preservation. Retained independent skill evidence was verified; zero fresh live-agent trials are claimed. | Receipts `a805a895-91b2-4967-a787-8cd4a3197967` and `95669628-6d3e-4491-ae9f-b7bfb7f857a6`. |
+| Unit, compatibility and production builds | The same `4bca527` source passed 279 unit tests across 47 files, 13 real-database migration tests and both production builds. | Receipts `4ad9a608-ef9f-41d9-80fe-2302cea395c0`, `fc34d2bc-cdb3-492a-9d75-0e5af6fd9e0e` and `1971abb7-5192-4d2e-9813-c16666c22db4`. |
+| Accessibility | `f9daa8278f4192f9b8013ec1e841beb7db71c39f`: four authenticated customer contexts, a fresh Storybook build and all 137 theme/story checks passed. Static preview replaced development HMR after a retained Axe context-destruction failure. | Receipt `ebb416ce-4ef3-4af5-a87a-ae62aedc0694`. |
+| Exact images and recovery | Customer and Backoffice acceptance/scans passed at `f9daa827`; both worker termination barriers passed within their local diagnostic budget. Both images and recovery were rerun successfully at `789410fcd64d129b052418f7249168a50365754a` after harness scheduling changes. | Image receipts include `d7e08e5c-d117-41f5-b150-9eafc2dc9aa3`, `0f33bbda-29b4-4d63-af92-8ee23eeabd82` and `a9415062-2c29-4e3f-bfa3-0096eb5f3e24`; exact-source logs and recovery receipts remain under `artifacts/phase8/`. |
+| Strict local smoke | `f9daa827`: 8,727/8,727 operations succeeded; read p95 183.55 ms and write p95 372.91 ms. All smoke gates passed. This is not sustained acceptance. | `performance-smoke-2026-10-22T18-32-48-675Z.json`. |
+| Hosted CI | PRs #14–18 passed required CI. Latest runs for #19–21 passed the other jobs but failed strict smoke read/write latency on four-core EPYC 7763 runners: read p95 570–620 ms and write p95 1,148–1,205 ms. Those runs had 100% successful logical operations, progressing tenants and passing authorization, fence, job and usage checks. | Runs [39834172841](https://github.com/dani-beltran/saas-cook/actions/runs/39834172841), [39834173206](https://github.com/dani-beltran/saas-cook/actions/runs/39834173206) and [39834177066](https://github.com/dani-beltran/saas-cook/actions/runs/39834177066). |
+
+The full attempt at `789410f` did not complete: after approximately 26 measured minutes, the shared development PostgreSQL container exhausted its 1 GiB tmpfs and stopped. Its last checkpoint recorded 538,198 submitted operations with 50 still in flight, read p95 159.10 ms and write p95 377.08 ms. An unhandled idle database-pool error prevented normal final evidence and cleanup. The checkpoint is not a completed or accepted run. The stopped tmpfs cluster lost its application and OpenFGA data; the existing containers were restarted with an empty cluster and OpenFGA migrations, without bootstrapping against or resetting the surviving control store. The incident record and failed logs remain in `artifacts/phase8/final/fixture-storage-failure*`; the original checkpoint is `performance-benchmark-2026-10-22T18-49-15-257Z.json`.
+
+The sustained gate requires a new full run after isolated disk-backed services, storage checks and bounded dependency-failure handling are verified. Hosted latency failures remain blocking under the current policy. No proposed change to that policy is implied by this record. Final merged-source evidence, acceptance review, roadmap sign-off and tagging remain pending.
+
 ## Release evidence checker
 
 `bun run phase8:release --template` creates an incomplete index under `artifacts/phase8/`. Fill it with the actual receipt paths and SHA-256 hashes for every required gate. Then run `bun run phase8:release artifacts/phase8/release-input.example.json` from the clean candidate checkout.
