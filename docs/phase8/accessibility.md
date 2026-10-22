@@ -2,6 +2,8 @@
 
 P8-06 adds a repeatable accessibility gate and fixes three reproduced customer-interface defects. It does not accept the optional Backoffice release or claim complete WCAG conformance from automated scans. The release candidate still needs its final-source CI and accessibility review in P8-08.
 
+`bun run test:theme` serves the existing `artifacts/storybook` build through the pinned Vite preview server. Run `bun run storybook:build` first and rebuild after source, catalog or Storybook configuration changes. CI builds before testing. The static preview avoids development-server dependency optimization/HMR reloads interrupting an axe execution context; missing build output fails instead of starting a development server. Rendering waits remain bounded, with no audit retries or rule suppressions.
+
 ## Implemented fixes
 
 - Search rejects whitespace-only input through the shared schema and now associates a localized, announced validation error with the focused field. Native validation is disabled on this form so English and Spanish use the same explicit validation path.

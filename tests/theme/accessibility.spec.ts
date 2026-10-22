@@ -46,7 +46,7 @@ for (const { locale, mode, width } of contexts) {
 		test(`${story}: ${locale} ${mode} ${width}px accessibility`, async ({
 			page,
 		}, info) => {
-			// The dev server responds before Vite finishes compiling a cold story chunk.
+			// The static iframe loads its built story assets before React mounts.
 			// Bound initial rendering separately while leaving time for the actual axe audit.
 			test.setTimeout(60_000);
 			await page.setViewportSize({ width, height: 900 });
