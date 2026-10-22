@@ -22,6 +22,7 @@ COPY --from=backoffice-build --chown=65532:65532 /source/apps/backoffice/.next/s
 COPY --from=backoffice-build --chown=65532:65532 /source/apps/backoffice/.next/static ./apps/backoffice/.next/static
 COPY --from=backoffice-build --chown=65532:65532 /source/apps/backoffice/public ./apps/backoffice/public
 COPY --from=backoffice-build --chown=65532:65532 /source/dist/backoffice/start.cjs ./start.cjs
+COPY --from=backoffice-build --chown=65532:65532 /source/dist/backoffice/compatibility.json ./compatibility.json
 USER 65532:65532
 EXPOSE 3001
 HEALTHCHECK --interval=5s --timeout=4s --start-period=30s --retries=3 CMD ["/nodejs/bin/node", "-e", "fetch('http://127.0.0.1:3001/health/live').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
