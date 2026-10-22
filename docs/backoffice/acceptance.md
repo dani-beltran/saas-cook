@@ -6,6 +6,12 @@ Status: **implemented; blocked local validation completed; release acceptance pe
 
 [BO-00](bo-00.md) selects the implementation defaults and records external owners/decisions still required. [Operation](implementation.md) documents the independent app/config/roles, additive `0025` migration, separate operator model/publication, dual-signed invitation/offboarding/re-enrollment commands, verified passkey sign-in, exact-organization grants, forced grant RLS, transaction expiry/offboarding fences and audit-before-disclosure metadata lookup. English/Spanish forms, independent standalone/image packaging and a required CI job are included. Directory search, domain mutations and other Backoffice modules remain planned.
 
+## CI browser assertion repair — 2026-10-22
+
+Run `39780547915` passed source/dependency security, unit, Storybook, production, full integration, monetization, customer image and Backoffice browser/image/security gates on `a9e2f1a`. The customer browser job exposed an ambiguous assertion in the existing Project edit/conflict journey: both the expected conflict notice and a sharing-list loading message have `role="status"` during refresh. The test now selects the conflict message within the editor and asserts visibility, preserving the stale-write behavior check without assuming a single live region. Product behavior is unchanged.
+
+The focused Project browser test passed locally; the full local integration suite also passed all 229 tests across 38 files after the dependency repair. The failed browser log is retained under `artifacts/backoffice/ci-39780547915/`. Hosted rerun results for this test-only correction must be verified separately.
+
 ## CI dependency repair — 2026-10-22
 
 Hosted run `39779366661` for `e349399` failed the source dependency gate on CRITICAL `CVE-2026-114125` in Storybook 10.6.0. The root/web/Backoffice/UI Storybook pins and resolved packages are updated together to 10.6.2, the upstream patched release. No exception or security policy change is introduced. The failure report is retained under `artifacts/backoffice/ci-39779366661/`; see the [security repair record](../../security/README.md#2026-10-22-storybook-ci-repair).
