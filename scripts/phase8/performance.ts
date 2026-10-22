@@ -6,6 +6,7 @@ import os from "node:os";
 import { performance } from "node:perf_hooks";
 import { setTimeout as delay } from "node:timers/promises";
 import { promisify } from "node:util";
+import type { PoolClient } from "pg";
 import { createApiClient } from "../../packages/api/src/client";
 import type { ProjectDto } from "../../packages/api-contracts/src/index";
 import type { TenantActor } from "../../packages/db/src/tenancy";
@@ -19,6 +20,18 @@ import {
 	checkFinalPerformanceSource,
 	finalPerformanceOutcome,
 } from "./performance-assertions";
+import { performanceMode, writeCiCorrectnessEvidence } from "./performance-ci";
+import {
+	finalizePerformanceEnvironment,
+	performanceComposeArgs,
+	performanceEnvironment,
+	performanceEnvironmentNames,
+	performanceFixtureEnvironment,
+} from "./performance-environment";
+import {
+	cleanupPerformanceResources,
+	createPerformanceFailureBoundary,
+} from "./performance-failure";
 import { startPerformanceImage } from "./performance-image";
 import {
 	histogramStatistics,
@@ -30,12 +43,34 @@ import {
 	pollPendingUsage,
 } from "./performance-scheduling";
 
+const isolatedEnvironment = performanceEnvironment();
+assert(
+	process.send && process.connected,
+	"Run the benchmark through its isolated service wrapper",
+);
+const isolatedNames = performanceEnvironmentNames(isolatedEnvironment);
+for (const [key, value] of Object.entries(
+	performanceFixtureEnvironment(isolatedEnvironment),
+))
+	assert(
+		process.env[key] === value,
+		"Fixture environment must match this attempt's isolated services",
+	);
+const mode = performanceMode(process.argv.slice(2));
+const smoke = mode !== "full";
 const executeFile = promisify(execFile);
 const runId = new Date().toISOString().replace(/[:.]/g, "-");
 const evidenceStartedAt = new Date().toISOString();
 const evidenceSourceBefore = await evidenceSource();
 let interrupted: string | undefined;
 let stage = "initialization";
+const dependencyFailure = createPerformanceFailureBoundary((boundary) => {
+	interrupted = "fixture_dependency_error";
+	process.exitCode = 1;
+	console.log(
+		JSON.stringify({ event: "benchmark.dependency_failed", boundary, stage }),
+	);
+});
 let measureStartedAt: number | undefined;
 const operationCounts: Record<string, number> = {};
 const failuresByOperation: Record<string, number> = {};
@@ -89,9 +124,7 @@ async function dockerCapacity() {
 }
 async function serviceContainers() {
 	const ids = await command("docker", [
-		"compose",
-		"-f",
-		"infra/compose.yaml",
+		...performanceComposeArgs(isolatedEnvironment),
 		"ps",
 		"-q",
 		"postgres",
@@ -156,12 +189,10 @@ const buildMetadata = {
 		.packageManager,
 	services: await serviceContainers(),
 	dockerDaemon: await dockerCapacity(),
+	isolatedEnvironment: JSON.parse(
+		await readFile(`${isolatedNames.directory}/preflight.json`, "utf8"),
+	),
 };
-const smoke = process.argv.includes("--smoke");
-assert(
-	process.argv.slice(2).every((v) => v === "--smoke"),
-	"Only --smoke is supported; full reference targets cannot be overridden",
-);
 const durationMs = smoke ? 30_000 : 30 * 60_000;
 const warmupMs = smoke ? 2_000 : 60_000;
 const cursorIdleLimitMs = 5 * 60_000;
@@ -189,32 +220,48 @@ const failureStatuses: Record<string, number> = {};
 let measuredFgaChecks = 0;
 let measuredFgaWrites = 0;
 const f = await resourceFixture({
+	onDependencyError: dependencyFailure.onDependencyError,
+	poolTimeoutMs: 10_000,
 	defaultProjectCapacity: null,
 	// Exercise the ledger and finite quota path throughout the high-volume workload.
 	defaultProjectCreatesPerMonth: 1000000,
 	// Match packages/api/src/runtime.ts; all 50 clients still submit concurrently.
 	poolSize: 8,
 }).catch(async () => {
+	const environmentCleanup = await finalizePerformanceEnvironment().catch(
+		() => ({ passed: false, artifactPaths: [] as string[] }),
+	);
 	const path = `artifacts/phase8/performance-initialization-${runId}.json`;
 	await atomicReport(path, {
 		status: "failed",
 		stage: "fixture-initialization",
 		runId,
+		dependencyFailures: [...dependencyFailure.boundaries],
+		environmentCleanup: environmentCleanup.passed,
 	});
-	await writeEvidence(
+	const strictReceiptPath = await writeEvidence(
 		{
 			gate: smoke ? "performance-smoke" : "performance-full",
 			preset: "commercial-local",
 			startedAt: evidenceStartedAt,
 			source: evidenceSourceBefore,
 			outcome: "failed",
-			checks: [{ name: "fixture-initialization", passed: false }],
+			checks: [
+				{ name: "fixture-initialization", passed: false },
+				{ name: "environmentCleanup", passed: environmentCleanup.passed },
+			],
 			limitations: smoke
 				? ["Smoke cannot satisfy sustained release acceptance"]
 				: [],
 		},
-		[path],
+		[path, ...environmentCleanup.artifactPaths],
 	);
+	if (mode === "ci-smoke")
+		await writeCiCorrectnessEvidence(
+			strictReceiptPath,
+			`artifacts/phase8/performance-ci-correctness-${runId}.json`,
+			path,
+		);
 	throw new Error(
 		"Performance fixture initialization failed; failed evidence retained",
 	);
@@ -240,7 +287,14 @@ async function imageFetch(
 		now < measurementEndsAt;
 	if (measured) httpAttempts++;
 	try {
-		const response = await fetch(input, init);
+		const response = await fetch(input, {
+			...init,
+			signal: AbortSignal.any([
+				dependencyFailure.signal,
+				...(init?.signal ? [init.signal] : []),
+				...(input instanceof Request ? [input.signal] : []),
+			]),
+		});
 		if (measured)
 			httpStatuses[response.status] = (httpStatuses[response.status] ?? 0) + 1;
 		return response;
@@ -419,6 +473,7 @@ async function storageSnapshot() {
 	};
 }
 async function graphSnapshot() {
+	assert(source, "Missing benchmark source connection");
 	const state = await f.authorization.publication(source);
 	const response = await fetch(
 		`${f.installation.env.OPENFGA_API_URL}/stores/${state.storeId}/read`,
@@ -457,6 +512,7 @@ function partialEvidence(status = "running") {
 		status,
 		stage,
 		interrupted,
+		dependencyFailures: [...dependencyFailure.boundaries],
 		runId,
 		checkpointAt: new Date().toISOString(),
 		scope:
@@ -717,12 +773,14 @@ async function commercialWork(start: number, end: number) {
 		);
 	}
 }
-const source = await f.app.connect();
+let source: PoolClient | undefined;
 const started = new Date();
 let finalChecks: Record<string, boolean> = { execution: false };
 try {
 	stage = "seeding";
 	await atomicReport(reportPath, partialEvidence());
+	dependencyFailure.signal.throwIfAborted();
+	source = await f.app.connect();
 	console.log("Seeding 100 tenants, 1,000 memberships, 100,000 Projects");
 	await source.query("BEGIN");
 	for (let index = 0; index < tenants; index++) {
@@ -811,7 +869,10 @@ try {
 	).rows[0].count;
 	assert.equal(count, resourceCount);
 	stage = "storage-initialization";
-	storage = await createTestFileStorage(benchmarkOrigin);
+	storage = await createTestFileStorage(
+		benchmarkOrigin,
+		performanceFixtureEnvironment(isolatedEnvironment).S3_ENDPOINT,
+	);
 	const roleUrl = (value: string, role: string) => {
 		const url = new URL(value);
 		url.username = role;
@@ -1110,6 +1171,7 @@ try {
 			durationMs - progress.lastSuccessMs,
 		);
 	await commercialTask;
+	dependencyFailure.signal.throwIfAborted();
 	stage = "evidence";
 	const storageAfter = await storageSnapshot(),
 		graphAfter = await graphSnapshot(),
@@ -1293,7 +1355,15 @@ try {
 			control: 8,
 			queueWaitIncludedInRequestLatency: true,
 		},
-		limits: { transactionStatementMs: 8000, lockMs: 5000, fgaMs: 3000 },
+		limits: {
+			transactionStatementMs: 8000,
+			lockMs: 5000,
+			fgaMs: 3000,
+			fixtureConnectionAndQueryMs: 10000,
+			fixturePoolCloseMs: 10000,
+			cleanupStepDefaultMs: 15000,
+			fixtureCleanupMs: 45000,
+		},
 	};
 	await atomicReport(reportPath, evidence);
 	await writeFile(
@@ -1302,29 +1372,39 @@ try {
 	);
 	console.log(JSON.stringify(evidence, null, 2));
 	if (!passed) process.exitCode = 1;
-} catch (error) {
+} catch {
 	finalChecks = { ...finalChecks, execution: false };
 	await atomicReport(reportPath, {
 		...partialEvidence(interrupted ? "interrupted" : "failed"),
-		failure: error instanceof Error ? error.name : "Unknown",
+		failure: dependencyFailure.signal.aborted
+			? "FixtureDependencyError"
+			: "BenchmarkExecutionError",
 	});
 	process.exitCode = 1;
 } finally {
-	let cleanupPassed = true;
-	for (const cleanup of [() => image?.stop(), () => storage?.cleanup()]) {
-		try {
-			await cleanup();
-		} catch {
-			cleanupPassed = false;
-		}
-	}
-	await source.query("ROLLBACK").catch(() => {});
-	source.release();
-	try {
-		await f.cleanup();
-	} catch {
-		cleanupPassed = false;
-	}
+	const cleanupFailures = await cleanupPerformanceResources([
+		{ label: "image", run: async () => image?.stop() },
+		{ label: "storage", run: async () => storage?.cleanup() },
+		{
+			label: "source-client",
+			run: async () => {
+				if (!source) return;
+				try {
+					if (!dependencyFailure.signal.aborted) await source.query("ROLLBACK");
+				} finally {
+					source.release(dependencyFailure.signal.aborted);
+				}
+			},
+		},
+		{ label: "fixture", run: () => f.cleanup(), timeoutMs: 45_000 },
+	]);
+	const environmentCleanup = await finalizePerformanceEnvironment().catch(
+		() => ({ passed: false, artifactPaths: [] as string[] }),
+	);
+	if (!environmentCleanup.passed) cleanupFailures.push("environment");
+	const cleanupPassed = cleanupFailures.length === 0;
+	finalChecks.environmentCleanup = environmentCleanup.passed;
+	finalChecks.dependencyHealth = !dependencyFailure.signal.aborted;
 	finalChecks.cleanup = cleanupPassed;
 	const finalSource = await checkFinalPerformanceSource(
 		evidenceSourceBefore,
@@ -1332,7 +1412,9 @@ try {
 		evidenceSource,
 	);
 	finalChecks.sourceStable = finalSource.sourceStable;
-	const finalReport = JSON.parse(await readFile(reportPath, "utf8"));
+	const finalReport = await readFile(reportPath, "utf8")
+		.then((value) => JSON.parse(value))
+		.catch(() => partialEvidence("failed"));
 	const outcome = finalPerformanceOutcome({
 		status: finalReport.status,
 		smoke,
@@ -1344,13 +1426,16 @@ try {
 		...finalReport,
 		...outcome,
 		sourceAfterCleanup: finalSource.sourceAfterCleanup,
+		dependencyFailures: [...dependencyFailure.boundaries],
+		cleanupFailures,
+		gates: finalChecks,
 	};
 	await atomicReport(reportPath, completedReport);
 	await atomicReport(
 		`artifacts/phase8/performance-${smoke ? "smoke" : "benchmark"}.json`,
 		completedReport,
 	);
-	await writeEvidence(
+	const strictReceiptPath = await writeEvidence(
 		{
 			gate: smoke ? "performance-smoke" : "performance-full",
 			preset: "commercial-local",
@@ -1378,7 +1463,14 @@ try {
 				...(smoke ? ["Smoke cannot satisfy sustained release acceptance"] : []),
 			],
 		},
-		[reportPath],
+		[reportPath, ...environmentCleanup.artifactPaths],
 	);
-	if (!passed) process.exitCode = 1;
+	if (mode === "ci-smoke") {
+		const correctness = await writeCiCorrectnessEvidence(
+			strictReceiptPath,
+			`artifacts/phase8/performance-ci-correctness-${runId}.json`,
+			reportPath,
+		);
+		process.exitCode = correctness.status === "passed" ? 0 : 1;
+	} else if (!passed) process.exitCode = 1;
 }

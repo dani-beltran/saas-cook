@@ -1,13 +1,21 @@
 import { execFile } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { promisify } from "node:util";
-import { Pool } from "pg";
 import { dropTestDatabase } from "./database";
+import {
+	closeFixturePool,
+	createFixturePool,
+	type FixturePoolOptions,
+} from "./pool";
 
 const exec = promisify(execFile);
 
-/** Test-only installation: never reuse, clear, or bootstrap an ambient application database. */
-export async function createTestInstallation() {
+/** Creates an isolated real-service installation; never reuses or bootstraps ambient data.
+ * @param options Optional static pool-failure callback and bounded harness SQL settings.
+ * @returns Scoped credentials and cleanup, which attempts every owned resource on failure.
+ * @throws Setup or cleanup errors; callers must avoid logging raw database error objects.
+ */
+export async function createTestInstallation(options: FixturePoolOptions = {}) {
 	const adminUrl =
 		process.env.TEST_DATABASE_ADMIN_URL ??
 		"postgres://postgres:local_phase1@127.0.0.1:55433/postgres";
@@ -17,16 +25,24 @@ export async function createTestInstallation() {
 	const name = `phase2_test_${randomUUID().replaceAll("-", "")}`;
 	const installationId = randomUUID();
 	const fgaUrl = process.env.OPENFGA_API_URL ?? "http://127.0.0.1:18081";
-	const admin = new Pool({
-		connectionString: adminUrl,
-		max: 1,
-		connectionTimeoutMillis: 5_000,
-	});
-	const controlAdmin = new Pool({
-		connectionString: controlAdminUrl,
-		max: 1,
-		connectionTimeoutMillis: 5_000,
-	});
+	const admin = createFixturePool(
+		{
+			connectionString: adminUrl,
+			max: 1,
+			connectionTimeoutMillis: 5_000,
+		},
+		"installation-application-admin",
+		options,
+	);
+	const controlAdmin = createFixturePool(
+		{
+			connectionString: controlAdminUrl,
+			max: 1,
+			connectionTimeoutMillis: 5_000,
+		},
+		"installation-control-admin",
+		options,
+	);
 	function url(base: string, role: string, password: string) {
 		const value = new URL(base);
 		value.pathname = `/${name}`;
@@ -61,11 +77,15 @@ export async function createTestInstallation() {
 		cleaned = true;
 		const failures: unknown[] = [];
 		if (controlCreated) {
-			const control = new Pool({
-				connectionString: controlUrl,
-				max: 1,
-				connectionTimeoutMillis: 5_000,
-			});
+			const control = createFixturePool(
+				{
+					connectionString: controlUrl,
+					max: 1,
+					connectionTimeoutMillis: 5_000,
+				},
+				"installation-control-cleanup",
+				options,
+			);
 			try {
 				const state = await control
 					.query(
@@ -87,7 +107,7 @@ export async function createTestInstallation() {
 			} catch (error) {
 				failures.push(error);
 			} finally {
-				await control.end();
+				await closeFixturePool(control).catch((error) => failures.push(error));
 			}
 		}
 		for (const [pool, created] of [
@@ -99,7 +119,7 @@ export async function createTestInstallation() {
 			} catch (error) {
 				failures.push(error);
 			} finally {
-				await pool.end();
+				await closeFixturePool(pool).catch((error) => failures.push(error));
 			}
 		}
 		if (failures.length)
