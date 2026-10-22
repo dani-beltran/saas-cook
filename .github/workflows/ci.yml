@@ -5,6 +5,17 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      phase8_ci_smoke:
+        description: Run diagnostic smoke on the completed final integration branch or main
+        type: boolean
+        required: false
+        default: false
+      phase8_full:
+        description: Run strict full workload on completed integration or main; takes precedence
+        type: boolean
+        required: false
+        default: false
 permissions:
   contents: read
 concurrency:
@@ -188,7 +199,7 @@ jobs:
       - run: bun run build
   image:
     runs-on: ubuntu-24.04
-    timeout-minutes: 40
+    timeout-minutes: ${{ inputs.phase8_full && 90 || 45 }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -201,6 +212,12 @@ jobs:
       - run: bun run services:up
       - run: bun run phase8:image customer
       - run: bun run phase8:recovery
+      - name: Phase 8 image workload correctness smoke
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.phase8_ci_smoke && !inputs.phase8_full }}
+        run: bun run phase8:performance:ci
+      - name: Phase 8 sustained image workload
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.phase8_full }}
+        run: bun run phase8:performance
       - name: Record image identity
         if: always()
         run: |
