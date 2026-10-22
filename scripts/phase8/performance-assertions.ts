@@ -1,5 +1,36 @@
 import assert from "node:assert/strict";
 import { parseCsv } from "../../packages/db/src/bulk/csv";
+import type { evidenceSource } from "./evidence";
+
+type PerformanceSource = Awaited<ReturnType<typeof evidenceSource>>;
+
+/**
+ * Recheck source identity after every cleanup action without losing failed-run evidence.
+ * @param before Commit, implementation fingerprint and dirty state captured before work.
+ * @param previouslyStable Whether the measurement's earlier source check passed.
+ * @param capture Read current source metadata after cleanup; read failures are caught.
+ * @returns The combined source gate and safe final metadata, or null metadata when reading
+ * fails. This never restores a failed earlier check; unchanged dirty smoke stays diagnostic.
+ */
+export async function checkFinalPerformanceSource(
+	before: PerformanceSource,
+	previouslyStable: boolean,
+	capture: () => Promise<PerformanceSource>,
+) {
+	try {
+		const sourceAfterCleanup = await capture();
+		return {
+			sourceStable:
+				previouslyStable &&
+				sourceAfterCleanup.commit === before.commit &&
+				sourceAfterCleanup.fingerprint === before.fingerprint &&
+				sourceAfterCleanup.dirty === before.dirty,
+			sourceAfterCleanup,
+		};
+	} catch {
+		return { sourceStable: false, sourceAfterCleanup: null };
+	}
+}
 
 /**
  * Verify each sparse-list row against the fixture's independent permission allowlist.
