@@ -67,7 +67,7 @@ try {
 				)
 			).filter((artifact) => artifact !== file),
 		);
-		checks.push({ name: args.join(" "), passed });
+		checks.push({ name: args[0], passed });
 		console.log(`${passed ? "passed" : "failed"}: ${args.join(" ")} - ${file}`);
 		if (!passed) throw new Error("Required check failed");
 	}
