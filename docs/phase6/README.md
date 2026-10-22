@@ -1,6 +1,6 @@
 # Phase 6 platform modules
 
-This checkout combines PR #4’s discovery/activity, API keys and immutable text files with the [platform modules](platform-modules.md): bulk jobs, account/organization deletion, independent recovery, analytics, notifications, outgoing webhooks, integrations, rollout flags, restricted audit and public/help UI. Implementation and release acceptance are tracked separately in the [acceptance record](acceptance.md).
+This checkout combines PR #4’s discovery/activity, API keys and immutable text files with the [platform modules](platform-modules.md): bulk jobs, account/organization deletion, independent recovery, analytics, notifications, outgoing webhooks, integrations, rollout flags, restricted audit and public/help UI. Implementation and release acceptance are tracked separately in the [acceptance record](acceptance.md). Phase 6/M2 is accepted under its explicitly revised asynchronous-provider criteria; the original synthetic PostHog erasure remains a tracked operational follow-up.
 
 ## Implemented behavior
 
