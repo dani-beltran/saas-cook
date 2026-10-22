@@ -166,6 +166,7 @@ export function performanceGates(run: {
 		stats.count > 0 && stats.p95 !== null && stats.p95 < limit;
 	const fenceProofValid =
 		run.fenceThreshold?.valid === true &&
+		run.fenceThreshold.count > 0 &&
 		run.fenceThreshold.count === run.fence.count;
 	const mix = (names: string[]) =>
 		names.reduce((n, key) => n + (run.operations[key] ?? 0), 0) / run.attempts;

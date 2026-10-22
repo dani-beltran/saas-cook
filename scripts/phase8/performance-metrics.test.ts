@@ -232,6 +232,17 @@ describe("exact fence threshold evidence", () => {
 			expect(result.p95Passed).toBe(passed);
 		}
 	});
+	it("keeps empty but internally valid web telemetry an authorization failure", () => {
+		const fence = histogramStatistics({});
+		const fenceThreshold = fenceThresholdEvidence(
+			{},
+			{ limitExclusiveMs: 100, count: 0, below: 0, atOrAbove: 0 },
+		);
+		const result = performanceGates({ ...healthy(), fence, fenceThreshold });
+		expect(fenceThreshold.valid).toBe(true);
+		expect(result.fenceWait).toBe(false);
+		expect(result.authorization).toBe(false);
+	});
 	it("does not admit an empty or mismatched sample population", () => {
 		const empty = fenceThresholdEvidence(
 			{},
