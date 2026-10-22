@@ -7,7 +7,7 @@ import {
 } from "@saas-cook/api-contracts/platform";
 import { Button, Input, NativeSelect, NativeSelectOption } from "@saas-cook/ui";
 import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { DashboardShell } from "../../components/dashboard-shell";
@@ -21,8 +21,15 @@ type Fields = z.infer<typeof formSchema>;
 type Page = Awaited<
 	ReturnType<ReturnType<typeof createApiClient>["platform"]["search"]>
 >;
+/**
+ * Shows authorized search results and a keyboard-accessible activity detail panel.
+ * @param props - organizationId selects the organization; the API independently authorizes it.
+ * @returns Search form, bounded results and localized loading/error feedback.
+ */
 export function PlatformSearch({ organizationId }: { organizationId: string }) {
 	const t = useTranslations("Discovery");
+	const activityPanel = useRef<HTMLElement>(null);
+	const activityOpener = useRef<HTMLButtonElement>(null);
 	const [query, setQuery] = useState<Fields>(),
 		[cursor, setCursor] = useState<string>(),
 		[page, setPage] = useState<Page>(),
@@ -37,6 +44,9 @@ export function PlatformSearch({ organizationId }: { organizationId: string }) {
 		resolver: zodResolver(formSchema),
 		defaultValues: { query: "", type: "all" },
 	});
+	useEffect(() => {
+		if (selected) activityPanel.current?.focus();
+	}, [selected]);
 	useEffect(() => {
 		void retry;
 		let active = true;
@@ -71,6 +81,7 @@ export function PlatformSearch({ organizationId }: { organizationId: string }) {
 				</div>
 			</header>
 			<form
+				noValidate
 				className="platform-search-form"
 				onSubmit={handleSubmit((value) => {
 					setCursor(undefined);
@@ -82,9 +93,19 @@ export function PlatformSearch({ organizationId }: { organizationId: string }) {
 					id="platform-query"
 					maxLength={120}
 					aria-invalid={Boolean(errors.query)}
+					aria-describedby={errors.query ? "platform-query-error" : undefined}
 					{...register("query")}
 					required
 				/>
+				{errors.query && (
+					<p
+						id="platform-query-error"
+						role="alert"
+						className="text-destructive"
+					>
+						{t("queryInvalid")}
+					</p>
+				)}
 				<label className="sr-only" htmlFor="platform-type">
 					{t("all")}
 				</label>
@@ -113,7 +134,12 @@ export function PlatformSearch({ organizationId }: { organizationId: string }) {
 						{page.items.map((item) => (
 							<li key={`${item.type}:${item.id}`}>
 								<strong>{item.label}</strong> · {t(item.type)}{" "}
-								<Button onClick={() => setSelected(item)}>
+								<Button
+									onClick={(event) => {
+										activityOpener.current = event.currentTarget;
+										setSelected(item);
+									}}
+								>
 									{t("activity")}
 								</Button>
 							</li>
@@ -127,9 +153,20 @@ export function PlatformSearch({ organizationId }: { organizationId: string }) {
 				</section>
 			) : null}
 			{selected && (
-				<section>
-					<h2>{selected.label}</h2>
-					<Button onClick={() => setSelected(undefined)}>{t("close")}</Button>
+				<section
+					ref={activityPanel}
+					tabIndex={-1}
+					aria-labelledby="search-activity-title"
+				>
+					<h2 id="search-activity-title">{selected.label}</h2>
+					<Button
+						onClick={() => {
+							setSelected(undefined);
+							activityOpener.current?.focus();
+						}}
+					>
+						{t("close")}
+					</Button>
 					<ResourceActivity
 						key={`${selected.type}:${selected.id}`}
 						organizationId={organizationId}

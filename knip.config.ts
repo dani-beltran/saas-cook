@@ -18,6 +18,8 @@ const config: KnipConfig = {
 				"infra/docker/{entrypoint.mjs,healthcheck.cjs,supervisor.ts,backoffice-start.ts}",
 			],
 			project: [
+				// Shared axe helper imported by both Playwright configurations.
+				"tests/accessibility.ts",
 				"scripts/**/*.ts",
 				"spikes/phase0/**/*.{ts,tsx,css}",
 				"infra/docker/*.{ts,cjs,mjs}",

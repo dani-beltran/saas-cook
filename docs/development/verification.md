@@ -14,7 +14,7 @@ Run from the repository root with pinned Bun/Node. Select tests proportionally t
 | Schema, role separation and upgrades | `bun run db:test:upgrade`; extend fixtures for the new preceding schema and old rows |
 | Selected authorization model | `bun run authz:validate`; does not replace live fault/parity suites |
 | Browser journeys | `bun run build`, then `bun run test:e2e` |
-| Component states | `bun run storybook:build` |
+| Component states | `bun run storybook:build`, then `bun run test:theme`; rebuild after source/catalog/configuration changes |
 | Production build/image | `bun run build`; when image acceptance applies, `bun run image:build` then `bun run test:image` |
 | Historical boundary changes | `bun run phase0:test`; use its separate integration command for affected Phase 0 behavior |
 

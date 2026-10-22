@@ -2,6 +2,7 @@
 	"search": "Buscar",
 	"hint": "Busca nombres de proyectos y clientes de esta organización.",
 	"query": "Términos de búsqueda",
+	"queryInvalid": "Introduce entre 1 y 120 caracteres, sin contar los espacios de los extremos.",
 	"all": "Todos los recursos",
 	"project": "Proyecto",
 	"customer": "Cliente",

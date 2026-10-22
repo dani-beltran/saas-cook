@@ -166,10 +166,19 @@ export async function HelpPage({ locale }: { locale: string }) {
 							</ol>
 							{id === "imports" && (
 								<figure className="help-example">
-									<figcaption>{t("imports.exampleTitle")}</figcaption>
-									<pre>
-										<code>{t("imports.example")}</code>
-									</pre>
+									<figcaption id="help-csv-example-title">
+										{t("imports.exampleTitle")}
+									</figcaption>
+									<section
+										className="help-example-scroll"
+										// biome-ignore lint/a11y/noNoninteractiveTabindex: Arrow keys must scroll the complete CSV example.
+										tabIndex={0}
+										aria-labelledby="help-csv-example-title"
+									>
+										<pre>
+											<code>{t("imports.example")}</code>
+										</pre>
+									</section>
 									<p>{t("imports.exampleHint")}</p>
 								</figure>
 							)}
