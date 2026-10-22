@@ -34,6 +34,7 @@ import {
 } from "./performance-failure";
 import { startPerformanceImage } from "./performance-image";
 import {
+	fenceThresholdEvidence,
 	histogramStatistics,
 	performanceGates,
 	latencyStatistics as stats,
@@ -1190,6 +1191,10 @@ try {
 		webTelemetry.fence,
 		webTelemetry.maxFence,
 	);
+	const observerFenceThreshold = fenceThresholdEvidence(
+		webTelemetry.fence,
+		webTelemetry.fenceThreshold,
+	);
 	const observerRevocationFence = histogramStatistics(
 		webTelemetry.revocationFence,
 		webTelemetry.maxRevocationFence,
@@ -1214,6 +1219,7 @@ try {
 		read: readStats,
 		write: writeStats,
 		fence: fenceStats,
+		fenceThreshold: observerFenceThreshold,
 		create: createStats,
 		sourceCommit: stats(readiness),
 		revocation: stats(revocation),
@@ -1313,9 +1319,16 @@ try {
 			write: writeStats,
 			createToReadable: createStats,
 			sourceCommit: stats(readiness),
-			fenceWait: fenceStats,
+			fenceWait: {
+				...fenceStats,
+				percentileRepresentation: "conservative-ceiling-ms-upper-bound",
+				threshold: observerFenceThreshold,
+			},
 			revocation: stats(revocation),
-			revocationFenceWait: observerRevocationFence,
+			revocationFenceWait: {
+				...observerRevocationFence,
+				percentileRepresentation: "conservative-ceiling-ms-upper-bound",
+			},
 		},
 		graph: {
 			before: graphBefore,
@@ -1328,10 +1341,17 @@ try {
 				checkRequests: workerTelemetry.checks,
 				tupleWriteRequests: workerTelemetry.writes,
 				contextTuples: histogramStatistics(workerTelemetry.tuples),
-				fenceWait: histogramStatistics(
-					workerTelemetry.fence,
-					workerTelemetry.maxFence,
-				),
+				fenceWait: {
+					...histogramStatistics(
+						workerTelemetry.fence,
+						workerTelemetry.maxFence,
+					),
+					percentileRepresentation: "conservative-ceiling-ms-upper-bound",
+					threshold: fenceThresholdEvidence(
+						workerTelemetry.fence,
+						workerTelemetry.fenceThreshold,
+					),
+				},
 			},
 			cleanup:
 				"No contextual tuple persistence or generation cleanup work; fixture teardown is not authorization cleanup.",

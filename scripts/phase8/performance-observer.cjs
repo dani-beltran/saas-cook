@@ -16,6 +16,12 @@ let checks = 0,
 	malformed = 0,
 	maxFence = 0,
 	maxRevocationFence = 0;
+const fenceThreshold = {
+	limitExclusiveMs: 100,
+	count: 0,
+	below: 0,
+	atOrAbove: 0,
+};
 const measured = () => Date.now() >= window.start && Date.now() <= window.end;
 function bucket(histogram, value) {
 	const upper = Math.min(60001, Math.ceil(value));
@@ -38,6 +44,10 @@ channel("saas-cook.authorization.fence-wait").subscribe((message) => {
 		malformed++;
 		return;
 	}
+	fenceThreshold.count++;
+	if (message.milliseconds < fenceThreshold.limitExclusiveMs)
+		fenceThreshold.below++;
+	else fenceThreshold.atOrAbove++;
 	bucket(fence, message.milliseconds);
 	maxFence = Math.max(maxFence, message.milliseconds);
 	if (revoking.getStore()) {
@@ -83,6 +93,7 @@ setInterval(() => {
 			window,
 			sampledAt: Date.now(),
 			fence,
+			fenceThreshold,
 			revocationFence,
 			tuples,
 			checks,

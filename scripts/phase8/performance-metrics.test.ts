@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+	fenceThresholdEvidence,
 	histogramStatistics,
 	latencyStatistics,
 	performanceGates,
@@ -19,6 +20,10 @@ function healthy() {
 		read: low,
 		write: low,
 		fence: low,
+		fenceThreshold: fenceThresholdEvidence(
+			{ 1: 1, 2: 1, 3: 1, 4: 1, 5: 1 },
+			{ limitExclusiveMs: 100, count: 5, below: 5, atOrAbove: 0 },
+		),
 		create: low,
 		sourceCommit: low,
 		revocation: low,
@@ -153,4 +158,118 @@ describe("image performance evidence gates", () => {
 			}).usageVisibility,
 		).toBe(false);
 	});
+});
+
+describe("exact fence threshold evidence", () => {
+	it("distinguishes a below-budget p95 from an exact-limit p95 in the same ceiling bin", () => {
+		const histogram = { 99: 94, 100: 1, 101: 5 };
+		const fence = histogramStatistics(histogram, 100.001);
+		expect(fence.p95).toBe(100);
+		const below = fenceThresholdEvidence(histogram, {
+			limitExclusiveMs: 100,
+			count: 100,
+			below: 95,
+			atOrAbove: 5,
+		});
+		const exact = fenceThresholdEvidence(histogram, {
+			limitExclusiveMs: 100,
+			count: 100,
+			below: 94,
+			atOrAbove: 6,
+		});
+		expect(below).toMatchObject({ p95Rank: 95, p95Passed: true });
+		expect(exact).toMatchObject({ p95Rank: 95, p95Passed: false });
+		expect(
+			performanceGates({ ...healthy(), fence, fenceThreshold: below })
+				.fenceWait,
+		).toBe(true);
+		expect(
+			performanceGates({ ...healthy(), fence, fenceThreshold: exact })
+				.fenceWait,
+		).toBe(false);
+	});
+	it("uses the nearest rank for a non-multiple of twenty without discarding slow samples", () => {
+		const histogram = { 99: 3151, 100: 7, 101: 160 };
+		for (const [below, passed] of [
+			[3152, false],
+			[3153, true],
+		] as const) {
+			const result = fenceThresholdEvidence(histogram, {
+				limitExclusiveMs: 100,
+				count: 3318,
+				below,
+				atOrAbove: 3318 - below,
+			});
+			expect(result.p95Rank).toBe(3153);
+			expect(result.p95Passed).toBe(passed);
+		}
+	});
+	it("does not admit an empty or mismatched sample population", () => {
+		const empty = fenceThresholdEvidence(
+			{},
+			{
+				limitExclusiveMs: 100,
+				count: 0,
+				below: 0,
+				atOrAbove: 0,
+			},
+		);
+		expect(empty.p95Passed).toBe(false);
+		expect(
+			performanceGates({ ...healthy(), fenceThreshold: empty }).fenceWait,
+		).toBe(false);
+	});
+	it.each([
+		undefined,
+		null,
+		{},
+		{ limitExclusiveMs: 101, count: 100, below: 95, atOrAbove: 5 },
+		{ limitExclusiveMs: 100, count: 99, below: 94, atOrAbove: 5 },
+		{ limitExclusiveMs: 100, count: 100, below: 95, atOrAbove: 6 },
+		{ limitExclusiveMs: 100, count: 100, below: -1, atOrAbove: 101 },
+		{ limitExclusiveMs: 100, count: 100, below: 94.5, atOrAbove: 5.5 },
+		{
+			limitExclusiveMs: 100,
+			count: Number.MAX_SAFE_INTEGER + 1,
+			below: 95,
+			atOrAbove: 5,
+		},
+		{ limitExclusiveMs: 100, count: 100, below: 93, atOrAbove: 7 },
+		{ limitExclusiveMs: 100, count: 100, below: 96, atOrAbove: 4 },
+		{
+			limitExclusiveMs: 100,
+			count: 100,
+			below: 95,
+			atOrAbove: 5,
+			unexpected: true,
+		},
+	])(
+		"rejects missing, corrupt or histogram-inconsistent counters: %j",
+		(counts) => {
+			expect(() =>
+				fenceThresholdEvidence({ 99: 94, 100: 1, 101: 5 }, counts),
+			).toThrow();
+		},
+	);
+	it.each([
+		{ "99.5": 1 },
+		{ "099": 1 },
+		{ "60002": 1 },
+		{ "-1": 1 },
+		{ 100: 0 },
+		{ 100: 1.5 },
+		{ 100: Number.MAX_SAFE_INTEGER + 1 },
+	] as Record<string, number>[])(
+		"rejects invalid histogram bins or frequencies: %j",
+		(histogram) => {
+			expect(() =>
+				fenceThresholdEvidence(histogram, {
+					limitExclusiveMs: 100,
+					count: 1,
+					below: 0,
+					atOrAbove: 1,
+				}),
+			).toThrow();
+		},
+	);
 });
