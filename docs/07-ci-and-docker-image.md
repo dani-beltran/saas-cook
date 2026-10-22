@@ -1,5 +1,9 @@
 # 7. CI and Docker image build
 
+## Backoffice first-slice extension
+
+The default final `app` target remains `saas-cook` with combined customer web/worker and existing one-off commands. Optional `backoffice` targets `saas-cook-backoffice`, with a separate Next standalone closure, static/public assets, startup validation and bounded signal forwarding. Shared frozen dependency stages do not couple Next builds. The new required `backoffice` CI job builds, browser-tests, packages, verifies and scans its exact image. See [runtime/compatibility details](backoffice/implementation.md); configured CI is not executed release evidence.
+
 ## 7.1 Scope and deliverables
 
 The template produces one Docker application image containing the Next.js web server and Node.js background worker. Infrastructure and operation are outside the template scope. PostgreSQL, OpenFGA, object storage and enabled providers are external dependencies configured at runtime.

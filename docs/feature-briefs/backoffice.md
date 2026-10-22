@@ -1,16 +1,20 @@
 # Independent Backoffice
 
-Status: **planned; documentation only**, 2026-09-27. No application, migration, provider integration or infrastructure is delivered by this brief. The [roadmap](../06-delivery-roadmap.md#67-backoffice-planned-delivery-and-acceptance) is the acceptance register; [architecture](../backoffice/architecture.md) owns the proposed design and [development plan](../backoffice/development-plan.md) owns work sequencing and evidence. Existing platform contracts remain authoritative until their explicitly scheduled amendments are reviewed.
+Status: **first slice implemented; release acceptance pending**. Baseline and first slice refreshed 2026-10-21. [Implementation and operation](../backoffice/implementation.md) describe the separate staff app, additive schema and audited exact-ID lookup. [Verification](../backoffice/acceptance.md) distinguishes executed checks from open deployment/image gates; broader product scope remains planned. The [roadmap](../06-delivery-roadmap.md#67-backoffice-planned-delivery-and-acceptance) is the acceptance register; [architecture](../backoffice/architecture.md) owns the proposed design and [development plan](../backoffice/development-plan.md) owns work sequencing and evidence. Existing platform contracts remain authoritative until their explicitly scheduled amendments are reviewed.
+
+UI revision, 2026-10-22: the staff workspace uses shared UI controls, cards, badges and feedback with the Foundation theme, responsive navigation and English/Spanish field guidance. This changes presentation only.
+
+Public access decision, 2026-10-22: remove custom proxy signatures and IP allowlists. Preserve app authentication, authorization, origin validation, durable rate limiting and auditing. Cloudflare deployment is out of scope; no schema or operator-model change is required.
 
 ## Outcome and assumptions
 
-Provide operations, support, customer success, finance, privacy and security staff with a controlled way to understand and administer the platform without database consoles or customer credentials. Create `apps/backoffice`, a separately configured Next.js application with its own hostname, operator authentication, sessions, network controls, runtime roles, version and Docker image. The customer application must start and operate with no Backoffice process, credentials or provider configuration.
+Provide operations, support, customer success, finance, privacy and security staff with a controlled way to understand and administer the platform without database consoles or customer credentials. Create `apps/backoffice`, a separately configured Next.js application with its own hostname, operator authentication, sessions, origin controls, runtime roles, version and Docker image. The customer application must start and operate with no Backoffice process, credentials or provider configuration.
 
 Recommend two independently deployable applications in one modular monolith, sharing reviewed service code and initially one application PostgreSQL database. Use separate operator identity/metadata schemas and database roles; retain the already independent control store. A second business database or a network hop between every service call is not required for application independence. They remain extraction options if measured load or isolation obligations require them.
 
 Planning assumptions, subject to the decisions below:
 
-- A small internal team, one installation and one operating environment per deployment; no customer-accessible Backoffice and no mobile/offline client. English and Spanish reuse the repository's localization patterns.
+- A small internal team, one installation and one operating environment per deployment; publicly reachable staff sign-in with no customer authority and no mobile/offline client. English and Spanish reuse the repository's localization patterns.
 - Initial release means the **read-only internal release BO-00–BO-02**, after required Foundation evidence and security/image gates. Later means a required planned Backoffice increment, not a placeholder in that release. Optional capabilities need separate enablement and acceptance.
 - Production operators enroll by invitation through an independently verified staff process and use verified passkeys with user verification. No public registration, customer-role promotion or email-only recovery. Corporate SSO is a later adapter unless organizational policy makes it an initial prerequisite.
 - Stripe remains the recommended fixed/seat billing provider from Phase 5. Zendesk is a provisional first help desk adapter, replaceable before integration without changing domain contracts. No vendor account or paid plan is assumed available.
@@ -18,11 +22,11 @@ Planning assumptions, subject to the decisions below:
 
 ## Capability and priority matrix
 
-All rows describe planned behavior. `C-*` identifies product scope; work IDs and gates resolve in the [traceability table](../backoffice/development-plan.md#requirement-traceability).
+Rows describe the full target behavior; the implemented first slice is limited to invited staff sign-in and audited exact-ID organization metadata. `C-*` identifies product scope; work IDs and gates resolve in the [traceability table](../backoffice/development-plan.md#requirement-traceability).
 
 | ID | Capability and user outcome | Priority / work | Prerequisite and boundary |
 | --- | --- | --- | --- |
-| C-01 | Operator enrollment/offboarding, MFA, step-up, scoped roles, secure sessions and network admission | Initial / BO-01 | Dedicated identity and policy boundary; no customer identity privilege inheritance |
+| C-01 | Operator enrollment/offboarding, MFA, step-up, scoped roles, secure sessions and request validation | Initial / BO-01 | Dedicated identity and policy boundary; no customer identity privilege inheritance |
 | C-02 | Search/filter/browse organizations, global accounts and memberships by ID, masked identity, lifecycle, created date and assigned case scope | Initial / BO-02 | New bounded operator queries; exact-email lookup requires explicit identity-search permission; no global unrestricted totals |
 | C-03 | Organization detail: owners, member states, local seat occupancy/capacity, local entitlements and relevant audit/history | Initial / BO-02 | Current authoritative lifecycle reads. Subscription, usage ledger and integration panels appear only when their services exist |
 | C-04 | Reveal sensitive fields briefly; separately authorize export of permitted fields | Reveal initial / BO-02; export later / BO-05 | Reason/case, step-up, audit before disclosure; reveal never implies export |
@@ -73,7 +77,7 @@ Proposed release defaults:
 | Plan change / trial extension | Finance permission, current preview; initial policy requires distinct finance approval for every manual change | Cancel before provider submission; afterward use a new compensating command |
 | Discount / refund / credit / manual override | Distinct finance approver; amount/currency ceiling, interval and contract reference | No automatic reversal of settled money; remaining refundable balance checked again |
 | Account/org deletion | Verified requester, privacy reviewer plus security/operations executor, hold policy and exact confirmation | Account cancellation only before confirmation/freezing; organization cancellation only while canonical journal/purge rules permit |
-| Network/role change | Security author plus distinct security approver; lockout check | Versioned rollback; no self-promotion or `0.0.0.0/0` emergency shortcut |
+| Role change | Security author plus distinct security approver | Versioned rollback; no self-promotion |
 | Bulk action | Preview fixed target/version manifest, default cap 100, distinct approval, per-item result | Stop unstarted items; committed effects retain their ordinary semantics |
 
 Finance may later approve per-currency delegated thresholds in versioned policy. Until amounts are decided, all manual monetary/contract/trial changes require dual control; a missing threshold never means unlimited. Security emergency revocation is not delayed awaiting finance or a second approver, but the existing signed `security:deactivate` command still requires its independent approval and fresh MFA.
@@ -100,7 +104,7 @@ Keep payment/refund/credit/dispute cash measures separate from recurring run rat
 | Decision | Owner / due | Safe planning assumption |
 | --- | --- | --- |
 | Initial staff cohort, tenant scopes and business-content access | Product + security / BO-00 | Read-only metadata; no delegated support access |
-| Corporate IdP, enrollment/recovery authority, MFA/session durations and emergency network route | Security / BO-01 | Passkey enrollment under independent staff verification; 30-minute idle, 8-hour absolute session, 5-minute step-up; production blocks without approved network design |
+| Corporate IdP, enrollment/recovery authority, MFA/session durations and independent staff recovery | Security / BO-01 | Passkey enrollment under independent staff verification; 30-minute idle, 8-hour absolute session, 5-minute step-up; production requires HTTPS |
 | Finance powers, currencies, thresholds, proration, grace and contract ownership | Finance + product / BO-04 | Dual approval for all manual commercial changes; no configured policy means the action is unavailable |
 | Rights applicability, controller/processor duties, retention/holds, deadlines and export recipients | Legal/privacy / BO-05 | No production purge or rights fulfillment until reviewed policies; no blanket legal deadline baked into code |
 | Help desk provider, data region and minimal scopes | Support + security/privacy / BO-06 | Zendesk adapter proposal, verified links and metadata only |
@@ -111,6 +115,8 @@ These choices do not block documenting the architecture. Each becomes an explici
 
 ## First implementation slice
 
-Implement BO-01's secure shell plus BO-02.1's **masked organization lookup by exact ID**, after BO-00 decisions and the Foundation prerequisite. A registered operator signs in at the separate host, opens one organization overview containing ID/name/lifecycle and local seat summary, and sees a correlation reference. Reads are audited; an offboarded operator, wrong network, customer cookie, wrong scope or unavailable readiness/audit boundary receives no data. This slice has no tenant mutations or commercial panels.
+The [current gap inventory](../backoffice/development-plan.md#current-implementation-and-remaining-gaps) accounts for accepted Phase 5 billing and implemented Phase 6 services without accepting their open release gates or any Backoffice behavior. The [implementation ticket](../backoffice/development-plan.md#concrete-first-implementation-ticket) owns entry decisions, DTO scope, sequencing, exclusions and acceptance evidence. Reuse these domain services; staff authority and independent packaging remain new work.
 
-Definition of done: separate credential-free builds and images; real restricted-role schema tests; synthetic staff enrollment/MFA; session/cookie and ingress isolation tests; current operator authorization under fences; durable read audit; two-organization negative cases; customer-image route/bundle exclusion; customer sign-in, Project CRUD and worker mail continue with Backoffice stopped; keyboard and localized loading/denied/unavailable states; retained evidence tied to both image digests. The full initial release adds the bounded directories and details in BO-02. No placeholder UI, provider stub or local smoke closes a release gate.
+Implement BO-01's secure shell plus BO-02.1's **masked organization lookup by exact ID**, after BO-00 decisions and the Foundation prerequisite. A registered operator signs in at the separate host, opens one organization overview containing ID/name/lifecycle and local seat summary, and sees a correlation reference. Reads are audited; an offboarded operator, wrong origin, customer cookie, wrong scope or unavailable readiness/audit boundary receives no data. This slice has no tenant mutations or commercial panels.
+
+Definition of done: separate credential-free builds and images; real restricted-role schema tests; synthetic staff enrollment/MFA; session/cookie and host/origin isolation tests; current operator authorization under fences; durable read audit; two-organization negative cases; customer-image route/bundle exclusion; customer sign-in, Project CRUD and worker mail continue with Backoffice stopped; keyboard and localized loading/denied/unavailable states; retained evidence tied to both image digests. The full initial release adds the bounded directories and details in BO-02. No placeholder UI, provider stub or local smoke closes a release gate.

@@ -29,7 +29,7 @@ if (scope === "dependencies") {
 	args.push("--include-dev-deps");
 	args.push(
 		"--skip-dirs",
-		"node_modules,.git,artifacts,apps/web/.next,spikes/phase0/api-next/.next",
+		"node_modules,.git,artifacts,apps/web/.next,apps/backoffice/.next,spikes/phase0/api-next/.next",
 	);
 }
 const run = spawnSync(process.env.TRIVY_BIN ?? "trivy", [...args, target], {

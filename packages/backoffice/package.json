@@ -1,0 +1,18 @@
+{
+	"name": "@saas-cook/backoffice",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./src/runtime.ts",
+		"./management": "./src/management.ts"
+	},
+	"dependencies": {
+		"@saas-cook/auth": "workspace:*",
+		"@saas-cook/authz": "workspace:*",
+		"@saas-cook/backoffice-contracts": "workspace:*",
+		"@saas-cook/config": "workspace:*",
+		"pg": "8.23.0",
+		"zod": "4.6.5"
+	}
+}

@@ -10,7 +10,8 @@
 		"./operator": "./src/operator.ts",
 		"./control": "./src/control.ts",
 		"./journal": "./src/journal.ts",
-		"./recovery": "./src/recovery.ts"
+		"./recovery": "./src/recovery.ts",
+		"./platform": "./src/platform/index.ts"
 	},
 	"scripts": {
 		"typecheck": "tsc --noEmit"

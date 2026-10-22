@@ -1,5 +1,9 @@
 # 2. Architecture and security
 
+## Backoffice first-slice extension
+
+The [BO-01/02-S1 boundary](backoffice/implementation.md) uses a separate staff identity, origin/cookie, restricted database roles and pinned operator FGA publication. Explicit metadata DTOs and current exact-org grants govern the single lookup; no customer role/session or generic superuser authorizes it. Customer processes import no BO runtime. BO-00 implementation decisions and pending deployment security review are [recorded separately](backoffice/bo-00.md).
+
 ## 2.1 Stack decisions
 
 The following stack is required for implementation. Phase 0 pins a compatible, supported version set and verifies the adapters, including React 19 compatibility; it does not reopen these technology selections. These are planning requirements, not claims that the dependencies have already been integrated or tested together.

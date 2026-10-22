@@ -4,7 +4,7 @@ Decision date: 2026-10-22. Status: planning approved; Phase 8 implementation and
 
 ## Product decision
 
-Proceed directly from accepted Phase 6/M2 Commercial core to Phase 8 hardening and a tagged Commercial template release. Keep phase numbers and historical evidence references stable. Defer Phase 7 as an optional Enterprise extension and leave optional Backoffice deferred.
+Proceed directly from accepted Phase 6/M2 Commercial core to Phase 8 hardening and a tagged Commercial template release. Keep phase numbers and historical evidence references stable. Defer Phase 7 as an optional Enterprise extension and leave optional Backoffice release deferred. Its first slice is implemented with separate release acceptance pending.
 
 ## Release scope
 

@@ -176,6 +176,13 @@
 			"when": 1792443712729,
 			"tag": "0024_phase6_retry_ownership",
 			"breakpoints": true
+		},
+		{
+			"idx": 25,
+			"version": "7",
+			"when": 1792586387494,
+			"tag": "0025_backoffice_identity",
+			"breakpoints": true
 		}
 	]
 }

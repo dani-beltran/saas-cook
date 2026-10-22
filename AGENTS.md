@@ -7,6 +7,7 @@ This is the SaaS Cook foundation with Phase 4 repository-local authoring skills.
 Use Bun 1.4.2 for the frozen workspace install and root scripts. Node.js 24.19.0 runs local development, Vitest and build tools; the digest-pinned distroless application image runs Node.js 24.22.0. Both are within the supported Node 24 range, and image acceptance checks the final runtime and native dependencies. Exact dependencies and trusted lifecycle scripts are in `package.json` and `bun.lock`; do not replace the lockfile with an npm/pnpm/yarn lockfile.
 
 - `apps/web`: Next.js App Router, React 19, next-intl and the localized application shell.
+- `apps/backoffice`: optional private staff application; separate identity/model, exact-org audited metadata lookup and image. See `docs/backoffice/implementation.md`; release gates remain separately tracked.
 - `apps/worker`: bounded background process and worker health.
 - `packages/ui`: shared shadcn/ui and Tailwind primitives, React Hook Form/Zod example and stories.
 - `packages/api-contracts`, `packages/api`: shared Zod/oRPC DTOs, typed client, RPC and OpenAPI handlers.

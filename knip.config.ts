@@ -5,6 +5,8 @@ const config: KnipConfig = {
 	ignoreIssues: { "spikes/phase0/authz/protocol.ts": ["types"] },
 	workspaces: {
 		".": {
+			// System OpenSSL generates disposable one-day TLS certificates for the BO browser fixture.
+			ignoreBinaries: ["openssl"],
 			entry: [
 				"scripts/phase0/{api-smoke,toolchain}.ts",
 				"scripts/phase1/{authz-validate,build-runtime,command,dev,image-test,security-scan}.ts",
@@ -13,7 +15,7 @@ const config: KnipConfig = {
 				// Explicit operator entry for resuming historical synthetic erasure evidence.
 				"scripts/phase6/posthog-erasure.ts",
 				"spikes/phase0/**/*.test.{ts,tsx}",
-				"infra/docker/{entrypoint.mjs,healthcheck.cjs,supervisor.ts}",
+				"infra/docker/{entrypoint.mjs,healthcheck.cjs,supervisor.ts,backoffice-start.ts}",
 			],
 			project: [
 				"scripts/**/*.ts",
@@ -22,7 +24,11 @@ const config: KnipConfig = {
 				"*.config.ts",
 			],
 			playwright: {
-				config: ["playwright.config.ts", "playwright.theme.config.ts"],
+				config: [
+					"playwright.config.ts",
+					"playwright.theme.config.ts",
+					"playwright.backoffice.config.ts",
+				],
 			},
 			vitest: { config: ["vitest.config.ts", "vitest.phase0.config.ts"] },
 			// Retained Phase 0 install/version evidence is read dynamically by
@@ -45,6 +51,12 @@ const config: KnipConfig = {
 			// dependency for Next serverExternalPackages/standalone tracing from the
 			// web root; the actual decoder import lives in @saas-cook/auth.
 			ignoreDependencies: ["tailwindcss", "sharp"],
+		},
+		"apps/backoffice": {
+			entry: ["src/**/*.stories.tsx"],
+			project: ["src/**/*.{ts,tsx,css}", "*.{ts,mjs}"],
+			// PostCSS loads Tailwind; the shared stylesheet owns the actual CSS import.
+			ignoreDependencies: ["tailwindcss"],
 		},
 		"apps/worker": { project: ["src/**/*.ts"] },
 		"packages/*": {

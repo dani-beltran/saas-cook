@@ -1,6 +1,7 @@
 import type { Pool, PoolClient } from "pg";
 import { initializeJournal } from "./journal";
 import { modelHash, safeIdentifier } from "./model";
+import { initializeOperatorPublication } from "./platform/schema";
 import { initializeRecovery } from "./recovery";
 
 export interface Publication {
@@ -56,6 +57,7 @@ export async function initializeControlStore(pool: Pool): Promise<void> {
       END $migration$;
       GRANT USAGE ON SCHEMA control TO saas_cook_control_reader;
       GRANT SELECT ON control.installations TO saas_cook_control_reader;`);
+		await initializeOperatorPublication(client);
 		await initializeJournal(client);
 		await initializeRecovery(client);
 		await client.query("COMMIT");

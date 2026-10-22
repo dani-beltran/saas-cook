@@ -48,13 +48,21 @@ previously resolved peer at 8.3.0; the explicit dependency updates the actual
 installed and locked graph. Keep this peer pin when maintaining those tools.
 The scanner version, severity policy and empty exception list are unchanged.
 
-## 2026-10-22 Storybook security repair
+## 2026-10-22 Storybook CI repair
 
-The current dependency scan blocks `storybook` 10.6.0 on critical
-`CVE-2026-114125` / [GHSA-f2ph-cmg5-wxc8](https://github.com/storybookjs/storybook/security/advisories/GHSA-f2ph-cmg5-wxc8).
-Root, web and UI workspace pins now align `storybook` and `@storybook/nextjs-vite`
-on the patched 10.6.2 release; Bun's reviewed lockfile retains a single aligned
-Storybook toolchain. The original failing scan is retained under
-`artifacts/phase6-erasure-verification/security-failure-1/`. Frozen installation,
-Storybook build and current dependency/image policy are checked again. No severity
-policy or exception changes are made.
+Both the Phase 6 acceptance work and PR #11's dependency scans blocked on CRITICAL
+`CVE-2026-114125` / [GHSA-f2ph-cmg5-wxc8](https://github.com/storybookjs/storybook/security/advisories/GHSA-f2ph-cmg5-wxc8)
+in Storybook 10.6.0. Root, web, Backoffice and UI workspace pins align
+`storybook` and `@storybook/nextjs-vite` on patched 10.6.2, retaining a single
+reviewed Storybook toolchain in Bun's lockfile. No insecure compatibility flags,
+severity-policy changes or scan exceptions are enabled. Historical Phase 0
+metadata remains unchanged.
+
+The Phase 6 failing scan is retained under
+`artifacts/phase6-erasure-verification/security-failure-1/`; the Backoffice
+failure is retained under `artifacts/backoffice/ci-39779366661/`. Each workstream
+records its own source and dependency/image policy results. The Backoffice
+repair passed a fresh Trivy 0.69.3 dependency scan, frozen install, source/types,
+Knip, 186 unit tests and Storybook build locally; its final hosted CI results
+are recorded separately from the Phase 6 evidence. Merged-source dependency and
+exact-image checks remain required.

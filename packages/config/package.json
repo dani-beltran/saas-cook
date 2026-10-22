@@ -4,7 +4,8 @@
 	"type": "module",
 	"exports": {
 		"./server": "./src/server.ts",
-		"./client": "./src/client.ts"
+		"./client": "./src/client.ts",
+		"./backoffice": "./src/backoffice.ts"
 	},
 	"dependencies": {
 		"@t3-oss/env-core": "0.13.11",

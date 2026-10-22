@@ -230,9 +230,36 @@ jobs:
           name: monetization-${{ github.sha }}
           path: artifacts/phase5/
           retention-days: 30
+  backoffice:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+        with:
+          scanner: 'true'
+      - run: bun run services:up
+      - run: node node_modules/@playwright/test/cli.js install --with-deps chromium
+      - run: bun run build:backoffice
+      - run: bun run test:e2e:backoffice
+      - run: bun run image:build:backoffice
+      - run: bun run test:image:backoffice
+      - run: bun run security:scan image saas-cook-backoffice:local
+      - run: docker compose -f infra/compose.yaml down --volumes
+        if: always()
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: backoffice-${{ github.sha }}
+          path: |
+            artifacts/backoffice/
+            artifacts/security/
+          retention-days: 30
   required:
     if: always()
-    needs: [source, unit, integration, browser, storybook, production, image, monetization]
+    needs: [source, unit, integration, browser, storybook, production, image, monetization, backoffice]
     runs-on: ubuntu-24.04
     steps:
       - name: Require every applicable gate
