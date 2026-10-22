@@ -1,0 +1,313 @@
+{
+	"schemaVersion": 1,
+	"checkedAt": "2026-10-22T10:08:51.831626+00:00",
+	"implementationCommit": "7cf22e9a3beede18d98942518849d41fa7ffd125",
+	"implementationSha256": "18515fc44a16fa34832990bea378b895ee7666cfc466a01f2848b7b8345d1dea",
+	"acceptanceClosed": false,
+	"requirementIds": ["R-ANALYTICS", "R-ACCOUNT", "R-ORG-DATA", "R-RECOVERY"],
+	"scope": "Read-only investigation of one existing synthetic subject; no provider deletion or ingestion issued and no new subjects created.",
+	"live": {
+		"checkedAt": "2026-10-22T10:00:01.356Z",
+		"subject": "synthetic-acceptance-114c3509-44ad-4c7f-99c4-cba92192dce9",
+		"eventId": "503e1703-afb3-4809-9029-2aa0089d82c8",
+		"receipt": {
+			"personIds": ["87ec1ed7-121e-5bf0-9489-70ad907e4e0b"],
+			"requestedAt": "2026-10-21T12:02:58.050Z"
+		},
+		"host": "https://eu.posthog.com",
+		"project": {
+			"httpStatus": 200,
+			"id": 314657,
+			"tokenMatches": true,
+			"timezone": "UTC"
+		},
+		"statuses": {
+			"all": {
+				"httpStatus": 200,
+				"count": 1,
+				"next": false,
+				"results": [
+					{
+						"person_uuid": "87ec1ed7-121e-5bf0-9489-70ad907e4e0b",
+						"created_at": "2026-10-21T12:02:58.165573Z",
+						"status": "pending",
+						"delete_verified_at": null
+					}
+				],
+				"otherRows": 0
+			},
+			"pending": {
+				"httpStatus": 200,
+				"count": 1,
+				"next": false,
+				"results": [
+					{
+						"person_uuid": "87ec1ed7-121e-5bf0-9489-70ad907e4e0b",
+						"created_at": "2026-10-21T12:02:58.165573Z",
+						"status": "pending",
+						"delete_verified_at": null
+					}
+				],
+				"otherRows": 0
+			},
+			"completed": {
+				"httpStatus": 200,
+				"count": 0,
+				"next": false,
+				"results": [],
+				"otherRows": 0
+			}
+		},
+		"persons": {
+			"httpStatus": 200,
+			"next": false,
+			"results": []
+		},
+		"uuidQuery": {
+			"httpStatus": 200,
+			"is_cached": false,
+			"last_refresh": "2026-10-22T09:59:59.602952Z",
+			"columns": ["uuid", "distinct_id", "timestamp", "person_id", "synthetic"],
+			"results": [
+				[
+					"503e1703-afb3-4809-9029-2aa0089d82c8",
+					"synthetic-acceptance-114c3509-44ad-4c7f-99c4-cba92192dce9",
+					"2026-10-21T12:01:25.182000Z",
+					"87ec1ed7-121e-5bf0-9489-70ad907e4e0b",
+					true
+				]
+			]
+		},
+		"subjectQuery": {
+			"httpStatus": 200,
+			"is_cached": false,
+			"last_refresh": "2026-10-22T10:00:00.487382Z",
+			"columns": ["uuid", "distinct_id", "timestamp"],
+			"results": [
+				[
+					"503e1703-afb3-4809-9029-2aa0089d82c8",
+					"synthetic-acceptance-114c3509-44ad-4c7f-99c4-cba92192dce9",
+					"2026-10-21T12:01:25.182000Z"
+				]
+			]
+		},
+		"adapter": {
+			"ingestion": true,
+			"erasure": false
+		},
+		"requests": [
+			{
+				"at": "2026-10-22T09:59:59.184Z",
+				"path": "/api/projects/314657/",
+				"method": "GET",
+				"status": 200,
+				"durationMs": 276,
+				"headers": {
+					"date": "Thu, 22 Oct 2026 09:59:59 GMT"
+				}
+			},
+			{
+				"at": "2026-10-22T09:59:59.262Z",
+				"path": "/api/projects/314657/persons/deletion_status/",
+				"method": "GET",
+				"status": 200,
+				"durationMs": 74,
+				"headers": {
+					"date": "Thu, 22 Oct 2026 09:59:59 GMT"
+				}
+			},
+			{
+				"at": "2026-10-22T09:59:59.331Z",
+				"path": "/api/projects/314657/persons/deletion_status/",
+				"method": "GET",
+				"status": 200,
+				"durationMs": 69,
+				"headers": {
+					"date": "Thu, 22 Oct 2026 09:59:59 GMT"
+				}
+			},
+			{
+				"at": "2026-10-22T09:59:59.409Z",
+				"path": "/api/projects/314657/persons/deletion_status/",
+				"method": "GET",
+				"status": 200,
+				"durationMs": 78,
+				"headers": {
+					"date": "Thu, 22 Oct 2026 09:59:59 GMT"
+				}
+			},
+			{
+				"at": "2026-10-22T09:59:59.506Z",
+				"path": "/api/projects/314657/persons/",
+				"method": "GET",
+				"status": 200,
+				"durationMs": 96,
+				"headers": {
+					"date": "Thu, 22 Oct 2026 09:59:59 GMT"
+				}
+			},
+			{
+				"at": "2026-10-22T10:00:00.392Z",
+				"path": "/api/projects/314657/query/",
+				"method": "POST",
+				"status": 200,
+				"durationMs": 884,
+				"headers": {
+					"date": "Thu, 22 Oct 2026 10:00:00 GMT"
+				}
+			},
+			{
+				"at": "2026-10-22T10:00:01.355Z",
+				"path": "/api/projects/314657/query/",
+				"method": "POST",
+				"status": 200,
+				"durationMs": 962,
+				"headers": {
+					"date": "Thu, 22 Oct 2026 10:00:01 GMT"
+				}
+			}
+		],
+		"newSubjectsCreated": 0,
+		"deletionRequestsSent": 0
+	},
+	"cutoffCheck": {
+		"checkedAt": "2026-10-22T10:02:49.555Z",
+		"httpStatus": 200,
+		"is_cached": false,
+		"last_refresh": "2026-10-22T10:02:48.906633Z",
+		"columns": ["uuid", "person_id", "timestamp", "created_at"],
+		"results": [
+			[
+				"503e1703-afb3-4809-9029-2aa0089d82c8",
+				"87ec1ed7-121e-5bf0-9489-70ad907e4e0b",
+				"2026-10-21T12:01:25.182000Z",
+				"2026-10-21T12:01:25.819000Z"
+			]
+		],
+		"deletionRequestedAt": "2026-10-21T12:02:58.050Z"
+	},
+	"findings": {
+		"configuration": "EU host/project/token match",
+		"identity": "Exact event, distinct ID and person UUID match the original receipt",
+		"personProfile": "Absent; not erasure proof",
+		"event": "Still present in two forced fresh queries",
+		"rawVsAdapter": "Both pending; the adapter correctly refuses completion",
+		"queueEvidence": "Original HTTP202 plus matching pending AsyncDeletion record created within115ms of local receipt time",
+		"continuedWrites": "Only the original event was visible for this exact subject; this is not proof that no delayed write exists",
+		"leadingExplanation": "Documented non-peak/weekend Cloud batch processing; not a confirmed deployed-worker fault",
+		"providerInternals": "EU deployed revision/configuration, Dagster queue/run, physical inserted_at cutoff and ClickHouse mutation/verification progress unavailable through the scoped public API"
+	},
+	"evidenceGaps": [
+		"Original bulk acknowledgement JSON was not retained; persons_found, queued flags and deletion_errors cannot be reconstructed. Do not resubmit deletion merely to obtain them.",
+		"No allowlisted provider correlation/request IDs were returned; Date headers and exact scoped identifiers are retained.",
+		"HogQL created_at precedes request, but the public Dagster predicate also uses physical inserted_at; that value and deployed path remain unverified."
+	],
+	"providerSource": {
+		"repository": "PostHog/posthog",
+		"commit": "bc18825351e79476e830278a5cfea84d0b26676e",
+		"deploymentRevisionVerified": false,
+		"sourceTreeTruncated": true,
+		"files": {
+			"posthog/celery.py": {
+				"sha256": "9979508b3c3dfb9675a6109dd917c95a07c9df0ad7834da3766819d57b92a4e7",
+				"url": "https://github.com/PostHog/posthog/blob/bc18825351e79476e830278a5cfea84d0b26676e/posthog/celery.py"
+			},
+			"posthog/settings/celery.py": {
+				"sha256": "9b6cdc4f36e68021de8380f6bdb3544319ebf8013812990ced304588eb59cdb5",
+				"url": "https://github.com/PostHog/posthog/blob/bc18825351e79476e830278a5cfea84d0b26676e/posthog/settings/celery.py"
+			},
+			"posthog/dags/person_overrides.py": {
+				"sha256": "88f9f81e933741f0ff4b84109b9ed9450a873d393dfd5b650bc27a358f3c6fe8",
+				"url": "https://github.com/PostHog/posthog/blob/bc18825351e79476e830278a5cfea84d0b26676e/posthog/dags/person_overrides.py"
+			},
+			"posthog/dags/clickhouse_cleanup.py": {
+				"sha256": "33e1e2471c4bb3f9d577ecc86cc045de3ac2ea3aff928746daa88efe38547391",
+				"url": "https://github.com/PostHog/posthog/blob/bc18825351e79476e830278a5cfea84d0b26676e/posthog/dags/clickhouse_cleanup.py"
+			},
+			"posthog/dags/deletes.py": {
+				"sha256": "9f9c95a2478a1772dc97a21a855a4a9a40e40bfce3f6a4d39540725556cb5aae",
+				"url": "https://github.com/PostHog/posthog/blob/bc18825351e79476e830278a5cfea84d0b26676e/posthog/dags/deletes.py"
+			},
+			"posthog/tasks/delete_persons.py": {
+				"sha256": "a3d591b6228f2d3eed1f9354836aed64a235cc655cbe92c0bb95de38b94537cb",
+				"url": "https://github.com/PostHog/posthog/blob/bc18825351e79476e830278a5cfea84d0b26676e/posthog/tasks/delete_persons.py"
+			},
+			"posthog/tasks/scheduled.py": {
+				"sha256": "e4cb19fe4f3227bd14291a27961c98211d4a9bfea65aeecd935d31afa8b43c79",
+				"url": "https://github.com/PostHog/posthog/blob/bc18825351e79476e830278a5cfea84d0b26676e/posthog/tasks/scheduled.py"
+			},
+			"posthog/api/person.py": {
+				"sha256": "44147bc09ee4c4e5cccf6d31c182a9dd7656f0cda900f75af7e70156a286576e",
+				"url": "https://github.com/PostHog/posthog/blob/bc18825351e79476e830278a5cfea84d0b26676e/posthog/api/person.py"
+			},
+			"posthog/hogql/database/schema/events.py": {
+				"sha256": "f7e1c96d46061e29caad198e0b913d1768e5a30ffc1845664ab7dc6595b4f302",
+				"url": "https://github.com/PostHog/posthog/blob/bc18825351e79476e830278a5cfea84d0b26676e/posthog/hogql/database/schema/events.py"
+			},
+			"posthog/models/async_deletion/delete.py": {
+				"sha256": "9dd8506233e00177908fc4a69281f86bfda96546adae003e165e29d81f040fe1",
+				"url": "https://github.com/PostHog/posthog/blob/bc18825351e79476e830278a5cfea84d0b26676e/posthog/models/async_deletion/delete.py"
+			},
+			"posthog/models/async_deletion/delete_person.py": {
+				"sha256": "a6a776b95843c7cee636face940efb2412c65c9bd7ed18fc316256df3b06b199",
+				"url": "https://github.com/PostHog/posthog/blob/bc18825351e79476e830278a5cfea84d0b26676e/posthog/models/async_deletion/delete_person.py"
+			},
+			"posthog/models/async_deletion/celery_fallback.py": {
+				"sha256": "a85890b2ef32c26100b5817bb6643b68fdddbe7dc95a2a9723ed8f84b77c5d0f",
+				"url": "https://github.com/PostHog/posthog/blob/bc18825351e79476e830278a5cfea84d0b26676e/posthog/models/async_deletion/celery_fallback.py"
+			},
+			"posthog/models/async_deletion/delete_events.py": {
+				"sha256": "69cd26f0f67b5815af6fba70152e86b6f3894e23af503007bd6756db75511679",
+				"url": "https://github.com/PostHog/posthog/blob/bc18825351e79476e830278a5cfea84d0b26676e/posthog/models/async_deletion/delete_events.py"
+			},
+			"posthog/models/async_deletion/__init__.py": {
+				"sha256": "9c84f6cab9e3584e27eb0f891a8011a94a4a4510ccaa22d8605ae917b09fdb49",
+				"url": "https://github.com/PostHog/posthog/blob/bc18825351e79476e830278a5cfea84d0b26676e/posthog/models/async_deletion/__init__.py"
+			},
+			"posthog/models/async_deletion/async_deletion.py": {
+				"sha256": "bc349b2c4531aead58b39a3192b8cf80e33fc11004f5a9626e06f18f82452767",
+				"url": "https://github.com/PostHog/posthog/blob/bc18825351e79476e830278a5cfea84d0b26676e/posthog/models/async_deletion/async_deletion.py"
+			},
+			"posthog/models/event/sql.py": {
+				"sha256": "20622943fb09723c24f5ee72149b84c532d39db9f9b065b0f89a6366195c99c4",
+				"url": "https://github.com/PostHog/posthog/blob/bc18825351e79476e830278a5cfea84d0b26676e/posthog/models/event/sql.py"
+			}
+		},
+		"commitVerified": true,
+		"commitDate": "2026-10-22T09:43:28Z",
+		"commitTree": "b141a51a49a33e4fc05af79339ac1d324f64bb4e"
+	},
+	"applicationChanges": "None: no reproduced application defect explains the current provider pending state. Preserve receipt, suppression and fail-closed completion.",
+	"nextActions": [
+		"Ask PostHog to confirm the EU processing cadence and whether this exact AsyncDeletion is queued or attempted. Support draft prepared, not sent.",
+		"If a sweep has processed this request, inspect run_deletes_after_squash, deletes_job, mutation waits and mark_deletions_verified for this exact person/project, including physical inserted_at cutoff.",
+		"Require completed receipt AND fresh event absence, then execute the separate real late/uncertain-ingestion drill."
+	],
+	"evidenceSha256": {
+		"artifacts/phase6-acceptance/posthog-investigation-2026-10-22/probe.ts": "ba0858ba7299b1a41b2bf7a2151f777d7218293d640c7017614f8173eb7f3675",
+		"artifacts/phase6-acceptance/posthog-investigation-2026-10-22/result.json": "f0848be83b175a98623397bba1ec76151f46d909ef0603b31747dad3e0c9358e",
+		"artifacts/phase6-acceptance/posthog-investigation-2026-10-22/probe.log": "f0848be83b175a98623397bba1ec76151f46d909ef0603b31747dad3e0c9358e",
+		"artifacts/phase6-acceptance/posthog-investigation-2026-10-22/cutoff-check.ts": "88e0226bd31cfff35799e2e0e454893fd199e5fe376400f79cb9ccda231c7962",
+		"artifacts/phase6-acceptance/posthog-investigation-2026-10-22/cutoff-check.json": "5a86f7d51697adbbaa67dd44836485624faf4c1a8cfea3e8f23b3e30a8d3504c",
+		"artifacts/phase6-acceptance/posthog-investigation-2026-10-22/cutoff-check.log": "5a86f7d51697adbbaa67dd44836485624faf4c1a8cfea3e8f23b3e30a8d3504c",
+		"artifacts/posthog-live-probe/result.json": "9dacbccc337ee0e833ab684a7e6b192d606e157918873196d90e4436c9648c21",
+		"artifacts/posthog-live-probe/run.ts": "ba72e1612e9e8eecba34405c06f2eac59fe1c3af1e6e01621fec063b2e56655e",
+		"artifacts/phase6-acceptance/posthog-investigation-2026-10-22/provider-source/posthog/celery.py": "9979508b3c3dfb9675a6109dd917c95a07c9df0ad7834da3766819d57b92a4e7",
+		"artifacts/phase6-acceptance/posthog-investigation-2026-10-22/provider-source/posthog/settings/celery.py": "9b6cdc4f36e68021de8380f6bdb3544319ebf8013812990ced304588eb59cdb5",
+		"artifacts/phase6-acceptance/posthog-investigation-2026-10-22/provider-source/posthog/dags/person_overrides.py": "88f9f81e933741f0ff4b84109b9ed9450a873d393dfd5b650bc27a358f3c6fe8",
+		"artifacts/phase6-acceptance/posthog-investigation-2026-10-22/provider-source/posthog/dags/clickhouse_cleanup.py": "33e1e2471c4bb3f9d577ecc86cc045de3ac2ea3aff928746daa88efe38547391",
+		"artifacts/phase6-acceptance/posthog-investigation-2026-10-22/provider-source/posthog/dags/deletes.py": "9f9c95a2478a1772dc97a21a855a4a9a40e40bfce3f6a4d39540725556cb5aae",
+		"artifacts/phase6-acceptance/posthog-investigation-2026-10-22/provider-source/posthog/tasks/delete_persons.py": "a3d591b6228f2d3eed1f9354836aed64a235cc655cbe92c0bb95de38b94537cb",
+		"artifacts/phase6-acceptance/posthog-investigation-2026-10-22/provider-source/posthog/tasks/scheduled.py": "e4cb19fe4f3227bd14291a27961c98211d4a9bfea65aeecd935d31afa8b43c79",
+		"artifacts/phase6-acceptance/posthog-investigation-2026-10-22/provider-source/posthog/api/person.py": "44147bc09ee4c4e5cccf6d31c182a9dd7656f0cda900f75af7e70156a286576e",
+		"artifacts/phase6-acceptance/posthog-investigation-2026-10-22/provider-source/posthog/hogql/database/schema/events.py": "f7e1c96d46061e29caad198e0b913d1768e5a30ffc1845664ab7dc6595b4f302",
+		"artifacts/phase6-acceptance/posthog-investigation-2026-10-22/provider-source/posthog/models/async_deletion/delete.py": "9dd8506233e00177908fc4a69281f86bfda96546adae003e165e29d81f040fe1",
+		"artifacts/phase6-acceptance/posthog-investigation-2026-10-22/provider-source/posthog/models/async_deletion/delete_person.py": "a6a776b95843c7cee636face940efb2412c65c9bd7ed18fc316256df3b06b199",
+		"artifacts/phase6-acceptance/posthog-investigation-2026-10-22/provider-source/posthog/models/async_deletion/celery_fallback.py": "a85890b2ef32c26100b5817bb6643b68fdddbe7dc95a2a9723ed8f84b77c5d0f",
+		"artifacts/phase6-acceptance/posthog-investigation-2026-10-22/provider-source/posthog/models/async_deletion/delete_events.py": "69cd26f0f67b5815af6fba70152e86b6f3894e23af503007bd6756db75511679",
+		"artifacts/phase6-acceptance/posthog-investigation-2026-10-22/provider-source/posthog/models/async_deletion/__init__.py": "9c84f6cab9e3584e27eb0f891a8011a94a4a4510ccaa22d8605ae917b09fdb49",
+		"artifacts/phase6-acceptance/posthog-investigation-2026-10-22/provider-source/posthog/models/async_deletion/async_deletion.py": "bc349b2c4531aead58b39a3192b8cf80e33fc11004f5a9626e06f18f82452767",
+		"artifacts/phase6-acceptance/posthog-investigation-2026-10-22/provider-source/posthog/models/event/sql.py": "20622943fb09723c24f5ee72149b84c532d39db9f9b065b0f89a6366195c99c4",
+		"artifacts/phase6-acceptance/posthog-investigation-2026-10-22/provider-commits.json": "a4d02816616a8d03dfa89f3ab76d25565907ada7267503e75160974af3771c59"
+	}
+}
