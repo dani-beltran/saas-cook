@@ -4,7 +4,7 @@ Phase 5 implements local usage/quota enforcement and optional Stripe fixed/seat 
 **Phase 5 is completed and accepted for its documented scope as of 2026-10-19.**
 See the [acceptance record](acceptance.md) for the passed gates, evidence and limitations.
 Phase 6 can begin; M2 Commercial still requires its modules and recovery gates.
-The [brief](../../feature-briefs/phase5-monetization.md) records the product decisions.
+The [brief](../feature-briefs/phase5-monetization.md) records the product decisions.
 
 ## Start without Stripe
 

@@ -1,6 +1,6 @@
 # Backoffice development plan
 
-Status: **BO-01/02-S1 implemented; release acceptance pending**. The planning baseline was refreshed 2026-10-21 at `94507a78d7f17f4c134570f0bcab8d70862c272b`; the subsequent working-tree implementation and executed evidence are recorded in [implementation](implementation.md) and [verification](acceptance.md). Scope and priorities: [brief](../../feature-briefs/backoffice.md). Source inventory, proposed ADRs and technical contracts: [architecture](architecture.md). All acceptance IDs and their status are owned by the [roadmap](../06-delivery-roadmap.md#67-backoffice-planned-delivery-and-acceptance); tables here decompose work and specify evidence, not a second sign-off register.
+Status: **BO-01/02-S1 implemented; release acceptance pending**. The planning baseline was refreshed 2026-10-21 at `94507a78d7f17f4c134570f0bcab8d70862c272b`; the subsequent working-tree implementation and executed evidence are recorded in [implementation](implementation.md) and [verification](acceptance.md). Scope and priorities: [brief](../feature-briefs/backoffice.md). Source inventory, proposed ADRs and technical contracts: [architecture](architecture.md). All acceptance IDs and their status are owned by the [roadmap](../06-delivery-roadmap.md#67-backoffice-planned-delivery-and-acceptance); tables here decompose work and specify evidence, not a second sign-off register.
 
 ## Prerequisites and release sequence
 
@@ -80,7 +80,7 @@ Objective: agree scope, trust boundaries and delivery changes before adding priv
 
 | Work ID | Work package / likely locations | Deliverable |
 | --- | --- | --- |
-| BO-00.1 | `feature-briefs/backoffice.md`, `docs/backoffice/architecture.md`; product/security workshop | Ratify ADRs, role/action matrix, operator schema versus private API choice, threat owners and initial release scope |
+| BO-00.1 | `docs/feature-briefs/backoffice.md`, `docs/backoffice/architecture.md`; product/security workshop | Ratify ADRs, role/action matrix, operator schema versus private API choice, threat owners and initial release scope |
 | BO-00.2 | Existing Phase 3/4 acceptance, accepted manual performance report and `scripts/phase3/benchmark.ts` | Preserve accepted Foundation/performance evidence, review its applicability to the new operator scope, and record any additional prerequisites before BO-01 |
 | BO-00.3 | Contract-amendment table in architecture; later edits to docs 00/01/02/03/04/07 and AGENTS | Review exact two-image, principal/model, operator-fence and queue/version compatibility changes |
 | BO-00.4 | `docs/backoffice` evidence/decision records | Ratify numeric budgets, staff enrollment/offboarding and emergency authority, data inventory classification, release/retention owners |
@@ -273,7 +273,7 @@ Parallel opportunities are future engineering lanes, not subagents spawned for t
 
 ## Requirement traceability
 
-Requirement `C-*` definitions are in the [brief](../../feature-briefs/backoffice.md#capability-and-priority-matrix). Gates below link to the single [canonical register](../06-delivery-roadmap.md#backoffice-acceptance-register); existing `R-*` contracts remain cumulative, not superseded.
+Requirement `C-*` definitions are in the [brief](../feature-briefs/backoffice.md#capability-and-priority-matrix). Gates below link to the single [canonical register](../06-delivery-roadmap.md#backoffice-acceptance-register); existing `R-*` contracts remain cumulative, not superseded.
 
 | Requirement | Work items | Acceptance gate(s) |
 | --- | --- | --- |
@@ -323,7 +323,7 @@ Slice status: **implemented; release acceptance pending**, refreshed 2026-10-21.
 **Deferred from this slice:** directory lists/search, global account lookup/reveal, projections/backfills, diagnostics panels, tenant mutations, approvals for domain commands, finance/privacy/flags/messages/reports and support delegation. Staff enrollment/assignment/offboarding controls still need a narrow independently authorized management path and audit; they cannot be omitted just because the organization query is read-only. This slice needs no billing, analytics or storage provider configuration. The full BO-02 release still requires directories and their load/privacy evidence.
 
 
-**BO-01/02-S1: staff-only masked organization lookup.** Review the [brief's first slice](../../feature-briefs/backoffice.md#first-implementation-slice) and implement the smallest real end-to-end query after BO-00 prerequisites. Changed areas: new app/contracts/runtime; separate staff identity/model/audit/DB role and reviewed additive migration; exact-ID directory query; dual image/build/test plumbing. Do not include commercial panels or lifecycle buttons.
+**BO-01/02-S1: staff-only masked organization lookup.** Review the [brief's first slice](../feature-briefs/backoffice.md#first-implementation-slice) and implement the smallest real end-to-end query after BO-00 prerequisites. Changed areas: new app/contracts/runtime; separate staff identity/model/audit/DB role and reviewed additive migration; exact-ID directory query; dual image/build/test plumbing. Do not include commercial panels or lifecycle buttons.
 
 Reviewable definition of done:
 

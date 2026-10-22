@@ -28,7 +28,7 @@ export async function checkSkills(root: string): Promise<string[]> {
 			failures.push(`${file}: missing skill`);
 		}
 	}
-	for (const directory of ["docs/development", "feature-briefs"]) {
+	for (const directory of ["docs/development", "docs/feature-briefs"]) {
 		for (const entry of await readdir(path.join(root, directory)))
 			if (entry.endsWith(".md")) files.push(`${directory}/${entry}`);
 	}

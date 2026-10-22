@@ -5,7 +5,7 @@ description: Implement a persisted SaaS domain feature across schema, services, 
 
 # Add a complete feature
 
-Read [AGENTS.md](../../../AGENTS.md), the [feature workflow](../../../docs/development/feature-workflow.md), and the requested brief. Inspect actual source and working-tree changes first. Use [module availability](../../../docs/development/module-availability.md) to distinguish a dependency from an implemented service. For data/access changes, capture actors, fields, separate input/output/search/audit allowlists, lifecycle, capacity, principal support and acceptance examples in Markdown. Use [Project and child Task](../../../feature-briefs/phase4-project-task.md) as an example, not a generator schema.
+Read [AGENTS.md](../../../AGENTS.md), the [feature workflow](../../../docs/development/feature-workflow.md), and the requested brief. Inspect actual source and working-tree changes first. Use [module availability](../../../docs/development/module-availability.md) to distinguish a dependency from an implemented service. For data/access changes, capture actors, fields, separate input/output/search/audit allowlists, lifecycle, capacity, principal support and acceptance examples in Markdown. Use [Project and child Task](../../../docs/feature-briefs/phase4-project-task.md) as an example, not a generator schema.
 
 Implement ordinary developer-owned source through existing contracts/router, domain service, tenant transaction, authorization compiler and audit/outbox. The actual map is in the workflow reference; the planning document's `packages/modules/projects` tree is illustrative. Do not introduce a generator, regeneration markers, a `.saas/generation` manifest or generated/custom ownership scheme.
 

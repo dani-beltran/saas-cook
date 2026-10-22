@@ -14,7 +14,7 @@ checkout. Source digest:
 `c432ce7eaf229c75ca4a7e5b8cca1ba53a106176d2ac1e65ec0f5bc390ae0720`.
 The manifest excludes this verification record and ignored artifacts to avoid a
 self-referential hash. The [feature brief](example-customers.md) owns decisions;
-the [feature README](../apps/web/src/features/example-customers/README.md) maps code,
+the [feature README](../../apps/web/src/features/example-customers/README.md) maps code,
 request flow, adaptation/removal and fixture setup.
 
 ## Executed checks

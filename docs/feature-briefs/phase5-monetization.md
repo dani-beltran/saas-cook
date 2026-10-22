@@ -1,7 +1,7 @@
 # Phase 5 — Monetization
 
 Status: implementation delivered and local application/performance checks passed; release remains unaccepted
-until all gates in [the acceptance register](../docs/phase5/acceptance.md) are satisfied.
+until all gates in [the acceptance register](../phase5/acceptance.md) are satisfied.
 Baseline: `a35fa43` (clean working tree at start), following the accepted Foundation
 and subsequent product rename. Applied migrations 0000–0009 remain immutable.
 
