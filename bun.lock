@@ -245,6 +245,7 @@
       "dependencies": {
         "@react-email/components": "1.0.12",
         "@react-email/render": "2.1.0",
+        "@saas-cook/config": "workspace:*",
         "pg": "8.23.0",
         "react": "19.3.0",
         "react-dom": "19.3.0",

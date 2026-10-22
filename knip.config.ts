@@ -12,6 +12,7 @@ const config: KnipConfig = {
 				"scripts/phase1/{authz-validate,build-runtime,command,dev,image-test,security-scan}.ts",
 				"scripts/phase1/**/*.test.ts",
 				"scripts/phase4/**/*.test.ts",
+				"scripts/phase8/**/*.test.ts",
 				// Explicit operator entry for resuming historical synthetic erasure evidence.
 				"scripts/phase6/posthog-erasure.ts",
 				"spikes/phase0/**/*.test.{ts,tsx}",
