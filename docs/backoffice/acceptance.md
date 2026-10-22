@@ -6,6 +6,12 @@ Status: **implemented; blocked local validation completed; release acceptance pe
 
 [BO-00](bo-00.md) selects the implementation defaults and records external owners/decisions still required. [Operation](implementation.md) documents the independent app/config/roles, additive `0025` migration, separate operator model/publication, dual-signed invitation/offboarding/re-enrollment commands, verified passkey sign-in, exact-organization grants, forced grant RLS, transaction expiry/offboarding fences and audit-before-disclosure metadata lookup. English/Spanish forms, independent standalone/image packaging and a required CI job are included. Directory search, domain mutations and other Backoffice modules remain planned.
 
+## CI dependency repair — 2026-10-22
+
+Hosted run `39779366661` for `e349399` failed the source dependency gate on CRITICAL `CVE-2026-114125` in Storybook 10.6.0. The root/web/Backoffice/UI Storybook pins and resolved packages are updated together to 10.6.2, the upstream patched release. No exception or security policy change is introduced. The failure report is retained under `artifacts/backoffice/ci-39779366661/`; see the [security repair record](../../security/README.md#2026-10-22-storybook-ci-repair).
+
+Local verification passed: frozen install, current Trivy 0.69.3 dependency scan with zero blocking findings, source/type/Knip checks, 186 unit tests and Storybook build. Hosted rerun results remain to be verified on the new commit; this record does not label pending jobs successful.
+
 ## Shared UI revision — 2026-10-22
 
 The staff workspace now uses shared UI cards, badges, live notices, buttons, inputs and language selection, with the Foundation theme and responsive dashboard styling. Backoffice owns its presentation and catalogs; it does not instantiate customer identity or configuration. No service permissions, schemas or operator models changed in this UI revision.

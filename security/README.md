@@ -47,3 +47,18 @@ Vitest and Storybook require Vite as a peer. An override alone left Bun's
 previously resolved peer at 8.3.0; the explicit dependency updates the actual
 installed and locked graph. Keep this peer pin when maintaining those tools.
 The scanner version, severity policy and empty exception list are unchanged.
+
+## 2026-10-22 Storybook CI repair
+
+PR #11's dependency scan blocked on CRITICAL `CVE-2026-114125`
+(`GHSA-f2ph-cmg5-wxc8`) in Storybook 10.6.0. Pin `storybook` and
+`@storybook/nextjs-vite` to 10.6.2 across the root, web, Backoffice and UI
+workspaces so the framework, builder and preview resolve to the patched release.
+The upstream [preview origin-validation advisory](https://github.com/storybookjs/storybook/security/advisories/GHSA-f2ph-cmg5-wxc8)
+identifies 10.6.2 as fixed. No insecure compatibility flags or scan exceptions
+are enabled. Historical Phase 0 metadata remains unchanged.
+
+A fresh Trivy 0.69.3 dependency scan passed with no blocking findings after the
+lockfile update. Frozen install, source, types, Knip, all 186 unit tests and the
+Storybook production build also passed locally. Hosted CI must verify the final
+commit and both exact runtime images independently.
