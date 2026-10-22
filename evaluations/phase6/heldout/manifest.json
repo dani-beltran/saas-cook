@@ -1,0 +1,75 @@
+{
+	"version": 1,
+	"phase": 6,
+	"tasks": [
+		{
+			"id": "phase6-task-01",
+			"brief": "phase6-task-01.md",
+			"requirements": ["R-SKILLS", "R-FILES", "R-TENANCY", "R-AUTHZ"],
+			"cases": [
+				"data-job-replay-and-strict-input",
+				"immutable-import-export-regressions"
+			]
+		},
+		{
+			"id": "phase6-task-02",
+			"brief": "phase6-task-02.md",
+			"requirements": ["R-SKILLS", "R-SEARCH", "R-ACTIVITY", "R-AUTHZ"],
+			"cases": [
+				"discovery-current-authority-and-redaction",
+				"activity-current-authority-and-tenant"
+			]
+		},
+		{
+			"id": "phase6-task-03",
+			"brief": "phase6-task-03.md",
+			"requirements": ["R-SKILLS", "R-ACCOUNT", "R-ORG-DATA", "R-LIFECYCLE"],
+			"cases": [
+				"departure-preview-replay-and-continuity",
+				"journaled-account-organization-regressions"
+			]
+		},
+		{
+			"id": "phase6-task-04",
+			"brief": "phase6-task-04.md",
+			"requirements": ["R-SKILLS", "R-ANALYTICS", "R-RECOVERY"],
+			"cases": [
+				"authoritative-analytics-preferences",
+				"late-ingestion-and-independent-restore-regressions",
+				"full-backup-team-membership-credential-revocation",
+				"delayed-old-epoch-allow-rejected"
+			]
+		},
+		{
+			"id": "phase6-task-05",
+			"brief": "phase6-task-05.md",
+			"requirements": [
+				"R-SKILLS",
+				"R-TENANCY",
+				"R-AUTHZ",
+				"R-ANALYTICS",
+				"R-RECOVERY"
+			],
+			"cases": ["five-observable-seeded-defects-and-diagnosis"]
+		}
+	],
+	"repeats": 2,
+	"applicationChecks": [
+		"check",
+		"typecheck",
+		"knip",
+		"unit",
+		"integration",
+		"build"
+	],
+	"preservation": [
+		"all-baseline-source",
+		"all-applied-migrations",
+		"customization",
+		"retained-project-and-migration-records",
+		"planned-stop-resume",
+		"completed-request-source-identical-repeat"
+	],
+	"controlVersion": 8,
+	"preservationCases": ["customized-localized-support-behavior"]
+}

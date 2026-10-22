@@ -47,3 +47,14 @@ Vitest and Storybook require Vite as a peer. An override alone left Bun's
 previously resolved peer at 8.3.0; the explicit dependency updates the actual
 installed and locked graph. Keep this peer pin when maintaining those tools.
 The scanner version, severity policy and empty exception list are unchanged.
+
+## 2026-10-22 Storybook security repair
+
+The current dependency scan blocks `storybook` 10.6.0 on critical
+`CVE-2026-114125` / [GHSA-f2ph-cmg5-wxc8](https://github.com/storybookjs/storybook/security/advisories/GHSA-f2ph-cmg5-wxc8).
+Root, web and UI workspace pins now align `storybook` and `@storybook/nextjs-vite`
+on the patched 10.6.2 release; Bun's reviewed lockfile retains a single aligned
+Storybook toolchain. The original failing scan is retained under
+`artifacts/phase6-erasure-verification/security-failure-1/`. Frozen installation,
+Storybook build and current dependency/image policy are checked again. No severity
+policy or exception changes are made.

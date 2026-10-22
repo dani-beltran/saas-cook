@@ -14,6 +14,13 @@ let deleted = false;
 let observed = false;
 let deletionRequests = 0;
 let service: ReturnType<typeof createAnalyticsService>;
+let configuration: Parameters<typeof createAnalyticsService>[2];
+let verificationCalls = 0;
+let verificationOutage = false;
+const due = () =>
+	pool.query(
+		"UPDATE foundation.analytics_subjects SET receipt=jsonb_set(receipt,'{verification,nextCheckAt}','\"2000-01-01T00:00:00Z\"') WHERE receipt->'verification' IS NOT NULL",
+	);
 beforeAll(async () => {
 	f = await resourceFixture();
 	const u = new URL(f.installation.env.DATABASE_URL);
@@ -26,69 +33,72 @@ beforeAll(async () => {
 	owner.assertCurrent = async () => new Date(Date.now() + 60000);
 	org = (await f.organization(owner)).id;
 	other = (await f.organization(owner)).id;
+	configuration = {
+		enabled: true,
+		secret: "synthetic-analytics-key-0000000000000000",
+		synthetic: true,
+		ready: f.authorization.publication,
+		registry: {
+			async register(id, user, organization, event) {
+				await writer.query("SELECT control.begin_analytics($1,$2,$3,$4,$5)", [
+					f.installation.env.INSTALLATION_ID,
+					id,
+					user,
+					organization,
+					event,
+				]);
+			},
+			async settle(event) {
+				await writer.query("SELECT control.settle_analytics($1,$2)", [
+					f.installation.env.INSTALLATION_ID,
+					event,
+				]);
+			},
+			async unsettled(subject) {
+				return (
+					await f.reader.query(
+						"SELECT id FROM control.analytics_attempts WHERE installation_id=$1 AND subject_id=$2 AND NOT settled",
+						[f.installation.env.INSTALLATION_ID, subject],
+					)
+				).rows.map((r) => r.id as string);
+			},
+			async list(kind, id) {
+				return (
+					await f.reader.query(
+						"SELECT id,user_id,organization_id FROM control.analytics_subjects WHERE installation_id=$1 AND (($2='account' AND user_id=$3) OR ($2='organization' AND organization_id::text=$3))",
+						[f.installation.env.INSTALLATION_ID, kind, id],
+					)
+				).rows;
+			},
+		},
+		provider: {
+			async capture(e) {
+				captured.push(e);
+				if (uncertain) throw new Error("lost acknowledgement");
+			},
+			async confirmIngested() {
+				return observed;
+			},
+			async requestDeletion(_id, previous) {
+				deletionRequests++;
+				return (
+					previous ?? {
+						personIds: ["provider-person"],
+						requestedAt: new Date().toISOString(),
+					}
+				);
+			},
+			async deletionComplete() {
+				verificationCalls++;
+				if (verificationOutage) throw new Error("provider unavailable");
+				return deleted;
+			},
+		},
+	};
 	service = createAnalyticsService(
 		pool,
 		{ authorize: f.authorization.authorizeResource },
-		{
-			enabled: true,
-			secret: "synthetic-analytics-key-0000000000000000",
-			synthetic: true,
-			ready: f.authorization.publication,
-			registry: {
-				async register(id, user, organization, event) {
-					await writer.query("SELECT control.begin_analytics($1,$2,$3,$4,$5)", [
-						f.installation.env.INSTALLATION_ID,
-						id,
-						user,
-						organization,
-						event,
-					]);
-				},
-				async settle(event) {
-					await writer.query("SELECT control.settle_analytics($1,$2)", [
-						f.installation.env.INSTALLATION_ID,
-						event,
-					]);
-				},
-				async unsettled(subject) {
-					return (
-						await f.reader.query(
-							"SELECT id FROM control.analytics_attempts WHERE installation_id=$1 AND subject_id=$2 AND NOT settled",
-							[f.installation.env.INSTALLATION_ID, subject],
-						)
-					).rows.map((r) => r.id as string);
-				},
-				async list(kind, id) {
-					return (
-						await f.reader.query(
-							"SELECT id,user_id,organization_id FROM control.analytics_subjects WHERE installation_id=$1 AND (($2='account' AND user_id=$3) OR ($2='organization' AND organization_id::text=$3))",
-							[f.installation.env.INSTALLATION_ID, kind, id],
-						)
-					).rows;
-				},
-			},
-			provider: {
-				async capture(e) {
-					captured.push(e);
-					if (uncertain) throw new Error("lost acknowledgement");
-				},
-				async confirmIngested() {
-					return observed;
-				},
-				async requestDeletion(_id, previous) {
-					deletionRequests++;
-					return (
-						previous ?? {
-							personIds: ["provider-person"],
-							requestedAt: new Date().toISOString(),
-						}
-					);
-				},
-				async deletionComplete() {
-					return deleted;
-				},
-			},
-		},
+		configuration,
 	);
 });
 afterAll(async () => {
@@ -138,6 +148,7 @@ it("deduplicates and respects authoritative user/org preferences at capture and 
 it("keeps cleanup pending for provider outage, scopes org deletion, and preserves independent post-backup mappings", async () => {
 	expect(await service.suppress("organization", other)).toBe(false);
 	deleted = true;
+	await due();
 	expect(await service.suppress("organization", other)).toBe(true);
 	await capture(randomUUID(), other);
 	await service.deliver();
@@ -250,4 +261,94 @@ it("captures the actual committed business catalogue and excludes a rolled-back 
 			)
 		).rowCount,
 	).toBe(0);
+});
+
+it("resumes durable verification after restart, backs off outages, alerts overdue and never resubmits an accepted request", async () => {
+	const user = await f.user();
+	const organization = (await f.organization(user)).id;
+	uncertain = false;
+	deleted = false;
+	await withTenantTransaction(pool, organization, [user.userId], false, (c) =>
+		service.capture(c, {
+			id: randomUUID(),
+			user: user.userId,
+			organization,
+			event: "core_action.completed",
+			feature: "projects",
+			occurredAt: new Date(),
+		}),
+	);
+	await service.deliver();
+	const before = deletionRequests;
+	const restarted = createAnalyticsService(
+		pool,
+		{ authorize: f.authorization.authorizeResource },
+		configuration,
+	);
+	expect(
+		await Promise.all([
+			service.suppress("organization", organization),
+			restarted.suppress("organization", organization),
+		]),
+	).toEqual([false, false]);
+	expect(deletionRequests).toBe(before + 1);
+	const row = async () =>
+		(
+			await pool.query(
+				"SELECT * FROM foundation.analytics_subjects WHERE organization_id=$1",
+				[organization],
+			)
+		).rows[0];
+	const first = await row();
+	expect(first.receipt.verification).toMatchObject({
+		attempts: 1,
+		outcome: "pending",
+	});
+	const checks = verificationCalls;
+	await restarted.verifyErasures();
+	expect(verificationCalls).toBe(checks);
+	expect(deletionRequests).toBe(before + 1);
+	verificationOutage = true;
+	await due();
+	await restarted.verifyErasures();
+	expect((await row()).receipt.verification).toMatchObject({
+		attempts: 2,
+		outcome: "error",
+	});
+	expect((await row()).deletion_state).toBe("pending");
+	expect(
+		Date.parse((await row()).receipt.verification.nextCheckAt) - Date.now(),
+	).toBeGreaterThan(7100000);
+	await pool.query(
+		"UPDATE foundation.analytics_subjects SET receipt=jsonb_set(receipt,'{requestedAt}',to_jsonb((clock_timestamp()-interval '8 days')::text)) WHERE organization_id=$1",
+		[organization],
+	);
+	expect(await restarted.verifyErasures()).toEqual({ overdue: 1 });
+	expect(await restarted.verifyErasures()).toEqual({ overdue: 0 });
+	expect((await row()).receipt.verification.alertedAt).toBeTruthy();
+	verificationOutage = false;
+	await due();
+	const count = verificationCalls;
+	await Promise.all([service.verifyErasures(), restarted.verifyErasures()]);
+	expect(verificationCalls).toBe(count + 1);
+	deleted = true;
+	await due();
+	await restarted.verifyErasures();
+	const final = await row();
+	expect(final.deletion_state).toBe("complete");
+	expect(final.receipt.personIds).toEqual(first.receipt.personIds);
+	expect(final.receipt.verification).toMatchObject({
+		outcome: "verified",
+		attempts: 4,
+	});
+	expect(final.receipt.verification.verifiedAt).toBeTruthy();
+	expect(deletionRequests).toBe(before + 1);
+	expect(
+		(
+			await pool.query(
+				"SELECT * FROM foundation.analytics_events WHERE subject_id=$1",
+				[final.id],
+			)
+		).rows,
+	).toHaveLength(0);
 });

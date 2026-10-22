@@ -1,0 +1,5 @@
+# Resume-safe data jobs
+
+Use the actual saas-add-feature and saas-verify-feature skills and relevant file/bulk contracts. Add `packages/db/src/commercial-workflows.ts`, exporting `createCommercialWorkflows({bulk, platform, lifecycle, analytics})`. Dependency types must come from the canonical service factories. This is a small application workflow extension over implemented modules; do not invent a provider or duplicate authorization.
+
+Its async `startDataJob(actor, organizationId, input)` method delegates to the actual bulk service, preserving strict canonical input validation, operation identity, current permission checks and original DTO. It accepts the canonical bulk input including import/export variants. Invalid extra/server fields reject. Do not call workers from the request. No new schema is needed. Preserve existing migrations/data, `CUSTOM-COMMERCIAL-NOTES.md` and all existing application source/tests; new implementation, tests and a feature brief are permitted. Prove repeat safety, real CSV import/export authorization and immutable finalization using disposable services. Give every exported function useful JSDoc.

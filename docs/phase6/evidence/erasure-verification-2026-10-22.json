@@ -1,0 +1,1758 @@
+{
+	"version": 1,
+	"checkedAt": "2026-10-22T13:02:46.122897+00:00",
+	"baseCommit": "9aba148eb13308e394553a32616c63430ac82259",
+	"sourceDirty": true,
+	"implementationSha256": "cbf62a7bebe2e3789df879196b52bb1c88f04c0da459687eedc59fe0c42186a2",
+	"image": "sha256:2bf31c26cc77f8ed90c6a647477c1b5641ff5fed57815a675faed839778a2d7b",
+	"checks": [
+		{
+			"name": "source",
+			"command": "bun --no-env-file run check",
+			"status": "passed",
+			"log": "artifacts/phase6-erasure-verification/check-release.log"
+		},
+		{
+			"name": "types",
+			"command": "bun --no-env-file run typecheck",
+			"status": "passed",
+			"log": "artifacts/phase6-erasure-verification/typecheck-release.log"
+		},
+		{
+			"name": "unused",
+			"command": "bun --no-env-file run knip",
+			"status": "passed",
+			"log": "artifacts/phase6-erasure-verification/knip-release.log"
+		},
+		{
+			"name": "unit",
+			"command": "bun --no-env-file run test:unit",
+			"status": "passed",
+			"cases": 180,
+			"files": 32,
+			"log": "artifacts/phase6-erasure-verification/unit-release.log"
+		},
+		{
+			"name": "changed analytics/lifecycle/recovery",
+			"command": "bun --no-env-file run test:integration -- packages/db/src/analytics/service.integration.test.ts packages/db/src/lifecycle",
+			"status": "passed",
+			"cases": 14,
+			"files": 5,
+			"log": "artifacts/phase6-erasure-verification/integration-release-focused.log"
+		},
+		{
+			"name": "full integration before final queue-selection/security patch",
+			"command": "bun --no-env-file run test:integration",
+			"status": "passed for recorded earlier source",
+			"cases": 221,
+			"files": 37,
+			"log": "artifacts/phase6-erasure-verification/integration.log",
+			"limit": "Final-source changed paths rerun in focused suite; full current-source suite remains due in hosted CI."
+		},
+		{
+			"name": "full browser before final queue-selection/security patch",
+			"command": "bun --no-env-file run test:e2e",
+			"status": "passed for recorded earlier source",
+			"cases": 53,
+			"groups": 17,
+			"skipped": 0,
+			"unexpected": 0,
+			"log": "artifacts/phase6-erasure-verification/browser.log",
+			"limit": "Earlier execution is not relabeled as final source; hosted CI must validate final source."
+		},
+		{
+			"name": "skill boundaries",
+			"command": "bun --no-env-file run skills:check",
+			"status": "passed for recorded source before final queue selection/security patch",
+			"checks": 6,
+			"report": "artifacts/phase6-erasure-verification/skills/report.json",
+			"limit": "Skills, declared authoring tasks and evaluator controls unchanged. Prior independent candidates retain original provenance; no new live-agent behavior evaluation claimed."
+		},
+		{
+			"name": "production build",
+			"command": "bun --no-env-file run image:build",
+			"status": "passed",
+			"log": "artifacts/phase6-erasure-verification/image-build-release.log",
+			"implementationSha256": "cbf62a7bebe2e3789df879196b52bb1c88f04c0da459687eedc59fe0c42186a2"
+		},
+		{
+			"name": "storybook patched toolchain",
+			"command": "bun --no-env-file run storybook:build",
+			"status": "passed",
+			"log": "artifacts/phase6-erasure-verification/storybook-patched.log",
+			"limit": "Later accepted-receipt SQL selector does not affect Storybook inputs."
+		},
+		{
+			"name": "frozen install",
+			"command": "bun --no-env-file install --frozen-lockfile",
+			"status": "passed",
+			"log": "artifacts/phase6-erasure-verification/frozen-install.log"
+		},
+		{
+			"name": "container",
+			"command": "bun --no-env-file run test:image",
+			"status": "passed",
+			"checks": 17,
+			"report": "artifacts/phase6-erasure-verification/image-acceptance.json",
+			"image": "sha256:2bf31c26cc77f8ed90c6a647477c1b5641ff5fed57815a675faed839778a2d7b",
+			"implementationSha256": "cbf62a7bebe2e3789df879196b52bb1c88f04c0da459687eedc59fe0c42186a2"
+		},
+		{
+			"name": "security dependencies",
+			"status": "passed",
+			"policy": {
+				"scope": "dependencies",
+				"target": ".",
+				"status": "passed",
+				"blocked": [],
+				"checkedAt": "2026-10-22T11:02:36.313Z"
+			},
+			"report": "artifacts/phase6-erasure-verification/security/dependencies.json"
+		},
+		{
+			"name": "security image",
+			"status": "passed",
+			"policy": {
+				"scope": "image",
+				"target": "saas-cook:phase2",
+				"status": "passed",
+				"blocked": [],
+				"checkedAt": "2026-10-22T12:28:24.992Z"
+			},
+			"report": "artifacts/phase6-erasure-verification/security/image.json",
+			"image": "sha256:2bf31c26cc77f8ed90c6a647477c1b5641ff5fed57815a675faed839778a2d7b"
+		},
+		{
+			"name": "30 minute authorization performance",
+			"status": "passed",
+			"controller": "artifacts/phase6-erasure-verification/benchmark-controller.json",
+			"log": "artifacts/phase6-erasure-verification/benchmark.log",
+			"report": "artifacts/phase3/authorization-benchmark-2026-10-22T12-28-55-415Z.json",
+			"audit": "artifacts/phase6-erasure-verification/benchmark-final-audit.json",
+			"durationSeconds": 1800.7267004589999,
+			"attempts": 445239,
+			"successes": 445239,
+			"retries": 0,
+			"latencyMs": {
+				"read": {
+					"count": 267193,
+					"p95": 190.22600000002421,
+					"p99": 262.1933339999523,
+					"max": 1253.8562920000404
+				},
+				"write": {
+					"count": 178046,
+					"p95": 676.3337499999907,
+					"p99": 802.1941669999796,
+					"max": 1266.8957919999957
+				},
+				"createToReadable": {
+					"count": 23316,
+					"p95": 720.7338330000639,
+					"p99": 837.1522090001963,
+					"max": 1075.6807499999413
+				},
+				"sourceCommit": {
+					"count": 89039,
+					"p95": 702.730916999979,
+					"p99": 825.1697909999639,
+					"max": 1266.8954169999342
+				},
+				"fenceWait": {
+					"count": 536469,
+					"p95": 56.50579199986532,
+					"p99": 77.17529099999228,
+					"max": 393.9497080000583
+				},
+				"revocation": {
+					"count": 21208,
+					"p95": 655.2914579999633,
+					"p99": 754.628040999989,
+					"max": 1043.3355420000153
+				},
+				"revocationFenceWait": {
+					"count": 21210,
+					"p95": 62.741957999998704,
+					"p99": 80.23583300004248,
+					"max": 382.2702500000596
+				}
+			}
+		},
+		{
+			"name": "published implementation hosted CI",
+			"status": "passed",
+			"url": "https://github.com/dani-beltran/saas-cook/actions/runs/39779079601",
+			"headCommit": "eb3952c413d9ceeb4ee46b71b24e6a0529d1aa5e",
+			"testedMergeCommit": "8a393a100252a969cfa60e95f62d930920681a9f",
+			"jobs": [
+				{
+					"name": "browser",
+					"conclusion": "success"
+				},
+				{
+					"name": "image",
+					"conclusion": "success"
+				},
+				{
+					"name": "storybook",
+					"conclusion": "success"
+				},
+				{
+					"name": "monetization",
+					"conclusion": "success"
+				},
+				{
+					"name": "integration",
+					"conclusion": "success"
+				},
+				{
+					"name": "production",
+					"conclusion": "success"
+				},
+				{
+					"name": "unit",
+					"conclusion": "success"
+				},
+				{
+					"name": "source",
+					"conclusion": "success"
+				},
+				{
+					"name": "required",
+					"conclusion": "success"
+				}
+			]
+		},
+		{
+			"name": "full hosted final-implementation integration",
+			"status": "passed",
+			"cases": 221,
+			"skipped": 0,
+			"report": "artifacts/phase6-erasure-verification/hosted/eb3952c/test-census.json",
+			"implementationSha256": "cbf62a7bebe2e3789df879196b52bb1c88f04c0da459687eedc59fe0c42186a2"
+		},
+		{
+			"name": "full hosted final-implementation browser",
+			"status": "passed",
+			"cases": 53,
+			"groups": 17,
+			"skipped": 0,
+			"flaky": 0,
+			"report": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser-census.json",
+			"implementationSha256": "cbf62a7bebe2e3789df879196b52bb1c88f04c0da459687eedc59fe0c42186a2"
+		}
+	],
+	"providerFollowUp": {
+		"status": "pending",
+		"subject": "synthetic-acceptance-114c3509-44ad-4c7f-99c4-cba92192dce9",
+		"eventId": "503e1703-afb3-4809-9029-2aa0089d82c8",
+		"receipt": {
+			"personIds": ["87ec1ed7-121e-5bf0-9489-70ad907e4e0b"],
+			"requestedAt": "2026-10-21T12:02:58.050Z"
+		},
+		"observations": [
+			{
+				"checkedAt": "2026-10-22T10:39:47.721Z",
+				"outcome": "pending"
+			},
+			{
+				"checkedAt": "2026-10-22T12:29:10.832Z",
+				"outcome": "pending"
+			},
+			{
+				"checkedAt": "2026-10-22T13:00:44.923Z",
+				"outcome": "pending"
+			}
+		],
+		"newSubjectsCreated": 0,
+		"newDeletionRequests": 0,
+		"liveLateUncertainIngestionCompletion": "not required by explicit user decision; not executed or passed",
+		"resumptionCommand": "node --env-file=.env.providers --import tsx scripts/phase6/posthog-erasure.ts artifacts/phase6-erasure-verification/existing-subject.json",
+		"disposition": "closed-provider-owned-handoff",
+		"manualFollowUpRequired": false,
+		"erasureVerified": false,
+		"decision": "posthog-handoff-2026-10-22.json"
+	},
+	"acceptance": {
+		"criteriaRevisionAuthorized": true,
+		"closed": true,
+		"remainingReleaseGates": [],
+		"operationalFollowUps": [
+			"production worker/alert routing and provider erasure guarantees"
+		],
+		"acceptedImplementationSha256": "cbf62a7bebe2e3789df879196b52bb1c88f04c0da459687eedc59fe0c42186a2",
+		"acceptanceBasis": "User-authorized asynchronous-provider criteria and provider-owned handoff without further manual follow-up; historical erasure remains unverified."
+	},
+	"retainedFailures": [
+		{
+			"kind": "source",
+			"path": "artifacts/phase6-erasure-verification/check-failure-1.log",
+			"resolution": "Removed assignment expression in fixture setup; source checks pass."
+		},
+		{
+			"kind": "dependency policy",
+			"path": "artifacts/phase6-erasure-verification/security-failure-1/dependencies-policy.json",
+			"resolution": "Aligned all workspace Storybook pins on patched 10.6.2; no security exception."
+		}
+	],
+	"sourceStability": {
+		"before": "cbf62a7bebe2e3789df879196b52bb1c88f04c0da459687eedc59fe0c42186a2",
+		"after": "cbf62a7bebe2e3789df879196b52bb1c88f04c0da459687eedc59fe0c42186a2"
+	},
+	"artifacts": [
+		{
+			"path": "artifacts/phase6-erasure-verification/audit-credentials.mjs",
+			"bytes": 1129,
+			"sha256": "472770dd4ff194256f3a84311adaca1ee31400deac57644c4086b5107936fca3"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/benchmark-audit.log",
+			"bytes": 901,
+			"sha256": "b474d658fa02a23349c391a3ddf96192950d491c6fcc7e7eba47dbb33bf5a114"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/benchmark-controller.json",
+			"bytes": 10826,
+			"sha256": "3f78772e03233a2ebf92ad4d95e7e1060cbd603892f5c0f9f53a39f84d6fd445"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/benchmark-final-audit.json",
+			"bytes": 1119,
+			"sha256": "a1b1314d841dba271cbbbec342ca414fa33d295bb50bd1bb90456b1705058a70"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/benchmark.log",
+			"bytes": 33867,
+			"sha256": "07dbd34c40cbd3dc3af3ab7957a76cebb2147c3ee516d9b5c8c98949ad4754d5"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/browser/account-dashboard.json",
+			"bytes": 7831,
+			"sha256": "c4ab6f982e30cd37a456d463ecd8a7f6374608944791b409b15dafee7ad0c4eb"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/browser/appearance-previews.json",
+			"bytes": 3429,
+			"sha256": "9d194c782e162ce9b671a70545011c4e05157e41398d42bbb8cacd62ff7fa75b"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/browser/auth-experience.json",
+			"bytes": 14136,
+			"sha256": "2eea6f94fe03680f8c2e9d3d35420257b3636ce3b63850a725f03ed6c5a03426"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/browser/billing.json",
+			"bytes": 3383,
+			"sha256": "933f7c8ad8df679da932f03bd7259b7a02cbe8c655acc6de489fa6f733540829"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/browser/dashboard-visual.json",
+			"bytes": 3433,
+			"sha256": "4ad31ffcdc7080231d8970a653304a930a74ea2716189ed716cf8d51f7466bed"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/browser/data-jobs.json",
+			"bytes": 3398,
+			"sha256": "6c58b5110cc54c52efc66518ff429e26eba5ab90cc08dd81f67b54e8312f52f9"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/browser/example-customers.json",
+			"bytes": 7665,
+			"sha256": "597df902083beec0d888eb1822b00052ecd53bbd48c8d42db70d0ae9e286c9a3"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/browser/files.json",
+			"bytes": 3351,
+			"sha256": "7568fb5f516ed01e00678db6bd2bd0c3d1070e7b35c7ca91d9c0c201e3c2ecaa"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/browser/foundation.json",
+			"bytes": 5477,
+			"sha256": "2324243e97dd96f9833d318806fe9b364207392d6b5fa227debe77664df50db5"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/browser/identity.json",
+			"bytes": 10934,
+			"sha256": "98769220658dba8ee4d4a0363f7389c5a5b90fb48b3ae442e79c254e7d83bc90"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/browser/organization-dashboard.json",
+			"bytes": 3486,
+			"sha256": "8d29186b145c389d734e502f744d8046559c76280b36eaac3901259442a2814a"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/browser/personal-settings.json",
+			"bytes": 5640,
+			"sha256": "a7b72b1f7e5028ae5c30250b869dddf9d6a2038645543a4c6b809dc2602807da"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/browser/platform.json",
+			"bytes": 5538,
+			"sha256": "deda1c65e5aa7e1a784ce85567b5e9e01935f7663fad2f9bb081425eff500ccc"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/browser/privacy.json",
+			"bytes": 3364,
+			"sha256": "1412f4d2e1b40e29dad8f726332a94e9a0431c4faca2576ab0f18dbdcf61d8ff"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/browser/projects-dashboard.json",
+			"bytes": 5630,
+			"sha256": "733bbeba80cf683a478fa1ad66e4153bc409b2d35e3e17a128ff7244a4372509"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/browser/public-pages.json",
+			"bytes": 4456,
+			"sha256": "c80feeafe525cf5d03aedbd8d11311d0213031270ddfe6b6ace67b528fbcd65b"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/browser/theme.json",
+			"bytes": 7626,
+			"sha256": "c849dac35f8ef4da96b3eec55763de919c66e45787ded29900b428f4a44744bf"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/browser.log",
+			"bytes": 16553,
+			"sha256": "5275563c9881f1033ac950f9791c33f95c4316063f64dfb4bd2a9f095c778045"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/build-patched.log",
+			"bytes": 3415,
+			"sha256": "303b0f64ce816c27a1506e4e12b00fea15b4be40de02560e6b255bd92bc4a276"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/build.log",
+			"bytes": 3416,
+			"sha256": "2ab4f09718a213bab272c885de694f407de5463899d5d3e5b02d391d9cabe4fd"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/check-before-commit.log",
+			"bytes": 152,
+			"sha256": "db218dcc0207c74d5708b61c6f080a35a830d98146e2e9617b08bab106b94e84"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/check-documentation-final.log",
+			"bytes": 152,
+			"sha256": "05d749f421049f1d3bb1adf61186b87d214b5803e81c636564700c465a2424b7"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/check-documentation.log",
+			"bytes": 125032,
+			"sha256": "8018250b53456cf91a5cbb532b39d33d7a61632644271ac52459c16c3e05f38a"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/check-failure-1.log",
+			"bytes": 3529,
+			"sha256": "f297335e1eea2f137aacc99a6744d6b28f12187c18d4e067bc9314d0a3bfc790"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/check-final.log",
+			"bytes": 152,
+			"sha256": "deba756a1de60574b069e1db41a143f13cdab154659e84b1997a6235f791442f"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/check-patched.log",
+			"bytes": 152,
+			"sha256": "d118bbd06ce03e45edeb6d9c2d5e6e2e62bf608e0d8c06cbd87d2ff457568357"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/check-release.log",
+			"bytes": 152,
+			"sha256": "a6b032a63f757f1f9b8258c5b46ba089e1f37f78dbbb897ba2ff199928f9d4dc"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/check-serialization.log",
+			"bytes": 152,
+			"sha256": "7fc26bfc4a27422f8a17d4b6cf481a943b7660bbd41794066552d04251773d60"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/check.log",
+			"bytes": 3529,
+			"sha256": "f297335e1eea2f137aacc99a6744d6b28f12187c18d4e067bc9314d0a3bfc790"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/commitlint.log",
+			"bytes": 103,
+			"sha256": "8ee58991ad16344d5ff478e05ab62d7929589d56c816948a4eb219c5a7d4ca75"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/credential-audit.json",
+			"bytes": 112,
+			"sha256": "26fe6ebaba572cfd72dfcddf3716486de434635928ab1b59d4c5f73288b004fb"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/dependency-update-final.log",
+			"bytes": 174,
+			"sha256": "b3a7f4bd26d425ba902a05aaa1d19ae0d7c9b42a53df120b2949d4df83ae43c3"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/dependency-update.log",
+			"bytes": 235,
+			"sha256": "869b1a5863be9def6b91574c38da158fdcd5460982e8e01e27ffa799541f74a5"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/evidence-audit.json",
+			"bytes": 90,
+			"sha256": "acddf7342066689018cd25f6619e271849e39a9ecbaf8b21ad56a12660134c68"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/existing-subject-final.log",
+			"bytes": 57,
+			"sha256": "f208d87cb5184cb5de1daa79a100e62a9610d56711e1ef8f2258ec5187771fb0"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/existing-subject-release.log",
+			"bytes": 57,
+			"sha256": "343354be9d598d2d77192cef9a0f189855aa8b86ce54e4ff1a6d9096912cde16"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/existing-subject.json",
+			"bytes": 651,
+			"sha256": "9bce9b4f60230aa8d92de5adbd35d542d17657b419168795dca7f687186dab68"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/existing-subject.log",
+			"bytes": 57,
+			"sha256": "d0eb3a31f6de6264f1433d337f744d20a4fd5fc70ecb3eb013c6769318f611fb"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/format-concurrency.log",
+			"bytes": 103,
+			"sha256": "d0197d5057941ec2275e1f7762c2fae05c8a92678eafea24950fb08e5691a30d"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/format-documentation.log",
+			"bytes": 104,
+			"sha256": "7666705fa30fe82931d3337e1d12942b6f49595d5c0b5a4f357b07ccb0393a28"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/format-final.log",
+			"bytes": 104,
+			"sha256": "227ab34efb5b85d688d4b50cdee743ebb296d17b3c56e9d1435c865a0a517d1b"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/format-query-test.log",
+			"bytes": 107,
+			"sha256": "ceabda41213db7019f99ed282d5a611e5ade5bf7bafaed9108b691c75bf563d9"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/format-release.log",
+			"bytes": 107,
+			"sha256": "66cf3013f3f69f83eb53f3e16abcd7dbf9c32d3d69b539440bcb52a191b56159"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/format-serialization.log",
+			"bytes": 103,
+			"sha256": "df290e6d92e4b895c941d51263b29418ca778cf6d73fd6381f5ea5dc902769a2"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/format.log",
+			"bytes": 1088,
+			"sha256": "5676f67798d8ff50013bd47b8f6b2a6805bd9390333aafcdfde54f03e76b8dbf"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/frozen-install.log",
+			"bytes": 96,
+			"sha256": "b528de4e77335296e0f1e2119c6f9e4f14d332fa333799ec8392308f79b3a30e"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/generated-declaration-patched.diff",
+			"bytes": 547,
+			"sha256": "3f54ffca65d756ad016250d1bee9bfe252168b4ea8d529eff7f3c60c802a67a1"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/generated-declaration.diff",
+			"bytes": 547,
+			"sha256": "3f54ffca65d756ad016250d1bee9bfe252168b4ea8d529eff7f3c60c802a67a1"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright/account-dashboard/index.html",
+			"bytes": 542339,
+			"sha256": "b32719378d0d39a4b3b6ed80c6e282312fd3f24617fccf7dc013d5e261e1be07"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright/appearance-previews/index.html",
+			"bytes": 523467,
+			"sha256": "5bd5587b43002bbcc173f670bd6d84174091a2fc0be3cecce7ddcd86214bd9d2"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright/auth-experience/index.html",
+			"bytes": 532535,
+			"sha256": "b4ba95cc619d70a3ad5834a6e56f167391a9fe2d86f37f2080377a886c5cf1c9"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright/billing/index.html",
+			"bytes": 522543,
+			"sha256": "f95abdbe24186747712779ffaecbe29bde0bb07c341b01331510ea1d018ffc35"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright/dashboard-visual/index.html",
+			"bytes": 558279,
+			"sha256": "c3e13d3212637d43d392cd94d0bf6f5bff0cd28146d356eb8001741c8d8ba2e3"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright/data-jobs/index.html",
+			"bytes": 523827,
+			"sha256": "86b469ced5df8330cdd3551ca664bb80100c1a884ff52e8f933de19dbab47e92"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright/example-customers/index.html",
+			"bytes": 529287,
+			"sha256": "86ccd1f34a1999e835f52d74579bd0fb9b5a1aa79adc747deffc1c26a7917fb3"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright/files/index.html",
+			"bytes": 521487,
+			"sha256": "fe54eb791c6a931036659251599f4fe1fe573991e27a4fe032d260a69572a79a"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright/foundation/index.html",
+			"bytes": 523819,
+			"sha256": "9bb7e00a96a9dd236c7745aa368a3d6c31aeefd58fe64081f5b9e7cc7a8d79ec"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright/identity/index.html",
+			"bytes": 559535,
+			"sha256": "91d57355b5351f25b98900ec8d5e99e35f0d3c5a4cc13761d406cc1d083d9a50"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright/organization-dashboard/index.html",
+			"bytes": 527335,
+			"sha256": "295f0b3bcd9437c878474ef2cf1f52aee4670b6c40864ff4a23dc15dccc0daec"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright/personal-settings/index.html",
+			"bytes": 535247,
+			"sha256": "a4ba0a7dcfbb55cbe11ed7ca2c0ca0820ca37ad9d7c622a57add40e1b0b0915f"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright/platform/index.html",
+			"bytes": 524615,
+			"sha256": "4e79debd5ab1eb2533f10d33598b00fd2dc5939e285ee9f2ecbf81b4908b3e08"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright/privacy/index.html",
+			"bytes": 523491,
+			"sha256": "358841f62666630fd1958bb4f03f09a71d17e32c852137c1aa096702005f0816"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright/projects-dashboard/index.html",
+			"bytes": 530979,
+			"sha256": "5fb2a16c99630508743946bac06698c31dabcbc250f368632d280876d95f735e"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright/public-pages/index.html",
+			"bytes": 527991,
+			"sha256": "20b70a4676626f186813c8c03c54f792552983b845100fe8dc05ddd0a326c70d"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright/theme/index.html",
+			"bytes": 532399,
+			"sha256": "efe828e6bc6e2a7c279bcdd4a2a33c610610735a60273b78210f6352d9a0463d"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/account-dashboard/account-dashboard-an-older-ac150-firmation-only-for-sessions-chromium/account-sessions-confirm-en.png",
+			"bytes": 59892,
+			"sha256": "540e9ce395da0ce227fd7b13b6343a9a67ed083d038d7120f1cb86a0ccf2538c"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/account-dashboard/account-dashboard-an-older-ac150-firmation-only-for-sessions-chromium/account-sessions-confirm-es.png",
+			"bytes": 58433,
+			"sha256": "6336ad65ea87e460707d5874c599b52d3623172e9f6d3950ff50435d23e60228"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/account-dashboard/account-dashboard-an-older-ac150-firmation-only-for-sessions-chromium/account-settings-recovered.png",
+			"bytes": 73431,
+			"sha256": "f8a7b29883167ff3abcd6eaeb95f94830842ec75be2d1a628554fdd9f368c5d1"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/account-dashboard/account-dashboard-organiza-bc071--committed-response-is-lost-chromium/account-create-retry.png",
+			"bytes": 82907,
+			"sha256": "76963741d8f6952412331216e95d77ee35646a9c1c92d5b8ed297cc396181c3f"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/account-dashboard/results.json",
+			"bytes": 10208,
+			"sha256": "72af41bdceb3130aa9398c04f783d6dee76460c6af0c758b7457b3ee5289b646"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/account-dashboard/server.log",
+			"bytes": 128851,
+			"sha256": "6d2603c2cc4e83849d8b3e5c5b640d6ce5bb9c1200e5431b20beeacdf905ddca"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/appearance-previews/appearance-previews-appear-4a741-ross-account-and-OS-changes-chromium/Dark-dark.png",
+			"bytes": 18552,
+			"sha256": "2edeaf29b92049b6d69c66bb58129e2f1f80634a380cd88c16e15f7f330d0e19"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/appearance-previews/appearance-previews-appear-4a741-ross-account-and-OS-changes-chromium/Dark-light.png",
+			"bytes": 18318,
+			"sha256": "bb526c7d11f6fa7bae9b81bc5505b1f90e3233b57bbb67f56ec1b614828ae4a1"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/appearance-previews/appearance-previews-appear-4a741-ross-account-and-OS-changes-chromium/Light-dark.png",
+			"bytes": 18288,
+			"sha256": "d8d28f4737c08aadaec7652d222d6f7e7d2c31696808187ffae74c7cf322c02b"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/appearance-previews/appearance-previews-appear-4a741-ross-account-and-OS-changes-chromium/Light-light.png",
+			"bytes": 18471,
+			"sha256": "2c3c1eb42500c0fb51d94d8b59382918655751e7a2a81d5d58b52dc8e9dab419"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/appearance-previews/appearance-previews-appear-4a741-ross-account-and-OS-changes-chromium/System-dark.png",
+			"bytes": 18551,
+			"sha256": "ac4bf06fa7e47e3dffe0e8639929e27f565c4181d2edf5eaf46b842f315dd574"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/appearance-previews/appearance-previews-appear-4a741-ross-account-and-OS-changes-chromium/System-light.png",
+			"bytes": 18463,
+			"sha256": "54cfefd2485912230f38e6fa3aec48ff403748e47757b05e33ff12bb62751b68"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/appearance-previews/results.json",
+			"bytes": 5806,
+			"sha256": "3869eed99f202184899db1fb984d84a3e84b4fe3053e0772b06451f0758df053"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/appearance-previews/server.log",
+			"bytes": 8703,
+			"sha256": "daefe061645d216309013d57685d48c25696ad9ea96478406ceb36ae8f49987f"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/auth-experience/auth-experience-en-dark-au-b2fe9-is-responsive-and-localized-chromium/sign-in-en-dark-desktop.png",
+			"bytes": 40271,
+			"sha256": "b3d7060073cc2a03296ae62fd51b8a125228ff9129a4d9aef7da49fdb8294e23"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/auth-experience/auth-experience-en-dark-au-b2fe9-is-responsive-and-localized-chromium/sign-in-en-dark-mobile.png",
+			"bytes": 32474,
+			"sha256": "55454df44f6fefd09565097a06fbea758499581bd6618074989d962f8c32ebb8"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/auth-experience/auth-experience-en-dark-au-b2fe9-is-responsive-and-localized-chromium/sign-up-en-dark-desktop.png",
+			"bytes": 46710,
+			"sha256": "bf5d25b2792fb9d58318b079b35d2e0e5c97ff0c0497b1cb3b4cffa889c49493"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/auth-experience/auth-experience-en-dark-au-b2fe9-is-responsive-and-localized-chromium/sign-up-en-dark-mobile.png",
+			"bytes": 37547,
+			"sha256": "a3d67030d84049033e8e04e4f9d2f0948bfbab6d5efd90a044850cdd8c4fb5ce"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/auth-experience/auth-experience-en-light-a-c5773-is-responsive-and-localized-chromium/sign-in-en-light-desktop.png",
+			"bytes": 39762,
+			"sha256": "3ffdcc16ca50df40c2da9c01d6efbdbfe8d61d919d975cb9e021f2f49d5dbea1"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/auth-experience/auth-experience-en-light-a-c5773-is-responsive-and-localized-chromium/sign-in-en-light-mobile.png",
+			"bytes": 31609,
+			"sha256": "ea58cff7bc10810192b585a010f778443ed5a4b8b28b11681152693b3a96615c"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/auth-experience/auth-experience-en-light-a-c5773-is-responsive-and-localized-chromium/sign-up-en-light-desktop.png",
+			"bytes": 46213,
+			"sha256": "86122cacd372663f352a86b2b2235d969651cb0a767a716672cd7ea62b7e064e"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/auth-experience/auth-experience-en-light-a-c5773-is-responsive-and-localized-chromium/sign-up-en-light-mobile.png",
+			"bytes": 36954,
+			"sha256": "18fd88aacfe50e3418d3b930ddf60280a25c5bcf563dc4bb543441c0bbe73b19"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/auth-experience/auth-experience-es-dark-au-69f35-is-responsive-and-localized-chromium/sign-in-es-dark-desktop.png",
+			"bytes": 46849,
+			"sha256": "e2122b31f4c6aa9c346c311dc871bd9a97036eaedf3b4524c0a140f1d5e81992"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/auth-experience/auth-experience-es-dark-au-69f35-is-responsive-and-localized-chromium/sign-in-es-dark-mobile.png",
+			"bytes": 38244,
+			"sha256": "e3607de7cf79226964e1ea0eb5d1f1c88e119f7de96d857cdea645c13bc232e9"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/auth-experience/auth-experience-es-dark-au-69f35-is-responsive-and-localized-chromium/sign-up-es-dark-desktop.png",
+			"bytes": 47235,
+			"sha256": "62a3d98d22e9fc82403c2038dc57b0c3e6b9ad609808c8e7c5e9de93989ad45e"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/auth-experience/auth-experience-es-dark-au-69f35-is-responsive-and-localized-chromium/sign-up-es-dark-mobile.png",
+			"bytes": 38049,
+			"sha256": "7a6350be7ac120b55cb0a6c163b2b7b072038a7f882dc0ec76440cde515a34f4"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/auth-experience/auth-experience-es-light-a-c77a6-is-responsive-and-localized-chromium/sign-in-es-light-desktop.png",
+			"bytes": 46088,
+			"sha256": "297b883d98bf50ebf41925aec65eef2b144b3ef066940420a970b756f9152575"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/auth-experience/auth-experience-es-light-a-c77a6-is-responsive-and-localized-chromium/sign-in-es-light-mobile.png",
+			"bytes": 37330,
+			"sha256": "b4f1311d6d90bb07c6a881f42424891261dcbbaf936d285a622d7a6fc74cb9b2"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/auth-experience/auth-experience-es-light-a-c77a6-is-responsive-and-localized-chromium/sign-up-es-light-desktop.png",
+			"bytes": 46590,
+			"sha256": "cd58744572683ec5ff990f602472e89961674fbae963f7872191adc0f104c07c"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/auth-experience/auth-experience-es-light-a-c77a6-is-responsive-and-localized-chromium/sign-up-es-light-mobile.png",
+			"bytes": 37194,
+			"sha256": "839d854fd55d71263b99a4c28757c6828fa3c77d2639aa74dc430c1e39f87df5"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/auth-experience/auth-experience-link-email-72825-n-and-an-editable-next-step-chromium/link-email-form.png",
+			"bytes": 29741,
+			"sha256": "0b5ef991a9c898866f1d5cb85cce6f19ba6ad1cdda5b002dde24c4ea7955f3c7"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/auth-experience/auth-experience-link-email-72825-n-and-an-editable-next-step-chromium/link-email-success.png",
+			"bytes": 35529,
+			"sha256": "ff3cc17c46a52859b2cdd5576718a509c05135121afea563067700c966e0634c"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/auth-experience/auth-experience-missing-to-21df3--offer-a-localized-way-back-chromium/confirm-missing-token-es-dark-mobile.png",
+			"bytes": 22533,
+			"sha256": "df2512383e833768237d85d32c5dc0f3bb89a722f1d6293ff53dcfa9f24eddcc"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/auth-experience/auth-experience-missing-to-21df3--offer-a-localized-way-back-chromium/reset-password-missing-token-es-dark-mobile.png",
+			"bytes": 28963,
+			"sha256": "3ee72b1d07a2d96859e3ba3d9f2f16ab400f7e440cd6002667529af41a7ab60e"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/auth-experience/auth-experience-password-v-f71d4-cks-mismatched-registration-chromium/sign-up-validation-mobile.png",
+			"bytes": 47516,
+			"sha256": "95147cca6b2cfdb0dd3706937eb1c3938f56518707c3fcf5e4035cd3df33a9d9"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/auth-experience/auth-experience-recover-em-936cc-n-and-an-editable-next-step-chromium/recover-email-form.png",
+			"bytes": 42451,
+			"sha256": "ea50ec4fd59c71f8f710f82e8099f3d590c0d1697d8f9549abe58d590e80dd4b"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/auth-experience/auth-experience-recover-em-936cc-n-and-an-editable-next-step-chromium/recover-email-success.png",
+			"bytes": 51819,
+			"sha256": "d8e2d46e563d97020ffb0ce0dd0752ffa3a19bdbcc07424904b7c94e3180e445"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/auth-experience/auth-experience-reset-emai-e5ffb-n-and-an-editable-next-step-chromium/reset-email-form.png",
+			"bytes": 31749,
+			"sha256": "5d0137c88736703129258419b6bafbed2a74dea8680fd8976d27464b34ab7b4b"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/auth-experience/auth-experience-reset-emai-e5ffb-n-and-an-editable-next-step-chromium/reset-email-success.png",
+			"bytes": 38557,
+			"sha256": "9a3c4d186231e082d4c1fb2e86b4ae154cd9c24a161ecd84331d706337e2d577"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/auth-experience/results.json",
+			"bytes": 16519,
+			"sha256": "5dd7c1691a085c0dd9659fcf1d139c35cc029998a13e1acb7dd72a6efddc2581"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/auth-experience/server.log",
+			"bytes": 9865,
+			"sha256": "0896f77f9461e8ec0ee8aa98f3a3768fb216a5106f5d0aa058ed270d0ba492c2"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/billing/results.json",
+			"bytes": 5750,
+			"sha256": "6b8d19cee338f215f99441b6b771f8a6b82fc1b6d52dd028732167a7d520bc62"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/billing/server.log",
+			"bytes": 25312,
+			"sha256": "8fd98cd57744d2a973ec66832f08b11ecb5fa81ade5011a6d09a54036ac9110a"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/dashboard-visual/results.json",
+			"bytes": 5818,
+			"sha256": "970eee15b00bc4dfd0db44ca3f42adc50fbb9196ea25dc18d4e86cb2f1bd4d9c"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/dashboard-visual/server.log",
+			"bytes": 178089,
+			"sha256": "2dbdeb4d162214d01048465e93355ccaa1d173a658464283dee18403b029e42f"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/data-jobs/data-jobs-data-jobs-restri-8181d-th-real-sessions-and-worker-chromium/data-jobs-settings-es-mobile.png",
+			"bytes": 116574,
+			"sha256": "032f2c360f105619a861ca186070a4b1a82fbd5c001de1df42c0d038b016562e"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/data-jobs/results.json",
+			"bytes": 5774,
+			"sha256": "a3713715eac0b56ef120267ed51ff4307ac781ef2314c78852bae74c586483c3"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/data-jobs/server.log",
+			"bytes": 57340,
+			"sha256": "de324550be15061b6fc2e93a2c16293c5fc0fb68e937994fae347d1d5821e14c"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/example-customers/example-customers-last-row-bfe95-ct-failure-preserves-drafts-chromium/customers-stale-edit.png",
+			"bytes": 220804,
+			"sha256": "c970c936ab3b60a84074618d7800088f17f1e878162180c008e584c94ff55635"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/example-customers/example-customers-real-CRU-44c1f-ogs-and-both-locale-layouts-chromium/customers-desktop.png",
+			"bytes": 364599,
+			"sha256": "ed4d453bda3f12d033ad93ec87eb32658f7f74f132ddec12dc480987cb4b1c4e"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/example-customers/example-customers-real-CRU-44c1f-ogs-and-both-locale-layouts-chromium/customers-mobile.png",
+			"bytes": 217454,
+			"sha256": "398f9d8edae911eb6c30375e97c87828b61ac55ca958478d7c530ec6800c6848"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/example-customers/example-customers-real-CRU-44c1f-ogs-and-both-locale-layouts-chromium/customers-spanish-dark.png",
+			"bytes": 197772,
+			"sha256": "5234e4a7a5bd7662a29ab03a96fc4000321863c5df2c3bc02643112ede71a2cb"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/example-customers/results.json",
+			"bytes": 9943,
+			"sha256": "35a0009be62a03ca0dbc69cf9e0a52ca9ad14f891cae574f95bf6173f4f3358f"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/example-customers/server.log",
+			"bytes": 44843,
+			"sha256": "b3ee8b1f8021f60abbd2a8dee0ce303d33c63c083472c7d6dc655ed4d1b7dd0e"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/files/files-Project-text-uploads-8f5d0-d-through-a-current-session-chromium/files-mobile-es.png",
+			"bytes": 89578,
+			"sha256": "ad6af3999f31596bff0067e23b61af035de7af1330c03ff2a12d5d2ac06351d8"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/files/results.json",
+			"bytes": 5718,
+			"sha256": "04b3e5c8c948bb284b258ed4fa20ceb74db03eb97fcc72660d2247261daede70"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/files/server.log",
+			"bytes": 14347,
+			"sha256": "75a06d0d76399d82622c552a8b23ae82fce29756bb3f6633603744d70a197a00"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/foundation/foundation-localized-valid-13180-ynthetic-organization-state-chromium/foundation-desktop.png",
+			"bytes": 79601,
+			"sha256": "2449b9b5c3bf4c6d6ae3bb8aa6c14a7b861a68882f265ea674fc24353f374d05"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/foundation/foundation-mobile-shell-static-asset-and-unsupported-locale-chromium/foundation-mobile.png",
+			"bytes": 74339,
+			"sha256": "3664c6d991077a0d0c987470bb6f27b2fc28d6a41f252477b25ad415229223b9"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/foundation/results.json",
+			"bytes": 7864,
+			"sha256": "634332dac65f80e6c6ded10ba7b1c62ba06704a76a90b4fd366c62ef41ca679f"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/foundation/server.log",
+			"bytes": 4049,
+			"sha256": "6eecb7ca1bf80da37f97a431d4cac4819a2dbf3e7a3707be49d17121d708c3ac"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/identity/identity-Project-dashboard-43745-estores-localized-resources-chromium/projects-spanish.png",
+			"bytes": 72009,
+			"sha256": "23158fbd78d1e22b80c0328e2a7f74b574bce04b5ff40a3aab361986b65d04a0"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/identity/identity-invitation-team-m-978b4-ge-RPC-and-REST-permissions-chromium/ownership-transfer-inactive-desktop.png",
+			"bytes": 87527,
+			"sha256": "121aa05363602d19f042233fe334eded5e2993bdd464de7a49c24301a12c1c73"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/identity/identity-invitation-team-m-978b4-ge-RPC-and-REST-permissions-chromium/ownership-transfer-inactive-mobile.png",
+			"bytes": 59552,
+			"sha256": "5d7342d0917b071b6b4132190c5636351a75a0d5d06cb3c02ff9417abb4b6e46"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/identity/identity-invitation-team-m-9fef9-ge-RPC-and-REST-permissions-chromium/ownership-transfer-member-desktop.png",
+			"bytes": 94136,
+			"sha256": "e2ac29078ade42bcaca6dfd971150e952b6a0f3191d9df153a4259b817dbaca1"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/identity/identity-invitation-team-m-9fef9-ge-RPC-and-REST-permissions-chromium/ownership-transfer-member-mobile.png",
+			"bytes": 66560,
+			"sha256": "52e77dca2b10ab6e20dbf17032e630ea60cae340ec60ca909a1e6beb301be0c0"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/identity/identity-password-registra-82501--and-preserved-MFA-recovery-chromium/password-reset-form-mobile.png",
+			"bytes": 36121,
+			"sha256": "d7468f1f69c710d7ef22e99374038bfdb453277fecb8c83655bccbc5d5c5cd80"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/identity/identity-password-registra-82501--and-preserved-MFA-recovery-chromium/password-reset-spanish.png",
+			"bytes": 26340,
+			"sha256": "b4d85871a0c5815033510e2c284606c6fdd079e7b5e7800e5ccffe66b2d965ea"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/identity/identity-real-browser-WebA-84332-nt-and-passwordless-sign-in-chromium/account-mobile.png",
+			"bytes": 73563,
+			"sha256": "f1f1ca0b997a4fa6ba5241dc8e18c532753633440312531c11bab12285ca676c"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/identity/identity-real-registration-c97a0-lation-and-last-owner-guard-chromium/organization-desktop.png",
+			"bytes": 74556,
+			"sha256": "5499e058d26242d98061d29c54c63c9c28656e08d971666768f3aa9724a125de"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/identity/identity-signup-explains-s-073f9-he-form-available-for-retry-chromium/sign-up-email-success.png",
+			"bytes": 37756,
+			"sha256": "7f845c5f83589be1b00a0638d79367a55c404868f388527e3e5178a20ce51080"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/identity/identity-signup-explains-s-073f9-he-form-available-for-retry-chromium/sign-up-loading.png",
+			"bytes": 51288,
+			"sha256": "61e05d87fd62981b460d5abf9f0b0f40d90f0f9ad358c430e0a2654fff847452"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/identity/identity-signup-explains-s-073f9-he-form-available-for-retry-chromium/sign-up-service-error.png",
+			"bytes": 58922,
+			"sha256": "13434e86d3ef18a8bec4bbe91b897765eca55e84053fa7bd53554a05b451e0a5"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/identity/results.json",
+			"bytes": 13319,
+			"sha256": "b3acb3e96d256f7f770cbc0724059a1d0839c14133e2c39dd06f23a21a775fd4"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/identity/server.log",
+			"bytes": 273499,
+			"sha256": "1864cb46de616706c850039d031c9ede4c0b5abd7e09aba2d9457ef213cd206e"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/organization-dashboard/organization-dashboard-org-e84cf-cceptance-use-real-services-chromium/organization-last-owner-denied.png",
+			"bytes": 119777,
+			"sha256": "ee2b791b464e3012cad294ba93ae9944f886e5eaec7934842294907ec288e9a0"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/organization-dashboard/organization-dashboard-org-e84cf-cceptance-use-real-services-chromium/organization-spanish-member.png",
+			"bytes": 99252,
+			"sha256": "fcbf32f0a5913957361c1ee2b8b63b80bf293fc23a2c273a0e6b6417d0448567"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/organization-dashboard/results.json",
+			"bytes": 5854,
+			"sha256": "6da675cb91b2ff9c3c5a925b4e1072ba1fea5fd2f1798747a4ffad5e48285a8c"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/organization-dashboard/server.log",
+			"bytes": 41561,
+			"sha256": "94f078e03fa6c12798377529d4416669b1b2a9a65fc0e87c1c0880284fe3707c"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/personal-settings/personal-settings-personal-a89bb-tches-System-follows-the-OS-chromium/appearance-en-dark-1440.png",
+			"bytes": 96124,
+			"sha256": "a61fb69464f298eb520a15dd2b112afcc25c8696a43e92533ecc0ef13a055d38"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/personal-settings/personal-settings-personal-a89bb-tches-System-follows-the-OS-chromium/appearance-en-dark-390.png",
+			"bytes": 73572,
+			"sha256": "012740afbbe757f4dbf80b6ee6b01d1d8587344134bfec45d3a7bd0c80d32937"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/personal-settings/personal-settings-personal-a89bb-tches-System-follows-the-OS-chromium/appearance-en-light-1440.png",
+			"bytes": 95676,
+			"sha256": "5fdb56e559565d44880101ac1fe9002dd0492e1469a6188a730a92cc6049d04d"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/personal-settings/personal-settings-personal-a89bb-tches-System-follows-the-OS-chromium/appearance-en-light-390.png",
+			"bytes": 73355,
+			"sha256": "889f0ffe804891b91b05fefea82b1b8491c2d67d7fdce098316f9dbe9843bc36"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/personal-settings/personal-settings-personal-a89bb-tches-System-follows-the-OS-chromium/appearance-es-dark-1440.png",
+			"bytes": 98294,
+			"sha256": "6f0ad83ed81ede982682e23100c7b6e3bb0d1adc07b7dc30823706287626d514"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/personal-settings/personal-settings-personal-a89bb-tches-System-follows-the-OS-chromium/appearance-es-dark-390.png",
+			"bytes": 75117,
+			"sha256": "dae73ee9edc87fe516c1c564c9b5e664f21a10db82a2b8425281745909489f0b"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/personal-settings/personal-settings-personal-a89bb-tches-System-follows-the-OS-chromium/appearance-es-light-1440.png",
+			"bytes": 98014,
+			"sha256": "130548ce013b2b0ce797c9eaf64ee72273b2641f40548d7cbf0de596f0b00c7a"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/personal-settings/personal-settings-personal-a89bb-tches-System-follows-the-OS-chromium/appearance-es-light-390.png",
+			"bytes": 74688,
+			"sha256": "d0527b53c64550de885e692d2b1c7774f148974009d350e4eefcf9983583c00b"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/personal-settings/personal-settings-upload-r-dd7c6--update-Account-and-sidebar-chromium/avatar-en-dark-1440.png",
+			"bytes": 96467,
+			"sha256": "ff330d976d01a60c302d26b7581d861daf5bfa113e82bd7e4ecc2f8f8e065f72"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/personal-settings/personal-settings-upload-r-dd7c6--update-Account-and-sidebar-chromium/avatar-en-dark-390.png",
+			"bytes": 74448,
+			"sha256": "72a33c8572637cd38ec3295afc80d65343ec3ba2041da295131e901e83d60d85"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/personal-settings/personal-settings-upload-r-dd7c6--update-Account-and-sidebar-chromium/avatar-en-light-1440.png",
+			"bytes": 95972,
+			"sha256": "88ac86408b6df6ed149b17fd21eb1ace0106cba22c7932eeecdddc0d73285c49"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/personal-settings/personal-settings-upload-r-dd7c6--update-Account-and-sidebar-chromium/avatar-en-light-390.png",
+			"bytes": 73912,
+			"sha256": "2423842e9614cff58667d7060508c9dd50b24825504da3884778e7732850e3c6"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/personal-settings/personal-settings-upload-r-dd7c6--update-Account-and-sidebar-chromium/avatar-es-dark-1440.png",
+			"bytes": 99087,
+			"sha256": "7f0cee9cc3498b2aac81bb01dd445b240a1f84e48d234d93985dc4513ea69d89"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/personal-settings/personal-settings-upload-r-dd7c6--update-Account-and-sidebar-chromium/avatar-es-dark-390.png",
+			"bytes": 76292,
+			"sha256": "5e6f9f63b73d4792c47e299bbe7cee0d18953c15ea579e6499b6a713ecfc36f5"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/personal-settings/personal-settings-upload-r-dd7c6--update-Account-and-sidebar-chromium/avatar-es-light-1440.png",
+			"bytes": 98629,
+			"sha256": "e058da78e3bc9395cc6973f29100c4616f9f107bc69db932a4bb5495c7d9776a"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/personal-settings/personal-settings-upload-r-dd7c6--update-Account-and-sidebar-chromium/avatar-es-light-390.png",
+			"bytes": 75795,
+			"sha256": "14ddae45bf9ee207f4b1a25bb5a00eb1ae5fa2e91d66f32cfd5fd3585198ed92"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/personal-settings/results.json",
+			"bytes": 8018,
+			"sha256": "2a924b93a977e88c4f553c5b1d95330c31ccdcc8d91ea70a7649cfe2bc2e96f6"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/personal-settings/server.log",
+			"bytes": 93883,
+			"sha256": "62ebe3018669e09f029c7c4d1fa992e3774328e6ee470da7c53ae731267f06af"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/platform/platform-search-and-activi-b42fc-keyboard-and-Spanish-mobile-chromium/platform-desktop.png",
+			"bytes": 70044,
+			"sha256": "ebab51dd8bd9bcb5ccccb46c68bce13c6f02a95909f09b0192be7de826443b97"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/platform/platform-search-and-activi-b42fc-keyboard-and-Spanish-mobile-chromium/platform-mobile-es.png",
+			"bytes": 42470,
+			"sha256": "898533f64fa3976c21395536348b5bf6a036757685747584bd6d211267f141be"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/platform/results.json",
+			"bytes": 7906,
+			"sha256": "a122cf2f9d75ee5c902a38d910f1184aeb871a34704869ed517fd999502c667f"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/platform/server.log",
+			"bytes": 26869,
+			"sha256": "32ecbb14dabdc5649a470a12846be4ff7bf2b43be804dc9f45b66f9b7b00d1e5"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/privacy/privacy-privacy-settings-r-eb7ac-ces-and-guide-safe-deletion-chromium/privacy-account-desktop.png",
+			"bytes": 178640,
+			"sha256": "b2ea5ed565ce2da4fe86390557a0a388673ee37206743316bf12173335d4a60e"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/privacy/privacy-privacy-settings-r-eb7ac-ces-and-guide-safe-deletion-chromium/privacy-confirmation-mobile-es.png",
+			"bytes": 85105,
+			"sha256": "baf3c6449bff19d3bda9ec9b78b88d6ea3cac829f7d29cf20db64d2a88782874"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/privacy/results.json",
+			"bytes": 5741,
+			"sha256": "d92c40b7dcdaf123db8666a5df877177839acadbf310d1ab9eb66999ab45b891"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/privacy/server.log",
+			"bytes": 21527,
+			"sha256": "113383594ef7685052f1b43e6cb14228a229586681620412406f1d7b0090eed0"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/projects-dashboard/results.json",
+			"bytes": 8007,
+			"sha256": "d45c053159948bf2d51033aa411444a28fa2714d6c95b9ecb8fab096e5c63cca"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/projects-dashboard/server.log",
+			"bytes": 57501,
+			"sha256": "a7617b0d645a63e109d2e0561af8f212e9c9273c61469a3347cebb49d2d1a040"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/public-pages/public-pages-en-public-ser-2a4c7-ssages-use-the-same-catalog-chromium/help-imports-en-desktop.png",
+			"bytes": 136794,
+			"sha256": "2576912ac2bfe70356106c7b0dbaa5522a5995f15e9f56fcce0cdf6c160b3e70"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/public-pages/public-pages-en-public-ser-2a4c7-ssages-use-the-same-catalog-chromium/help-imports-en-mobile.png",
+			"bytes": 82406,
+			"sha256": "c745bb10fa83e3346bc9bbb3b9e8cca50f7e8df1d42767613d92f8deca6671d7"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/public-pages/public-pages-en-public-ser-2a4c7-ssages-use-the-same-catalog-chromium/help-index-en-mobile.png",
+			"bytes": 57120,
+			"sha256": "7303e565a10bb520396e6da80e37e40209c97681c63416b706e0f7ca51de9132"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/public-pages/public-pages-es-public-ser-aba38-ssages-use-the-same-catalog-chromium/help-imports-es-desktop.png",
+			"bytes": 142893,
+			"sha256": "86447de30421abd6f9cc764fa7c0569c2eab6d5ba863d243d124b6c25fbe35a2"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/public-pages/public-pages-es-public-ser-aba38-ssages-use-the-same-catalog-chromium/help-imports-es-mobile.png",
+			"bytes": 83690,
+			"sha256": "44c25eeb860c803760630e7bd749f7d336bf14844ff123cf8960e6f4690f518f"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/public-pages/public-pages-es-public-ser-aba38-ssages-use-the-same-catalog-chromium/help-index-es-mobile.png",
+			"bytes": 61660,
+			"sha256": "07a47f3ae8f35d62c6f6d7543ac0b087c1c8d812379bdf3abdd9d9d0e8852fc3"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/public-pages/results.json",
+			"bytes": 6835,
+			"sha256": "e5a2970051ad2502e3cc9ed2ac828c4f8af73581ed9c8d99cf4b099efae7f2e0"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/public-pages/server.log",
+			"bytes": 11253,
+			"sha256": "23afd67fae5b5bb37ce5440b9cc11023f776e1da99b6ed0ff18c4fedbb624ba3"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/theme/results.json",
+			"bytes": 10014,
+			"sha256": "85b9ef17887aac6765293abcb1ecce665d5e4101d01f8ab064f237e59f5c7165"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/theme/server.log",
+			"bytes": 5425,
+			"sha256": "180a6dc0a590e50268348f601b91142f742d01657d2efac80b65c321c87b6e8f"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/theme/theme-authentication-pages-a17c3-t-desktop-and-mobile-widths-chromium/reset-blue-dark-1440.png",
+			"bytes": 36816,
+			"sha256": "806eca62fff7c9c4f02e9e9b9d769efccd385e1a50dd2c7b24a02252e718d7f2"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/theme/theme-authentication-pages-a17c3-t-desktop-and-mobile-widths-chromium/reset-blue-dark-390.png",
+			"bytes": 29621,
+			"sha256": "23a00ee9e796551f04c49cdb497416c1199d2c758cea794b79ffc7612f6083b4"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/theme/theme-authentication-pages-a17c3-t-desktop-and-mobile-widths-chromium/reset-blue-light-1440.png",
+			"bytes": 36141,
+			"sha256": "4ee5bf01f84ac7354aa90522d7ece1deadee3d696755c656c210d57d361c9454"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/theme/theme-authentication-pages-a17c3-t-desktop-and-mobile-widths-chromium/reset-blue-light-390.png",
+			"bytes": 28596,
+			"sha256": "01885a7eeb6bdd1cb540a178f4fe09ece99f3c5d6596e5f9c23ec3d6c9e466c7"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/theme/theme-authentication-pages-a17c3-t-desktop-and-mobile-widths-chromium/reset-teal-dark-1440.png",
+			"bytes": 36804,
+			"sha256": "cb512e5cb67ccddf8f74800101aa89937337e1d5857bf64b21f4566f717b18d0"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/theme/theme-authentication-pages-a17c3-t-desktop-and-mobile-widths-chromium/reset-teal-dark-390.png",
+			"bytes": 29611,
+			"sha256": "5268df9123e6b3cea2d2933e5e96754fec0d02fa87edbc8a589a18e4361c7ff4"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/theme/theme-authentication-pages-a17c3-t-desktop-and-mobile-widths-chromium/reset-teal-light-1440.png",
+			"bytes": 36164,
+			"sha256": "accaa0032077d86a95b4ee5e8e7cb59d6dea265e0b565ea1664e0af05233a17e"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/theme/theme-authentication-pages-a17c3-t-desktop-and-mobile-widths-chromium/reset-teal-light-390.png",
+			"bytes": 28602,
+			"sha256": "1eae9841457bd0bfbf004f565d1f0c43e1dec6f4a8a09951f206cd73a20fdbda"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/theme/theme-authentication-pages-a17c3-t-desktop-and-mobile-widths-chromium/reset-violet-dark-1440.png",
+			"bytes": 36767,
+			"sha256": "246886e7e83f4259f3777f50a0b17781dc83509e4f8908cc7034ec2c39f28e41"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/theme/theme-authentication-pages-a17c3-t-desktop-and-mobile-widths-chromium/reset-violet-dark-390.png",
+			"bytes": 29582,
+			"sha256": "d69bbf6bcd183bfdb8f73d5f9edb2b2bec071cb46c0c15c8bcbba6906f22e681"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/theme/theme-authentication-pages-a17c3-t-desktop-and-mobile-widths-chromium/reset-violet-light-1440.png",
+			"bytes": 36169,
+			"sha256": "e77dc4b3b3a02f1e879575c9aad80b53b71cb863f7e35d3417cd4305fa6d1d0c"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/theme/theme-authentication-pages-a17c3-t-desktop-and-mobile-widths-chromium/reset-violet-light-390.png",
+			"bytes": 28606,
+			"sha256": "d68729c9c78773a1ad65c76dda8b0ac0a05a29ec0e45cf80a791e5929885c6b7"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/theme/theme-authentication-pages-a17c3-t-desktop-and-mobile-widths-chromium/sign-in-blue-dark-1440.png",
+			"bytes": 43826,
+			"sha256": "6b2defd22e6c5c804f2104e5ecf1d6201ef05ba936b62338c9b316b189cb327a"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/theme/theme-authentication-pages-a17c3-t-desktop-and-mobile-widths-chromium/sign-in-blue-dark-390.png",
+			"bytes": 37257,
+			"sha256": "b6dbd0339b1eb0d66fe3d25a055ffa801b66baff123333329c422c723074a176"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/theme/theme-authentication-pages-a17c3-t-desktop-and-mobile-widths-chromium/sign-in-blue-light-1440.png",
+			"bytes": 43171,
+			"sha256": "83d569ea632770e0edec958f27ba35bd660807c87711241bb97fdb95d642fbb1"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/theme/theme-authentication-pages-a17c3-t-desktop-and-mobile-widths-chromium/sign-in-blue-light-390.png",
+			"bytes": 36578,
+			"sha256": "d8099184dfbf7e92aa3f49b544e4b134e85999949c24a382953090c681a40d67"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/theme/theme-authentication-pages-a17c3-t-desktop-and-mobile-widths-chromium/sign-in-teal-dark-1440.png",
+			"bytes": 43872,
+			"sha256": "5819da0f8dd285e0a982ce5448a4b088a54421a1e3f54f33255ddcc8c841ce37"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/theme/theme-authentication-pages-a17c3-t-desktop-and-mobile-widths-chromium/sign-in-teal-dark-390.png",
+			"bytes": 37318,
+			"sha256": "dd0e83f60c4ac51f33d194d6ca475bee6be401d44debc9f62f859ee95713abf2"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/theme/theme-authentication-pages-a17c3-t-desktop-and-mobile-widths-chromium/sign-in-teal-light-1440.png",
+			"bytes": 43188,
+			"sha256": "5ecc7fbef1f850ea908845be96aff61e76b49bf98dff8d6ebf48a53dd45669b2"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/theme/theme-authentication-pages-a17c3-t-desktop-and-mobile-widths-chromium/sign-in-teal-light-390.png",
+			"bytes": 36561,
+			"sha256": "6f6f9464013ddc7650c560fa3196900c1d320ee4ba4ddee44dda887279cbeb2b"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/theme/theme-authentication-pages-a17c3-t-desktop-and-mobile-widths-chromium/sign-in-violet-dark-1440.png",
+			"bytes": 43689,
+			"sha256": "4b8b7dafe028cc929336d73dfac3815eae6b0c27a01487e03d34585b529e7121"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/theme/theme-authentication-pages-a17c3-t-desktop-and-mobile-widths-chromium/sign-in-violet-dark-390.png",
+			"bytes": 37293,
+			"sha256": "c23eb5b89cc4fcdf3ca25280c4be62f16188d8fd923a895e3adae29866716365"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/theme/theme-authentication-pages-a17c3-t-desktop-and-mobile-widths-chromium/sign-in-violet-light-1440.png",
+			"bytes": 43145,
+			"sha256": "dba9bdcf5476a7211a70d08a7918b9ead1bea889ffbdb44b42f50ac682eb27d6"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser/browser-8a393a100252a969cfa60e95f62d930920681a9f/artifacts/playwright-results/theme/theme-authentication-pages-a17c3-t-desktop-and-mobile-widths-chromium/sign-in-violet-light-390.png",
+			"bytes": 36622,
+			"sha256": "c9ecd9911f8ad9caa6c373465ea5d2d34506dae530d3a2fd2bba67ce59394664"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser-census.json",
+			"bytes": 6755,
+			"sha256": "03d59024d03d71344217c944fd70f7b7f014f83704263a686bcda27088895dfd"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/browser-install-progress.log",
+			"bytes": 82,
+			"sha256": "04e60f1e411a570458f3665a42961ae31bab79113f83e5d152b386c7bc64dbad"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/image/image/acceptance.json",
+			"bytes": 1835,
+			"sha256": "2b7eb7ca26de728bd9edfe4595a0cac900e32c1281b359f011be2aca7174b76e"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/image/image/inspect.json",
+			"bytes": 7904,
+			"sha256": "5dbeae5edbd9bf74138e32e44802b808ca92dbed6fe07e7efc3ea98b405e224a"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/image/image/serve.log",
+			"bytes": 19595,
+			"sha256": "2aa77e49e7b0194938e319244cd9b9548433f2117d923c50d7a91a3b3cb7db80"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/image/image/services.log",
+			"bytes": 43687,
+			"sha256": "767a46de406f6c467d7e6e67aa67549e2350420e977a4a727ee9066a2ff6ddb5"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/image/security/image-policy.json",
+			"bytes": 137,
+			"sha256": "1e61ca2aa46ed26205716828b54cdcf2c0d7fcf47005134c3d8bcd94255444df"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/image/security/image.json",
+			"bytes": 248864,
+			"sha256": "ee6529c4bcd7aa144bed8975d354800b317d552562bfc6e80c3bb5ddf604a460"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/reports/dependency-scan-8a393a100252a969cfa60e95f62d930920681a9f/phase4/checks/1792672439472-584263bb-f45d-458c-af7a-6cbf0b761b02/report.json",
+			"bytes": 601,
+			"sha256": "0d27b7aeaf2c5f2c14d04522e38e180e6ec63b3fa39223a31ee2d5e0cf4a6b55"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/reports/dependency-scan-8a393a100252a969cfa60e95f62d930920681a9f/phase4/checks/report.json",
+			"bytes": 601,
+			"sha256": "0d27b7aeaf2c5f2c14d04522e38e180e6ec63b3fa39223a31ee2d5e0cf4a6b55"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/reports/dependency-scan-8a393a100252a969cfa60e95f62d930920681a9f/security/dependencies-policy.json",
+			"bytes": 129,
+			"sha256": "e068ecb6ef35f99d9fd494f3eade1d1029843cd27144c5a86590ae1c82a6d99a"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/reports/dependency-scan-8a393a100252a969cfa60e95f62d930920681a9f/security/dependencies.json",
+			"bytes": 596007,
+			"sha256": "6ef3539bb0d6fa3644406f8c00b7cd8f93a02348020f6ca227adf0b9aa040635"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/reports/integration-8a393a100252a969cfa60e95f62d930920681a9f/authz/model-validation.json",
+			"bytes": 665,
+			"sha256": "eadf5d4de76dde2c3144728fe1321bf1786e3aadc417327414b73c7a1cfa7222"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/reports/integration-8a393a100252a969cfa60e95f62d930920681a9f/services/integration.log",
+			"bytes": 352148,
+			"sha256": "cb4535f7895d49c05b25c70584374c387e3c63eef543ec668b4ae875c4483a34"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/reports/integration-8a393a100252a969cfa60e95f62d930920681a9f/vitest/integration.xml",
+			"bytes": 65065,
+			"sha256": "cf8a3622489419b62f9da5b51b022caf5659abf352ca0b621ff39d683bd48151"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/reports/monetization-8a393a100252a969cfa60e95f62d930920681a9f/integration.xml",
+			"bytes": 7423,
+			"sha256": "d4162495a972c3a625f8a2971a04c76074e09a73900908312ab1f4bcf9212739"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/reports/unit-8a393a100252a969cfa60e95f62d930920681a9f/results.xml",
+			"bytes": 43501,
+			"sha256": "16c5a9d448a6680aa4f6d272031a0259455a4e5633c468b75d87820d1216fd84"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/run-final.json",
+			"bytes": 17284,
+			"sha256": "493b59200cd8185bc9a47a18027cf89ad294748c4ccaff791c46bbfa84ad3623"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/hosted/eb3952c/test-census.json",
+			"bytes": 623,
+			"sha256": "a4bf43ac9ed6eda5ef22948d8286e5deb503393d1efb75965375aedd902880ae"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/image-acceptance.json",
+			"bytes": 1834,
+			"sha256": "40a7f480fd9e72b0a902d3f4772620786d519ae63dcdb63b12963a0ae7225381"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/image-build-final.log",
+			"bytes": 9055,
+			"sha256": "b9fa768b54e5f4fc76f6358fd801a16e39e8af1ae19b6dab32642f7da8d0927d"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/image-build-release.log",
+			"bytes": 9488,
+			"sha256": "ce78c5960fa213a5a070c0198f746028f08df12d52ed56cde3dc3967aef6510d"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/image-build.log",
+			"bytes": 9045,
+			"sha256": "32547ac7f6fcb76a81d151214d920c3682e6d5225e2a8c348c435369b7770dc2"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/image-test-release.log",
+			"bytes": 1883,
+			"sha256": "2acb4ab0dc57c4967d333df7a2d937adf01ebdafcff786808afa11175edffdc9"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/image-test.log",
+			"bytes": 1883,
+			"sha256": "771ccae94f1573cb7f631ba073bf77fe7ef4403195b277d8d538d551d26e2013"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/integration-final-focused.log",
+			"bytes": 1520,
+			"sha256": "ac590179a8ca4e77b340ee90a95d4bd70d5f06c279872244ad7015f9fe0fa71a"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/integration-release-focused.log",
+			"bytes": 1520,
+			"sha256": "e8fa1c50a43a938cf50cc164c30aac0faaafee02e5774c66b39b6fc2f1743ac6"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/integration.log",
+			"bytes": 17703,
+			"sha256": "67f78a727bcf68a378786e3fa6e39ad6b9b81dddc8ed8a64e0f11213ff5a7eab"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/knip-final.log",
+			"bytes": 37,
+			"sha256": "cdfc5fca5678e62e6a4571f5e55652910a0307746679c20ec62332598c3cc4dc"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/knip-patched.log",
+			"bytes": 37,
+			"sha256": "cdfc5fca5678e62e6a4571f5e55652910a0307746679c20ec62332598c3cc4dc"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/knip-release.log",
+			"bytes": 37,
+			"sha256": "cdfc5fca5678e62e6a4571f5e55652910a0307746679c20ec62332598c3cc4dc"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/knip.log",
+			"bytes": 37,
+			"sha256": "cdfc5fca5678e62e6a4571f5e55652910a0307746679c20ec62332598c3cc4dc"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/next-env-build.d.ts",
+			"bytes": 288,
+			"sha256": "1862ac4bbbc5192d4bf562161df66ea547ed3e67173100656ab606ae9797db2b"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/pr-body-final.md",
+			"bytes": 5122,
+			"sha256": "e89bcbfb66dc55f7753c0ec2d47087e558966e7125fab1d9af7f9f7a5e232e16"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/pr-body.md",
+			"bytes": 4569,
+			"sha256": "dfc7b178256949a10f80ba0a3266a0f60d9173ee55e8f135ce64bf8ad01803a6"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/retained-boundary-audit.json",
+			"bytes": 13830,
+			"sha256": "e75569a7f10f6c1f228d13d20a6435ee3d73603b96d3239745f5ea3c6de01877"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/run-benchmark.py",
+			"bytes": 1410,
+			"sha256": "b8858d8e875b7a13422457112bb17240ba0282cd8c04f4405927b2f32c620238"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/security/dependencies-policy.json",
+			"bytes": 129,
+			"sha256": "f2590efab6cd1bad3c3140553e75d441d86d4fc2c563338adb6bade5a253cee8"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/security/dependencies.json",
+			"bytes": 595532,
+			"sha256": "0b116802e9a60b5be0ce94db8e4aa1124dc3cedaca16c14c97145de0f9d3eb49"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/security/image-policy.json",
+			"bytes": 137,
+			"sha256": "a6882e1199441dabec2532f4b0afa7cd885012e3259721a825638decd5eab3b0"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/security/image.json",
+			"bytes": 263305,
+			"sha256": "5eddf9b80b83d133af31431ebbc06de625d34245d812ff0dfdb0d7e09362577d"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/security-dependencies-final.log",
+			"bytes": 466,
+			"sha256": "d67a346b178a113201e06770acfe6d62b75c4ad59b3cac2389f22dd85d5329db"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/security-dependencies.log",
+			"bytes": 4166,
+			"sha256": "fa995be2c6f329abcccda9da67bd1bea11612cab35ac901c03e23d0a7ab39060"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/security-failure-1/dependencies-policy.json",
+			"bytes": 312,
+			"sha256": "e27c700f7b14e4a3f9e26b26f9674f9db93a383ba7c0b16b892a724bd13c622c"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/security-failure-1/dependencies.json",
+			"bytes": 599605,
+			"sha256": "6f2c05a569f2c6b666796e0785e71ce94d430c0b8e6bd46057353058354aa50a"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/security-image-release.log",
+			"bytes": 859,
+			"sha256": "6eed0983c3e104ca329ca50b158cfbf339579285967d3d4352dc7415efd8a876"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/skills/guard-negative-controls.log",
+			"bytes": 1145,
+			"sha256": "e12d5e464b36597e908fbefee3a0b2e63c4ebf523428b5263ccd720029037a93"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/skills/guard-negative-controls.xml",
+			"bytes": 14631,
+			"sha256": "0856a47512d1ed52ebb679cc67d058607cdbd3a83fad65af06e30b003f807070"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/skills/real-service-boundaries.log",
+			"bytes": 15527,
+			"sha256": "edea11acf8efbae1b76bc9df397e94b8c58aeec58edfc8f75dae1f0a5a3dd89d"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/skills/real-service-boundaries.xml",
+			"bytes": 52484,
+			"sha256": "f872b8aac79ed4db8d5764970518f4ea4a6e519cfa9a5e00303504bdfd3a9a1c"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/skills/report.json",
+			"bytes": 976,
+			"sha256": "07a05cb3683a06c521c9d4ecb74ddec0c3c3390bc8a09d68b83d1f4ab41930bb"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/skills.log",
+			"bytes": 486,
+			"sha256": "aa22d12ee3bf01b83c7bbe92f9219005e9f79570cf267ea80e46a1e3693b67fc"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/source-after.txt",
+			"bytes": 65,
+			"sha256": "fb2284b8239f75fc392bd462df8d02876379d3486d1192555e150faa2500cf6a"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/source-before.txt",
+			"bytes": 65,
+			"sha256": "53070c68cf3f99bf30e3cc7f6b5352e36ba38fbd3713cb5699a1900263d3633a"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/source-release.txt",
+			"bytes": 65,
+			"sha256": "fb2284b8239f75fc392bd462df8d02876379d3486d1192555e150faa2500cf6a"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/storybook-patched.log",
+			"bytes": 37151,
+			"sha256": "bd8a6263a91e3fb11840d74f168a395cec58a866838ece07e57766e3d66b9b59"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/storybook.log",
+			"bytes": 37151,
+			"sha256": "71249864f1afcc4ff884c7eec2e5faa5c2fdbb56f3b5545f543913407db95eff"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/typecheck-final.log",
+			"bytes": 123,
+			"sha256": "283777e737ed818c3ac2afe263a43436879ee916ad1bf9f2078ee3f16a913ca9"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/typecheck-patched.log",
+			"bytes": 123,
+			"sha256": "283777e737ed818c3ac2afe263a43436879ee916ad1bf9f2078ee3f16a913ca9"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/typecheck-release.log",
+			"bytes": 123,
+			"sha256": "283777e737ed818c3ac2afe263a43436879ee916ad1bf9f2078ee3f16a913ca9"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/typecheck-serialization.log",
+			"bytes": 123,
+			"sha256": "283777e737ed818c3ac2afe263a43436879ee916ad1bf9f2078ee3f16a913ca9"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/typecheck.log",
+			"bytes": 123,
+			"sha256": "283777e737ed818c3ac2afe263a43436879ee916ad1bf9f2078ee3f16a913ca9"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/unit-final.log",
+			"bytes": 5534,
+			"sha256": "d32f2258ab9c85184c7a736c61d9815a59c05943b2fd6bce96788a70c5b66e33"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/unit-patched.log",
+			"bytes": 5546,
+			"sha256": "5196f112a2060e586fed64c1ea76e241a00baf32e51009c3967b3ab7449aadba"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/unit-release.log",
+			"bytes": 5534,
+			"sha256": "8cfe7c51790fa53948f987f96f3aef857a60fbf9f27f97870e5d02103f815f25"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/unit-stable.log",
+			"bytes": 5642,
+			"sha256": "858027cf224c4cf38bb2e3beedd5b7913571a664820e8b4b6dba8b42587b3e1e"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/unit.log",
+			"bytes": 5534,
+			"sha256": "70b75144bc9169eba1c56eaddbabef43b59f3dd0220e9f703aa6444708260612"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/verify-benchmark.py",
+			"bytes": 2503,
+			"sha256": "58b3c0b7674edfe02074b9c462ee78c3206448c5fa7f9543f650269ab82f2aac"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/credential-audit-closure.json",
+			"bytes": 113,
+			"sha256": "f41a6dba1c59f7ee1c5b5eb462a83be898f79933cee3c3a2464c6a65d6931073"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/evidence-audit-closure.json",
+			"bytes": 87,
+			"sha256": "847c4b46015920a34abb020c61d8adca776540c686adf7f01ce2f4e374ed9826"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/check-closure.log",
+			"bytes": 152,
+			"sha256": "ff709ad95c413ae7bf94133a110b349824d5bf52b52caca8cec44ea271d31c7c"
+		}
+	],
+	"implementationCommit": "eb3952c413d9ceeb4ee46b71b24e6a0529d1aa5e",
+	"publicationNote": "Final evidence/runbook edits change no implementation inputs; source fingerprint remains identical to performance, hosted integration/browser and exact-image checks.",
+	"hostedImage": {
+		"requirement": "R-IMAGE / Phase 2",
+		"suiteVersion": 2,
+		"checkedAt": "2026-10-22T12:36:39.435Z",
+		"checks": [
+			"non-root",
+			"fifteen-packaged-commands-and-missing-credential-refusal",
+			"invalid-config-rejected-before-children",
+			"isolated-packaged-migration-and-replay",
+			"real-model-bootstrap-resumes-identical-independent-epoch-and-publishes",
+			"existing-and-restored-application-data-cannot-bootstrap-as-fresh",
+			"compiled-identity-route-loads-native-avatar-dependencies",
+			"pinned-runtime-and-native-image-library",
+			"native-avatar-jpeg-png-webp-orientation-resize-metadata-strip",
+			"startup-static-public-assets-and-combined-health",
+			"packaged-platform-session-export-worker-s3-and-journaled-deletion",
+			"child-identity-database-and-control-credential-separation",
+			"stale-heartbeat-is-unhealthy",
+			"graceful-shutdown-and-redacted-logs",
+			"web-failure-stops-container",
+			"worker-failure-stops-container",
+			"independent-epoch-mismatch-closes-health-worker-and-publication"
+		],
+		"sourceCommit": "8a393a100252a969cfa60e95f62d930920681a9f",
+		"sourceDirty": false,
+		"implementationSha256": "cbf62a7bebe2e3789df879196b52bb1c88f04c0da459687eedc59fe0c42186a2",
+		"image": "sha256:c9006dd743e76773c712742561cebf9213f50661afbe6bc9850f1c0edc20440f",
+		"architecture": "amd64",
+		"os": "linux",
+		"buildNode": "24.19.0",
+		"runtimeNode": "24.22.0",
+		"bun": "1.4.2",
+		"baseImage": "gcr.io/distroless/nodejs24-debian13:nonroot@sha256:59c479c9b8c123e66047315c968aa2d35e31ae5149c856e4110a79c8b3563f0b",
+		"phase2Commands": "Real packaged migration, interrupted/resumed model bootstrap, independent readiness, existing/restored-data rejection and authz publication; operator command help/credential rejection. Signed operator mutation covered by real-service integration suite."
+	},
+	"hostedImagePolicy": {
+		"scope": "image",
+		"target": "saas-cook:phase2",
+		"status": "passed",
+		"blocked": [],
+		"checkedAt": "2026-10-22T12:36:59.952Z"
+	}
+}
