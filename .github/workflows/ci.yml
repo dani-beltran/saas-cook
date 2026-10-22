@@ -207,9 +207,9 @@ jobs:
       - run: bun run services:up
       - run: bun run phase8:image customer
       - run: bun run phase8:recovery
-      - name: Phase 8 image workload smoke
+      - name: Phase 8 image workload correctness smoke
         if: ${{ !inputs.phase8_full }}
-        run: bun run phase8:performance:smoke
+        run: bun run phase8:performance:ci
       - name: Phase 8 sustained image workload
         if: ${{ inputs.phase8_full }}
         run: bun run phase8:performance
