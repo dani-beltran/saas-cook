@@ -66,3 +66,26 @@ repair passed a fresh Trivy 0.69.3 dependency scan, frozen install, source/types
 Knip, 186 unit tests and Storybook build locally; its final hosted CI results
 are recorded separately from the Phase 6 evidence. Merged-source dependency and
 exact-image checks remain required.
+
+## 2026-10-22 Next.js image security repair
+
+The Phase 8 Backoffice image scan blocked on Next.js 16.3.8 with two CRITICAL
+findings, [GHSA-2464-fhr4-w9xw / CVE-2026-96889](https://github.com/vercel/next.js/security/advisories/GHSA-2464-fhr4-w9xw)
+and [GHSA-673q-mjm6-r5xr](https://github.com/vercel/next.js/security/advisories/GHSA-673q-mjm6-r5xr),
+and HIGH [GHSA-p3m5-59mp-jv5r / CVE-2026-94482](https://github.com/vercel/next.js/security/advisories/GHSA-p3m5-59mp-jv5r).
+The upstream [16.4.1 release](https://github.com/vercel/next.js/releases/tag/v16.4.1)
+fixes all three. Sharp 0.35.5 addresses the image-optimization advisory's upstream
+condition, but does not replace the Next.js upgrade for the other two findings.
+
+Root, customer, Backoffice and the executable Phase 0 workspace now pin Next.js
+16.4.1 together. Keeping the Phase 0 dependency aligned prevents the committed
+workspace graph from retaining a vulnerable copy; historical Phase 0 evidence and
+application sources are unchanged. Bun 1.4.2 regenerates the lockfile, including
+Next.js's matching environment/SWC packages. The distroless runtime digest,
+scanner pin, severity policy and empty exception list remain unchanged.
+
+Earlier scans of 16.3.8 passed before these findings appeared in the refreshed
+vulnerability data; they do not waive the new blocking result. Frozen install,
+both application builds, native-image acceptance, current dependency/image scans
+and affected browser/Phase 0 checks must validate the updated graph. Exact-source
+release receipts must be regenerated for the updated candidate.
