@@ -145,3 +145,13 @@ orders that unique constraint before the foreign key. File identities and object
 versions are private service state. Existing schema/history/readiness are preserved.
 Apply both before enabling file storage. Storage is disabled by default and requires
 the [documented private versioned adapter](../../../docs/phase6/files.md).
+
+`0026_backoffice_directory` adds the indexed actor/epoch/environment grant scan
+and an own-scope directory RLS mode. It preserves exact lookup scope and runtime
+role separation. The deferred read expiry guard also covers directory page audit
+records, including empty results. Compatibility advances to the reviewed 27-entry
+journal and exposes a directory-specific readiness function. Apply before new BO
+binaries; old lookup binaries remain supported on the additive schema. No data
+backfill, credential replacement or operator-model change is required. Fresh and
+populated 0025 upgrade/replay fixtures preserve staff/grants/audit/readiness and
+exercise directory expiry at commit. Earlier migrations/snapshots are immutable.
