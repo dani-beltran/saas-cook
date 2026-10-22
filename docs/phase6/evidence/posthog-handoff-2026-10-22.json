@@ -1,0 +1,19 @@
+{
+	"version": 1,
+	"decisionDate": "2026-10-22",
+	"subject": "synthetic-acceptance-114c3509-44ad-4c7f-99c4-cba92192dce9",
+	"disposition": "closed-provider-owned-handoff",
+	"manualFollowUpRequired": false,
+	"erasureVerified": false,
+	"lastObservedProviderState": "pending",
+	"historicalEvidence": "posthog-erasure-subject.json",
+	"dependentLiveCompletionDrill": {
+		"required": false,
+		"executed": false,
+		"passed": false
+	},
+	"newProviderCallsForThisDecision": 0,
+	"applicationBackgroundVerification": "retained",
+	"M2Acceptance": "accepted under revised criteria",
+	"authority": "Explicit user instruction: We do not even need to follow up."
+}

@@ -905,9 +905,11 @@ test("Project dashboard validates, edits, detects conflicts and restores localiz
 		.getByRole("button", { name: "Save changes", exact: true })
 		.click();
 	// Saving can also refresh the sharing list, which has its own loading status.
-	await expect(
-		editing.getByRole("status").filter({ hasText: "This item has changed" }),
-	).toBeVisible();
+	const conflict = editing.getByRole("status").filter({
+		hasText: "This item has changed",
+	});
+	await expect(conflict).toContainText("This item has changed");
+	await expect(conflict).toBeVisible();
 	await editing.getByRole("button", { name: "Cancel", exact: true }).click();
 	await page.getByRole("button", { name: "Refresh", exact: true }).click();
 	await expect(card).toContainText("Concurrent server change");

@@ -1,0 +1,3 @@
+# Discovery and activity workflow
+
+Use saas-add-dashboard-page and saas-verify-feature guidance. Extend `createCommercialWorkflows` with async `discovery(actor, organizationId, input)` and `activity(actor, organizationId, input)` delegating to the current canonical platform service. Inputs, output shape, safe field allowlists and opaque cursor semantics must remain canonical. Do not add a pre-authorized cache, unrestricted totals or key access. Exercise real PostgreSQL/OpenFGA wrong-tenant, overlapping member, current grant/revoke and hidden-field behavior. Preserve customizations, all baseline migrations/tests and existing source. No UI rewrite is requested.

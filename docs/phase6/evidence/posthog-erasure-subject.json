@@ -1,0 +1,26 @@
+{
+	"version": 1,
+	"host": "https://eu.posthog.com",
+	"projectId": "314657",
+	"subject": "synthetic-acceptance-114c3509-44ad-4c7f-99c4-cba92192dce9",
+	"eventId": "503e1703-afb3-4809-9029-2aa0089d82c8",
+	"receipt": {
+		"personIds": ["87ec1ed7-121e-5bf0-9489-70ad907e4e0b"],
+		"requestedAt": "2026-10-21T12:02:58.050Z"
+	},
+	"state": "pending",
+	"observations": [
+		{
+			"checkedAt": "2026-10-22T10:39:47.721Z",
+			"outcome": "pending"
+		},
+		{
+			"checkedAt": "2026-10-22T12:29:10.832Z",
+			"outcome": "pending"
+		},
+		{
+			"checkedAt": "2026-10-22T13:00:44.923Z",
+			"outcome": "pending"
+		}
+	]
+}

@@ -12,6 +12,7 @@ import {
 	uuid,
 } from "drizzle-orm/pg-core";
 import { foundation } from "../schema";
+import type { AnalyticsDeletion } from "./provider";
 
 const time = (n: string) => timestamp(n, { withTimezone: true });
 const policies = () => [
@@ -56,7 +57,7 @@ export const analyticsSubjects = foundation
 			organizationId: uuid("organization_id"),
 			suppressed: boolean().notNull().default(false),
 			deletionState: text("deletion_state").notNull().default("none"),
-			receipt: jsonb().$type<{ personIds: string[]; requestedAt: string }>(),
+			receipt: jsonb().$type<AnalyticsDeletion>(),
 		},
 		(t) => [
 			index("analytics_subject_user").on(t.userId),

@@ -50,15 +50,19 @@ The scanner version, severity policy and empty exception list are unchanged.
 
 ## 2026-10-22 Storybook CI repair
 
-PR #11's dependency scan blocked on CRITICAL `CVE-2026-114125`
-(`GHSA-f2ph-cmg5-wxc8`) in Storybook 10.6.0. Pin `storybook` and
-`@storybook/nextjs-vite` to 10.6.2 across the root, web, Backoffice and UI
-workspaces so the framework, builder and preview resolve to the patched release.
-The upstream [preview origin-validation advisory](https://github.com/storybookjs/storybook/security/advisories/GHSA-f2ph-cmg5-wxc8)
-identifies 10.6.2 as fixed. No insecure compatibility flags or scan exceptions
-are enabled. Historical Phase 0 metadata remains unchanged.
+Both the Phase 6 acceptance work and PR #11's dependency scans blocked on CRITICAL
+`CVE-2026-114125` / [GHSA-f2ph-cmg5-wxc8](https://github.com/storybookjs/storybook/security/advisories/GHSA-f2ph-cmg5-wxc8)
+in Storybook 10.6.0. Root, web, Backoffice and UI workspace pins align
+`storybook` and `@storybook/nextjs-vite` on patched 10.6.2, retaining a single
+reviewed Storybook toolchain in Bun's lockfile. No insecure compatibility flags,
+severity-policy changes or scan exceptions are enabled. Historical Phase 0
+metadata remains unchanged.
 
-A fresh Trivy 0.69.3 dependency scan passed with no blocking findings after the
-lockfile update. Frozen install, source, types, Knip, all 186 unit tests and the
-Storybook production build also passed locally. Hosted CI must verify the final
-commit and both exact runtime images independently.
+The Phase 6 failing scan is retained under
+`artifacts/phase6-erasure-verification/security-failure-1/`; the Backoffice
+failure is retained under `artifacts/backoffice/ci-39779366661/`. Each workstream
+records its own source and dependency/image policy results. The Backoffice
+repair passed a fresh Trivy 0.69.3 dependency scan, frozen install, source/types,
+Knip, 186 unit tests and Storybook build locally; its final hosted CI results
+are recorded separately from the Phase 6 evidence. Merged-source dependency and
+exact-image checks remain required.

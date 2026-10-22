@@ -1,0 +1,2099 @@
+{
+	"schemaVersion": 1,
+	"checkedAt": "2026-10-21T13:47:25.340098+00:00",
+	"acceptanceClosed": false,
+	"scope": "Phase6/M2 Commercial customer application; Phase7/8 and optional Backoffice excluded",
+	"parentCommit": "94507a78d7f17f4c134570f0bcab8d70862c272b",
+	"dirtySource": true,
+	"implementationSha256": "18515fc44a16fa34832990bea378b895ee7666cfc466a01f2848b7b8345d1dea",
+	"fingerprintAlgorithm": "scripts/phase1/source-fingerprint.ts",
+	"image": {
+		"requirement": "R-IMAGE / Phase 2",
+		"suiteVersion": 2,
+		"checkedAt": "2026-10-21T13:04:56.475Z",
+		"checks": [
+			"non-root",
+			"fifteen-packaged-commands-and-missing-credential-refusal",
+			"invalid-config-rejected-before-children",
+			"isolated-packaged-migration-and-replay",
+			"real-model-bootstrap-resumes-identical-independent-epoch-and-publishes",
+			"existing-and-restored-application-data-cannot-bootstrap-as-fresh",
+			"compiled-identity-route-loads-native-avatar-dependencies",
+			"pinned-runtime-and-native-image-library",
+			"native-avatar-jpeg-png-webp-orientation-resize-metadata-strip",
+			"startup-static-public-assets-and-combined-health",
+			"packaged-platform-session-export-worker-s3-and-journaled-deletion",
+			"child-identity-database-and-control-credential-separation",
+			"stale-heartbeat-is-unhealthy",
+			"graceful-shutdown-and-redacted-logs",
+			"web-failure-stops-container",
+			"worker-failure-stops-container",
+			"independent-epoch-mismatch-closes-health-worker-and-publication"
+		],
+		"sourceCommit": "94507a78d7f17f4c134570f0bcab8d70862c272b",
+		"sourceDirty": true,
+		"implementationSha256": "18515fc44a16fa34832990bea378b895ee7666cfc466a01f2848b7b8345d1dea",
+		"image": "sha256:eb29b7061e1d7d4dbd11f935f00a2e70c5fd289d66da530badcec51570f3a1ff",
+		"architecture": "arm64",
+		"os": "linux",
+		"buildNode": "24.19.0",
+		"runtimeNode": "24.22.0",
+		"bun": "1.4.2",
+		"baseImage": "gcr.io/distroless/nodejs24-debian13:nonroot@sha256:59c479c9b8c123e66047315c968aa2d35e31ae5149c856e4110a79c8b3563f0b",
+		"phase2Commands": "Real packaged migration, interrupted/resumed model bootstrap, independent readiness, existing/restored-data rejection and authz publication; operator command help/credential rejection. Signed operator mutation covered by real-service integration suite."
+	},
+	"runtime": {
+		"bun": "1.4.2",
+		"localNode": "24.19.0",
+		"imageNode": "24.22.0",
+		"rootAgent": "Codex desktop; exact model identifier/reasoning not exposed"
+	},
+	"checks": {
+		"source": {
+			"name": "source",
+			"argv": ["bun", "--no-env-file", "run", "check"],
+			"startedAt": "2026-10-21T12:46:23.052472+00:00",
+			"sourceBefore": "18515fc44a16fa34832990bea378b895ee7666cfc466a01f2848b7b8345d1dea",
+			"log": "source.log",
+			"exitCode": 0,
+			"finishedAt": "2026-10-21T12:46:23.315223+00:00",
+			"sourceAfter": "18515fc44a16fa34832990bea378b895ee7666cfc466a01f2848b7b8345d1dea",
+			"status": "passed"
+		},
+		"types": {
+			"name": "types",
+			"argv": ["bun", "--no-env-file", "run", "typecheck"],
+			"startedAt": "2026-10-21T12:46:23.392495+00:00",
+			"sourceBefore": "18515fc44a16fa34832990bea378b895ee7666cfc466a01f2848b7b8345d1dea",
+			"log": "types.log",
+			"exitCode": 0,
+			"finishedAt": "2026-10-21T12:46:25.460764+00:00",
+			"sourceAfter": "18515fc44a16fa34832990bea378b895ee7666cfc466a01f2848b7b8345d1dea",
+			"status": "passed"
+		},
+		"unused": {
+			"name": "unused",
+			"argv": ["bun", "--no-env-file", "run", "knip"],
+			"startedAt": "2026-10-21T12:48:59.603951+00:00",
+			"sourceBefore": "18515fc44a16fa34832990bea378b895ee7666cfc466a01f2848b7b8345d1dea",
+			"log": "unused.log",
+			"exitCode": 0,
+			"finishedAt": "2026-10-21T12:49:00.700138+00:00",
+			"sourceAfter": "18515fc44a16fa34832990bea378b895ee7666cfc466a01f2848b7b8345d1dea",
+			"status": "passed"
+		},
+		"unit": {
+			"name": "unit",
+			"argv": ["bun", "--no-env-file", "run", "test:unit"],
+			"startedAt": "2026-10-21T12:46:27.038749+00:00",
+			"sourceBefore": "18515fc44a16fa34832990bea378b895ee7666cfc466a01f2848b7b8345d1dea",
+			"log": "unit.log",
+			"exitCode": 0,
+			"finishedAt": "2026-10-21T12:46:30.007107+00:00",
+			"sourceAfter": "18515fc44a16fa34832990bea378b895ee7666cfc466a01f2848b7b8345d1dea",
+			"status": "passed"
+		},
+		"integration": {
+			"name": "integration",
+			"argv": ["bun", "--no-env-file", "run", "test:integration"],
+			"startedAt": "2026-10-21T12:49:00.788057+00:00",
+			"sourceBefore": "18515fc44a16fa34832990bea378b895ee7666cfc466a01f2848b7b8345d1dea",
+			"log": "integration.log",
+			"exitCode": 0,
+			"finishedAt": "2026-10-21T12:52:34.726388+00:00",
+			"sourceAfter": "18515fc44a16fa34832990bea378b895ee7666cfc466a01f2848b7b8345d1dea",
+			"status": "passed"
+		},
+		"model": {
+			"name": "model",
+			"argv": ["bun", "--no-env-file", "run", "authz:validate"],
+			"startedAt": "2026-10-21T12:52:34.844298+00:00",
+			"sourceBefore": "18515fc44a16fa34832990bea378b895ee7666cfc466a01f2848b7b8345d1dea",
+			"log": "model.log",
+			"exitCode": 0,
+			"finishedAt": "2026-10-21T12:52:35.121237+00:00",
+			"sourceAfter": "18515fc44a16fa34832990bea378b895ee7666cfc466a01f2848b7b8345d1dea",
+			"status": "passed"
+		},
+		"skills": {
+			"name": "skills",
+			"argv": ["bun", "--no-env-file", "run", "skills:check"],
+			"startedAt": "2026-10-21T12:52:35.204957+00:00",
+			"sourceBefore": "18515fc44a16fa34832990bea378b895ee7666cfc466a01f2848b7b8345d1dea",
+			"log": "skills.log",
+			"exitCode": 0,
+			"finishedAt": "2026-10-21T12:55:39.425052+00:00",
+			"sourceAfter": "18515fc44a16fa34832990bea378b895ee7666cfc466a01f2848b7b8345d1dea",
+			"status": "passed"
+		},
+		"production": {
+			"name": "production",
+			"argv": ["bun", "--no-env-file", "run", "build"],
+			"startedAt": "2026-10-21T12:55:39.513727+00:00",
+			"sourceBefore": "18515fc44a16fa34832990bea378b895ee7666cfc466a01f2848b7b8345d1dea",
+			"log": "production.log",
+			"exitCode": 0,
+			"generatedNextDeclaration": {
+				"beforeSha256": "0f70629890b72a0a82e91972cc032c04b658b26c265373cb711cf576bfbf8fcc",
+				"afterSha256": "1862ac4bbbc5192d4bf562161df66ea547ed3e67173100656ab606ae9797db2b",
+				"diff": "production-next-env.diff",
+				"restoredCapturedInput": true
+			},
+			"finishedAt": "2026-10-21T12:55:59.040080+00:00",
+			"sourceAfter": "18515fc44a16fa34832990bea378b895ee7666cfc466a01f2848b7b8345d1dea",
+			"status": "passed"
+		},
+		"browser": {
+			"name": "browser",
+			"argv": ["bun", "--no-env-file", "run", "test:e2e"],
+			"startedAt": "2026-10-21T12:55:59.124750+00:00",
+			"sourceBefore": "18515fc44a16fa34832990bea378b895ee7666cfc466a01f2848b7b8345d1dea",
+			"log": "browser.log",
+			"exitCode": 0,
+			"finishedAt": "2026-10-21T12:57:50.797918+00:00",
+			"sourceAfter": "18515fc44a16fa34832990bea378b895ee7666cfc466a01f2848b7b8345d1dea",
+			"status": "passed"
+		},
+		"storybook": {
+			"name": "storybook",
+			"argv": ["bun", "--no-env-file", "run", "storybook:build"],
+			"startedAt": "2026-10-21T12:57:50.886720+00:00",
+			"sourceBefore": "18515fc44a16fa34832990bea378b895ee7666cfc466a01f2848b7b8345d1dea",
+			"log": "storybook.log",
+			"exitCode": 0,
+			"finishedAt": "2026-10-21T12:57:53.798700+00:00",
+			"sourceAfter": "18515fc44a16fa34832990bea378b895ee7666cfc466a01f2848b7b8345d1dea",
+			"status": "passed"
+		},
+		"dependencies": {
+			"name": "dependencies",
+			"argv": ["bun", "--no-env-file", "run", "security:scan", "dependencies"],
+			"startedAt": "2026-10-21T12:57:53.876089+00:00",
+			"sourceBefore": "18515fc44a16fa34832990bea378b895ee7666cfc466a01f2848b7b8345d1dea",
+			"log": "dependencies.log",
+			"exitCode": 0,
+			"finishedAt": "2026-10-21T12:57:54.388818+00:00",
+			"sourceAfter": "18515fc44a16fa34832990bea378b895ee7666cfc466a01f2848b7b8345d1dea",
+			"status": "passed"
+		},
+		"image-build": {
+			"name": "image-build",
+			"argv": ["bun", "--no-env-file", "run", "image:build"],
+			"startedAt": "2026-10-21T12:57:54.468701+00:00",
+			"sourceBefore": "18515fc44a16fa34832990bea378b895ee7666cfc466a01f2848b7b8345d1dea",
+			"log": "image-build.log",
+			"exitCode": 0,
+			"finishedAt": "2026-10-21T13:04:11.679331+00:00",
+			"sourceAfter": "18515fc44a16fa34832990bea378b895ee7666cfc466a01f2848b7b8345d1dea",
+			"status": "passed"
+		},
+		"image": {
+			"name": "image",
+			"argv": ["bun", "--no-env-file", "run", "test:image"],
+			"startedAt": "2026-10-21T13:04:11.782155+00:00",
+			"sourceBefore": "18515fc44a16fa34832990bea378b895ee7666cfc466a01f2848b7b8345d1dea",
+			"log": "image.log",
+			"exitCode": 0,
+			"finishedAt": "2026-10-21T13:04:56.943616+00:00",
+			"sourceAfter": "18515fc44a16fa34832990bea378b895ee7666cfc466a01f2848b7b8345d1dea",
+			"status": "passed"
+		},
+		"image-security": {
+			"name": "image-security",
+			"argv": [
+				"bun",
+				"--no-env-file",
+				"run",
+				"security:scan",
+				"image",
+				"saas-cook:phase6-acceptance"
+			],
+			"startedAt": "2026-10-21T13:04:57.034015+00:00",
+			"sourceBefore": "18515fc44a16fa34832990bea378b895ee7666cfc466a01f2848b7b8345d1dea",
+			"log": "image-security.log",
+			"exitCode": 0,
+			"finishedAt": "2026-10-21T13:04:58.366066+00:00",
+			"sourceAfter": "18515fc44a16fa34832990bea378b895ee7666cfc466a01f2848b7b8345d1dea",
+			"status": "passed"
+		}
+	},
+	"caseCounts": {
+		"unit": 179,
+		"unitFiles": 32,
+		"integration": 220,
+		"integrationFiles": 37,
+		"browser": 53,
+		"browserSkipped": 0,
+		"browserFlaky": 0,
+		"skillBoundary": 6,
+		"modelAssertions": 32,
+		"container": 17
+	},
+	"benchmark": {
+		"path": "artifacts/phase3/authorization-benchmark-2026-10-21T13-14-53-082Z.json",
+		"status": "passed",
+		"sourceBefore": {
+			"sha256": "18515fc44a16fa34832990bea378b895ee7666cfc466a01f2848b7b8345d1dea",
+			"algorithm": "shared scripts/phase1/source-fingerprint.ts"
+		},
+		"sourceAfter": {
+			"sha256": "18515fc44a16fa34832990bea378b895ee7666cfc466a01f2848b7b8345d1dea",
+			"algorithm": "shared scripts/phase1/source-fingerprint.ts"
+		},
+		"full": {
+			"status": "passed",
+			"stage": "evidence",
+			"runId": "2026-10-21T13-14-53-082Z",
+			"checkpointAt": "2026-10-21T13:45:59.991Z",
+			"scope": "R-AUTHZ-PERF actual in-process Project API (25 RPC +25 REST clients); real signed Better Auth sessions; excludes TCP/Next wrapper",
+			"attempts": 467808,
+			"successes": 467808,
+			"failures": {},
+			"failuresByOperation": {},
+			"failureCodes": {},
+			"failureStatuses": {},
+			"contextualTupleCounts": {
+				"count": 1092873,
+				"p95": 5,
+				"p99": 5,
+				"max": 5
+			},
+			"measuredFgaChecks": 1092873,
+			"measuredFgaWrites": 0,
+			"mix": {
+				"read": 187152,
+				"update": 93548,
+				"delete": 22346,
+				"list": 93525,
+				"create": 24442,
+				"revoke": 22359,
+				"share": 24436
+			},
+			"authorizationChanges": {
+				"shareConfirmations": 24436,
+				"revocationDenials": 22359,
+				"warmupFailures": 0,
+				"valid": true
+			},
+			"firstAttemptSuccessRate": 1,
+			"durationSeconds": 1800.4139322920003,
+			"requestedDurationMs": 1800000,
+			"clients": 50,
+			"resourceCount": 100000,
+			"cursorPolicy": {
+				"idleLimitMs": 300000,
+				"measuredResets": 6034
+			},
+			"eventLoop": {
+				"probeIntervalMs": 1000,
+				"stallLimitMs": 5000,
+				"maxLagMs": 30.936374999815598,
+				"scope": "warmup and measured traffic; a stall invalidates the run without retries"
+			},
+			"source": {
+				"head": "94507a78d7f17f4c134570f0bcab8d70862c272b",
+				"base": "94507a78d7f17f4c134570f0bcab8d70862c272b",
+				"dirty": true,
+				"sourceBefore": {
+					"sha256": "18515fc44a16fa34832990bea378b895ee7666cfc466a01f2848b7b8345d1dea",
+					"algorithm": "shared scripts/phase1/source-fingerprint.ts"
+				},
+				"packageManager": "bun@1.4.2",
+				"services": {
+					"available": true,
+					"containers": [
+						{
+							"id": "3ccd1d4be0d10f3cafb8dabfc1627fe2e1cd4d0a479bf02acaed67852a3bd635",
+							"name": "/saas-cook-phase1-control-postgres-1",
+							"image": "postgres:18.6@sha256:86c951e05bf56c93d95d397747fb8820ac76cc3bedb78f43abd83eedbe3666ae",
+							"imageId": "sha256:86c951e05bf56c93d95d397747fb8820ac76cc3bedb78f43abd83eedbe3666ae",
+							"limits": {
+								"memoryBytes": 0,
+								"nanoCpus": 0,
+								"cpuQuota": 0,
+								"cpuPeriod": 0,
+								"cpusetCpus": "",
+								"tmpfs": {
+									"/var/lib/postgresql": "size=256m"
+								}
+							},
+							"command": ["postgres"]
+						},
+						{
+							"id": "b04a8b00556a2472644b4ae685cf535b9b4a29b0130bf6826158a096923fdc58",
+							"name": "/saas-cook-phase1-openfga-1",
+							"image": "openfga/openfga:v1.21.0@sha256:2113c664a486b5da8d7a2cdab479e0d4e30639c80fd2c000540f645c1dbc1e55",
+							"imageId": "sha256:2113c664a486b5da8d7a2cdab479e0d4e30639c80fd2c000540f645c1dbc1e55",
+							"limits": {
+								"memoryBytes": 0,
+								"nanoCpus": 0,
+								"cpuQuota": 0,
+								"cpuPeriod": 0,
+								"cpusetCpus": ""
+							},
+							"command": ["run"],
+							"version": ""
+						},
+						{
+							"id": "8ec6d818750ac780813e9335dfb30c0e8dcb31058c6f87a3aa75193fce8dbaf5",
+							"name": "/saas-cook-phase1-postgres-1",
+							"image": "postgres:18.6@sha256:86c951e05bf56c93d95d397747fb8820ac76cc3bedb78f43abd83eedbe3666ae",
+							"imageId": "sha256:86c951e05bf56c93d95d397747fb8820ac76cc3bedb78f43abd83eedbe3666ae",
+							"limits": {
+								"memoryBytes": 0,
+								"nanoCpus": 0,
+								"cpuQuota": 0,
+								"cpuPeriod": 0,
+								"cpusetCpus": "",
+								"tmpfs": {
+									"/var/lib/postgresql": "size=1g"
+								}
+							},
+							"command": ["postgres"]
+						}
+					]
+				},
+				"sourceAfter": {
+					"sha256": "18515fc44a16fa34832990bea378b895ee7666cfc466a01f2848b7b8345d1dea",
+					"algorithm": "shared scripts/phase1/source-fingerprint.ts"
+				},
+				"sourceStable": true
+			},
+			"storageBefore": {
+				"sampledAt": "2026-10-21T13:14:58.897Z",
+				"application": {
+					"database_bytes": "124180159",
+					"wal_lsn": "1/2AE40BD8",
+					"wal_position_bytes": "5014555608",
+					"version": "PostgreSQL 18.6 (Debian 18.6-1.pgdg13+2) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+					"shared_buffers": "128MB",
+					"max_connections": "100",
+					"work_mem": "4MB",
+					"fsync": "on",
+					"synchronous_commit": "on"
+				},
+				"control": {
+					"database_bytes": "8320703",
+					"wal_lsn": "0/9124F050",
+					"wal_position_bytes": "2435117136",
+					"version": "PostgreSQL 18.6 (Debian 18.6-1.pgdg13+2) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit"
+				},
+				"relations": [
+					{
+						"relname": "account",
+						"bytes": "16384"
+					},
+					{
+						"relname": "activity_events",
+						"bytes": "32768"
+					},
+					{
+						"relname": "analytics_events",
+						"bytes": "24576"
+					},
+					{
+						"relname": "analytics_preferences",
+						"bytes": "16384"
+					},
+					{
+						"relname": "analytics_seen",
+						"bytes": "8192"
+					},
+					{
+						"relname": "analytics_sources",
+						"bytes": "204800"
+					},
+					{
+						"relname": "analytics_subjects",
+						"bytes": "32768"
+					},
+					{
+						"relname": "api_keys",
+						"bytes": "40960"
+					},
+					{
+						"relname": "audit_access",
+						"bytes": "8192"
+					},
+					{
+						"relname": "audit_events",
+						"bytes": "32768"
+					},
+					{
+						"relname": "authorization_revisions",
+						"bytes": "73728"
+					},
+					{
+						"relname": "billing_accounts",
+						"bytes": "32768"
+					},
+					{
+						"relname": "billing_commands",
+						"bytes": "40960"
+					},
+					{
+						"relname": "billing_deliveries",
+						"bytes": "24576"
+					},
+					{
+						"relname": "billing_inbox",
+						"bytes": "24576"
+					},
+					{
+						"relname": "billing_invoices",
+						"bytes": "16384"
+					},
+					{
+						"relname": "billing_notices",
+						"bytes": "32768"
+					},
+					{
+						"relname": "billing_previews",
+						"bytes": "24576"
+					},
+					{
+						"relname": "billing_prices",
+						"bytes": "24576"
+					},
+					{
+						"relname": "billing_reconciliations",
+						"bytes": "24576"
+					},
+					{
+						"relname": "bulk_jobs",
+						"bytes": "40960"
+					},
+					{
+						"relname": "bulk_rows",
+						"bytes": "16384"
+					},
+					{
+						"relname": "capacity_buckets",
+						"bytes": "98304"
+					},
+					{
+						"relname": "capacity_reservations",
+						"bytes": "40960"
+					},
+					{
+						"relname": "deletion_requests",
+						"bytes": "32768"
+					},
+					{
+						"relname": "email_delivery",
+						"bytes": "24576"
+					},
+					{
+						"relname": "example_customer_operations",
+						"bytes": "16384"
+					},
+					{
+						"relname": "example_customers",
+						"bytes": "65536"
+					},
+					{
+						"relname": "files",
+						"bytes": "40960"
+					},
+					{
+						"relname": "ingress_limit",
+						"bytes": "16384"
+					},
+					{
+						"relname": "installation",
+						"bytes": "40960"
+					},
+					{
+						"relname": "integration_connections",
+						"bytes": "16384"
+					},
+					{
+						"relname": "invitations",
+						"bytes": "40960"
+					},
+					{
+						"relname": "membership_transitions",
+						"bytes": "16384"
+					},
+					{
+						"relname": "memberships",
+						"bytes": "548864"
+					},
+					{
+						"relname": "notification_preferences",
+						"bytes": "16384"
+					},
+					{
+						"relname": "notifications",
+						"bytes": "24576"
+					},
+					{
+						"relname": "organizations",
+						"bytes": "81920"
+					},
+					{
+						"relname": "outbox_events",
+						"bytes": "16384"
+					},
+					{
+						"relname": "owner_recovery_cases",
+						"bytes": "16384"
+					},
+					{
+						"relname": "ownership_transfers",
+						"bytes": "32768"
+					},
+					{
+						"relname": "passkey",
+						"bytes": "24576"
+					},
+					{
+						"relname": "plan_versions",
+						"bytes": "24576"
+					},
+					{
+						"relname": "projects",
+						"bytes": "53673984"
+					},
+					{
+						"relname": "quota_buckets",
+						"bytes": "32768"
+					},
+					{
+						"relname": "quota_reservations",
+						"bytes": "40960"
+					},
+					{
+						"relname": "rate_limit",
+						"bytes": "24576"
+					},
+					{
+						"relname": "recovery_enrollments",
+						"bytes": "16384"
+					},
+					{
+						"relname": "recovery_state",
+						"bytes": "16384"
+					},
+					{
+						"relname": "resource_grants",
+						"bytes": "38649856"
+					},
+					{
+						"relname": "resource_operations",
+						"bytes": "16384"
+					},
+					{
+						"relname": "resource_registry",
+						"bytes": "17997824"
+					},
+					{
+						"relname": "rollout_flags",
+						"bytes": "16384"
+					},
+					{
+						"relname": "rollout_history",
+						"bytes": "24576"
+					},
+					{
+						"relname": "runtime_heartbeats",
+						"bytes": "16384"
+					},
+					{
+						"relname": "runtime_probes",
+						"bytes": "8192"
+					},
+					{
+						"relname": "seat_capacities",
+						"bytes": "24576"
+					},
+					{
+						"relname": "security_audit",
+						"bytes": "16384"
+					},
+					{
+						"relname": "service_accounts",
+						"bytes": "24576"
+					},
+					{
+						"relname": "session",
+						"bytes": "172032"
+					},
+					{
+						"relname": "settings_operations",
+						"bytes": "16384"
+					},
+					{
+						"relname": "team_members",
+						"bytes": "8192"
+					},
+					{
+						"relname": "teams",
+						"bytes": "32768"
+					},
+					{
+						"relname": "two_factor",
+						"bytes": "24576"
+					},
+					{
+						"relname": "usage_events",
+						"bytes": "40960"
+					},
+					{
+						"relname": "user",
+						"bytes": "450560"
+					},
+					{
+						"relname": "user_avatar",
+						"bytes": "24576"
+					},
+					{
+						"relname": "verification",
+						"bytes": "24576"
+					},
+					{
+						"relname": "webhook_deliveries",
+						"bytes": "32768"
+					},
+					{
+						"relname": "webhook_endpoints",
+						"bytes": "24576"
+					}
+				],
+				"walScope": "WAL positions are cluster-wide and include any concurrent database activity; database/relation sizes are fixture-specific."
+			},
+			"graphBefore": {
+				"sampledAt": "2026-10-21T13:14:58.907Z",
+				"storeId": "01M5F9KDRZ2GQ8ACV4007HPJ0T",
+				"modelId": "01M5F9KDS5DBYV4Q2A0C7QDWFP",
+				"modelHash": "2ecdc13a6938f4209ca5e5a34924efb53f256c80fd6d8c5ceeeaca15f6079a7e",
+				"observedTuples": 0,
+				"exact": true,
+				"verifiedEmpty": true
+			},
+			"latencyMs": {
+				"read": {
+					"count": 280677,
+					"p95": 179.8360410000023,
+					"p99": 249.3547499999404,
+					"max": 607.7292090000119
+				},
+				"write": {
+					"count": 187131,
+					"p95": 634.8901659999974,
+					"p99": 742.551666000043,
+					"max": 1167.1384999998845
+				},
+				"createToReadable": {
+					"count": 24442,
+					"p95": 662.734625000041,
+					"p99": 747.6794579999987,
+					"max": 999.6276670000516
+				},
+				"sourceCommit": {
+					"count": 93583,
+					"p95": 664.5056669999612,
+					"p99": 769.0491660000116,
+					"max": 1167.138459000038
+				},
+				"fenceWait": {
+					"count": 563531,
+					"p95": 53.28391699999338,
+					"p99": 71.73487500008196,
+					"max": 415.44504199991934
+				},
+				"revocation": {
+					"count": 22359,
+					"p95": 612.0125419999822,
+					"p99": 682.681791999843,
+					"max": 986.6518749999814
+				},
+				"revocationFenceWait": {
+					"count": 22359,
+					"p95": 59.284083999926224,
+					"p99": 74.15775000001304,
+					"max": 386.7605840000324
+				}
+			},
+			"storage": {
+				"before": {
+					"sampledAt": "2026-10-21T13:14:58.897Z",
+					"application": {
+						"database_bytes": "124180159",
+						"wal_lsn": "1/2AE40BD8",
+						"wal_position_bytes": "5014555608",
+						"version": "PostgreSQL 18.6 (Debian 18.6-1.pgdg13+2) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+						"shared_buffers": "128MB",
+						"max_connections": "100",
+						"work_mem": "4MB",
+						"fsync": "on",
+						"synchronous_commit": "on"
+					},
+					"control": {
+						"database_bytes": "8320703",
+						"wal_lsn": "0/9124F050",
+						"wal_position_bytes": "2435117136",
+						"version": "PostgreSQL 18.6 (Debian 18.6-1.pgdg13+2) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit"
+					},
+					"relations": [
+						{
+							"relname": "account",
+							"bytes": "16384"
+						},
+						{
+							"relname": "activity_events",
+							"bytes": "32768"
+						},
+						{
+							"relname": "analytics_events",
+							"bytes": "24576"
+						},
+						{
+							"relname": "analytics_preferences",
+							"bytes": "16384"
+						},
+						{
+							"relname": "analytics_seen",
+							"bytes": "8192"
+						},
+						{
+							"relname": "analytics_sources",
+							"bytes": "204800"
+						},
+						{
+							"relname": "analytics_subjects",
+							"bytes": "32768"
+						},
+						{
+							"relname": "api_keys",
+							"bytes": "40960"
+						},
+						{
+							"relname": "audit_access",
+							"bytes": "8192"
+						},
+						{
+							"relname": "audit_events",
+							"bytes": "32768"
+						},
+						{
+							"relname": "authorization_revisions",
+							"bytes": "73728"
+						},
+						{
+							"relname": "billing_accounts",
+							"bytes": "32768"
+						},
+						{
+							"relname": "billing_commands",
+							"bytes": "40960"
+						},
+						{
+							"relname": "billing_deliveries",
+							"bytes": "24576"
+						},
+						{
+							"relname": "billing_inbox",
+							"bytes": "24576"
+						},
+						{
+							"relname": "billing_invoices",
+							"bytes": "16384"
+						},
+						{
+							"relname": "billing_notices",
+							"bytes": "32768"
+						},
+						{
+							"relname": "billing_previews",
+							"bytes": "24576"
+						},
+						{
+							"relname": "billing_prices",
+							"bytes": "24576"
+						},
+						{
+							"relname": "billing_reconciliations",
+							"bytes": "24576"
+						},
+						{
+							"relname": "bulk_jobs",
+							"bytes": "40960"
+						},
+						{
+							"relname": "bulk_rows",
+							"bytes": "16384"
+						},
+						{
+							"relname": "capacity_buckets",
+							"bytes": "98304"
+						},
+						{
+							"relname": "capacity_reservations",
+							"bytes": "40960"
+						},
+						{
+							"relname": "deletion_requests",
+							"bytes": "32768"
+						},
+						{
+							"relname": "email_delivery",
+							"bytes": "24576"
+						},
+						{
+							"relname": "example_customer_operations",
+							"bytes": "16384"
+						},
+						{
+							"relname": "example_customers",
+							"bytes": "65536"
+						},
+						{
+							"relname": "files",
+							"bytes": "40960"
+						},
+						{
+							"relname": "ingress_limit",
+							"bytes": "16384"
+						},
+						{
+							"relname": "installation",
+							"bytes": "40960"
+						},
+						{
+							"relname": "integration_connections",
+							"bytes": "16384"
+						},
+						{
+							"relname": "invitations",
+							"bytes": "40960"
+						},
+						{
+							"relname": "membership_transitions",
+							"bytes": "16384"
+						},
+						{
+							"relname": "memberships",
+							"bytes": "548864"
+						},
+						{
+							"relname": "notification_preferences",
+							"bytes": "16384"
+						},
+						{
+							"relname": "notifications",
+							"bytes": "24576"
+						},
+						{
+							"relname": "organizations",
+							"bytes": "81920"
+						},
+						{
+							"relname": "outbox_events",
+							"bytes": "16384"
+						},
+						{
+							"relname": "owner_recovery_cases",
+							"bytes": "16384"
+						},
+						{
+							"relname": "ownership_transfers",
+							"bytes": "32768"
+						},
+						{
+							"relname": "passkey",
+							"bytes": "24576"
+						},
+						{
+							"relname": "plan_versions",
+							"bytes": "24576"
+						},
+						{
+							"relname": "projects",
+							"bytes": "53673984"
+						},
+						{
+							"relname": "quota_buckets",
+							"bytes": "32768"
+						},
+						{
+							"relname": "quota_reservations",
+							"bytes": "40960"
+						},
+						{
+							"relname": "rate_limit",
+							"bytes": "24576"
+						},
+						{
+							"relname": "recovery_enrollments",
+							"bytes": "16384"
+						},
+						{
+							"relname": "recovery_state",
+							"bytes": "16384"
+						},
+						{
+							"relname": "resource_grants",
+							"bytes": "38649856"
+						},
+						{
+							"relname": "resource_operations",
+							"bytes": "16384"
+						},
+						{
+							"relname": "resource_registry",
+							"bytes": "17997824"
+						},
+						{
+							"relname": "rollout_flags",
+							"bytes": "16384"
+						},
+						{
+							"relname": "rollout_history",
+							"bytes": "24576"
+						},
+						{
+							"relname": "runtime_heartbeats",
+							"bytes": "16384"
+						},
+						{
+							"relname": "runtime_probes",
+							"bytes": "8192"
+						},
+						{
+							"relname": "seat_capacities",
+							"bytes": "24576"
+						},
+						{
+							"relname": "security_audit",
+							"bytes": "16384"
+						},
+						{
+							"relname": "service_accounts",
+							"bytes": "24576"
+						},
+						{
+							"relname": "session",
+							"bytes": "172032"
+						},
+						{
+							"relname": "settings_operations",
+							"bytes": "16384"
+						},
+						{
+							"relname": "team_members",
+							"bytes": "8192"
+						},
+						{
+							"relname": "teams",
+							"bytes": "32768"
+						},
+						{
+							"relname": "two_factor",
+							"bytes": "24576"
+						},
+						{
+							"relname": "usage_events",
+							"bytes": "40960"
+						},
+						{
+							"relname": "user",
+							"bytes": "450560"
+						},
+						{
+							"relname": "user_avatar",
+							"bytes": "24576"
+						},
+						{
+							"relname": "verification",
+							"bytes": "24576"
+						},
+						{
+							"relname": "webhook_deliveries",
+							"bytes": "32768"
+						},
+						{
+							"relname": "webhook_endpoints",
+							"bytes": "24576"
+						}
+					],
+					"walScope": "WAL positions are cluster-wide and include any concurrent database activity; database/relation sizes are fixture-specific."
+				},
+				"after": {
+					"sampledAt": "2026-10-21T13:45:59.340Z",
+					"application": {
+						"database_bytes": "423868095",
+						"wal_lsn": "1/74DA9B98",
+						"wal_position_bytes": "6255451032",
+						"version": "PostgreSQL 18.6 (Debian 18.6-1.pgdg13+2) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+						"shared_buffers": "128MB",
+						"max_connections": "100",
+						"work_mem": "4MB",
+						"fsync": "on",
+						"synchronous_commit": "on"
+					},
+					"control": {
+						"database_bytes": "8320703",
+						"wal_lsn": "0/9124F208",
+						"wal_position_bytes": "2435117576",
+						"version": "PostgreSQL 18.6 (Debian 18.6-1.pgdg13+2) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit"
+					},
+					"relations": [
+						{
+							"relname": "account",
+							"bytes": "16384"
+						},
+						{
+							"relname": "activity_events",
+							"bytes": "53018624"
+						},
+						{
+							"relname": "analytics_events",
+							"bytes": "24576"
+						},
+						{
+							"relname": "analytics_preferences",
+							"bytes": "16384"
+						},
+						{
+							"relname": "analytics_seen",
+							"bytes": "8192"
+						},
+						{
+							"relname": "analytics_sources",
+							"bytes": "1843200"
+						},
+						{
+							"relname": "analytics_subjects",
+							"bytes": "32768"
+						},
+						{
+							"relname": "api_keys",
+							"bytes": "40960"
+						},
+						{
+							"relname": "audit_access",
+							"bytes": "8192"
+						},
+						{
+							"relname": "audit_events",
+							"bytes": "89202688"
+						},
+						{
+							"relname": "authorization_revisions",
+							"bytes": "90112"
+						},
+						{
+							"relname": "billing_accounts",
+							"bytes": "32768"
+						},
+						{
+							"relname": "billing_commands",
+							"bytes": "40960"
+						},
+						{
+							"relname": "billing_deliveries",
+							"bytes": "24576"
+						},
+						{
+							"relname": "billing_inbox",
+							"bytes": "24576"
+						},
+						{
+							"relname": "billing_invoices",
+							"bytes": "16384"
+						},
+						{
+							"relname": "billing_notices",
+							"bytes": "32768"
+						},
+						{
+							"relname": "billing_previews",
+							"bytes": "24576"
+						},
+						{
+							"relname": "billing_prices",
+							"bytes": "24576"
+						},
+						{
+							"relname": "billing_reconciliations",
+							"bytes": "24576"
+						},
+						{
+							"relname": "bulk_jobs",
+							"bytes": "40960"
+						},
+						{
+							"relname": "bulk_rows",
+							"bytes": "16384"
+						},
+						{
+							"relname": "capacity_buckets",
+							"bytes": "106496"
+						},
+						{
+							"relname": "capacity_reservations",
+							"bytes": "14786560"
+						},
+						{
+							"relname": "deletion_requests",
+							"bytes": "32768"
+						},
+						{
+							"relname": "email_delivery",
+							"bytes": "24576"
+						},
+						{
+							"relname": "example_customer_operations",
+							"bytes": "16384"
+						},
+						{
+							"relname": "example_customers",
+							"bytes": "65536"
+						},
+						{
+							"relname": "files",
+							"bytes": "40960"
+						},
+						{
+							"relname": "ingress_limit",
+							"bytes": "16384"
+						},
+						{
+							"relname": "installation",
+							"bytes": "40960"
+						},
+						{
+							"relname": "integration_connections",
+							"bytes": "16384"
+						},
+						{
+							"relname": "invitations",
+							"bytes": "40960"
+						},
+						{
+							"relname": "membership_transitions",
+							"bytes": "16384"
+						},
+						{
+							"relname": "memberships",
+							"bytes": "548864"
+						},
+						{
+							"relname": "notification_preferences",
+							"bytes": "16384"
+						},
+						{
+							"relname": "notifications",
+							"bytes": "24576"
+						},
+						{
+							"relname": "organizations",
+							"bytes": "81920"
+						},
+						{
+							"relname": "outbox_events",
+							"bytes": "48447488"
+						},
+						{
+							"relname": "owner_recovery_cases",
+							"bytes": "16384"
+						},
+						{
+							"relname": "ownership_transfers",
+							"bytes": "32768"
+						},
+						{
+							"relname": "passkey",
+							"bytes": "24576"
+						},
+						{
+							"relname": "plan_versions",
+							"bytes": "24576"
+						},
+						{
+							"relname": "projects",
+							"bytes": "66936832"
+						},
+						{
+							"relname": "quota_buckets",
+							"bytes": "147456"
+						},
+						{
+							"relname": "quota_reservations",
+							"bytes": "16932864"
+						},
+						{
+							"relname": "rate_limit",
+							"bytes": "24576"
+						},
+						{
+							"relname": "recovery_enrollments",
+							"bytes": "16384"
+						},
+						{
+							"relname": "recovery_state",
+							"bytes": "16384"
+						},
+						{
+							"relname": "resource_grants",
+							"bytes": "49790976"
+						},
+						{
+							"relname": "resource_operations",
+							"bytes": "31014912"
+						},
+						{
+							"relname": "resource_registry",
+							"bytes": "22020096"
+						},
+						{
+							"relname": "rollout_flags",
+							"bytes": "16384"
+						},
+						{
+							"relname": "rollout_history",
+							"bytes": "24576"
+						},
+						{
+							"relname": "runtime_heartbeats",
+							"bytes": "16384"
+						},
+						{
+							"relname": "runtime_probes",
+							"bytes": "8192"
+						},
+						{
+							"relname": "seat_capacities",
+							"bytes": "24576"
+						},
+						{
+							"relname": "security_audit",
+							"bytes": "16384"
+						},
+						{
+							"relname": "service_accounts",
+							"bytes": "24576"
+						},
+						{
+							"relname": "session",
+							"bytes": "172032"
+						},
+						{
+							"relname": "settings_operations",
+							"bytes": "16384"
+						},
+						{
+							"relname": "team_members",
+							"bytes": "8192"
+						},
+						{
+							"relname": "teams",
+							"bytes": "32768"
+						},
+						{
+							"relname": "two_factor",
+							"bytes": "24576"
+						},
+						{
+							"relname": "usage_events",
+							"bytes": "15736832"
+						},
+						{
+							"relname": "user",
+							"bytes": "450560"
+						},
+						{
+							"relname": "user_avatar",
+							"bytes": "24576"
+						},
+						{
+							"relname": "verification",
+							"bytes": "24576"
+						},
+						{
+							"relname": "webhook_deliveries",
+							"bytes": "32768"
+						},
+						{
+							"relname": "webhook_endpoints",
+							"bytes": "24576"
+						}
+					],
+					"walScope": "WAL positions are cluster-wide and include any concurrent database activity; database/relation sizes are fixture-specific."
+				},
+				"applicationGrowthBytes": 299687936,
+				"applicationClusterWalGrowthBytes": "1240895424",
+				"controlGrowthBytes": 0,
+				"controlClusterWalGrowthBytes": "440",
+				"measuredInterval": "after seed, including warmup and measured traffic"
+			},
+			"startedAt": "2026-10-21T13:14:54.726Z",
+			"endedAt": "2026-10-21T13:46:00.356Z",
+			"warmupMs": 60000,
+			"tenants": 100,
+			"memberships": 1000,
+			"projects": 100000,
+			"workloadVersion": "direct-project-v1",
+			"hotTenant": {
+				"resources": 50000,
+				"trafficPercent": 80,
+				"actualTrafficPercent": 80.0050448047062,
+				"sparseAccessPercent": 1
+			},
+			"sparseLists": 37523,
+			"sparseRows": 16066,
+			"revocationDenials": 22359,
+			"eventualSuccessRate": 1,
+			"retries": 0,
+			"requestsPerSecond": 259.83358138339963,
+			"graph": {
+				"before": {
+					"sampledAt": "2026-10-21T13:14:58.907Z",
+					"storeId": "01M5F9KDRZ2GQ8ACV4007HPJ0T",
+					"modelId": "01M5F9KDS5DBYV4Q2A0C7QDWFP",
+					"modelHash": "2ecdc13a6938f4209ca5e5a34924efb53f256c80fd6d8c5ceeeaca15f6079a7e",
+					"observedTuples": 0,
+					"exact": true,
+					"verifiedEmpty": true
+				},
+				"after": {
+					"sampledAt": "2026-10-21T13:45:59.343Z",
+					"storeId": "01M5F9KDRZ2GQ8ACV4007HPJ0T",
+					"modelId": "01M5F9KDS5DBYV4Q2A0C7QDWFP",
+					"modelHash": "2ecdc13a6938f4209ca5e5a34924efb53f256c80fd6d8c5ceeeaca15f6079a7e",
+					"observedTuples": 0,
+					"exact": true,
+					"verifiedEmpty": true
+				},
+				"contextualTupleLimitPerDecision": 100,
+				"submittedContextTupleCounts": {
+					"count": 1092873,
+					"p95": 5,
+					"p99": 5,
+					"max": 5
+				},
+				"measuredCheckRequests": 1092873,
+				"measuredTupleWriteRequests": 0,
+				"cleanup": "No contextual tuple persistence or generation cleanup work; fixture teardown is not authorization cleanup.",
+				"persistedTupleWrites": 0,
+				"projectionAttempts": 0,
+				"abandonedBuilds": 0,
+				"cleanupMs": 0
+			},
+			"hardware": {
+				"platform": "darwin",
+				"arch": "arm64",
+				"cpus": 14,
+				"cpu": "Apple M4 Pro",
+				"memoryBytes": 51539607552,
+				"node": "v24.19.0"
+			},
+			"pools": {
+				"web": 8,
+				"identity": 8,
+				"control": 8,
+				"queueWaitIncludedInRequestLatency": true
+			},
+			"limits": {
+				"transactionStatementMs": 8000,
+				"lockMs": 5000,
+				"fgaMs": 3000
+			}
+		},
+		"failedAttempt": "artifacts/phase6-acceptance/benchmark-failure.json",
+		"monitor": "artifacts/phase6-acceptance/benchmark-rerun-controller.json"
+	},
+	"bulkContention": {
+		"scope": "bounded two-tenant bulk contention supplement; separate from full30-minute reference API gate",
+		"sourceBefore": "18515fc44a16fa34832990bea378b895ee7666cfc466a01f2848b7b8345d1dea",
+		"sourceAfter": "18515fc44a16fa34832990bea378b895ee7666cfc466a01f2848b7b8345d1dea",
+		"noisyPendingImports": 12,
+		"rowsPerImport": 100,
+		"quietJobs": 1,
+		"concurrentCrudClients": 4,
+		"operations": 564,
+		"failures": [],
+		"quietCompleteMs": 730.007916,
+		"passes": [
+			{
+				"pass": 0,
+				"organizations": 2,
+				"milliseconds": 722.9051669999999
+			},
+			{
+				"pass": 1,
+				"organizations": 1,
+				"milliseconds": 635.6675000000005
+			},
+			{
+				"pass": 2,
+				"organizations": 1,
+				"milliseconds": 619.7390829999995
+			},
+			{
+				"pass": 3,
+				"organizations": 1,
+				"milliseconds": 646.2479579999999
+			},
+			{
+				"pass": 4,
+				"organizations": 1,
+				"milliseconds": 618.0489580000003
+			},
+			{
+				"pass": 5,
+				"organizations": 1,
+				"milliseconds": 525.5262499999999
+			},
+			{
+				"pass": 6,
+				"organizations": 1,
+				"milliseconds": 519.7577499999998
+			},
+			{
+				"pass": 7,
+				"organizations": 1,
+				"milliseconds": 497.55354200000056
+			}
+		],
+		"readMs": {
+			"p95": 58.258792000000085,
+			"p99": 63.21795899999961,
+			"max": 76.26816700000018
+		},
+		"writeMs": {
+			"p95": 67.83158300000014,
+			"p99": 73.06725000000006,
+			"max": 98.08779099999992
+		}
+	},
+	"stripe": {
+		"result": "artifacts/phase6-acceptance/stripe-deletion.json",
+		"accepted": true,
+		"checks": 7,
+		"testedSourceSha256": "2e964a92a5a588c9b6baa3e8cf9481f9b32907a01ad386b5d9ec78a9a8f2f869",
+		"deltaToFinal": "Only tests/e2e/identity.spec.ts status locator changed; billing/lifecycle/provider bytes unchanged",
+		"deltaEvidence": "artifacts/phase6-acceptance/stripe-source-delta.diff",
+		"cleanup": "artifacts/phase6-acceptance/stripe-cleanup.json",
+		"liveModeUsed": false,
+		"inboxScope": "real signed receipt/replay only; focused drill receipts retained pending"
+	},
+	"posthog": {
+		"status": "blocked",
+		"latest": {
+			"checkedAt": "2026-10-21T13:46:30.995Z",
+			"subject": "synthetic-acceptance-114c3509-44ad-4c7f-99c4-cba92192dce9",
+			"eventId": "503e1703-afb3-4809-9029-2aa0089d82c8",
+			"receipt": {
+				"personIds": ["87ec1ed7-121e-5bf0-9489-70ad907e4e0b"],
+				"requestedAt": "2026-10-21T12:02:58.050Z"
+			},
+			"queries": [
+				{
+					"refresh": "default",
+					"is_cached": false,
+					"last_refresh": "2026-10-21T13:46:28.829997Z",
+					"results": [["503e1703-afb3-4809-9029-2aa0089d82c8"]]
+				},
+				{
+					"refresh": "default",
+					"is_cached": true,
+					"last_refresh": "2026-10-21T13:46:28.829997Z",
+					"results": [["503e1703-afb3-4809-9029-2aa0089d82c8"]]
+				},
+				{
+					"refresh": "force_blocking",
+					"is_cached": false,
+					"last_refresh": "2026-10-21T13:46:29.501622Z",
+					"results": [["503e1703-afb3-4809-9029-2aa0089d82c8"]]
+				}
+			],
+			"adapterConfirmedIngestion": true,
+			"adapterConfirmedErasure": false,
+			"deletionStatus": {
+				"count": 1,
+				"next": null,
+				"previous": null,
+				"results": [
+					{
+						"person_uuid": "87ec1ed7-121e-5bf0-9489-70ad907e4e0b",
+						"created_at": "2026-10-21T12:02:58.165573Z",
+						"status": "pending",
+						"delete_verified_at": null
+					}
+				]
+			},
+			"requests": [
+				{
+					"at": "2026-10-21T13:46:30.835Z",
+					"path": "/api/projects/314657/query/",
+					"status": 200
+				},
+				{
+					"at": "2026-10-21T13:46:30.902Z",
+					"path": "/api/projects/314657/persons/deletion_status/",
+					"status": 200
+				}
+			],
+			"newSubjectsCreated": 0,
+			"lateIngestionReleaseProbe": "blocked until existing erasure completes"
+		},
+		"newSubjectsCreated": 0,
+		"ingestionQuery": "passed; actual default-cache reuse reproduced and forced fresh confirmation verified",
+		"erasureCompletion": "blocked",
+		"liveLateUncertainCompletion": "blocked until original erasure is verified",
+		"snapshot": "artifacts/phase6-acceptance/posthog-snapshots/2026-10-21T13-46-30Z/latest.json"
+	},
+	"skills": {
+		"status": "passed",
+		"record": "docs/phase6/evaluation.md",
+		"rawRoot": "artifacts/phase6-acceptance/evaluation/release-1",
+		"releaseResult": "artifacts/phase6-acceptance/evaluation/release-1/release-result.json",
+		"releaseResultSha256": "8873b9e3098bd4f5ad1a32a55e9b38e321554880f76beba0eabd1856c6f2e16a",
+		"evidenceIndexSha256": "1329b2f31478d11ca4631a4b99ac8e07a720eb933761780e9448bedf0fb4205e",
+		"candidates": [
+			{
+				"repeat": 1,
+				"attempts": [
+					{
+						"path": "run-1/checks-3a89396c-5001-44fd-9d14-dc5ee00bdfc5/result.json",
+						"passed": true,
+						"checks": [
+							{
+								"name": "heldout",
+								"passed": true,
+								"exitCode": 0
+							},
+							{
+								"name": "check",
+								"passed": true,
+								"exitCode": 0
+							},
+							{
+								"name": "typecheck",
+								"passed": true,
+								"exitCode": 0
+							},
+							{
+								"name": "knip",
+								"passed": true,
+								"exitCode": 0
+							},
+							{
+								"name": "unit",
+								"passed": true,
+								"exitCode": 0
+							},
+							{
+								"name": "integration",
+								"passed": true,
+								"exitCode": 0
+							},
+							{
+								"name": "build",
+								"passed": true,
+								"exitCode": 0
+							}
+						]
+					},
+					{
+						"path": "run-1/checks-a72daab0-bd23-4417-bb06-58eebb36fa7f/result.json",
+						"passed": false,
+						"failure": {
+							"name": "AssertionError",
+							"message": "Failed heldout\n\n1 !== 0\n"
+						},
+						"checks": [
+							{
+								"name": "heldout",
+								"passed": false,
+								"exitCode": 1
+							}
+						]
+					}
+				],
+				"passed": true,
+				"sourceIdenticalRepeat": true,
+				"preservedCheckpoint": true,
+				"heldoutCases": 9,
+				"unitCases": 186,
+				"integrationCases": 220,
+				"finalSourceSha256": "cf592a6a2996acc952a59554503b52bbdf1026e834b5d5b0bab14c90044869b9",
+				"finalCheck": "run-1/checks-3a89396c-5001-44fd-9d14-dc5ee00bdfc5/result.json",
+				"transcripts": {
+					"author-resume.jsonl": "06f692b4a66b74cebcdd36bfbc6c817b3c783c13c3161b05537e7415f9b943c3",
+					"author-repair.jsonl": "cae00040552c84afdbd659ce2372afef8b6c76723239d1a3633c368cdf609e45",
+					"author-repeat.jsonl": "4e4e840e3ce1d903f7876d3c854a143193a959e846dcf2b6cf30eb48f3403270"
+				},
+				"originalCases": {
+					"unit": {
+						"required": 179,
+						"actual": 186,
+						"reportSha256": "3442b4960e6265242e6c2716b03301da083285708c99784a5931bba1b9b738cb"
+					},
+					"integration": {
+						"required": 220,
+						"actual": 220,
+						"reportSha256": "be8e81c13878beb2d396913dc2560e3c8440cc18eb7249bbf913ad8d964f39be"
+					}
+				},
+				"preservation": {
+					"realProjectBeforeAndAfterRepeat": true,
+					"migrationRows": 25,
+					"sourceIdentical": true,
+					"localizedCodeCustomization": true,
+					"customizationFragmentSha256": "2deb3d451a1b9ce913580cbcb004696fe18ceb6650c3938e09724f84e3282243",
+					"allOriginalProtectedHashesPreserved": true,
+					"seedFormattingExceptionRecorded": true,
+					"checkpointCleanupPassed": true
+				},
+				"retainedSetupOrDispatchAttempts": [
+					"author-initial-attempt-2.jsonl",
+					"author-initial.jsonl"
+				]
+			},
+			{
+				"repeat": 2,
+				"attempts": [
+					{
+						"path": "run-2/checks-257d715c-490a-4789-86cc-4424115d8fa3/result.json",
+						"passed": false,
+						"failure": {
+							"name": "Error",
+							"message": "ENOENT: no such file or directory, open '/Users/danielbeltran/.codex/worktrees/9f92/saas-cook/artifacts/phase6-acceptance/evaluation/release-1/run-2/candidate/apps/web/next-env.d.ts'"
+						},
+						"checks": [
+							{
+								"name": "heldout",
+								"passed": true,
+								"exitCode": 0
+							},
+							{
+								"name": "check",
+								"passed": true,
+								"exitCode": 0
+							},
+							{
+								"name": "typecheck",
+								"passed": true,
+								"exitCode": 0
+							},
+							{
+								"name": "knip",
+								"passed": true,
+								"exitCode": 0
+							},
+							{
+								"name": "unit",
+								"passed": true,
+								"exitCode": 0
+							},
+							{
+								"name": "integration",
+								"passed": true,
+								"exitCode": 0
+							},
+							{
+								"name": "build",
+								"passed": true,
+								"exitCode": 0
+							}
+						]
+					},
+					{
+						"path": "run-2/checks-ffaa6bed-addf-4689-9de7-745127b14584/result.json",
+						"passed": false,
+						"failure": {
+							"name": "AssertionError",
+							"message": "Failed heldout\n\n1 !== 0\n"
+						},
+						"checks": [
+							{
+								"name": "heldout",
+								"passed": false,
+								"exitCode": 1
+							}
+						]
+					},
+					{
+						"path": "run-2/checks-reporter-repair-1f4a546f-7112-440b-9d4a-7965a5f9540f/result.json",
+						"passed": true,
+						"checks": [
+							{
+								"name": "heldout",
+								"passed": true,
+								"exitCode": 0
+							},
+							{
+								"name": "check",
+								"passed": true,
+								"exitCode": 0
+							},
+							{
+								"name": "typecheck",
+								"passed": true,
+								"exitCode": 0
+							},
+							{
+								"name": "knip",
+								"passed": true,
+								"exitCode": 0
+							},
+							{
+								"name": "unit",
+								"passed": true,
+								"exitCode": 0
+							},
+							{
+								"name": "integration",
+								"passed": true,
+								"exitCode": 0
+							},
+							{
+								"name": "build",
+								"passed": true,
+								"exitCode": 0
+							}
+						]
+					}
+				],
+				"passed": true,
+				"sourceIdenticalRepeat": true,
+				"preservedCheckpoint": true,
+				"heldoutCases": 9,
+				"unitCases": 187,
+				"integrationCases": 220,
+				"finalSourceSha256": "d099b26aa439377aef73641cb5f0e200ff7624b7130a1a2aca3b56f8cd0d3884",
+				"finalCheck": "run-2/checks-reporter-repair-1f4a546f-7112-440b-9d4a-7965a5f9540f/result.json",
+				"transcripts": {
+					"author-resume.jsonl": "092ec9fe39feb80a5ba36f1d4f8d22024b65cc069143af10466804b8abf06b93",
+					"author-repair.jsonl": "3c5db19ec6ce32a550a18f706c99c7c1b0fd6a3d06ef5845115c654260a12cb0",
+					"author-repeat.jsonl": "4008035466c7a642fef5280be9ca6cc0762dcd78235160896fa0803d28147308"
+				},
+				"originalCases": {
+					"unit": {
+						"required": 179,
+						"actual": 187,
+						"reportSha256": "29bcc081e44fcd326701ae4d495d8dc2ea8e42ec27f6a60cbecd5b019f085ed3"
+					},
+					"integration": {
+						"required": 220,
+						"actual": 220,
+						"reportSha256": "01031937fa840b72926cf13709b51d96aa1952520e8135e47e34b5f29650f405"
+					}
+				},
+				"preservation": {
+					"realProjectBeforeAndAfterRepeat": true,
+					"migrationRows": 25,
+					"sourceIdentical": true,
+					"localizedCodeCustomization": true,
+					"customizationFragmentSha256": "2deb3d451a1b9ce913580cbcb004696fe18ceb6650c3938e09724f84e3282243",
+					"allOriginalProtectedHashesPreserved": true,
+					"seedFormattingExceptionRecorded": true,
+					"checkpointCleanupPassed": true
+				},
+				"retainedSetupOrDispatchAttempts": [
+					"author-initial.jsonl",
+					"author-repair-attempt-1.jsonl",
+					"author-repair-attempt-1.stderr"
+				]
+			}
+		],
+		"configuration": [
+			{
+				"repeat": 1,
+				"sessionId": "01a15e60-d416-74b2-aee9-c72a2e94498e",
+				"initialTranscript": "run-1/author-initial-attempt-3.jsonl",
+				"provider": "openai",
+				"agent": "Codex CLI",
+				"agentVersion": "0.146.0",
+				"model": "gpt-5.6-sol",
+				"reasoningEffort": "null in host turn_context; CLI default",
+				"configuration": {
+					"ignoreUserConfig": true,
+					"sandbox": "workspace-write",
+					"networkAccess": false,
+					"approvalPolicy": "never"
+				},
+				"initialTranscriptSha256": "3302a59f4a9329e40afa3c2cf7cda58cbe8593edd22d7348b4a689e767a399d7"
+			},
+			{
+				"repeat": 2,
+				"sessionId": "01a15e60-dbb2-7f61-a40b-133b046eaf5b",
+				"initialTranscript": "run-2/author-initial-attempt-2.jsonl",
+				"provider": "openai",
+				"agent": "Codex CLI",
+				"agentVersion": "0.146.0",
+				"model": "gpt-5.6-sol",
+				"reasoningEffort": "null in host turn_context; CLI default",
+				"configuration": {
+					"ignoreUserConfig": true,
+					"sandbox": "workspace-write",
+					"networkAccess": false,
+					"approvalPolicy": "never"
+				},
+				"initialTranscriptSha256": "ac9cf1d2dcd99cafb47d988c6f72f58c9c378404e5eda79b994b3d6e377402e9"
+			}
+		],
+		"scope": "Five declared Phase6 Commercial authoring/verification tasks in two independent candidates; no candidate promoted; separate live provider and root release gates remain necessary.",
+		"canonicalSourceAudit": "artifacts/phase6-acceptance/candidate-canonical-source-audit.json"
+	},
+	"hostedCi": {
+		"parentRun": "https://github.com/dani-beltran/saas-cook/actions/runs/39591402965",
+		"parentStatus": "failure: browser and required; remaining7 jobs passed",
+		"dirtyPatchStatus": "unavailable; not committed/pushed",
+		"published": false
+	},
+	"productionInfrastructure": "Not established by disposable drill: independent-store retention/replication/trust anchor, physical isolation, external identity verification, cloud IAM/CORS, backup expiry/provider guarantees/RTO",
+	"requirements": {
+		"R-TENANCY": {
+			"status": "application-passed",
+			"evidence": [
+				"artifacts/phase6-acceptance/validations.json",
+				"artifacts/phase6-acceptance/browser-summary.json",
+				"artifacts/phase6-acceptance/image-acceptance.json"
+			]
+		},
+		"R-LIFECYCLE": {
+			"status": "application-passed",
+			"evidence": [
+				"artifacts/phase6-acceptance/validations.json",
+				"artifacts/phase6-acceptance/browser-summary.json",
+				"artifacts/phase6-acceptance/image-acceptance.json"
+			]
+		},
+		"R-AUTHZ": {
+			"status": "application-passed",
+			"evidence": [
+				"artifacts/phase6-acceptance/validations.json",
+				"artifacts/phase6-acceptance/browser-summary.json",
+				"artifacts/phase6-acceptance/image-acceptance.json"
+			]
+		},
+		"R-POLICY": {
+			"status": "application-passed",
+			"evidence": [
+				"artifacts/phase6-acceptance/validations.json",
+				"artifacts/phase6-acceptance/browser-summary.json",
+				"artifacts/phase6-acceptance/image-acceptance.json"
+			]
+		},
+		"R-SEATS": {
+			"status": "application-passed",
+			"evidence": [
+				"artifacts/phase6-acceptance/validations.json",
+				"artifacts/phase6-acceptance/browser-summary.json",
+				"artifacts/phase6-acceptance/image-acceptance.json"
+			]
+		},
+		"R-PASSWORD": {
+			"status": "application-passed",
+			"evidence": [
+				"artifacts/phase6-acceptance/validations.json",
+				"artifacts/phase6-acceptance/browser-summary.json",
+				"artifacts/phase6-acceptance/image-acceptance.json"
+			]
+		},
+		"R-MAGIC": {
+			"status": "application-passed",
+			"evidence": [
+				"artifacts/phase6-acceptance/validations.json",
+				"artifacts/phase6-acceptance/browser-summary.json",
+				"artifacts/phase6-acceptance/image-acceptance.json"
+			]
+		},
+		"R-PASSKEY": {
+			"status": "application-passed",
+			"evidence": [
+				"artifacts/phase6-acceptance/validations.json",
+				"artifacts/phase6-acceptance/browser-summary.json",
+				"artifacts/phase6-acceptance/image-acceptance.json"
+			]
+		},
+		"R-OWNER": {
+			"status": "application-passed",
+			"evidence": [
+				"artifacts/phase6-acceptance/validations.json",
+				"artifacts/phase6-acceptance/browser-summary.json",
+				"artifacts/phase6-acceptance/image-acceptance.json"
+			]
+		},
+		"R-TRANSFER": {
+			"status": "application-passed",
+			"evidence": [
+				"artifacts/phase6-acceptance/validations.json",
+				"artifacts/phase6-acceptance/browser-summary.json",
+				"artifacts/phase6-acceptance/image-acceptance.json"
+			]
+		},
+		"R-KEYS": {
+			"status": "application-passed",
+			"evidence": [
+				"artifacts/phase6-acceptance/validations.json",
+				"artifacts/phase6-acceptance/browser-summary.json",
+				"artifacts/phase6-acceptance/image-acceptance.json"
+			]
+		},
+		"R-EMAIL": {
+			"status": "application-passed",
+			"evidence": [
+				"artifacts/phase6-acceptance/validations.json",
+				"artifacts/phase6-acceptance/browser-summary.json",
+				"artifacts/phase6-acceptance/image-acceptance.json"
+			]
+		},
+		"R-SEARCH": {
+			"status": "application-passed",
+			"evidence": [
+				"artifacts/phase6-acceptance/validations.json",
+				"artifacts/phase6-acceptance/browser-summary.json",
+				"artifacts/phase6-acceptance/image-acceptance.json"
+			]
+		},
+		"R-ACTIVITY": {
+			"status": "application-passed",
+			"evidence": [
+				"artifacts/phase6-acceptance/validations.json",
+				"artifacts/phase6-acceptance/browser-summary.json",
+				"artifacts/phase6-acceptance/image-acceptance.json"
+			]
+		},
+		"R-FILES": {
+			"status": "application-passed",
+			"evidence": [
+				"artifacts/phase6-acceptance/validations.json",
+				"artifacts/phase6-acceptance/browser-summary.json",
+				"artifacts/phase6-acceptance/image-acceptance.json"
+			]
+		},
+		"R-IMAGE": {
+			"status": "application-passed",
+			"evidence": [
+				"artifacts/phase6-acceptance/validations.json",
+				"artifacts/phase6-acceptance/browser-summary.json",
+				"artifacts/phase6-acceptance/image-acceptance.json"
+			]
+		},
+		"R-ACCOUNT": {
+			"status": "application-protocol-passed; actual-provider-completion-blocked",
+			"evidence": [
+				"artifacts/phase6-acceptance/validations.json",
+				"artifacts/phase6-acceptance/stripe-deletion.json",
+				"artifacts/phase6-acceptance/posthog-snapshots/2026-10-21T13-46-30Z/latest.json"
+			]
+		},
+		"R-ORG-DATA": {
+			"status": "application-protocol-passed; actual-provider-completion-blocked",
+			"evidence": [
+				"artifacts/phase6-acceptance/validations.json",
+				"artifacts/phase6-acceptance/stripe-deletion.json",
+				"artifacts/phase6-acceptance/posthog-snapshots/2026-10-21T13-46-30Z/latest.json"
+			]
+		},
+		"R-RECOVERY": {
+			"status": "application-protocol-passed; actual-provider-completion-blocked",
+			"evidence": [
+				"artifacts/phase6-acceptance/validations.json",
+				"artifacts/phase6-acceptance/stripe-deletion.json",
+				"artifacts/phase6-acceptance/posthog-snapshots/2026-10-21T13-46-30Z/latest.json"
+			]
+		},
+		"R-ANALYTICS": {
+			"status": "application-protocol-passed; actual-provider-completion-blocked",
+			"evidence": [
+				"artifacts/phase6-acceptance/validations.json",
+				"artifacts/phase6-acceptance/stripe-deletion.json",
+				"artifacts/phase6-acceptance/posthog-snapshots/2026-10-21T13-46-30Z/latest.json"
+			]
+		},
+		"R-AUTHZ-PERF": {
+			"status": "passed",
+			"evidence": [
+				"artifacts/phase3/authorization-benchmark-2026-10-21T13-14-53-082Z.json",
+				"artifacts/phase6-acceptance/bulk-contention.json"
+			]
+		},
+		"R-SKILLS": {
+			"status": "passed",
+			"evidence": [
+				"docs/phase6/evaluation.md",
+				"artifacts/phase6-acceptance/evaluation/release-1/release-result.json",
+				"artifacts/phase6-acceptance/evaluation/release-1/evidence-index.json"
+			]
+		},
+		"R-WORKSPACES": {
+			"status": "retired; predecessor evidence retained; no new module",
+			"evidence": [
+				"docs/phase3/README.md",
+				"artifacts/phase6-acceptance/validations.json"
+			]
+		}
+	},
+	"evidenceSha256": {
+		"artifacts/phase6-acceptance/validations.json": "f9884b8423f602b0d21975c87a3be994a248ee6b052cc832ef285fb9f2967cab",
+		"artifacts/phase6-acceptance/browser-summary.json": "1c309d9237c99a0da3246f12d86c047b8bd925b42d66e9687046e93c309743af",
+		"artifacts/phase6-acceptance/model-validation.json": "5386c18d3b048f05e87da00aa4c9557de5611f5626467426472bb827b3e2a3e9",
+		"artifacts/phase6-acceptance/skills-report.json": "d90f051f0427035ca9d6e6f3b722bb81b1c08940af203d8ae39b10ab42021fdd",
+		"artifacts/phase6-acceptance/image-acceptance.json": "c66c04376d624889d1d1560e6538a1db50091eaa8acaceade87f57181a9439b3",
+		"artifacts/phase6-acceptance/security/dependencies.json": "577c1178f8f6bf1eea95c2bc03b94495575d0432f7dfced14cc511f8e6e154ad",
+		"artifacts/phase6-acceptance/security/dependencies-policy.json": "75e9df14ab6a958feda49609c48b525b4041c17e1889df56ad846b7e720eda73",
+		"artifacts/phase6-acceptance/security/image.json": "0eb472e0bf4d0f94fd309291157717cbb07712180b51a2066c8e2fd443cb67d4",
+		"artifacts/phase6-acceptance/security/image-policy.json": "df8f6b45547927d133aabf673c8bab6f2349896d2a4e46d5f06d40d4d0101984",
+		"artifacts/phase6-acceptance/stripe-deletion.json": "c06d5d465a446dd2fb2b5c5782a47c2d8d2aba06865608ce5c195c3818e9f716",
+		"artifacts/phase6-acceptance/stripe-cleanup.json": "43ae3b66893f1940ea2a84c582bf61ed75922d0969b634c403555db7d07309d8",
+		"artifacts/phase6-acceptance/stripe-source-delta.diff": "610efeb1a25a87c115a22d8ae662b7a0e983c9df52b99fdd20bf3b30f715d4e0",
+		"artifacts/phase6-acceptance/posthog-existing.json": "690f6d914c1305d6893af0e20e2fff8e4c5d8f518dd51825c1bf83ebdcb6b5d2",
+		"artifacts/posthog-live-probe/result.json": "9dacbccc337ee0e833ab684a7e6b192d606e157918873196d90e4436c9648c21",
+		"artifacts/posthog-live-probe/diagnostic.json": "34dfdbd0597bedb5e4e84933593ceb18d2eafedc361496bc80d3b59963f145fc",
+		"artifacts/phase6-acceptance/bulk-contention.json": "d7cc59681b5b3bbaf8832dfb2927620054a33484ab7af46bb8c17d475863476e",
+		"artifacts/phase6-acceptance/benchmark-failure.json": "6a25bda28c082f3c5b64c550abb2426fd5bfce85edd431181266e1b3e82a05bf",
+		"artifacts/phase6-acceptance/benchmark-rerun-controller.json": "a3a36446adc97633aeb31bbe277a0a209d36422cc2afd54c02835d6626976126",
+		"artifacts/phase3/authorization-benchmark-2026-10-21T13-14-53-082Z.json": "a5a26463606b58dcb459e8cdb6950549feba54705793572103734be7cb460c2d",
+		"artifacts/phase6-acceptance/candidate-canonical-source-audit.json": "0788c089b5d297a674b852d5c5caf0680b7a7318487ff91668483f2458193b7e",
+		"artifacts/phase6-acceptance/boundary-source-hashes.json": "66dcfda6cc337ecd8366daae8afa69d71c2501d1fa6e422f9820c3c9c654a2dd",
+		"artifacts/phase6-acceptance/references-initial.json": "706a1c312cac82398e37da8c68e25979f2f9fb78479a40ad1000b58a1cf527eb",
+		"artifacts/phase6-acceptance/credential-output-check.json": "c9bc3e18271a52790e6fdaebf2a280ec9bd9f3594b4bab2de07ca7f62e4afc36",
+		"artifacts/phase6-acceptance/hosted-base-ci.json": "2f74b9d377f6940bebbc7a102fbaeb5bbd873ddc708b27cba09c5c3843d4a46a",
+		"artifacts/phase6-acceptance/hosted-base-jobs.json": "7f30ea3d2e414e7a40f61b9b59bc6364d1acabe2aeaacd31a4eecac4bc941e7d",
+		"artifacts/phase6-acceptance/hosted-browser-failure.log": "3b8544c86f21e35527231811284877b29a1381c527a49e28989c334dd72f2cda",
+		"docs/phase6/evaluation.md": "4aec29aa01963e51001f932cdc9e5a533f87e6b58bb1e4af28908b2cc3e8704f",
+		"artifacts/phase6-acceptance/evaluation/release-1/release-result.json": "8873b9e3098bd4f5ad1a32a55e9b38e321554880f76beba0eabd1856c6f2e16a",
+		"artifacts/phase6-acceptance/evaluation/release-1/evidence-index.json": "1329b2f31478d11ca4631a4b99ac8e07a720eb933761780e9448bedf0fb4205e",
+		"artifacts/phase6-acceptance/evaluation/release-1/summary.json": "fe83a0ff84cd52b9e1f49bb5d1d1c440aaad4f890649737166f5df74b9c753a3",
+		"artifacts/phase6-acceptance/evaluation/release-1/transcript-audit.json": "17025211af302d120b2f7d26211af2ff2ed1c9927d2d04769066da567e5fc613",
+		"artifacts/phase6-acceptance/evaluation/release-1/customization-preservation.json": "9c090d7c19a69251e2265f6b6f882c4c1eb5a55c32bd85a762dfe8b7781f10bf",
+		"artifacts/phase6-acceptance/benchmark-rerun.log": "823d5a51f812fee179d8977ee8de9e96d021d416fee9ef0e50c09878100cb9fb",
+		"artifacts/phase6-acceptance/benchmark.log": "d471601104a28c840497c7cb64c13adbf88f0203a19d5ab87dbd2df8c02e1abc",
+		"artifacts/phase6-acceptance/integration.xml": "ee9736cc5094de452217936fe9907da1a5565da4d34cfde2b016352bbf3bfefe",
+		"artifacts/phase6-acceptance/unit.xml": "307e5ed47e085ec3f706bb0d4a460ee2c2af3d7c87b6e752129f5076dba41793",
+		"artifacts/phase6-acceptance/bulk-contention.xml": "1ffc847612d7ace1af87a360cd3ed9ad133c2f4fdc7059cc25994f0bc38ffc8c",
+		"artifacts/phase6-acceptance/evaluation-index-audit.json": "340f0173c7eb42ee9956982daae5d162040218c3d288b930bff0135ce2493e20",
+		"artifacts/phase6-acceptance/benchmark-environment-notes.json": "ff65eb794824a5f615e90dba1f72a4bfd8a0f8bc655c7fd76b2af8f8a31152f1",
+		"artifacts/phase6-acceptance/requirement-coverage-audit.json": "bdd8d9cfbd00dbd0fc263f726e1112f9aaf85d5e0f37a008e906d81e32956294",
+		"artifacts/phase6-acceptance/benchmark-final-audit.json": "df7666ac6b0fcaddedbd875515a086371973c40182849600be7b7708f259d84b",
+		"artifacts/phase6-acceptance/posthog-snapshots/2026-10-21T13-46-30Z/latest.json": "2adfe38bd2a752a51899997d69c06ddcba5ab3b74e89f3929a5869d45fbca915",
+		"artifacts/phase6-acceptance/posthog-snapshots/2026-10-21T13-46-30Z/observations.jsonl": "1f39cb7463217f22dfc15799aef415cf38385fcdc9a7780b2a03afe73e767033"
+	},
+	"excluded": [
+		"Phase7 enterprise identity/retention",
+		"Phase8 sustained-image performance and expanded infrastructure faults",
+		"optional Backoffice",
+		"optional provider-metered charging"
+	],
+	"contractSha256": {
+		"AGENTS.md": "6475c9ca7c3c0086a2be0c3af193749820fa88f1f100ae5ea2f8a17c6951d588",
+		".agents/skills/saas-verify-feature/SKILL.md": "b04e4f07b2a155c895ba16a82dba04c93e45c087e15658b1a0e38e190d223d62",
+		"docs/03-data-model.md": "1d590464f5a1e1d1b3fff32a21c468c47519b072b68504ba4efadd3e6a9dc8fa",
+		"docs/04-billing-usage-operations.md": "ae3595f1da837be9b9f03994ca95409c921f7f522ca0274d5ccc62b82967d9c3",
+		"docs/02-architecture-and-security.md": "85031a01ac440ec04a56d9b96eb6278a0a8a1ec11e516aecebce1f600bd2b480",
+		"docs/05-ai-agent-skills.md": "c8d86bebe647424e1612e5ad205aa2fe72142caa15e3ae7ca04719d0d7bb2c7d",
+		"docs/development/verification.md": "30b4682074ca3cd9a70617d50ea4e4cd3920a0911a3c29900473974548da9ae6",
+		"docs/phase6/analytics.md": "445f65bfb231657d7993a34963fe66ac321d27c224daed9ea1f578fbd35557a7",
+		"docs/phase6/recovery.md": "26e4e2f4259a86b05e1a3c63a7eec7611bc78500af783cf54e9ae0e57a7d34b5",
+		"docs/phase6/platform-modules.md": "f7d505197d62cf00b1481cdb330c36e135dc848606eb8bf9bd23eed65b103d5f",
+		"docs/phase4/evaluation.md": "b7172485630eb7c267f5b609021544e2be52b76bbc4bc3a8be0ffcf4be40ecaf",
+		"docs/phase5/evaluation.md": "3639ae02dd52e2752344f59df9edd0035833f5ab9f8a7d71dea5fb251019c614",
+		"security/exceptions.json": "1b940676c3fb1c46a7e6d83d53ba82cf9637b7bbd3c2387e9dc11ef8df20309e"
+	}
+}

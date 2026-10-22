@@ -16,6 +16,17 @@ export interface AnalyticsEvent {
 export interface AnalyticsDeletion {
 	personIds: string[];
 	requestedAt: string;
+	/** Opaque subject retained for a fresh absence query, including after profile removal. */
+	subject?: string;
+	/** Durable worker observation; deadlines never imply successful erasure. */
+	verification?: {
+		attempts: number;
+		nextCheckAt: string;
+		lastCheckedAt?: string;
+		outcome: "pending" | "error" | "verified";
+		verifiedAt?: string;
+		alertedAt?: string;
+	};
 }
 export interface AnalyticsProvider {
 	capture(event: AnalyticsEvent): Promise<void>;
@@ -26,7 +37,12 @@ export interface AnalyticsProvider {
 	): Promise<AnalyticsDeletion>;
 	deletionComplete(receipt: AnalyticsDeletion): Promise<boolean>;
 }
-/** PostHog protocol adapter. An ambiguous ingestion is never reported as erased. */
+/**
+ * Create the HTTPS PostHog adapter with separate ingestion and query/deletion credentials.
+ * Requests use the optional fetch transport (the global transport by default) and a
+ * three-second deadline. Capture throws while ingestion is unconfirmed; callers must
+ * retain uncertain attempts. Deletion completes only on a verified provider receipt and fresh event absence.
+ */
 export function posthogProvider(options: {
 	host: string;
 	projectId: string;
@@ -61,12 +77,15 @@ export function posthogProvider(options: {
 		if (!publicId.safeParse(id).success)
 			throw new Error("Invalid analytics event identity");
 		const result = await request(`/api/projects/${options.projectId}/query/`, {
+			// Default query refresh may reuse a negative result from before ingestion.
+			refresh: "force_blocking",
 			query: {
 				kind: "HogQLQuery",
 				query: `SELECT uuid FROM events WHERE uuid = '${id}' LIMIT 1`,
 			},
 		});
 		return (
+			result.is_cached !== true &&
 			Array.isArray(result.results) &&
 			result.results.some((r) => Array.isArray(r) && r[0] === id)
 		);
@@ -120,7 +139,7 @@ export function posthogProvider(options: {
 				delete_events: true,
 				delete_recordings: true,
 			});
-			return { personIds: ids as string[], requestedAt };
+			return { personIds: ids as string[], requestedAt, subject };
 		},
 		async deletionComplete(receipt) {
 			for (const id of receipt.personIds) {
@@ -148,7 +167,30 @@ export function posthogProvider(options: {
 				)
 					return false;
 			}
-			return receipt.personIds.length > 0;
+			if (!receipt.personIds.length) return false;
+			// Legacy receipts lack a subject; retain their person identities as the query scope.
+			if (receipt.personIds.some((id) => !publicId.safeParse(id).success))
+				throw new Error("Invalid analytics deletion identity");
+			const literal = (value: string) =>
+				`'${value.replaceAll("\\", "\\\\").replaceAll("'", "''")}'`;
+			const scope = `person_id IN (${receipt.personIds.map(literal).join(",")})`;
+			const result = await request(
+				`/api/projects/${options.projectId}/query/`,
+				{
+					refresh: "force_blocking",
+					query: {
+						kind: "HogQLQuery",
+						query: `SELECT uuid FROM events WHERE ${scope}${receipt.subject ? ` OR distinct_id = ${literal(receipt.subject)}` : ""} LIMIT 1`,
+					},
+				},
+			);
+			return (
+				result.is_cached !== true &&
+				Array.isArray(result.results) &&
+				result.results.length === 0 &&
+				(result.query_status as { complete?: boolean } | undefined)
+					?.complete !== false
+			);
 		},
 	};
 }
