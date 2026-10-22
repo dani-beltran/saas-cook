@@ -18,6 +18,8 @@ On 2026-10-22, fetching `origin/main` and all tags returned main `6cc5156` and n
 
 Initial schema support is the current reviewed application migration journal and current control schema/model contract. Binary rollback is permitted only when the declared schema/model/event contract is compatible; otherwise use forward repair or canonical recovery. The first accepted tag becomes the immutable baseline for future product upgrades. Do not create that tag before the merged candidate is accepted.
 
+P8-05 embeds `compatibility.json` in each image (customer: `/app/dist/compatibility.json`; Backoffice: `/app/compatibility.json`). `bun run phase8:compatibility [CUSTOMER_JSON BACKOFFICE_JSON]` rejects unknown fields/versions and any differing schema, control, model, provider or compiled shared-service contract. Without paths it records current source contracts. This is a deployment preflight, not an automatic runtime deployment controller; run it before effects when selecting a version pair or rollback. Initial support is deliberately exact-contract only, and there is no previous released-image rollback claim. Image verification checks embedded metadata against current source. The migrator independently rejects changed or future applied history under its existing exclusive migration lock before DDL.
+
 ## Gate ownership and checks
 
 | Requirements | Owner | Required checks |

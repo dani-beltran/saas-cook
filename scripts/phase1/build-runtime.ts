@@ -1,9 +1,11 @@
 import { mkdir } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { build } from "esbuild";
+import { writeCompatibilityManifest } from "../phase8/compatibility-contract";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 await mkdir(`${root}/dist`, { recursive: true });
+await writeCompatibilityManifest(`${root}/dist/compatibility.json`, "customer");
 await build({
 	absWorkingDir: root,
 	entryPoints: {

@@ -79,6 +79,45 @@ async function precedingSchema(databaseUrl: string, count: number) {
 }
 
 describe("real PostgreSQL migration and runtime role boundary", () => {
+	it("refuses altered or unknown applied history before effects and accepts the restored exact history", async () => {
+		const f = await fixture();
+		await runMigrations({ databaseUrl: f.migrator });
+		const db = new Pool({ connectionString: f.migrator });
+		cleanup.push(() => db.end());
+		const before = await db.query(
+			"SELECT id,hash,created_at FROM drizzle.__drizzle_migrations ORDER BY created_at,id",
+		);
+		const first = before.rows[0];
+		await db.query(
+			"UPDATE drizzle.__drizzle_migrations SET hash=$1 WHERE id=$2",
+			["0".repeat(64), first.id],
+		);
+		await expect(runMigrations({ databaseUrl: f.migrator })).rejects.toThrow(
+			"Applied migration history is incompatible",
+		);
+		await db.query(
+			"UPDATE drizzle.__drizzle_migrations SET hash=$1 WHERE id=$2",
+			[first.hash, first.id],
+		);
+		await db.query(
+			"INSERT INTO drizzle.__drizzle_migrations(hash,created_at) VALUES($1,$2)",
+			["f".repeat(64), Number(before.rows.at(-1).created_at) + 1],
+		);
+		await expect(runMigrations({ databaseUrl: f.migrator })).rejects.toThrow(
+			"Applied migration history is incompatible",
+		);
+		await db.query("DELETE FROM drizzle.__drizzle_migrations WHERE hash=$1", [
+			"f".repeat(64),
+		]);
+		await runMigrations({ databaseUrl: f.migrator });
+		expect(
+			(
+				await db.query(
+					"SELECT id,hash,created_at FROM drizzle.__drizzle_migrations ORDER BY created_at,id",
+				)
+			).rows,
+		).toEqual(before.rows);
+	});
 	it("upgrades the populated 0024 schema without changing customer rows or readiness", async () => {
 		const f = await fixture();
 		await precedingSchema(f.migrator, 25);
