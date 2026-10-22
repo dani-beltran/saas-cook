@@ -2,10 +2,76 @@ import { describe, expect, it } from "vitest";
 import {
 	assertAuthorizedExport,
 	assertSparsePage,
+	checkFinalPerformanceSource,
 	finalPerformanceOutcome,
 } from "./performance-assertions";
 
 const permittedIds = new Set(["allowed-a", "allowed-b"]);
+
+describe("source evidence after cleanup", () => {
+	const before = {
+		commit: "a".repeat(40),
+		fingerprint: "b".repeat(64),
+		dirty: false,
+	};
+	it.each([false, true])(
+		"retains unchanged source metadata with initial dirty state %s",
+		async (dirty) => {
+			const source = { ...before, dirty };
+			await expect(
+				checkFinalPerformanceSource(source, true, async () => ({ ...source })),
+			).resolves.toEqual({ sourceStable: true, sourceAfterCleanup: source });
+		},
+	);
+	it.each([
+		{ commit: "c".repeat(40) },
+		{ fingerprint: "d".repeat(64) },
+		{ dirty: true },
+	])("fails for final source changes %j", async (change) => {
+		const after = { ...before, ...change };
+		const result = await checkFinalPerformanceSource(
+			before,
+			true,
+			async () => after,
+		);
+		expect(result).toEqual({ sourceStable: false, sourceAfterCleanup: after });
+		expect(
+			finalPerformanceOutcome({
+				status: "passed",
+				smoke: false,
+				checks: { sourceStable: result.sourceStable },
+				cleanupPassed: true,
+			}),
+		).toMatchObject({ status: "failed", acceptanceEligible: false });
+	});
+	it("does not restore a prior failure when source changes are reverted", async () => {
+		await expect(
+			checkFinalPerformanceSource(before, false, async () => before),
+		).resolves.toEqual({ sourceStable: false, sourceAfterCleanup: before });
+		await expect(
+			checkFinalPerformanceSource(
+				{ ...before, dirty: true },
+				true,
+				async () => before,
+			),
+		).resolves.toEqual({ sourceStable: false, sourceAfterCleanup: before });
+	});
+	it("returns a failed source gate when reading Git state fails so evidence can be retained", async () => {
+		const result = await checkFinalPerformanceSource(before, true, async () => {
+			throw new Error("Untrusted command output must not enter the report");
+		});
+		expect(result).toEqual({ sourceStable: false, sourceAfterCleanup: null });
+		expect(
+			finalPerformanceOutcome({
+				status: "passed",
+				smoke: true,
+				checks: { sourceStable: result.sourceStable },
+				cleanupPassed: true,
+			}),
+		).toMatchObject({ status: "failed", acceptanceEligible: false });
+	});
+});
+
 function download(rows: string[]) {
 	return {
 		filename: "projects.csv",

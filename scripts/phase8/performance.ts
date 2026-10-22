@@ -16,6 +16,7 @@ import { evidenceSource, writeEvidence } from "./evidence";
 import {
 	assertAuthorizedExport,
 	assertSparsePage,
+	checkFinalPerformanceSource,
 	finalPerformanceOutcome,
 } from "./performance-assertions";
 import { startPerformanceImage } from "./performance-image";
@@ -1325,6 +1326,12 @@ try {
 		cleanupPassed = false;
 	}
 	finalChecks.cleanup = cleanupPassed;
+	const finalSource = await checkFinalPerformanceSource(
+		evidenceSourceBefore,
+		finalChecks.sourceStable === true,
+		evidenceSource,
+	);
+	finalChecks.sourceStable = finalSource.sourceStable;
 	const finalReport = JSON.parse(await readFile(reportPath, "utf8"));
 	const outcome = finalPerformanceOutcome({
 		status: finalReport.status,
@@ -1336,6 +1343,7 @@ try {
 	const completedReport = {
 		...finalReport,
 		...outcome,
+		sourceAfterCleanup: finalSource.sourceAfterCleanup,
 	};
 	await atomicReport(reportPath, completedReport);
 	await atomicReport(
