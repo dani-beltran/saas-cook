@@ -54,6 +54,36 @@ describe("release completion cannot be inferred from partial evidence", () => {
 		const f = fixture();
 		await expect(checkReleaseIndex(f.index, f.read)).resolves.toEqual(f.index);
 	});
+	it("rejects CI correctness evidence in place of the mandatory full performance gate", async () => {
+		const f = fixture();
+		const entry = f.index.entries.find(
+			({ gate }) => gate === "performance-full",
+		);
+		if (!entry) throw new Error("Missing full performance test fixture");
+		const receipt = JSON.parse(
+			Buffer.from(await f.read(entry.receipt)).toString("utf8"),
+		);
+		receipt.gate = "performance-ci-correctness";
+		const bytes = Buffer.from(JSON.stringify(receipt));
+		f.files.set(entry.receipt, bytes);
+		entry.sha256 = f.sha(bytes);
+		await expect(checkReleaseIndex(f.index, f.read)).rejects.toThrow(
+			"different gate",
+		);
+		await expect(
+			checkReleaseIndex(
+				{
+					...f.index,
+					entries: f.index.entries.map((value) =>
+						value === entry
+							? { ...value, gate: "performance-ci-correctness" }
+							: value,
+					),
+				},
+				f.read,
+			),
+		).rejects.toThrow();
+	});
 	it("rejects omitted, duplicated and stale gates", async () => {
 		const f = fixture();
 		await expect(
