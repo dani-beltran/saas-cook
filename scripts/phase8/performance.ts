@@ -13,6 +13,11 @@ import { createTestFileStorage } from "../../packages/testing/src/file-storage";
 import { sourceFingerprint } from "../phase1/source-fingerprint";
 import { resourceFixture } from "../phase3/fixture";
 import { evidenceSource, writeEvidence } from "./evidence";
+import {
+	assertAuthorizedExport,
+	assertSparsePage,
+	finalPerformanceOutcome,
+} from "./performance-assertions";
 import { startPerformanceImage } from "./performance-image";
 import {
 	histogramStatistics,
@@ -488,6 +493,7 @@ const memberships = organizations.map(() =>
 	Array.from({ length: 10 }, () => randomUUID()),
 );
 const projectIds: string[][] = [];
+const sparsePermittedIds = new Set<string>();
 const actors: TenantActor[][] = users.map((group) =>
 	group.map((userId) => ({
 		userId,
@@ -629,14 +635,10 @@ async function commercialWork(start: number, end: number) {
 							organizationId: organizations[job.tenant],
 							id: job.id,
 						});
-						const text = Buffer.from(download.base64, "base64").toString(
-							"utf8",
+						assertAuthorizedExport(
+							download,
+							new Set(projectIds[job.tenant].slice(100, 120)),
 						);
-						for (const id of projectIds[job.tenant].slice(100, 120))
-							assert(
-								text.includes(id),
-								"Export omitted an authorized stable project",
-							);
 					}
 					job.complete = true;
 					bulkCompletionMs.push(performance.now() - job.startedAt);
@@ -747,13 +749,12 @@ try {
 			[randomUUID(), org, count],
 		);
 	}
+	for (const id of projectIds[0].filter((_, i) => i % 100 === 0))
+		sparsePermittedIds.add(id);
+	assert.equal(sparsePermittedIds.size, 500);
 	await source.query(
 		"INSERT INTO tenancy.resource_grants(id,organization_id,resource_id,relation,membership_id) SELECT gen_random_uuid(),$1,id,'viewer',$3 FROM unnest($2::uuid[]) id",
-		[
-			organizations[0],
-			projectIds[0].filter((_, i) => i % 100 === 0),
-			memberships[0][1],
-		],
+		[organizations[0], [...sparsePermittedIds], memberships[0][1]],
 	);
 	// Pinned better-call1.4.0 signs cookie values as HMAC-SHA256/base64, then percent encodes token.signature.
 	const epoch = (
@@ -931,6 +932,14 @@ try {
 								org,
 								{ limit: 10, cursor: cursors.get(cursorKey)?.value },
 							);
+							if (sparse) {
+								try {
+									assertSparsePage(page.items, sparsePermittedIds);
+								} catch (error) {
+									interrupted = "sparse_authorization_violation";
+									throw error;
+								}
+							}
 							if (page.nextCursor)
 								cursors.set(cursorKey, {
 									value: page.nextCursor,
@@ -1286,14 +1295,16 @@ try {
 	}
 	finalChecks.cleanup = cleanupPassed;
 	const finalReport = JSON.parse(await readFile(reportPath, "utf8"));
-	const passed =
-		cleanupPassed &&
-		finalReport.status === "passed" &&
-		Object.values(finalChecks).every(Boolean);
+	const outcome = finalPerformanceOutcome({
+		status: finalReport.status,
+		smoke,
+		checks: finalChecks,
+		cleanupPassed,
+	});
+	const passed = outcome.status === "passed";
 	const completedReport = {
 		...finalReport,
-		status: passed ? "passed" : "failed",
-		cleanupPassed,
+		...outcome,
 	};
 	await atomicReport(reportPath, completedReport);
 	await atomicReport(
