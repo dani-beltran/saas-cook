@@ -5,8 +5,8 @@ Run from the repository root with the pinned Bun/Node toolchain and disposable s
 ```sh
 bun install --frozen-lockfile
 TEST_IMAGE=saas-cook:phase8-performance bun run image:build
-TEST_IMAGE=saas-cook:phase8-performance node --import tsx scripts/phase8/performance.ts --smoke
-TEST_IMAGE=saas-cook:phase8-performance node --import tsx scripts/phase8/performance.ts
+TEST_IMAGE=saas-cook:phase8-performance bun run phase8:performance:smoke
+TEST_IMAGE=saas-cook:phase8-performance bun run phase8:performance
 ```
 
 The smoke has a 2-second warm-up and 30 measured seconds. Full acceptance requires a 60-second warm-up and at least 30 measured minutes. Both modes keep 100 tenants, 1,000 memberships, 100,000 Projects, 50 simultaneous clients (25 RPC and 25 REST), one tenant owning 50% of Projects and receiving approximately 80% of operations, and the Phase 3 60/20/10/10 read/update/create-delete/share-revoke mix. Runtime flags cannot lower the full workload. Smoke reports always set `acceptanceEligible: false`.
@@ -26,6 +26,8 @@ Application and control databases, authorization store, container and versioned 
 Each attempt keeps a uniquely named JSON report under ignored `artifacts/phase8/`, plus a convenience latest report. After isolated-resource cleanup it writes a P8-02 receipt with the report's SHA-256 digest, source commit/fingerprint, image identity and named gates. Full runs use `performance-full`; smoke uses `performance-smoke` and cannot satisfy the full gate. Full evidence requires a clean checkout. Failed cleanup invalidates the result. Failed gates and initialization errors must remain visible; a failed smoke is diagnostic evidence and does not permit lowering targets. Source changes or image commit/fingerprint mismatches require a rebuild. Acceptance belongs to the final integrated release candidate and the Phase 8 acceptance register, never to this harness's existence.
 
 ## Development verification
+
+The required CI image job runs the smoke after image acceptance and recovery. Manual CI dispatch with `phase8_full=true` runs the full workload instead and extends that job's budget to 90 minutes. A smoke receipt never satisfies the release's `performance-full` gate; the full run must use the final clean candidate and its exact image.
 
 The first image smoke on 2026-10-22 exercised 3,953 reference operations with 100% first-attempt success. Sparse authorization, revocations, every tenant's progress, both worker jobs and usage visibility passed. The run failed the unchanged write target: p95 851.8 ms versus <800 ms (reads 424.3 ms, fence wait 75 ms, create-to-readable 781.1 ms, usage visibility 4.02 seconds). Other development checks were active on the same host; this is retained failed diagnostic evidence, not an accepted workload result or a reason to lower targets.
 

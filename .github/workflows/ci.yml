@@ -5,6 +5,12 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      phase8_full:
+        description: Run the full 30-minute Phase 8 image workload
+        type: boolean
+        required: false
+        default: false
 permissions:
   contents: read
 concurrency:
@@ -188,7 +194,7 @@ jobs:
       - run: bun run build
   image:
     runs-on: ubuntu-24.04
-    timeout-minutes: 40
+    timeout-minutes: ${{ inputs.phase8_full && 90 || 45 }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -201,6 +207,12 @@ jobs:
       - run: bun run services:up
       - run: bun run phase8:image customer
       - run: bun run phase8:recovery
+      - name: Phase 8 image workload smoke
+        if: ${{ !inputs.phase8_full }}
+        run: bun run phase8:performance:smoke
+      - name: Phase 8 sustained image workload
+        if: ${{ inputs.phase8_full }}
+        run: bun run phase8:performance
       - name: Record image identity
         if: always()
         run: |
