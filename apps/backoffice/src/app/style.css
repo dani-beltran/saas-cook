@@ -368,3 +368,47 @@
 		gap: 5px;
 	}
 }
+
+.bo-directory-list {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+.bo-directory-list li {
+	padding: 18px 0;
+	border-bottom: 1px solid var(--border);
+}
+.bo-directory-list code,
+.bo-result > p code {
+	overflow-wrap: anywhere;
+}
+.bo-directory-feedback {
+	margin-top: 16px;
+}
+
+.bo-signed-out {
+	grid-template-columns: minmax(0, 480px);
+}
+
+.bo-organizations {
+	grid-template-columns: minmax(0, 1fr);
+}
+
+.bo-directory-table {
+	min-width: 0;
+	max-width: 100%;
+}
+.bo-directory-table table {
+	min-width: 760px;
+}
+.bo-directory-table th,
+.bo-directory-table td {
+	padding: 12px;
+	text-align: left;
+	vertical-align: top;
+}
+.bo-lookup-shortcut > summary {
+	cursor: pointer;
+	padding: 12px 0;
+	font-weight: 600;
+}

@@ -79,6 +79,78 @@ async function precedingSchema(databaseUrl: string, count: number) {
 }
 
 describe("real PostgreSQL migration and runtime role boundary", () => {
+	it("upgrades populated BO lookup schema to directory without rewriting staff grants, audit or readiness", async () => {
+		const f = await fixture();
+		await precedingSchema(f.migrator, 26);
+		const c = new Pool({ connectionString: f.migrator });
+		cleanup.push(() => c.end());
+		const operator = randomUUID(),
+			organization = randomUUID(),
+			epoch = randomUUID(),
+			audit = randomUUID();
+		await c.query(
+			`INSERT INTO operator_identity."user"(id,name,email,epoch,status) VALUES($1,'Preserved staff','preserved@example.test',$2,'active')`,
+			[operator, epoch],
+		);
+		await c.query(
+			"INSERT INTO backoffice.grants VALUES($1,$2,$3,$4,'test',clock_timestamp()+interval '1 hour')",
+			[randomUUID(), operator, organization, epoch],
+		);
+		await c.query(
+			"INSERT INTO backoffice.audit_events(id,actor_id,action,outcome) VALUES($1,$2,'organization.read','denied')",
+			[audit, operator],
+		);
+		await c.query(
+			"INSERT INTO foundation.installation(installation_id,binding_id,recovery_epoch) VALUES($1,$2,$3)",
+			[randomUUID(), randomUUID(), epoch],
+		);
+		const tables = [
+			'operator_identity."user"',
+			"backoffice.grants",
+			"backoffice.audit_events",
+			"foundation.installation",
+		];
+		const before = await Promise.all(
+			tables.map(
+				async (table) => (await c.query(`SELECT * FROM ${table}`)).rows,
+			),
+		);
+		await runMigrations({ databaseUrl: f.migrator });
+		await runMigrations({ databaseUrl: f.migrator });
+		for (const [index, table] of tables.entries())
+			expect((await c.query(`SELECT * FROM ${table}`)).rows).toEqual(
+				before[index],
+			);
+		await expect(
+			c.query("SELECT backoffice.assert_compatibility()"),
+		).resolves.toBeDefined();
+		await expect(
+			c.query("SELECT backoffice.assert_directory_compatibility()"),
+		).resolves.toBeDefined();
+		// Empty search audits must also enforce expiry at COMMIT.
+		const url = new URL(f.migrator);
+		url.username = "saas_cook_bo_query";
+		const pool = new Pool({ connectionString: url.href });
+		const q = await pool.connect();
+		try {
+			await q.query("BEGIN");
+			await q.query(
+				"SELECT set_config('backoffice.expires_at',(clock_timestamp()-interval '1 second')::text,true)",
+			);
+			await q.query(
+				"INSERT INTO backoffice.audit_events(id,action,outcome) VALUES($1,'organization.directory','allowed')",
+				[randomUUID()],
+			);
+			await expect(q.query("COMMIT")).rejects.toThrow(
+				"Operator authorization expired",
+			);
+		} finally {
+			await q.query("ROLLBACK");
+			q.release();
+			await pool.end();
+		}
+	});
+
 	it("upgrades the populated 0024 schema without changing customer rows or readiness", async () => {
 		const f = await fixture();
 		await precedingSchema(f.migrator, 25);
@@ -522,7 +594,7 @@ describe("real PostgreSQL migration and runtime role boundary", () => {
 					"SELECT count(*)::int AS count FROM drizzle.__drizzle_migrations",
 				)
 			).rows[0],
-		).toEqual({ count: 26 });
+		).toEqual({ count: 27 });
 	});
 	it("upgrades Phase 2 to resource tables while preserving tenant and identity history", async () => {
 		const f = await fixture();

@@ -1,4 +1,5 @@
 import { execFileSync, spawn } from "node:child_process";
+import { randomUUID } from "node:crypto";
 import { once } from "node:events";
 import { cp, mkdir, mkdtemp, open, readFile, rm } from "node:fs/promises";
 import { request } from "node:http";
@@ -8,6 +9,22 @@ import { join } from "node:path";
 import { backofficeFixture } from "../../packages/backoffice/src/fixture";
 
 const f = await backofficeFixture();
+// Synthetic directory scope exceeds one UI page; no live staff or customer data.
+for (let index = 0; index < 11; index++) {
+	const id = randomUUID();
+	await f.migration.query(
+		"INSERT INTO tenancy.organizations(id,name,slug) VALUES($1::uuid,$2,$1::text)",
+		[id, `Synthetic directory organization ${index}`],
+	);
+	await f.migration.query(
+		"INSERT INTO tenancy.seat_capacities(organization_id,capacity) VALUES($1,5)",
+		[id],
+	);
+	await f.migration.query(
+		"INSERT INTO backoffice.grants VALUES($1,$2,$3,$4,'test',clock_timestamp()+interval '1 hour')",
+		[randomUUID(), f.operatorId, id, f.epoch],
+	);
+}
 f.env.BACKOFFICE_ORIGIN = "https://localhost:3104";
 const certDir = await mkdtemp(join(tmpdir(), "bo-browser-"));
 execFileSync(

@@ -120,3 +120,45 @@ The [current gap inventory](../backoffice/development-plan.md#current-implementa
 Implement BO-01's secure shell plus BO-02.1's **masked organization lookup by exact ID**, after BO-00 decisions and the Foundation prerequisite. A registered operator signs in at the separate host, opens one organization overview containing ID/name/lifecycle and local seat summary, and sees a correlation reference. Reads are audited; an offboarded operator, wrong origin, customer cookie, wrong scope or unavailable readiness/audit boundary receives no data. This slice has no tenant mutations or commercial panels.
 
 Definition of done: separate credential-free builds and images; real restricted-role schema tests; synthetic staff enrollment/MFA; session/cookie and host/origin isolation tests; current operator authorization under fences; durable read audit; two-organization negative cases; customer-image route/bundle exclusion; customer sign-in, Project CRUD and worker mail continue with Backoffice stopped; keyboard and localized loading/denied/unavailable states; retained evidence tied to both image digests. The full initial release adds the bounded directories and details in BO-02. No placeholder UI, provider stub or local smoke closes a release gate.
+
+## BO-02.1 directory evolution — 2026-10-22
+
+Extend the staff workspace with a bounded organization directory over the same
+independently approved exact-organization grants. The list discloses only UUID,
+masked name (first Unicode code point followed by three fixed bullets), lifecycle
+and live source observation time. The existing separately audited exact-ID detail
+lookup retains its established metadata allowlist. Account, owner, contact,
+billing, personal name/email search, reveal and export remain outside this slice.
+
+Filters are exact organization UUID and the three current lifecycle states;
+ordering is ascending UUID. Shared strict schemas validate the browser and server.
+Pages accept 1–50 rows; the UI offers 10/25/50. Each page scans at most
+`min(200, pageSize × 4)` granted organizations. Pagination advances after the last
+scanned candidate; an empty filtered page can still have a continuation. No global
+or accessible total is returned. Live reads avoid new projections/backfills and
+provide explicit per-row observation and page check times. Refresh starts a new
+query; the UI does not promise that a previously displayed snapshot stays current.
+
+The signed manager currently replaces at most 20 grants. Directory scope loading
+uses the new actor/epoch/environment/organization index and a defensive ceiling of
+200 grant rows; larger assignments fail closed and require a separately reviewed
+scope design. This is a bounded initial exact-grant directory, not acceptance of a
+10,000-organization/global-account workload. A two-second page deadline and the
+minimum session/grant expiry remain enforced at commit, including empty pages.
+All per-organization FGA checks use the existing pinned model and current grants.
+
+AES-256-GCM cursors use a purpose-separated HKDF key derived from the staff secret.
+They bind operator, staff session, installation, environment, independent
+publication, current active grant IDs/targets/expiries, filters, page size and case
+reference. They expire within five minutes and no later than current authority;
+continuation does not extend the original expiry. Changed grants or context,
+tampering and secret rotation require starting a new query. Cursor/filter contents
+are excluded from audit payloads and logs. Each page and each disclosed target are
+audited before disclosure; denial audit survives a failed page transaction.
+
+Reviewed additive migration `0026_backoffice_directory` adds the indexed scope
+read policy, extends the final expiry trigger to directory audit records and
+explicitly advances the supported schema pair. Apply it before the new BO binary;
+no backfill, operator model publication, credential re-enrollment or new secret is
+needed. Old lookup binaries remain compatible with schema 0026. New directory
+binaries fail readiness on 0025. No prior migration or snapshot is rewritten.

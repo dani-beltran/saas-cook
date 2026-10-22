@@ -120,7 +120,7 @@ Dependencies: BO-01 and source-reviewed tenancy/identity projections. Current cu
 
 | Work ID | Work package / likely locations | Concrete changes |
 | --- | --- | --- |
-| BO-02.1 | `packages/db/src/backoffice/directory`, `packages/backoffice/src/queries`, `apps/backoffice/src/features/organizations` | Exact-ID first slice, then indexed masked directory, stable actor/scope/query-bound encrypted cursors, allowlisted filters and page limits |
+| BO-02.1 | `packages/db/src/backoffice/directory`, `packages/backoffice/src/queries`, `apps/backoffice/src/features/organizations` | Implemented exact-ID lookup and bounded masked exact-grant directory; actor/session/scope/query-bound encrypted cursors, UUID/lifecycle filters and live freshness. See the [evolution decision](../feature-briefs/backoffice.md#bo-021-directory-evolution--2026-10-22); global-account/projection expansion remains later scope |
 | BO-02.2 | `packages/auth` identity projection entry point, BO accounts/membership views | Separate global-account grant, keyed exact-email lookup, safe organization detail/owner projections, independent reveal permission and audited short-lived disclosure |
 | BO-02.3 | Domain event adapters, BO detail panels | Local entitlements/seat sources, readiness/owner-recovery status and source watermark; register commercial panels only with real services |
 | BO-02.4 | Audit queries and `apps/worker`/mail diagnostic read adapters | Redacted operation IDs, fixed failures, attempts/lag; no auth URL, body or raw queue payload |
