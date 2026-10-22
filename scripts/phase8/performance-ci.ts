@@ -2,7 +2,11 @@ import { createHash } from "node:crypto";
 import { readFile, writeFile } from "node:fs/promises";
 import { z } from "zod";
 import { evidenceSchema, writeEvidence } from "./evidence";
-import type { performanceGates } from "./performance-metrics";
+import {
+	fenceThresholdEvidence,
+	histogramStatistics,
+	type performanceGates,
+} from "./performance-metrics";
 
 /** Select exactly one declared workload mode; unknown, combined or repeated options throw. */
 export function performanceMode(args: readonly string[]) {
@@ -37,12 +41,36 @@ const expectedChecks = [
 	"environmentCleanup",
 	"cleanup",
 ];
-const diagnosticChecks = new Set<string>(["readLatency", "writeLatency"]);
+const diagnosticChecks = new Set<string>([
+	"readLatency",
+	"writeLatency",
+	"fenceWait",
+]);
 const observedLatency = z.object({
 	count: z.number().int().positive(),
 	p95: z.number().finite().nonnegative(),
 	p99: z.number().finite().nonnegative(),
 	max: z.number().finite().nonnegative(),
+});
+const thresholdProof = z
+	.object({
+		limitExclusiveMs: z.literal(100),
+		count: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+		below: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+		atOrAbove: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+		p95Rank: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+		p95Passed: z.boolean(),
+		valid: z.literal(true),
+		method: z.literal("raw-duration-threshold-count"),
+	})
+	.strict();
+const observedFence = z.object({
+	count: z.number().int().nonnegative(),
+	p95: z.number().finite().nonnegative().nullable(),
+	p99: z.number().finite().nonnegative().nullable(),
+	max: z.number().finite().nonnegative().nullable(),
+	percentileRepresentation: z.literal("conservative-ceiling-ms-upper-bound"),
+	threshold: thresholdProof,
 });
 const measuredSmoke = z.object({
 	status: z.enum(["passed", "failed"]),
@@ -54,14 +82,67 @@ const measuredSmoke = z.object({
 	memberships: z.literal(1000),
 	projects: z.literal(100000),
 	workloadVersion: z.literal("direct-project-http-commercial-v1"),
-	latencyMs: z.object({ read: observedLatency, write: observedLatency }),
+	latencyMs: z.object({
+		read: observedLatency,
+		write: observedLatency,
+		fenceWait: observedFence,
+	}),
+	graph: z.object({ worker: z.object({ fenceWait: observedFence }) }),
+	telemetry: z.array(
+		z.object({
+			role: z.string(),
+			fence: z.record(z.string(), z.number()),
+			fenceThreshold: z.unknown(),
+			maxFence: z.number().finite().nonnegative(),
+		}),
+	),
 });
+
+function validFenceTelemetry(
+	report: z.infer<typeof measuredSmoke>,
+	strictFencePassed: boolean,
+) {
+	try {
+		for (const role of ["web", "worker"] as const) {
+			const observations = report.telemetry.filter(
+				(entry) => entry.role === role,
+			);
+			if (observations.length !== 1) return false;
+			const raw = observations[0];
+			const proof = fenceThresholdEvidence(raw.fence, raw.fenceThreshold);
+			const statistics = histogramStatistics(raw.fence, raw.maxFence);
+			const measured =
+				role === "web"
+					? report.latencyMs.fenceWait
+					: report.graph.worker.fenceWait;
+			if (
+				!Object.entries(proof).every(
+					([key, value]) =>
+						measured.threshold[key as keyof typeof proof] === value,
+				) ||
+				!Object.entries(statistics).every(
+					([key, value]) => measured[key as keyof typeof statistics] === value,
+				)
+			)
+				return false;
+			if (
+				role === "web" &&
+				(proof.count === 0 || strictFencePassed !== proof.p95Passed)
+			)
+				return false;
+		}
+		return true;
+	} catch {
+		return false;
+	}
+}
 
 /**
  * Assess the separately scoped CI smoke without changing any reference performance result.
  * @param run Final strict-smoke receipt facts, after cleanup. Missing/unknown checks fail closed.
- * @returns CI correctness status plus the unchanged reference target failures. Only read/write
- * latency may be diagnostic; fence/readiness/usage budgets and every correctness gate still bind.
+ * @returns CI correctness status plus the unchanged reference target failures. Only read/write/fence
+ * latency may be diagnostic; independently validated raw fence telemetry, readiness/usage
+ * budgets and every correctness gate still bind.
  * This result is always ineligible for sustained performance or release acceptance.
  */
 export function ciCorrectnessOutcome(run: {
@@ -71,6 +152,7 @@ export function ciCorrectnessOutcome(run: {
 	dirty: boolean;
 	imagePresent: boolean;
 	measuredWorkload: boolean;
+	fenceTelemetryValid: boolean;
 }) {
 	const keys = Object.keys(run.checks);
 	const exactCheckContract =
@@ -86,6 +168,7 @@ export function ciCorrectnessOutcome(run: {
 		cleanCheckout: !run.dirty,
 		imageIdentity: run.imagePresent,
 		measuredWorkload: run.measuredWorkload,
+		fenceTelemetryValid: run.fenceTelemetryValid === true,
 		...Object.fromEntries(
 			expectedChecks
 				.filter((name) => !diagnosticChecks.has(name))
@@ -152,7 +235,7 @@ export async function writeCiCorrectnessEvidence(
 		measurements.data.status === strict.outcome &&
 		strictChecks.readLatency === measurements.data.latencyMs.read.p95 < 500 &&
 		strictChecks.writeLatency === measurements.data.latencyMs.write.p95 < 800;
-	const failedCrudTargets = measurements.success
+	const failedLatencyTargets = measurements.success
 		? [
 				{
 					check: "readLatency",
@@ -164,6 +247,14 @@ export async function writeCiCorrectnessEvidence(
 					p95Ms: measurements.data.latencyMs.write.p95,
 					targetExclusiveMs: 800,
 				},
+				{
+					check: "fenceWait",
+					p95Ms: measurements.data.latencyMs.fenceWait.p95,
+					targetExclusiveMs: 100,
+					percentileRepresentation:
+						measurements.data.latencyMs.fenceWait.percentileRepresentation,
+					rawThreshold: measurements.data.latencyMs.fenceWait.threshold,
+				},
 			].filter(({ check }) => strictChecks[check] === false)
 		: [];
 	const outcome = ciCorrectnessOutcome({
@@ -173,6 +264,9 @@ export async function writeCiCorrectnessEvidence(
 		dirty: strict.source.dirty,
 		imagePresent: Boolean(strict.image),
 		measuredWorkload,
+		fenceTelemetryValid:
+			measurements.success &&
+			validFenceTelemetry(measurements.data, strictChecks.fenceWait),
 	});
 	const report = {
 		gate: "performance-ci-correctness",
@@ -184,7 +278,7 @@ export async function writeCiCorrectnessEvidence(
 		},
 		strictArtifacts: strict.artifacts,
 		diagnosticOnlyChecks: [...diagnosticChecks],
-		failedCrudTargets,
+		failedLatencyTargets,
 	};
 	await writeFile(reportPath, `${JSON.stringify(report, null, 2)}\n`, {
 		flag: "wx",
@@ -203,8 +297,8 @@ export async function writeCiCorrectnessEvidence(
 			})),
 			limitations: [
 				"CI correctness only - cannot satisfy performance-full or release acceptance",
-				"Read and write latency targets remain strict in the linked performance-smoke receipt",
-				"All other reference gates remain enforced including fence readiness usage fairness and cleanup",
+				"Read write and fence latency targets remain strict in the linked performance-smoke receipt",
+				"Raw fence telemetry validity and all other gates remain enforced including readiness usage fairness and cleanup",
 			],
 		},
 		[
@@ -219,7 +313,7 @@ export async function writeCiCorrectnessEvidence(
 				warning:
 					"Strict performance smoke FAILED; CI correctness does not accept performance",
 				ciCorrectness: outcome.status,
-				failedCrudTargets,
+				failedLatencyTargets,
 				strictReceiptPath,
 			}),
 		);

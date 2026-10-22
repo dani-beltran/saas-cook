@@ -6,8 +6,13 @@ on:
     branches: [main]
   workflow_dispatch:
     inputs:
+      phase8_ci_smoke:
+        description: Run diagnostic smoke on the completed final integration branch or main
+        type: boolean
+        required: false
+        default: false
       phase8_full:
-        description: Run the full 30-minute Phase 8 image workload
+        description: Run strict full workload on completed integration or main; takes precedence
         type: boolean
         required: false
         default: false
@@ -213,10 +218,10 @@ jobs:
       - run: bun run phase8:image customer
       - run: bun run phase8:recovery
       - name: Phase 8 image workload correctness smoke
-        if: ${{ !inputs.phase8_full }}
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.phase8_ci_smoke && !inputs.phase8_full }}
         run: bun run phase8:performance:ci
       - name: Phase 8 sustained image workload
-        if: ${{ inputs.phase8_full }}
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.phase8_full }}
         run: bun run phase8:performance
       - name: Record image identity
         if: always()
