@@ -10,8 +10,15 @@ if (scope !== "dependencies" && scope !== "image") {
 }
 const target = scope === "image" ? process.argv[3] : ".";
 if (!target) throw new Error("An image reference is required");
-await mkdir("artifacts/security", { recursive: true });
-const output = `artifacts/security/${scope}.json`;
+const directory =
+	process.env.SECURITY_ARTIFACT_DIRECTORY ?? "artifacts/security";
+if (
+	!/^artifacts\/[a-zA-Z0-9._/-]+$/.test(directory) ||
+	directory.split("/").includes("..")
+)
+	throw new Error("Security evidence must stay under artifacts/");
+await mkdir(directory, { recursive: true });
+const output = `${directory}/${scope}.json`;
 const args = [
 	scope === "image" ? "image" : "fs",
 	"--scanners",
@@ -44,7 +51,7 @@ const blocked = evaluateScan(
 	scope,
 );
 await writeFile(
-	`artifacts/security/${scope}-policy.json`,
+	`${directory}/${scope}-policy.json`,
 	`${JSON.stringify(
 		{
 			scope,

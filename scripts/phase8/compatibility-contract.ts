@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { isDeepStrictEqual } from "node:util";
 import { z } from "zod";
 import { modelHash } from "../../packages/authz/src/model";
 import { operatorModelHash } from "../../packages/authz/src/platform";
@@ -121,14 +122,25 @@ export async function writeCompatibilityManifest(
  * Validate a proposed customer/Backoffice pair before deployment or rollback effects.
  * Unknown fields/versions, schema/model/protocol differences and changed compiled shared
  * services throw. This conservative first-release policy accepts only exact contracts.
- * Returns void on compatibility; it does not claim that deployment tests have passed.
+ * Both inputs must match contracts generated from this reviewed checkout, so two
+ * matching but unknown manifests cannot authorize a deployment. Reads current source
+ * files and resolves void on compatibility; it does not establish deployed behavior.
  */
-export function assertCompatiblePair(
+export async function assertCompatiblePair(
 	customerInput: unknown,
 	backofficeInput: unknown,
 ) {
 	const customer = manifestSchema.parse(customerInput);
 	const backoffice = manifestSchema.parse(backofficeInput);
+	const known = await Promise.all([
+		compatibilityManifest("customer"),
+		compatibilityManifest("backoffice"),
+	]);
+	if (
+		!isDeepStrictEqual(customer, known[0]) ||
+		!isDeepStrictEqual(backoffice, known[1])
+	)
+		throw new Error("Unsupported image contract for this reviewed release");
 	if (
 		customer.target !== "customer" ||
 		backoffice.target !== "backoffice" ||
