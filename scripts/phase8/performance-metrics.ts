@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 type Statistics = {
 	count: number;
 	p95: number | null;
@@ -57,6 +59,70 @@ export function histogramStatistics(
 	};
 }
 
+const thresholdCount = z
+	.number()
+	.int()
+	.nonnegative()
+	.max(Number.MAX_SAFE_INTEGER);
+const fenceThresholdSchema = z
+	.object({
+		limitExclusiveMs: z.literal(100),
+		count: thresholdCount,
+		below: thresholdCount,
+		atOrAbove: thresholdCount,
+	})
+	.strict();
+
+/**
+ * Prove the strict fence p95 budget from raw-duration counts without rounding samples.
+ * @param histogram Unchanged observer ceiling-millisecond distribution, bounded at 60001.
+ * @param observation Required same-sample raw counts with the fixed exclusive 100 ms limit.
+ * @returns Counts, nearest-rank p95 position and its exact threshold result; empty data fails.
+ * @throws On missing/corrupt counts or disagreement with the histogram, including its boundary bin.
+ * The histogram remains a conservative percentile upper bound, not an exact raw percentile.
+ */
+export function fenceThresholdEvidence(
+	histogram: Record<string, number>,
+	observation: unknown,
+) {
+	const counts = fenceThresholdSchema.parse(observation);
+	let total = 0,
+		certainlyBelow = 0,
+		possiblyBelow = 0;
+	for (const [key, frequency] of Object.entries(histogram)) {
+		const upper = Number(key);
+		if (
+			!Number.isSafeInteger(upper) ||
+			upper < 0 ||
+			upper > 60001 ||
+			String(upper) !== key ||
+			!Number.isSafeInteger(frequency) ||
+			frequency < 1
+		)
+			throw new Error("Invalid fence threshold histogram");
+		total += frequency;
+		if (upper < 100) certainlyBelow += frequency;
+		if (upper <= 100) possiblyBelow += frequency;
+	}
+	if (
+		!Number.isSafeInteger(total) ||
+		counts.count !== total ||
+		counts.atOrAbove !== counts.count - counts.below ||
+		counts.below < certainlyBelow ||
+		counts.below > possiblyBelow
+	)
+		throw new Error("Fence threshold counts disagree with histogram");
+	// ceil(95 * count / 100), without multiplying a potentially large integer.
+	const p95Rank = counts.count - Math.floor(counts.count / 20);
+	return {
+		...counts,
+		valid: true,
+		p95Rank,
+		p95Passed: counts.count > 0 && counts.below >= p95Rank,
+		method: "raw-duration-threshold-count" as const,
+	};
+}
+
 type TenantProgress = { attempts: number; successes: number; maxGapMs: number };
 type CommercialEvidence = {
 	failures: number;
@@ -82,6 +148,7 @@ export function performanceGates(run: {
 	read: Statistics;
 	write: Statistics;
 	fence: Statistics;
+	fenceThreshold: ReturnType<typeof fenceThresholdEvidence>;
 	create: Statistics;
 	sourceCommit: Statistics;
 	revocation: Statistics;
@@ -97,6 +164,9 @@ export function performanceGates(run: {
 }) {
 	const under = (stats: Statistics, limit: number) =>
 		stats.count > 0 && stats.p95 !== null && stats.p95 < limit;
+	const fenceProofValid =
+		run.fenceThreshold?.valid === true &&
+		run.fenceThreshold.count === run.fence.count;
 	const mix = (names: string[]) =>
 		names.reduce((n, key) => n + (run.operations[key] ?? 0), 0) / run.attempts;
 	return {
@@ -105,13 +175,15 @@ export function performanceGates(run: {
 		availability: run.attempts > 0 && run.successes / run.attempts >= 0.999,
 		readLatency: under(run.read, 500),
 		writeLatency: under(run.write, 800),
-		fenceWait: under(run.fence, 100),
+		fenceWait:
+			run.fence.count > 0 && fenceProofValid && run.fenceThreshold.p95Passed,
 		createToReadable: under(run.create, 2000),
 		sourceReadiness: under(run.sourceCommit, 2000),
 		authorization:
 			run.authorizationValid &&
 			run.graphEmpty &&
 			run.observerValid &&
+			fenceProofValid &&
 			run.revocation.count > 0 &&
 			run.revocationFence.count > 0,
 		sourceStable: run.sourceStable,

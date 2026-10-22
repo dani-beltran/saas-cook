@@ -34,6 +34,7 @@ import {
 } from "./performance-failure";
 import { startPerformanceImage } from "./performance-image";
 import {
+	fenceThresholdEvidence,
 	histogramStatistics,
 	performanceGates,
 	latencyStatistics as stats,
@@ -1190,6 +1191,14 @@ try {
 		webTelemetry.fence,
 		webTelemetry.maxFence,
 	);
+	const observerFenceThreshold = fenceThresholdEvidence(
+		webTelemetry.fence,
+		webTelemetry.fenceThreshold,
+	);
+	const workerFenceThreshold = fenceThresholdEvidence(
+		workerTelemetry.fence,
+		workerTelemetry.fenceThreshold,
+	);
 	const observerRevocationFence = histogramStatistics(
 		webTelemetry.revocationFence,
 		webTelemetry.maxRevocationFence,
@@ -1214,10 +1223,13 @@ try {
 		read: readStats,
 		write: writeStats,
 		fence: fenceStats,
+		fenceThreshold: observerFenceThreshold,
 		create: createStats,
 		sourceCommit: stats(readiness),
 		revocation: stats(revocation),
 		observerValid:
+			observerFenceThreshold.valid &&
+			workerFenceThreshold.valid &&
 			webTelemetry.malformed === 0 &&
 			workerTelemetry.malformed === 0 &&
 			workerTelemetry.writes === 0 &&
@@ -1313,9 +1325,16 @@ try {
 			write: writeStats,
 			createToReadable: createStats,
 			sourceCommit: stats(readiness),
-			fenceWait: fenceStats,
+			fenceWait: {
+				...fenceStats,
+				percentileRepresentation: "conservative-ceiling-ms-upper-bound",
+				threshold: observerFenceThreshold,
+			},
 			revocation: stats(revocation),
-			revocationFenceWait: observerRevocationFence,
+			revocationFenceWait: {
+				...observerRevocationFence,
+				percentileRepresentation: "conservative-ceiling-ms-upper-bound",
+			},
 		},
 		graph: {
 			before: graphBefore,
@@ -1328,10 +1347,14 @@ try {
 				checkRequests: workerTelemetry.checks,
 				tupleWriteRequests: workerTelemetry.writes,
 				contextTuples: histogramStatistics(workerTelemetry.tuples),
-				fenceWait: histogramStatistics(
-					workerTelemetry.fence,
-					workerTelemetry.maxFence,
-				),
+				fenceWait: {
+					...histogramStatistics(
+						workerTelemetry.fence,
+						workerTelemetry.maxFence,
+					),
+					percentileRepresentation: "conservative-ceiling-ms-upper-bound",
+					threshold: workerFenceThreshold,
+				},
 			},
 			cleanup:
 				"No contextual tuple persistence or generation cleanup work; fixture teardown is not authorization cleanup.",

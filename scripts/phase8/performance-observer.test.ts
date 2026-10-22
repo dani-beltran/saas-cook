@@ -17,7 +17,7 @@ const response={ok:true,status:204};
 globalThis.fetch=async()=>response;
 require(${JSON.stringify(resolve("scripts/phase8/performance-observer.cjs"))});
 const server=http.createServer(async(req,res)=>{
- channel('saas-cook.authorization.fence-wait').publish({milliseconds:12.2,credential:secret});
+ for(const milliseconds of [12.2,99.999,100,100.001]) channel('saas-cook.authorization.fence-wait').publish({milliseconds,credential:secret});
  const result=await fetch('http://fga.test/stores/SECRET/check',{body:JSON.stringify({contextual_tuples:{tuple_keys:[{user:secret}]}})});
  if(result!==response)throw Error('observer replaced the provider result');
  res.end();
@@ -43,13 +43,20 @@ const request=()=>new Promise((resolve,reject)=>{const req=http.request({host:'1
 		expect(result.stdout).not.toContain("SECRET");
 		expect(result.stdout).not.toContain("synthetic-secret");
 		const { before, after } = JSON.parse(result.stdout);
-		expect(before.fence).toEqual({ 13: 1 });
-		expect(before.revocationFence).toEqual({ 13: 1 });
+		expect(before.fence).toEqual({ 13: 1, 100: 2, 101: 1 });
+		expect(before.fenceThreshold).toEqual({
+			limitExclusiveMs: 100,
+			count: 4,
+			below: 2,
+			atOrAbove: 2,
+		});
+		expect(before.revocationFence).toEqual({ 13: 1, 100: 2, 101: 1 });
 		expect(before.tuples).toEqual({ 1: 1 });
 		expect(before.checks).toBe(1);
 		expect(before.malformed).toBe(0);
 		expect(after.checks).toBe(1);
 		expect(after.fence).toEqual(before.fence);
+		expect(after.fenceThreshold).toEqual(before.fenceThreshold);
 	} finally {
 		await rm(directory, { recursive: true, force: true });
 	}
