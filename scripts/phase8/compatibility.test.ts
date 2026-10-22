@@ -8,7 +8,9 @@ describe("initial release compatibility", () => {
 	it("supports only the declared exact current customer and operator contracts", async () => {
 		const customer = await compatibilityManifest("customer");
 		const backoffice = await compatibilityManifest("backoffice");
-		expect(() => assertCompatiblePair(customer, backoffice)).not.toThrow();
+		await expect(
+			assertCompatiblePair(customer, backoffice),
+		).resolves.toBeUndefined();
 		for (const change of [
 			{ version: 2 },
 			{ target: "customer" },
@@ -25,9 +27,32 @@ describe("initial release compatibility", () => {
 			{ protocols: { ...backoffice.protocols, deletionJournal: 2 } },
 			{ unknown: "future" },
 		])
-			expect(() =>
+			await expect(
 				assertCompatiblePair(customer, { ...backoffice, ...change }),
-			).toThrow();
-		expect(() => assertCompatiblePair(backoffice, customer)).toThrow();
+			).rejects.toThrow();
+		await expect(assertCompatiblePair(backoffice, customer)).rejects.toThrow();
+	});
+	it("rejects matching unknown contracts on both sides of the pair", async () => {
+		const customer = await compatibilityManifest("customer");
+		const backoffice = await compatibilityManifest("backoffice");
+		for (const change of [
+			{
+				applicationSchema: {
+					...customer.applicationSchema,
+					min: 999,
+					max: 999,
+				},
+			},
+			{ tenantModel: "0".repeat(64) },
+			{ controlContractSha256: "0".repeat(64) },
+			{ sharedServiceSha256: "0".repeat(64) },
+			{ protocols: { ...customer.protocols, stripeApi: "unknown" } },
+		])
+			await expect(
+				assertCompatiblePair(
+					{ ...customer, ...change },
+					{ ...backoffice, ...change },
+				),
+			).rejects.toThrow("Unsupported image contract");
 	});
 });
