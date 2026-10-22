@@ -17,16 +17,35 @@ async function docker(args: string[]) {
 			})
 		).stdout.trim();
 	} catch {
-		throw new Error(
+		const error = new Error(
 			"Performance container operation failed; inspect disposable container locally",
 		);
+		error.name = "PerformanceContainerOperationError";
+		throw error;
 	}
 }
-function containerUrl(value: string) {
+/**
+ * Map known disposable Compose loopback endpoints to their private service addresses.
+ * @param value Fixture URL, including any restricted-role credentials and database name.
+ * @returns A URL on the Compose network only for the exact documented protocol/loopback/port
+ * combinations. Externally supplied URLs and unknown local ports are returned unchanged.
+ * No credentials are logged; malformed URL input throws before container startup.
+ */
+export function performanceContainerUrl(value: string) {
 	const url = new URL(value);
-	if (["127.0.0.1", "localhost"].includes(url.hostname))
-		url.hostname = "host.docker.internal";
-	return url.toString();
+	if (!["127.0.0.1", "localhost"].includes(url.hostname)) return value;
+	const services: Record<string, readonly [string, string]> = {
+		"postgres:55433": ["postgres", "5432"],
+		"postgresql:55433": ["postgres", "5432"],
+		"postgres:55434": ["control-postgres", "5432"],
+		"postgresql:55434": ["control-postgres", "5432"],
+		"http:18081": ["openfga", "8080"],
+		"http:19000": ["storage", "8333"],
+	};
+	const service = services[`${url.protocol}${url.port}`];
+	if (!service) return value;
+	[url.hostname, url.port] = service;
+	return url.toString().replace(/\/$/, "");
 }
 
 /** Starts the exact, non-root customer image with disposable restricted credentials.
@@ -63,7 +82,7 @@ export async function startPerformanceImage(env: Record<string, string>) {
 		Object.entries(env).map(([key, value]) => [
 			key,
 			/(?:DATABASE_URL|API_URL|ENDPOINT)$/.test(key)
-				? containerUrl(value).replace(/\/$/, "")
+				? performanceContainerUrl(value)
 				: value,
 		]),
 	);
@@ -71,6 +90,8 @@ export async function startPerformanceImage(env: Record<string, string>) {
 	const id = await docker([
 		"run",
 		"--detach",
+		"--network",
+		"saas-cook-phase1_default",
 		"--read-only",
 		"--tmpfs",
 		"/tmp:rw,noexec,nosuid,size=128m",
@@ -78,8 +99,6 @@ export async function startPerformanceImage(env: Record<string, string>) {
 		"ALL",
 		"--security-opt",
 		"no-new-privileges",
-		"--add-host",
-		"host.docker.internal:host-gateway",
 		"--publish",
 		"127.0.0.1::3000",
 		"--mount",
@@ -87,8 +106,8 @@ export async function startPerformanceImage(env: Record<string, string>) {
 		...Object.entries({
 			...environment,
 			APP_ORIGIN: origin,
-			SMTP_HOST: "host.docker.internal",
-			SMTP_PORT: "1026",
+			SMTP_HOST: "mailpit",
+			SMTP_PORT: "1025",
 			NODE_OPTIONS: "--require=/phase8-observer.cjs",
 		}).flatMap(([key, value]) => ["--env", `${key}=${value}`]),
 		metadata.Id,
@@ -112,11 +131,17 @@ export async function startPerformanceImage(env: Record<string, string>) {
 			const state = JSON.parse(
 				await docker(["inspect", "--format", "{{json .State}}", id]),
 			);
-			if (!state.Running)
-				throw new Error("Performance image exited before readiness");
+			if (!state.Running) {
+				const error = new Error("Performance image exited before readiness");
+				error.name = "PerformanceImageStartupError";
+				throw error;
+			}
 			if (state.Health?.Status === "healthy") break;
-			if (attempt === 119)
-				throw new Error("Performance image readiness timeout");
+			if (attempt === 119) {
+				const error = new Error("Performance image readiness timeout");
+				error.name = "PerformanceImageReadinessError";
+				throw error;
+			}
 			await delay(500);
 		}
 		const binding = JSON.parse(

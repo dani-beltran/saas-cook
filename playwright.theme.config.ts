@@ -15,10 +15,11 @@ export default defineConfig({
 	outputDir: reports.results,
 	use: { baseURL: "http://127.0.0.1:6106", trace: "retain-on-failure" },
 	projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+	// Build first: preview serves immutable files without development HMR/dependency reloads.
 	webServer: {
 		command:
-			"node node_modules/storybook/dist/bin/dispatcher.js dev --ci --port 6106 --config-dir apps/web/.storybook --disable-telemetry",
-		url: "http://127.0.0.1:6106",
+			"node node_modules/vite/bin/vite.js preview --host 127.0.0.1 --port 6106 --strictPort --outDir artifacts/storybook",
+		url: "http://127.0.0.1:6106/iframe.html",
 		timeout: 120_000,
 	},
 });
