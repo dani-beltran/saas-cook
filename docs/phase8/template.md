@@ -30,6 +30,45 @@ The audit compares every canonical skill against a reviewed SHA-256 allowlist an
 
 The recorded Phase 6 reference deltas include AGENTS, architecture, data model, billing operations, skill-document tree and analytics. The report enumerates the measured current hashes rather than pretending those references are identical. Final release review must also assess subsequent shared-code deltas. New provider contracts, migration/model authoring semantics, skill changes or new domain requirements require affected independent trials; deterministic checks alone cannot establish agent reliability.
 
+## Subsequent source-delta review (2026-10-22)
+
+The retained full template/skills source `4bca5275e9e09bd58ec3b95d2a530a7dc12dc42a`
+was compared with the integrated Next.js repair at
+`1ce237f0011c5fb196d349c4c213fefce8df168a` (40 changed files). This review also
+covers toolchain fix `5e6e1c47f8adcf9517efdc8d68c58c5ad91e6292`, incorporated in
+the template lane as `5c3c2b9`. All six canonical skill files and the three retained
+Phase 4/5/6 evidence JSON records remain byte-identical across that comparison.
+Task briefs, held-out evaluators, migration history, authorization models,
+application domain/DTO/UI source, AGENTS and architecture/data/billing/skill
+contracts are unchanged. Of the 13 measured Phase 6 reference files, only
+`docs/development/verification.md` changed: it adds the existing theme test after
+the Storybook build and requires rebuilding when inputs change.
+
+| Changed paths | Applicability decision and required verification |
+| --- | --- |
+| `scripts/phase8/performance*`, `infra/phase8/compose.performance.yaml` | Correct tenant scheduling, bounded polling, private disk-backed services, image networking, dependency failure handling, cleanup and source/artifact binding change the workload harness, not feature-authoring semantics. Run focused harness regressions and fresh exact-image smoke/full gates. Historical Phase 4 authoring evidence explicitly excludes the performance benchmark. |
+| `packages/testing/src/{installation,pool,file-storage}.ts`, `scripts/phase3/fixture.ts` | Optional static failure callbacks/SQL bounds, bounded cleanup and an explicit local storage endpoint preserve existing default SQL settings, roles and service composition. No grants, schema or domain invariants change. Current real-service skill checks exercise these fixtures; dedicated disconnect/cleanup tests cover their new failure paths. |
+| `.github/workflows/ci.yml`, root command/Knip/Turbo configuration, `scripts/phase8/{performance-ci*,release-check.test.ts,verify.ts}` | The approved CI correctness mode retains strict failed measurements and cannot satisfy full performance acceptance. Registration, immutable supporting evidence and release rejection need deterministic tests and hosted CI, without changing authoring tasks or waiving the strict full gate. |
+| `playwright.theme.config.ts`, `tests/{e2e,theme}/accessibility.spec.ts`, `docs/development/verification.md` | Immutable Storybook preview, bounded initial rendering and the exact existing privacy-link assertion repair test execution. The additional verification command clarifies the existing accessible-dashboard/email requirement; it introduces no authoring API or domain requirement. Rebuild Storybook and rerun theme/browser accessibility checks. |
+| Root, customer, Backoffice and executable Phase 0 manifests; `bun.lock`; `security/README.md` | Next.js 16.4.1 repairs the recorded security findings with coordinated environment/SWC packages. No application code adopts new framework APIs and no skill instructions change. Fresh frozen installation, application builds/types/browser checks, dependency/image scans and affected Phase 0 checks must validate the new runtime graph. |
+| `scripts/phase0/{toolchain,toolchain-packages}.ts`, `scripts/phase8/toolchain-packages.test.ts` | The toolchain verifier now distinguishes existing `workspace:*` links from published versions. It requires one declared source, the actual symlink target and matching package identity/version; external dependencies still require exact manifest and installed versions. Negative controls reject missing/duplicate/substituted workspaces and floating/mismatched external pins. This repairs verification of the existing workspace layout without changing feature-authoring semantics. |
+| `docs/phase8/{acceptance,accessibility,performance,ci-correctness-proposal}.md` | These record operational scope, failed attempts and acceptance distinctions. They introduce no provider, migration/model or domain-authoring requirements. |
+
+This delta does not require fresh live-agent trials for the explicitly limited
+retained-evidence claim. It does require fresh deterministic and runtime evidence
+on the final clean source. Full template CI invokes renamed frozen installation,
+customer production/runtime HTTP checks, all-application types, localized email
+checks and full real-service `skills:check`; it does not replace the separate
+benchmark, browser/theme, image/security or Phase 0 checks. This review records
+applicability, not successful execution of those reruns.
+
+The source-bound `skills` receipt must use a new full template receipt and bind
+this committed review. It must continue to report `freshAgentTrials: 0` and the
+original historical task/source/model limitations. Neither this review nor
+current deterministic passes claim that an agent authored a feature on Next.js
+16.4.1. New authoring semantics, task requirements, provider/model contracts or
+supported agent/model changes still require applicable independent trials.
+
 ## Acceptance boundaries
 
 The required CI integration job runs the full command after its application suite. It retains attempt reports, logs and receipts while excluding the large disposable candidate installation from uploads. Source commit, fingerprint and dirty state must remain stable during verification.
