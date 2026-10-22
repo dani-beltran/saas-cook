@@ -1,16 +1,9 @@
 import { readFile, mkdir, writeFile } from "node:fs/promises";
 import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
+import { inspectToolchainPackages } from "./toolchain-packages";
 import assert from "node:assert/strict";
-const root = JSON.parse(await readFile("package.json", "utf8"));
-const packages = [];
-for (const [name, pin] of Object.entries(root.devDependencies)) {
-	const pkg = JSON.parse(
-		await readFile(resolve("node_modules", name, "package.json"), "utf8"),
-	);
-	assert.equal(pkg.version, pin, `${name} must match its exact manifest pin`);
-	packages.push({ name, version: pkg.version, license: pkg.license });
-}
+const packages = await inspectToolchainPackages(process.cwd());
 const commands = [];
 for (const name of [
 	"next",
@@ -62,5 +55,5 @@ await writeFile(
 	JSON.stringify(result, null, 2) + "\n",
 );
 console.log(
-	`Verified ${packages.length} exact dependency pins, Bun and ${commands.length} CLI entry points on ${process.version}`,
+	`Verified ${packages.length} external pins/workspace links, Bun and ${commands.length} CLI entry points on ${process.version}`,
 );
