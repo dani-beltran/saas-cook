@@ -27,8 +27,6 @@ export function createBackofficeRuntime(env: NodeJS.ProcessEnv = process.env) {
 		pool: identityPool,
 		origin: config.BACKOFFICE_ORIGIN,
 		secret: config.BACKOFFICE_AUTH_SECRET,
-		ingressSecret: config.BACKOFFICE_INGRESS_SECRET,
-		cidrs: config.BACKOFFICE_CIDRS.split(","),
 		publication: (c) =>
 			operatorPublication(controlPool, c, config.INSTALLATION_ID),
 	});

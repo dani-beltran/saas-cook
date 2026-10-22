@@ -1,4 +1,4 @@
-import { createHash, createHmac, randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { passkey } from "@better-auth/passkey";
 import { operatorIdentitySchema } from "@saas-cook/db/backoffice-schema";
 import { logEvent } from "@saas-cook/observability";
@@ -7,7 +7,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { drizzle } from "drizzle-orm/node-postgres";
 import type { Pool, PoolClient } from "pg";
 import { operatorCookies } from "./cookies";
-import { operatorNetworks, requireOperatorIngress } from "./network";
+import { requireOperatorRequest } from "./network";
 import { boundedOperatorRequest } from "./request";
 
 /** Verified staff session; only produced after the isolated Better Auth session and current epoch checks. */
@@ -22,17 +22,10 @@ export function createOperatorIdentity(options: {
 	pool: Pool;
 	origin: string;
 	secret: string;
-	ingressSecret: string;
-	cidrs: string[];
 	publication: (c: PoolClient) => Promise<{ epoch: string }>;
 }) {
-	const networks = operatorNetworks(options.cidrs);
-	const network = (request: Request) =>
-		requireOperatorIngress(request, {
-			origin: options.origin,
-			secret: options.ingressSecret,
-			networks,
-		});
+	const validateRequest = (request: Request) =>
+		requireOperatorRequest(request, { origin: options.origin });
 	function provider(
 		c: PoolClient,
 		epoch: string,
@@ -186,12 +179,10 @@ export function createOperatorIdentity(options: {
 			auth: ReturnType<typeof provider>,
 		) => Promise<T>,
 	): Promise<T> {
-		const source = network(request);
-		// Admission is durable even if a ceremony later rolls back. Hash the source; never store IPs.
-		const key = createHmac("sha256", options.secret)
-			.update(source)
-			.digest("hex")
-			.slice(0, 4);
+		validateRequest(request);
+		// Shared across replicas and callers: no unverified source header can reset admission.
+		// Durable even when a ceremony rolls back; no source addresses are stored.
+		const key = "public";
 		const rate = (
 			await options.pool.query(
 				`INSERT INTO backoffice.rate_limits VALUES($1,clock_timestamp(),1) ON CONFLICT(key) DO UPDATE SET started_at=CASE WHEN backoffice.rate_limits.started_at<clock_timestamp()-interval '1 minute' THEN clock_timestamp() ELSE backoffice.rate_limits.started_at END,count=CASE WHEN backoffice.rate_limits.started_at<clock_timestamp()-interval '1 minute' THEN 1 ELSE least(backoffice.rate_limits.count+1,61) END RETURNING count`,
@@ -228,11 +219,11 @@ export function createOperatorIdentity(options: {
 		}
 	}
 	return {
-		network,
+		validateRequest,
 		/** Handles only passkey ceremonies and sign-out; arbitrary Better Auth endpoints are not mounted. */
 		async handle(request: Request) {
 			try {
-				network(request);
+				validateRequest(request);
 				request = await boundedOperatorRequest(request);
 			} catch {
 				return Response.json({ error: "Denied" }, { status: 403 });

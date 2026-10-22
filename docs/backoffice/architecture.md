@@ -33,13 +33,13 @@ Phase 3's real-feature `R-AUTHZ-PERF` **passed** in the subsequent [manual 2026-
 
 | ADR | Recommendation | Alternatives and revisit trigger |
 | --- | --- | --- |
-| BO-ADR-01: application boundary | Independent `apps/backoffice`, private operator routes, separate hostname, identity, config, processes and image | A customer `/operator` route fails the requested independent packaging/session/deployment boundary. A separate repo loses useful atomic source review without improving runtime security |
+| BO-ADR-01: application boundary | Independent `apps/backoffice`, staff operator routes, separate hostname, identity, config, processes and image | A customer `/operator` route fails the requested independent packaging/session/deployment boundary. A separate repo loses useful atomic source review without improving runtime security |
 | BO-ADR-02: service calls | Backoffice server calls explicit exported domain services in-process; operator RPC contracts/router are separate | A private internal API can isolate domain credentials from a compromised UI process but adds service identity, transport availability and versioning. Extract if security requires that isolation, separate team ownership develops or load needs independent scaling. Do not call customer HTTP endpoints with manufactured sessions |
 | BO-ADR-03: database | One application database initially; `operator_identity`, `backoffice` and `reporting` schemas with distinct restricted roles | A separate operator database isolates backups/credentials more strongly, but introduces cross-database authorization and audit/command consistency. A separate reporting database/read replica is a measured evolution, not a starting microservice requirement |
 | BO-ADR-04: recovery authority | Existing independently retained control store remains separate; ordinary Backoffice has read-only readiness | Never move the journal/epochs into Backoffice metadata or restore them from an application backup. Add independently migrated operator publication metadata without coupling customer readiness to operator availability |
 | BO-ADR-05: principals | New platform operator principal, action catalogue and bounded contextual operator policy model, separately pinned from the customer model | No `isSuperuser`, BYPASSRLS, role-based customer impersonation or generic `skipAuthorization`. Existing tenant model remains unchanged for initial metadata reads; future business-content delegation needs a separately reviewed extension |
 | BO-ADR-06: jobs | Domain workers own durable commercial/privacy/control delivery. Backoffice image gains a separate `worker` mode only for Backoffice projections/integration sync/reporting | No operator credentials in the existing customer worker; no worker dependency in the BO-01 read-only web image health. Later Backoffice web/worker use separate processes and credentials, same artifact/version. A third image is unnecessary until dependency size/isolation warrants it |
-| BO-ADR-07: provider ingress | Phase 5/6 verified webhooks remain on the customer service's dedicated provider route, with one inbox and domain consumer | Private Backoffice behind VPN cannot be the sole public billing endpoint. No duplicate billing projector, retry scheduler or subscription store |
+| BO-ADR-07: provider ingress | Phase 5/6 verified webhooks remain on the customer service's dedicated provider route, with one inbox and domain consumer | Backoffice availability must not govern provider webhook delivery. No duplicate billing projector, retry scheduler or subscription store |
 | BO-ADR-08: release contract | Independent app versions/digests plus an explicit schema/event/policy compatibility manifest | Independence is not arbitrary version mixing. Current customer model upgrades require maintenance; retain that behavior until a separately proved compatible upgrade exists |
 
 All ADRs are proposed choices to ratify in BO-00. The shared database deliberately retains common infrastructure failure risk. Application independence means Backoffice outage/disablement does not break customer operations; it does not claim customers survive failure of their shared database or FGA. Limit pools, query time, queues and data privileges to bound Backoffice blast radius.
@@ -54,9 +54,8 @@ flowchart TB
     H --> D[Authoritative domain services]
     W --> D
   end
-  subgraph privateZone[Private operator network boundary]
-    O[Staff browser] --> V[VPN or private ingress plus CIDR policy]
-    V --> B[Backoffice image: apps/backoffice]
+  subgraph staffZone[Public staff application]
+    O[Staff browser] --> B[Backoffice image: apps/backoffice]
     B --> I[Separate operator identity and policy]
     B --> E[Explicit operator query and command entry points]
     I --> E
@@ -95,7 +94,7 @@ Proposed paths below are work locations, not installed packages:
 ```text
 apps/backoffice/
   src/app/[locale]/...                 operator screens
-  src/app/api/operator/rpc/...         private browser API, not customer OpenAPI
+  src/app/api/operator/rpc/...         staff browser API, not customer OpenAPI
   src/app/api/operator/auth/...        separate identity endpoints
   src/app/api/health/{live,ready}/...   minimal process checks
   src/features/                       organization, account, case, billing, privacy
@@ -117,7 +116,7 @@ Backoffice UI → its contracts and shared UI; server → `packages/backoffice` 
 
 Avoid a giant shared barrel that causes operator code/credentials to be traced into customer bundles. Use explicit server-only export paths, type-only contracts for clients, dependency lint checks and route/asset inspection. Shared validators, transactional helpers, UI/theme/forms, localization, email rendering, logs and testing helpers can be reused; instantiated customer auth/session runtimes cannot.
 
-## Operator identity and network boundary
+## Operator identity and public request boundary
 
 Separate Better Auth instance with its own tables, signing/encryption keys, origin, WebAuthn RP ID and named cookie. Customer and operator identities may refer to the same person operationally but have unrelated opaque principal IDs and no implicit linking or permissions. Customer owners, admins, billing users and API keys are rejected by operator endpoints. Operator bearer credentials are not introduced initially; background workloads use purpose-specific execution identities.
 
@@ -127,11 +126,9 @@ Enrollment is invite-only: independently verified staff identity, named sponsor 
 
 This is a proposed application policy. Better Auth supports cookie configuration and cross-subdomain sharing, which must remain disabled here; the exact schema-mapped separate adapter needs tests against the pinned version. OWASP describes restrictive cookie scope and the `__Host-` properties. [Better Auth cookies](https://better-auth.com/docs/concepts/cookies), [OWASP session guidance](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html).
 
-Network admission precedes login and every operator route, RPC, action and download. Require TLS and a private origin reachable only by the approved ingress/VPN; authenticate ingress-to-origin with network policy and preferably mTLS. Corporate CIDRs complement VPN/device controls and never replace identity/MFA. Return minimal unauthenticated liveness only on a management interface; readiness may disclose no tenant data.
+Public internet access is authorized as of 2026-10-22. The application requires no custom signed ingress assertion, source IP allowlist or VPN. Cloudflare deployment is outside project scope. Production configuration still requires HTTPS; the application validates the exact configured Host and non-read Origin, and rejects bearer credentials. Forwarding/source headers do not establish identity, authorization or a rate-limit key.
 
-Do not trust arbitrary `Forwarded`, `X-Forwarded-For`, `X-Real-IP` or forwarding host headers. At ingress strip supplied identity/source headers, derive source from the authenticated peer/known proxy chain and emit a short-lived signed assertion bound to method, path, timestamp and Backoffice audience using a distinct key. Extend the existing [signed source pattern](../phase2/README.md#authentication-ingress-and-security-recording), not its auth-mail no-op behavior: a missing/invalid proof denies the operator request. Reject unknown hosts, malformed chains, ambiguous duplicate headers, invalid IPs and IPv6 zone identifiers; canonicalize IPv4, compressed IPv6 and IPv4-mapped IPv6 before CIDR matching. Tests include allowed and denied IPv4/IPv6, nested proxies and direct-origin attempts. Configuration names a trusted proxy set; “trust all proxies” is forbidden.
-
-Network policy changes use versioned configuration, two security operators, a preview of remaining access and a separately verified recovery path. Verify the new allowed path before withdrawing the old one. Lockout recovery uses an independent deployment/security authority, exact expiring scope and a private emergency route; it never opens the origin to the internet or skips MFA/audit. Keep signed emergency receipts independently if ordinary metadata is unavailable. If safe recording/verification is unavailable, normal privileged action stays closed. Planned emergency access is not a Backoffice self-issued recovery approval.
+A durable shared admission counter limits protected authentication/session operations to 60 per minute across callers and replicas, including failed attempts. This avoids trusting caller-supplied source headers, but staff share the budget and one caller can exhaust it temporarily. Passkeys, independent staff recovery, current scoped grants and fail-closed audit/readiness remain required. Public liveness/readiness disclose no customer or infrastructure details. Tests prove ordinary unsigned access to sign-in, host/origin denial, ignored source headers, durable throttling and unauthenticated lookup denial.
 
 ## Operator permission matrix
 
@@ -154,7 +151,7 @@ Roles are templates for exact action grants, with environment, organization/acco
 | Job diagnostics / safe replay | R redacted | Q/X/A registered consumers | Q reconciliation | Q privacy step | X incident containment | R infrastructure |
 | Flags / incident disable | — | Q/X/A | — | — | X emergency disable | Q/X/A |
 | Messages / help desk mappings | Q drafts and R tickets | Q/X publish with reviewer | Q billing content | A privacy review when required | A sensitive mapping | Configure adapter, no tickets |
-| Staff roles / network policy | — | — | — | — | Q/X/A, no self-approval | Q, security approval required |
+| Staff roles | — | — | — | — | Q/X/A, no self-approval | Q, security approval required |
 | Financial/product reports | R assigned reports | R health | R finance | R minimized privacy metrics | — | — |
 | Customer business content / impersonation | — | — | — | Only scoped approved export | — | — |
 
@@ -304,8 +301,8 @@ Proposed per-process settings (names must be finalized in BO-01):
 
 | Process | Runtime inputs and privileges |
 | --- | --- |
-| Backoffice web | `BACKOFFICE_ORIGIN`, port 3001, operator auth secret, operator identity URL, BO query/command URL, read-only control URL, FGA URL, installation ID, ingress proof key/trusted peer configuration, CIDR policy reference, audit/cursor encryption key references; no customer auth secret |
-| Backoffice worker, later | BO job/projection URL, control reader, integration/report credentials only for registered consumers; no browser/session/ingress secret |
+| Backoffice web | `BACKOFFICE_ORIGIN`, port 3001, operator auth secret, operator identity URL, BO query/command URL, read-only control URL, FGA URL, installation ID, audit/cursor encryption key references; no customer auth secret |
+| Backoffice worker, later | BO job/projection URL, control reader, integration/report credentials only for registered consumers; no browser/session secret |
 | Domain worker | Existing restricted role plus exact new Phase 5/6 domain capabilities; provider effects/secrets owned here, not by operator web |
 | One-off migrations | Sole repository migration authority/lock, reviewed SQL and dedicated migrator; application processes reject these credentials |
 | Independent approval/recovery executor | Existing command credentials and externally signed envelope, injected only to one-off execution; never BO web/worker config |
@@ -324,7 +321,7 @@ CI extends source/type/Knip and contract checks, real-service integration, separ
 
 Mandatory isolation evidence: customer image returns 404 for operator routes and has no operator route manifest/browser bundle; BO rejects customer sessions/keys and wrong-host cookies; neither image receives the other's runtime secrets. Stop BO web/worker, omit all BO config, block the BO hostname, and verify customer sign-in, Project CRUD/authorization, local capacity and mail continue. For later modules, prove published flags/messages and domain billing/privacy jobs continue, except an intentionally authorized incident control or shared-infrastructure failure. Also load BO reporting/export jobs concurrently and preserve original customer performance targets.
 
-Image-content tests must distinguish new Backoffice runtime/routes from the customer's intentionally packaged existing signed operator CLI commands. Preserve that reviewed CLI allowlist; a blanket search for the word “operator” is not a valid image isolation test. At the infrastructure handoff, deployment owners must supply separate DNS/TLS/ingress and network policies, secret injection, image digest promotion, resource/pool limits, management probes, private emergency access and separate rollout/rollback runbooks. These are provider-neutral acceptance requirements; no infrastructure is provisioned by this plan.
+Image-content tests must distinguish new Backoffice runtime/routes from the customer's intentionally packaged existing signed operator CLI commands. Preserve that reviewed CLI allowlist; a blanket search for the word “operator” is not a valid image isolation test. Cloudflare deployment and infrastructure provisioning are outside this project scope.
 
 ## Required amendments to existing contracts
 
@@ -334,7 +331,7 @@ BO-00 prepares the exact review; BO-01 must land applicable amendments with impl
 | --- | --- |
 | [Overview](../00-project-overview.md) | Replace repository-wide “one image” claim with default customer combined image plus optional independently deployed Backoffice; correct status links without rewriting evidence |
 | [Product plan](../01-product-plan.md) | Move illustrative customer-host `/operator` routes to separate host, identify early metadata release and Phase 5/6/7 integration; retain support-access release distinction |
-| [Architecture §2.1–2.3, §2.5–2.8](../02-architecture-and-security.md) | Two-app/image diagram, explicit imports, platform principals/model, operator-first fence extension, session/network controls and scoped services; retain tenant authorization protocol |
+| [Architecture §2.1–2.3, §2.5–2.8](../02-architecture-and-security.md) | Two-app/image diagram, explicit imports, platform principals/model, operator-first fence extension, session/request controls and scoped services; retain tenant authorization protocol |
 | [Data model](../03-data-model.md) | Actual operator schemas/roles/field allowlists, projections/receipts, audit identity and retention ownership; amend canonical fence order explicitly; never treat logical tables as installed |
 | [Operations](../04-billing-usage-operations.md) | Worker/queue owners, operator authorization into existing billing/privacy commands, durable mandate/replay semantics, dunning/message owner and reporting definitions; preserve journal/recovery protocol |
 | [Image contract §7.1–7.4](../07-ci-and-docker-image.md) | Retain `app` default, add `backoffice` target/image/modes, pruning/assets/config, per-image health/credentials, independent versions and joint compatibility/isolation CI gates |
@@ -343,7 +340,7 @@ BO-00 prepares the exact review; BO-01 must land applicable amendments with impl
 
 ## Threat model and required evidence
 
-Trust boundaries are browser→ingress, ingress→BO, identity→operator policy, operator command→domain service, runtime→database/control, job→provider and app backup→independent journal. Database/independent authority compromise remains an explicit operational threat; this app cannot establish integrity from a compromised root of trust.
+Trust boundaries are browser→BO, identity→operator policy, operator command→domain service, runtime→database/control, job→provider and app backup→independent journal. Database/independent authority compromise remains an explicit operational threat; this app cannot establish integrity from a compromised root of trust.
 
 | Threat | Control / negative evidence |
 | --- | --- |
@@ -353,7 +350,7 @@ Trust boundaries are browser→ingress, ingress→BO, identity→operator policy
 | Compromised operator abuses valid privileges | Minimum scopes, timed grants, dual approval, field limits, anomaly alerting and immediate offboarding; test self-approval/self-grant/expired grant and mass enumeration |
 | Stale approval or TOCTOU | Preview hash/version/epoch, current requester/approver and final expiry guard; mutate target, revoke role or expire an early batch before commit |
 | Customer/operator session confusion or CSRF | Host-only cookies, distinct secrets/RP, exact origin, state/CSRF checks, no bearer fallback; duplicate cookie, subdomain and callback tests |
-| Forged headers / direct-origin bypass | Verified ingress peer/assertion, strict CIDRs/host/IPv6 handling, network isolation; forged forwarding headers never authorize |
+| Forged headers / cross-origin requests | Exact configured host/origin validation, isolated passkey sessions; source/forwarding headers never authorize or reset application admission |
 | XSS through support text or messaging | Escaped typed content, safe links, CSP, no HTML/JS execution; stored payload/script/scheme injection fixtures |
 | Replayed/stolen job or ambiguous provider effect | Purpose-specific workload, immutable command receipt/epoch, dedupe and reconciliation; crash after external success/before acknowledgement |
 | Unsafe bulk selection or overload | Fixed bounded manifest, per-item version and scope, fairness and stop boundary; changed filters, revoked item, partial failure and queue pressure tests |

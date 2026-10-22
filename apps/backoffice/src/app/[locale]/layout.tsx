@@ -1,3 +1,4 @@
+import { themeAttributes } from "@saas-cook/ui/theme";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
@@ -15,9 +16,13 @@ export default async function Layout({
 	if (locale !== "en" && locale !== "es") notFound();
 	setRequestLocale(locale);
 	return (
-		<html lang={locale}>
+		<html lang={locale} {...themeAttributes({})}>
 			<body>
-				<NextIntlClientProvider messages={await getMessages()}>
+				<NextIntlClientProvider
+					locale={locale}
+					messages={await getMessages()}
+					timeZone="UTC"
+				>
 					{children}
 				</NextIntlClientProvider>
 			</body>

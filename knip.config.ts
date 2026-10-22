@@ -50,6 +50,12 @@ const config: KnipConfig = {
 			// web root; the actual decoder import lives in @saas-cook/auth.
 			ignoreDependencies: ["tailwindcss", "sharp"],
 		},
+		"apps/backoffice": {
+			entry: ["src/**/*.stories.tsx"],
+			project: ["src/**/*.{ts,tsx,css}", "*.{ts,mjs}"],
+			// PostCSS loads Tailwind; the shared stylesheet owns the actual CSS import.
+			ignoreDependencies: ["tailwindcss"],
+		},
 		"apps/worker": { project: ["src/**/*.ts"] },
 		"packages/*": {
 			project: ["src/**/*.{ts,tsx}"],

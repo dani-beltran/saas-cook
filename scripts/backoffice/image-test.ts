@@ -93,11 +93,22 @@ try {
 	}
 	assert(live, "image liveness");
 	const url = `${origin}/health/ready`;
-	assert.equal((await fetch(url, { headers: f.headers(url) })).status, 200);
-	assert.equal((await fetch(`${origin}/en`)).status, 503);
-	const page = await fetch(`${origin}/en`, {
-		headers: f.headers(`${origin}/en`),
+	assert.equal((await fetch(url)).status, 200);
+	const denied = await fetch(`${origin}/api/organizations/lookup`, {
+		method: "POST",
+		headers: {
+			origin,
+			"content-type": "application/json",
+			"x-backoffice-source": "127.0.0.1",
+		},
+		body: JSON.stringify({
+			organizationId: f.organizationId,
+			caseReference: "IMAGE-1",
+		}),
 	});
+	assert.equal(denied.status, 403);
+	assert.deepEqual(await denied.json(), { error: "unavailable" });
+	const page = await fetch(`${origin}/en`);
 	assert.equal(page.status, 200);
 	const html = await page.text();
 	assert(html.includes("Staff backoffice"));
@@ -126,7 +137,8 @@ try {
 					"standalone-assets",
 					"no-customer-app-or-commands",
 					"read-only-root",
-					"private-ingress",
+					"public-signin",
+					"unauthenticated-lookup-denied",
 					"readiness",
 					"graceful-stop",
 				],

@@ -1,4 +1,4 @@
-import { createHmac, generateKeyPairSync, randomUUID, sign } from "node:crypto";
+import { generateKeyPairSync, randomUUID, sign } from "node:crypto";
 import { publishOperatorModel } from "@saas-cook/authz/platform";
 import { Pool } from "pg";
 import { createTestInstallation } from "../../testing/src/installation";
@@ -20,8 +20,6 @@ export async function backofficeFixture(origin = "http://localhost:3103") {
 		...installation.env,
 		BACKOFFICE_ORIGIN: origin,
 		BACKOFFICE_AUTH_SECRET: "synthetic_backoffice_auth_000000000000000001",
-		BACKOFFICE_INGRESS_SECRET: "synthetic_backoffice_ingress_000000000000001",
-		BACKOFFICE_CIDRS: "127.0.0.0/8,::1/128",
 		BACKOFFICE_IDENTITY_DATABASE_URL: role("saas_cook_bo_identity"),
 		BACKOFFICE_DATABASE_URL: role("saas_cook_bo_query"),
 		BACKOFFICE_ENVIRONMENT: "test",
@@ -112,23 +110,8 @@ export async function backofficeFixture(origin = "http://localhost:3103") {
 			invitation: invited.invitation,
 			offboard: () => manage("offboard"),
 			manage,
-			headers(url: string, method = "GET") {
-				const u = new URL(url),
-					time = String(Math.floor(Date.now() / 1000)),
-					source = "127.0.0.1";
-				return {
-					"x-backoffice-source": source,
-					"x-backoffice-time": time,
-					"x-backoffice-signature": createHmac(
-						"sha256",
-						env.BACKOFFICE_INGRESS_SECRET,
-					)
-						.update(
-							`backoffice-ingress:v1\n${origin}\n${method}\n${u.pathname}${u.search}\n${time}\n${source}`,
-						)
-						.digest("hex"),
-					origin,
-				};
+			headers() {
+				return { origin };
 			},
 			async cleanup() {
 				await Promise.all([migration.end(), manager.end()]);

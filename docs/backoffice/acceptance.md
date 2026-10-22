@@ -1,4 +1,4 @@
-# Backoffice first-slice verification — 2026-10-21
+# Backoffice first-slice verification — updated 2026-10-22
 
 Status: **implemented; blocked local validation completed; release acceptance pending**. This is a working-tree follow-up to `94507a78d7f17f4c134570f0bcab8d70862c272b`. The canonical gate register remains [the roadmap](../06-delivery-roadmap.md#backoffice-acceptance-register). No full BO gate, Phase 6/M2 release gate or production deployment is accepted by this record.
 
@@ -6,7 +6,39 @@ Status: **implemented; blocked local validation completed; release acceptance pe
 
 [BO-00](bo-00.md) selects the implementation defaults and records external owners/decisions still required. [Operation](implementation.md) documents the independent app/config/roles, additive `0025` migration, separate operator model/publication, dual-signed invitation/offboarding/re-enrollment commands, verified passkey sign-in, exact-organization grants, forced grant RLS, transaction expiry/offboarding fences and audit-before-disclosure metadata lookup. English/Spanish forms, independent standalone/image packaging and a required CI job are included. Directory search, domain mutations and other Backoffice modules remain planned.
 
-## Final local validation — resumed 2026-10-21
+## Shared UI revision — 2026-10-22
+
+The staff workspace now uses shared UI cards, badges, live notices, buttons, inputs and language selection, with the Foundation theme and responsive dashboard styling. Backoffice owns its presentation and catalogs; it does not instantiate customer identity or configuration. No service permissions, schemas or operator models changed in this UI revision.
+
+| Check | Result |
+| --- | --- |
+| Frozen Bun install, source, typecheck and Knip | Passed; four existing informational Biome suggestions remain in public-request tests |
+| Unit suite | 186 passed across 36 files, including catalog/theme checks |
+| Backoffice and customer production builds | Both passed |
+| Storybook build | Passed; empty, pending, denied, organization result, Spanish and dark Backoffice states included |
+| HTTPS Backoffice browser journey | Passed: shared component CSS, keyboard/field validation, passkey enrollment/sign-in, cookie isolation, pending state, audited scoped lookup, unauthorized lookup, sign-out, Spanish mobile layout and dark selector contrast; no browser errors |
+| Running development app | Direct localhost:3001 returned the new UI; Chromium verified the styled controls and no page errors after restarting the dev server |
+
+Desktop light/dark and Spanish mobile screenshots were visually reviewed. Logs/screenshots and a source receipt are retained in `artifacts/backoffice/ui-2026-10-22/`. This UI revision did not rebuild/retest images or rerun vulnerability scans, the full customer browser/integration suite or load/hosted release gates. Image evidence in the sections below belongs to its recorded source. Production release acceptance remains pending.
+
+## Public access revision — 2026-10-22
+
+Implemented the user-approved removal of custom proxy signatures and IP allowlists. Ordinary unsigned requests reach staff sign-in; passkeys, exact host/origin checks, isolated sessions, scoped grants, independent recovery epochs and audit-before-disclosure remain enforced. Cloudflare deployment is outside scope. No schema/model/history changes were made. The source-derived rate key is replaced with a single durable 60/minute protected-request budget shared by all callers and replicas; changing source headers cannot evade it, but one caller can temporarily consume the shared budget.
+
+| Check | Result |
+| --- | --- |
+| `bun run check`, `bun run typecheck`, `bun run knip` | Passed; Biome reports four informational template-literal suggestions in tests |
+| `bun run test:unit` | 186 passed across 36 files |
+| `bun run test:integration packages/backoffice` | 8 passed: unsigned scoped lookup/audit, origin/customer/bearer denial, durable rate exhaustion/reset, grants/FGA/audit failures, offboarding and restore |
+| `bun run build:backoffice` | Passed |
+| `bun run test:e2e:backoffice` | 1 HTTPS test passed without signature injection: enrollment, passkey sign-in, cookie isolation, scoped lookup/denial, sign-out and Spanish state |
+| `bun run image:build:backoffice`, `bun run test:image:backoffice` | Passed on arm64: public sign-in and unauthenticated lookup denial, restricted runtime/contents, readiness and graceful stop |
+
+Revision base: `532b49a782eaaa2f0a2ade60409af9e057c68794` plus working-tree changes. Source fingerprint: `b5fe015a381b2c176b0f6bfcbf95f554216ce8d2951557f1cfb143b9f5b2fb3b`. Tested Backoffice image: `sha256:1f0615dca49d5ed473be97eb34e7e14e0963e02e9727d7f4414bbf5eafac90bd`. Logs and image receipt are retained under `artifacts/backoffice/public-access-2026-10-22/`.
+
+An initial typecheck found a missing `NODE_ENV` in the new configuration test fixture; it was fixed and the final typecheck passed. This revision did not rerun the full customer integration/browser suite, customer image, vulnerability scans, concurrent-load tests or hosted CI. Earlier results below are historical evidence for their recorded source, not acceptance of this revision. Full release gates remain open.
+
+## Historical local validation — resumed 2026-10-21
 
 Disk space recovered to 51 GiB free and Docker 29.9.1 was healthy. `bun run services:up` started fresh disposable PostgreSQL, control PostgreSQL, OpenFGA, mail and storage services. No unrelated data, images or volumes were removed in this resumed validation.
 
@@ -29,7 +61,7 @@ The final code correction is confined to `infra/docker/backoffice-start.ts`: a r
 
 The Backoffice screenshot `artifacts/backoffice/lookup.png` was visually reviewed after the successful HTTPS test. Earlier signed English desktop/Spanish mobile rendering screenshots remain available. No production identities, credentials or deployment were used.
 
-## Exact source and image pair
+## Historical source and image pair — 2026-10-21
 
 - Base commit: `94507a78d7f17f4c134570f0bcab8d70862c272b`, with the recorded working-tree implementation.
 - Final source fingerprint: `8f1ec0d15bef036422b92f49b5a2ffeb338bf426ee115498acba4bd8f8bb8320`.
@@ -51,9 +83,9 @@ On resume, the first browser attempt failed because the cached Chromium executab
 
 ## Required before release
 
-The requested local integration, HTTPS passkey and exact-image validation blockers are closed. Remaining release work is separate:
+The original validation blockers and the targeted public-access checks above are closed. Remaining release work is separate:
 
 1. Run the required hosted CI/release jobs on the committed source and intended deployment architecture. Preserve the source/image bindings and vulnerability policy; local arm64 evidence does not claim hosted amd64 success.
 2. Complete the due operator/customer concurrent workload and broader compatibility/outage evidence. The historical Foundation performance result does not cover operator load; the current exact-image pair and BO-omitted customer checks do not prove every upgrade/blackhole scenario.
-3. Complete independent BO-00 deployment/security review: staff cohort/scopes, verification and signing custodians, local-passkey policy or mandatory SSO, ingress/VPN/CIDRs/direct-origin isolation, recovery and audit retention. Review migration/runtime role blast radius and the supported schema/model pair.
+3. Complete independent BO-00 deployment/security review: staff cohort/scopes, verification and signing custodians, local-passkey policy or mandatory SSO, staff recovery and audit retention. Review migration/runtime role blast radius and the supported schema/model pair.
 4. Review/accept only the due scoped `R-BO-*` gates in the roadmap. Full directory search, later modules and their acceptance remain open.

@@ -43,7 +43,7 @@ describe("restricted Backoffice metadata boundary", () => {
 	});
 	function req(cookie = true) {
 		const url = `${f.env.BACKOFFICE_ORIGIN}/api/organizations/lookup`,
-			headers = new Headers(f.headers(url, "POST"));
+			headers = new Headers(f.headers());
 		if (cookie) {
 			const signature = createHmac("sha256", f.env.BACKOFFICE_AUTH_SECRET)
 				.update(token)
@@ -88,6 +88,54 @@ describe("restricted Backoffice metadata boundary", () => {
 			await expect(
 				runtime.lookup(req(), { organizationId: id, caseReference: "TEST-1" }),
 			).rejects.toThrow("Organization unavailable");
+	});
+
+	it("keeps admission durable across failures and source-header changes", async () => {
+		await f.migration.query("DELETE FROM backoffice.rate_limits");
+		await f.migration.query(
+			"INSERT INTO backoffice.rate_limits VALUES('public',clock_timestamp(),59)",
+		);
+		try {
+			const first = req(false);
+			first.headers.set("x-forwarded-for", "192.0.2.1");
+			await expect(
+				runtime.identity.withSession(first, async () => "unreachable"),
+			).rejects.toThrow("Operator session required");
+			const second = req();
+			second.headers.set("cf-connecting-ip", "2001:db8::1");
+			second.headers.set("x-backoffice-source", "127.0.0.1");
+			await expect(
+				runtime.identity.withSession(second, async () => "unreachable"),
+			).rejects.toThrow("Operator rate limit");
+			expect(
+				(
+					await f.migration.query(
+						"SELECT count FROM backoffice.rate_limits WHERE key='public'",
+					)
+				).rows[0].count,
+			).toBe(61);
+			await f.migration.query(
+				"UPDATE backoffice.rate_limits SET started_at=clock_timestamp()-interval '61 seconds'",
+			);
+			await expect(
+				runtime.identity.withSession(req(), async () => "allowed"),
+			).resolves.toBe("allowed");
+		} finally {
+			await f.migration.query("DELETE FROM backoffice.rate_limits");
+		}
+	});
+	it("denies cross-origin lookup even with a valid staff session", async () => {
+		for (const origin of [null, "https://customer.example.test"]) {
+			const request = req();
+			if (origin) request.headers.set("origin", origin);
+			else request.headers.delete("origin");
+			await expect(
+				runtime.lookup(request, {
+					organizationId: f.organizationId,
+					caseReference: "ORIGIN",
+				}),
+			).rejects.toThrow("Organization unavailable");
+		}
 	});
 	it("rejects customer/no session and runtime credential/business/audit rewrite access", async () => {
 		await expect(

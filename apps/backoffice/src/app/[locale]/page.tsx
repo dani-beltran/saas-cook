@@ -6,19 +6,20 @@ import {
 	organizationLookupInput,
 	organizationLookupOutput,
 } from "@saas-cook/backoffice-contracts";
-import { Button, Input } from "@saas-cook/ui";
 import { createAuthClient } from "better-auth/react";
-import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
+import { BackofficeView } from "../../components/backoffice-view";
+
 const auth = createAuthClient({ plugins: [passkeyClient()] });
-/** Minimal private staff journey; API enforcement remains authoritative for every lookup. */
+/** Runs staff ceremonies and scoped lookup; server services enforce all authority and auditing. */
 export default function Page() {
-	const t = useTranslations("Backoffice"),
-		[invitation, setInvitation] = useState(""),
+	const [invitation, setInvitation] = useState(""),
 		[busy, setBusy] = useState(false),
-		[status, setStatus] = useState("empty"),
+		[status, setStatus] = useState<
+			"empty" | "working" | "ready" | "enrolled" | "denied" | "invalid"
+		>("empty"),
 		[result, setResult] = useState<ReturnType<
 			typeof organizationLookupOutput.parse
 		> | null>(null);
@@ -39,140 +40,57 @@ export default function Page() {
 		}
 	}
 	return (
-		<main>
-			<h1>{t("title")}</h1>
-			<p>{t("intro")}</p>
-			<nav>
-				<a href="/en">English</a> · <a href="/es">Español</a>
-			</nav>
-			<section aria-label={t("signIn")}>
-				<Button
-					type="button"
-					disabled={busy}
-					onClick={() =>
-						run(async () => {
-							const r = await auth.signIn.passkey();
-							if (r?.error) throw new Error();
-							setStatus("ready");
-						})
-					}
-				>
-					{t("signIn")}
-				</Button>
-				<label htmlFor="invitation">
-					{t("invitation")}
-					<Input
-						id="invitation"
-						disabled={busy}
-						type="password"
-						autoComplete="off"
-						value={invitation}
-						onChange={(e) => setInvitation(e.target.value)}
-					/>
-				</label>
-				<Button
-					type="button"
-					disabled={busy || !invitation}
-					onClick={() =>
-						run(async () => {
-							const enrollment = createAuthClient({
-								plugins: [passkeyClient()],
-								fetchOptions: {
-									headers: { "x-backoffice-invitation": invitation },
-								},
-							});
-							const r = await enrollment.passkey.addPasskey();
-							if (r?.error) throw new Error();
-							setInvitation("");
-							setStatus("enrolled");
-						})
-					}
-				>
-					{t("enroll")}
-				</Button>
-				<Button
-					type="button"
-					disabled={busy}
-					onClick={() =>
-						run(async () => {
-							const response = await auth.signOut();
-							if (response.error) throw new Error();
-							setStatus("empty");
-						})
-					}
-				>
-					{t("signOut")}
-				</Button>
-			</section>
-			<form
-				onSubmit={form.handleSubmit(
-					async (values) => {
-						await run(async () => {
-							const r = await fetch("/api/organizations/lookup", {
-								method: "POST",
-								headers: { "content-type": "application/json" },
-								body: JSON.stringify(values),
-							});
-							if (!r.ok) throw new Error();
-							setResult(organizationLookupOutput.parse(await r.json()));
-							setStatus("ready");
-						});
-					},
-					() => {
-						setResult(null);
-						setStatus("invalid");
-					},
-				)}
-			>
-				<label htmlFor="organization">
-					{t("organization")}
-					<Input
-						id="organization"
-						disabled={busy}
-						required
-						{...form.register("organizationId")}
-						aria-invalid={!!form.formState.errors.organizationId}
-					/>
-				</label>
-				<label htmlFor="case">
-					{t("case")}
-					<Input
-						id="case"
-						disabled={busy}
-						required
-						maxLength={80}
-						{...form.register("caseReference")}
-						aria-invalid={!!form.formState.errors.caseReference}
-					/>
-				</label>
-				<Button type="submit" disabled={busy}>
-					{t("lookup")}
-				</Button>
-			</form>
-			<p role="status" aria-live="polite">
-				{t(status)}
-			</p>
-			{result && (
-				<section>
-					<h2>{result.name}</h2>
-					<dl>
-						<dt>ID</dt>
-						<dd>{result.id}</dd>
-						<dt>{t("lifecycle")}</dt>
-						<dd>{result.lifecycle}</dd>
-						<dt>{t("timestamp")}</dt>
-						<dd>{result.sourceTimestamp}</dd>
-						<dt>{t("audit")}</dt>
-						<dd>{result.auditReference}</dd>
-					</dl>
-					<p>
-						{t("seats", {
-							occupied: result.seats.occupied,
-							capacity: result.seats.capacity ?? t("unlimited"),
-						})}
-					</p>
-				</section>
-			)}
-		</main>
+		<BackofficeView
+			busy={busy}
+			status={status}
+			invitation={invitation}
+			result={result}
+			form={form}
+			onInvitationChange={setInvitation}
+			onSignIn={() =>
+				void run(async () => {
+					const response = await auth.signIn.passkey();
+					if (response?.error) throw new Error();
+					setStatus("ready");
+				})
+			}
+			onEnroll={() =>
+				void run(async () => {
+					const enrollment = createAuthClient({
+						plugins: [passkeyClient()],
+						fetchOptions: {
+							headers: { "x-backoffice-invitation": invitation },
+						},
+					});
+					const response = await enrollment.passkey.addPasskey();
+					if (response?.error) throw new Error();
+					setInvitation("");
+					setStatus("enrolled");
+				})
+			}
+			onSignOut={() =>
+				void run(async () => {
+					const response = await auth.signOut();
+					if (response.error) throw new Error();
+					setStatus("empty");
+				})
+			}
+			onLookup={(values) =>
+				run(async () => {
+					const response = await fetch("/api/organizations/lookup", {
+						method: "POST",
+						headers: { "content-type": "application/json" },
+						body: JSON.stringify(values),
+					});
+					if (!response.ok) throw new Error();
+					setResult(organizationLookupOutput.parse(await response.json()));
+					setStatus("ready");
+				})
+			}
+			onInvalid={() => {
+				setResult(null);
+				setStatus("invalid");
+			}}
+		/>
 	);
 }

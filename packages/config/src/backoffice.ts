@@ -11,8 +11,6 @@ const roleUrl = (role: string) =>
 const schema = z.object({
 	BACKOFFICE_ORIGIN: z.url(),
 	BACKOFFICE_AUTH_SECRET: z.string().min(32),
-	BACKOFFICE_INGRESS_SECRET: z.string().min(32),
-	BACKOFFICE_CIDRS: z.string().min(1),
 	BACKOFFICE_IDENTITY_DATABASE_URL: roleUrl("saas_cook_bo_identity"),
 	BACKOFFICE_DATABASE_URL: roleUrl("saas_cook_bo_query"),
 	CONTROL_DATABASE_URL: roleUrl("saas_cook_control_reader"),
@@ -26,15 +24,11 @@ export function backofficeConfig(env: NodeJS.ProcessEnv = process.env) {
 		origin = new URL(value.BACKOFFICE_ORIGIN);
 	if (
 		value.BACKOFFICE_AUTH_SECRET === env.AUTH_SECRET ||
-		value.BACKOFFICE_INGRESS_SECRET === env.AUTH_SECRET ||
 		value.BACKOFFICE_ORIGIN === env.APP_ORIGIN
 	)
 		throw new Error("Customer and operator settings must be independent");
-	if (
-		origin.origin !== value.BACKOFFICE_ORIGIN ||
-		value.BACKOFFICE_AUTH_SECRET === value.BACKOFFICE_INGRESS_SECRET
-	)
-		throw new Error("Distinct BO origin and secrets required");
+	if (origin.origin !== value.BACKOFFICE_ORIGIN)
+		throw new Error("Canonical BO origin required");
 	if (
 		origin.protocol !== "https:" &&
 		!(

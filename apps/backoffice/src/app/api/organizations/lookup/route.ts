@@ -5,7 +5,7 @@ import { backoffice } from "../../../../lib/runtime";
 export async function POST(request: Request) {
 	try {
 		request = publicRequest(request);
-		backoffice().identity.network(request);
+		backoffice().identity.validateRequest(request);
 		request = await boundedOperatorRequest(request, 2048);
 		const text = await request.text();
 		if (text.length > 2048) throw new Error("Invalid request");

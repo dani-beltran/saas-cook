@@ -3,7 +3,7 @@ import { backofficeConfig } from "@saas-cook/config/backoffice";
 /**
  * Restores the configured public origin after TLS termination. Requires the exact
  * public Host; never trusts a forwarded host or protocol. Callers must still
- * verify the signed ingress assertion before processing this request.
+ * validate request origin and authenticate protected operations.
  */
 export function publicRequest(request: Request): Request {
 	const origin = backofficeConfig().BACKOFFICE_ORIGIN;
