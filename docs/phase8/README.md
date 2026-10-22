@@ -22,6 +22,8 @@ P8-05 embeds `compatibility.json` in each image (customer: `/app/dist/compatibil
 
 ## Gate ownership and checks
 
+The initial compatibility contract also binds the frozen dependency lock, root/runtime package manifests and shared TypeScript/TSX services, including API, email and observability. A dependency-only change therefore requires a reviewed new pair and rebuilt evidence even when schema/model values stay unchanged. This deliberately conservative first-release policy does not infer cross-version dependency compatibility.
+
 | Requirements | Owner | Required checks |
 | --- | --- | --- |
 | Required stack, source/types/unused code | P8-02/08 | Frozen Bun install; `check`, `typecheck`, `knip`, commitlint, credential-free customer/BO production builds and Storybook. |
