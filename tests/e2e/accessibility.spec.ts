@@ -1,10 +1,122 @@
 import { randomUUID } from "node:crypto";
-import { expect, test } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
 import {
 	type CustomerFixtureEnv,
 	customerFixtureRuntime,
 } from "../../packages/testing/src/example-customers/fixture";
 import { auditAccessibility } from "../accessibility";
+
+// Positive state assertions keep loading, failed requests or the wrong account tab
+// from satisfying a ready-state audit merely because its page heading rendered.
+async function expectReadyRoute(
+	page: Page,
+	route: string,
+	locale: "en" | "es",
+) {
+	const main = page.getByRole("main");
+	if (route.startsWith("/account")) {
+		const section = route.split("#")[1] ?? "identity";
+		await expect(main.locator(`#account-tab-${section}`)).toHaveAttribute(
+			"aria-selected",
+			"true",
+		);
+		const panel = main.locator(`#${section}[role="tabpanel"]`);
+		await expect(panel).toBeVisible();
+		await expect(
+			main.locator('.account-dashboard > p[role="status"]'),
+		).toHaveCount(0);
+		if (section === "identity") {
+			await expect(panel.locator(".account-identity-row")).toBeVisible();
+			await expect(panel.getByRole("radio").first()).toBeEnabled();
+		} else if (section === "organizations") {
+			await expect(
+				panel.getByRole("link", { name: /Accessible studio/ }),
+			).toBeVisible();
+		} else if (section === "sessions") {
+			await expect(panel.locator(".account-session-list > li")).toHaveCount(1);
+		} else if (section === "privacy") {
+			await expect(panel.locator("#notification-email")).toBeVisible();
+			await expect(panel.locator("#notification-in-app")).toBeVisible();
+			await expect(panel.locator("#privacy-analytics")).toBeVisible();
+		}
+	} else {
+		switch (route.split("/").at(-1)) {
+			case "projects":
+				await expect(
+					main.getByRole("heading", {
+						name: "Accessible project",
+						exact: true,
+					}),
+				).toBeVisible();
+				break;
+			case "customers":
+				await expect(
+					main.getByRole("heading", {
+						name:
+							locale === "es"
+								? "Empieza tu directorio de clientes"
+								: "Start your customer directory",
+						exact: true,
+					}),
+				).toBeVisible();
+				break;
+			case "billing":
+			case "usage":
+				await expect(main.locator(".billing-usage .billing-value")).toHaveText(
+					"1 / 1000",
+				);
+				break;
+			case "search":
+				await expect(main.locator("#platform-query")).toBeEditable();
+				break;
+			case "keys":
+				await expect(
+					main.getByText(
+						locale === "es"
+							? "Aún no hay cuentas de servicio."
+							: "No service accounts yet.",
+						{ exact: true },
+					),
+				).toBeVisible();
+				break;
+			case "data":
+				await expect(
+					main.getByText(
+						locale === "es" ? "No hay trabajos." : "No jobs yet.",
+						{
+							exact: true,
+						},
+					),
+				).toBeVisible();
+				await expect(main.locator("#data-field-1 option")).toHaveText([
+					locale === "es" ? "Seleccionar" : "Select",
+					"Accessible project",
+				]);
+				break;
+			case "settings":
+				await expect(main.getByRole("checkbox")).toBeVisible();
+				break;
+			case "privacy":
+				await expect(main.locator("#privacy-deletion-title")).toBeVisible();
+				await expect(main.locator(".privacy-link")).toHaveAttribute(
+					"href",
+					`/${locale}${route.replace(/\/privacy$/, "/data")}`,
+				);
+				break;
+			default:
+				await expect(main.locator("#org-tab-members")).toHaveAttribute(
+					"aria-selected",
+					"true",
+				);
+				await expect(main.locator("#org-panel-members")).toBeVisible();
+				await expect(
+					main.getByRole("heading", { name: "Accessible studio", exact: true }),
+				).toBeVisible();
+		}
+	}
+	await expect(main.getByRole("alert")).toHaveCount(0);
+	await expect(main.locator('[aria-busy="true"]')).toHaveCount(0);
+}
 
 for (const { locale, mode, width } of [
 	{ locale: "en", mode: "light", width: 1440 },
@@ -22,6 +134,8 @@ for (const { locale, mode, width } of [
 		for (const route of ["/account", "/help", "/about"]) {
 			await page.goto(`/${locale}${route}`);
 			await expect(page.getByRole("main")).toBeVisible();
+			if (route === "/account")
+				await expect(page.locator("#sign-in-password")).toBeVisible();
 			await auditAccessibility(page, info, `public-${route.slice(1)}`);
 			if (route === "/help" && width === 390) {
 				const example = page.locator(".help-example-scroll");
@@ -91,6 +205,7 @@ for (const { locale, mode, width } of [
 					page.getByRole("main").getByRole("heading", { level: 1 }),
 				).toBeVisible();
 				await page.waitForLoadState("networkidle");
+				await expectReadyRoute(page, route, locale);
 				await auditAccessibility(
 					page,
 					info,
@@ -116,6 +231,16 @@ for (const { locale, mode, width } of [
 				}),
 			).toBeVisible();
 			await page.waitForLoadState("networkidle");
+			await expect(
+				page
+					.getByRole("region", {
+						name: locale === "es" ? "Archivos" : "Files",
+						exact: true,
+					})
+					.getByText(locale === "es" ? "No hay archivos" : "No files", {
+						exact: true,
+					}),
+			).toBeVisible();
 			await auditAccessibility(page, info, "project-files-edit");
 			await page.locator(".projects-context summary").focus();
 			await page.keyboard.press("Enter");
@@ -168,6 +293,8 @@ for (const { locale, mode, width } of [
 				exact: true,
 			});
 			await expect(detail).toBeFocused();
+			await expect(detail.locator(".platform-activity ol")).toBeAttached();
+			await expect(detail.getByRole("alert")).toHaveCount(0);
 			await auditAccessibility(page, info, "search-activity");
 			await detail
 				.getByRole("button", {
