@@ -24,6 +24,10 @@ import {
 	performanceGates,
 	latencyStatistics as stats,
 } from "./performance-metrics";
+import {
+	createTenantScheduler,
+	pollPendingUsage,
+} from "./performance-scheduling";
 
 const executeFile = promisify(execFile);
 const runId = new Date().toISOString().replace(/[:.]/g, "-");
@@ -60,6 +64,27 @@ async function fingerprint() {
 		sha256: await sourceFingerprint(),
 		algorithm: "shared scripts/phase1/source-fingerprint.ts",
 	};
+}
+async function dockerCapacity() {
+	const raw = await command("docker", [
+		"info",
+		"--format",
+		'{"cpus":{{.NCPU}},"memoryBytes":{{.MemTotal}}}',
+	]);
+	if (!raw) return { available: false };
+	try {
+		const data = JSON.parse(raw);
+		if (
+			!Number.isSafeInteger(data.cpus) ||
+			data.cpus < 1 ||
+			!Number.isSafeInteger(data.memoryBytes) ||
+			data.memoryBytes < 1
+		)
+			return { available: false };
+		return { available: true, cpus: data.cpus, memoryBytes: data.memoryBytes };
+	} catch {
+		return { available: false };
+	}
 }
 async function serviceContainers() {
 	const ids = await command("docker", [
@@ -129,6 +154,7 @@ const buildMetadata = {
 	packageManager: JSON.parse(await readFile("package.json", "utf8"))
 		.packageManager,
 	services: await serviceContainers(),
+	dockerDaemon: await dockerCapacity(),
 };
 const smoke = process.argv.includes("--smoke");
 assert(
@@ -645,7 +671,7 @@ async function commercialWork(start: number, end: number) {
 					if (performance.now() < end) completedDuringLoad++;
 				}
 			}
-			for (const [tenant, pending] of usagePending) {
+			await pollPendingUsage(usagePending, async (tenant, pending) => {
 				const event = (
 					await f.app.query<{ sequence: string }>(
 						"SELECT sequence FROM tenancy.usage_events WHERE organization_id=$1 AND operation_key=$2",
@@ -664,7 +690,7 @@ async function commercialWork(start: number, end: number) {
 						performance.now() - pending.submittedAt < 60000,
 						"Usage visibility deadline exceeded",
 					);
-			}
+			});
 			if (
 				performance.now() >= end &&
 				bulkJobs.every((j) => j.complete) &&
@@ -880,6 +906,7 @@ try {
 			}),
 		);
 	}, 30_000);
+	const chooseTenant = createTenantScheduler();
 	const commercialTask = commercialWork(measureStart, end);
 	try {
 		await Promise.all(
@@ -898,8 +925,7 @@ try {
 					random ^= random << 13;
 					random ^= random >>> 17;
 					random ^= random << 5;
-					const tenant =
-						(random >>> 0) % 10 < 8 ? 0 : 1 + ((random >>> 8) % 99);
+					const tenant = chooseTenant(random);
 					const org = organizations[tenant],
 						actor = actors[tenant][0],
 						id = projectIds[tenant][clientIndex + 1];
@@ -1258,6 +1284,7 @@ try {
 			cpu: os.cpus()[0]?.model,
 			memoryBytes: os.totalmem(),
 			node: process.version,
+			dockerDaemon: buildMetadata.dockerDaemon,
 		},
 		pools: {
 			web: 8,
