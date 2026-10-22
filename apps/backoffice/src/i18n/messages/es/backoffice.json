@@ -1,7 +1,7 @@
 {
 	"Backoffice": {
 		"title": "Administración interna",
-		"intro": "Consulta los datos de organizaciones y gestiona tu acceso de personal. Cada consulta queda auditada.",
+		"intro": "Consulta las organizaciones asignadas o busca una organización por su ID exacto. Cada búsqueda y consulta queda auditada.",
 		"signIn": "Acceder con una clave de acceso",
 		"enroll": "Registrar la clave de acceso invitada",
 		"invitation": "Código de invitación",
@@ -44,6 +44,51 @@
 		"emptyHelp": "Inicia sesión e introduce un ID de organización y una referencia de caso para ver sus datos.",
 		"signInDescription": "Utiliza tu clave de acceso de personal invitado para acceder.",
 		"newStaff": "¿Es tu primera visita?",
-		"enrollmentHelp": "Introduce el código de invitación facilitado por seguridad para registrar tu clave de acceso."
+		"enrollmentHelp": "Introduce el código de invitación facilitado por seguridad para registrar tu clave de acceso.",
+		"directory": {
+			"title": "Directorio de organizaciones",
+			"description": "Consulta las organizaciones asignadas. Los nombres están ocultos parcialmente; se omiten los datos de cuentas y contactos.",
+			"live": "Fuente en vivo",
+			"checked": "Página consultada el",
+			"observed": "Fila consultada el",
+			"freshnessHelp": "Esta es una instantánea de los datos en los momentos indicados. Actualiza para comprobar los cambios.",
+			"count": "{count, plural, =0 {No hay organizaciones en esta página.} one {# organización en esta página.} other {# organizaciones en esta página.}}",
+			"noResults": "No hay organizaciones coincidentes en tu ámbito actual.",
+			"emptyContinue": "No hay coincidencias en esta parte de tu ámbito. Continúa para consultar la siguiente página.",
+			"id": "ID de organización",
+			"lifecycle": "Filtro de estado",
+			"states": {
+				"active": "Activa",
+				"owner_recovery_required": "Requiere recuperación del propietario",
+				"suspended": "Suspendida"
+			},
+			"audit": "Referencia de auditoría del directorio",
+			"idFilter": "Filtrar por ID exacto de organización (opcional)",
+			"case": "Referencia del caso del directorio",
+			"pageSize": "Filas por página",
+			"allStates": "Todos los estados",
+			"help": "Usa un UUID exacto para filtrar por ID. La referencia del caso es obligatoria: entre 1 y 80 letras, números, puntos, guiones bajos, dos puntos o guiones, empezando por una letra o un número.",
+			"refresh": "Actualizar directorio",
+			"search": "Buscar en el directorio",
+			"next": "Página siguiente",
+			"pending": "Cargando directorio…",
+			"ready": "Directorio consultado.",
+			"invalid": "Revisa el UUID opcional y la referencia obligatoria del caso.",
+			"unavailable": "Directorio no disponible. Tu sesión, ámbito o página pueden haber cambiado. Busca de nuevo o inicia sesión.",
+			"stateLabel": "Estado",
+			"tableCaption": "Organizaciones asignadas a tu cuenta de personal",
+			"maskedName": "Nombre oculto",
+			"actions": "Acciones",
+			"details": "Ver detalles",
+			"detailsFor": "Ver detalles de {id}",
+			"previous": "Página anterior"
+		},
+		"checkingSession": "Comprobando la sesión del personal…",
+		"signedOut": "Inicia sesión o registra tu clave de acceso invitada para continuar.",
+		"sessionDescription": "Tu sesión del personal está activa. Cierra la sesión aquí cuando hayas terminado.",
+		"lookupShortcut": "Consultar por ID de organización",
+		"detailCase": "Referencia del caso para esta consulta",
+		"backOrganizations": "Volver a organizaciones",
+		"detailReady": "Datos de la organización cargados. Esta consulta ha quedado auditada."
 	}
 }

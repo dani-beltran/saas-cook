@@ -18,6 +18,7 @@ import {
 	NativeSelectOption,
 } from "@saas-cook/ui";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
+import type { ReactNode } from "react";
 import type { UseFormReturn } from "react-hook-form";
 
 type LookupResult = ReturnType<typeof organizationLookupOutput.parse>;
@@ -82,6 +83,9 @@ function Icon({
  */
 export function BackofficeView({
 	busy,
+	authenticated,
+	checking = false,
+	page = "organizations",
 	status,
 	invitation,
 	result,
@@ -92,8 +96,13 @@ export function BackofficeView({
 	onSignOut,
 	onLookup,
 	onInvalid,
+	directory,
 }: {
+	directory?: ReactNode;
 	busy: boolean;
+	authenticated: boolean;
+	checking?: boolean;
+	page?: "organizations" | "staff-access" | "organization-detail";
 	status: Status;
 	invitation: string;
 	result: LookupResult | null;
@@ -108,6 +117,8 @@ export function BackofficeView({
 	const t = useTranslations("Backoffice");
 	const locale = useLocale();
 	const format = useFormatter();
+	const organizations = authenticated && page !== "staff-access";
+	const detail = page === "organization-detail";
 	const error = status === "denied" || status === "invalid";
 	return (
 		<div className="bo-shell">
@@ -124,16 +135,24 @@ export function BackofficeView({
 					</span>
 				</a>
 				<nav aria-label={t("navigation")}>
-					<p className="bo-nav-label">{t("operations")}</p>
+					{authenticated && (
+						<>
+							<p className="bo-nav-label">{t("operations")}</p>
+							<a
+								className="bo-nav-link"
+								href={`/${locale}`}
+								aria-current={organizations ? "page" : undefined}
+							>
+								<Icon kind="organization" />
+								{t("organizations")}
+							</a>
+						</>
+					)}
 					<a
 						className="bo-nav-link"
-						href="#organization-lookup"
-						aria-current="page"
+						href={`/${locale}/staff-access`}
+						aria-current={!organizations ? "page" : undefined}
 					>
-						<Icon kind="organization" />
-						{t("organizations")}
-					</a>
-					<a className="bo-nav-link" href="#staff-access">
 						<Icon kind="key" />
 						{t("staffAccess")}
 					</a>
@@ -151,7 +170,9 @@ export function BackofficeView({
 					<p>
 						{t("workspace")}
 						<span aria-hidden="true">/</span>
-						<strong>{t("organizations")}</strong>
+						<strong>
+							{t(organizations ? "organizations" : "staffAccess")}
+						</strong>
 					</p>
 					<div className="bo-language">
 						<label className="bo-sr-only" htmlFor="bo-language">
@@ -162,7 +183,7 @@ export function BackofficeView({
 							value={locale}
 							onChange={(event) =>
 								window.location.assign(
-									`/${event.target.value === "es" ? "es" : "en"}`,
+									`/${event.target.value === "es" ? "es" : "en"}${page === "staff-access" ? "/staff-access" : detail ? window.location.pathname.replace(/^\/(en|es)/, "") : ""}`,
 								)
 							}
 						>
@@ -179,13 +200,35 @@ export function BackofficeView({
 					<header className="bo-page-header">
 						<div>
 							<p className="bo-eyebrow">{t("operations")}</p>
-							<h1>{t("title")}</h1>
-							<p className="bo-description">{t("intro")}</p>
+							<h1>
+								{t(
+									organizations
+										? detail
+											? "overview"
+											: "organizations"
+										: authenticated
+											? "staffAccess"
+											: "title",
+								)}
+							</h1>
+							<p className="bo-description">
+								{t(
+									organizations
+										? detail
+											? "overviewDescription"
+											: "intro"
+										: authenticated
+											? "sessionDescription"
+											: "signInDescription",
+								)}
+							</p>
 						</div>
-						<Badge variant="accent">
-							<Icon kind="shield" />
-							{t("readOnly")}
-						</Badge>
+						{organizations && (
+							<Badge variant="accent">
+								<Icon kind="shield" />
+								{t("readOnly")}
+							</Badge>
+						)}
 					</header>
 					<Alert
 						className="bo-feedback"
@@ -198,210 +241,282 @@ export function BackofficeView({
 						}
 						aria-live="polite"
 					>
-						{t(status)}
+						{t(
+							checking
+								? "checkingSession"
+								: !authenticated && status === "empty"
+									? "signedOut"
+									: authenticated &&
+											page === "staff-access" &&
+											status === "empty"
+										? "sessionDescription"
+										: detail && status === "ready"
+											? "detailReady"
+											: status,
+						)}
 					</Alert>
-					<div className="bo-workspace">
-						<div className="bo-main-column">
-							<Card id="organization-lookup" aria-labelledby="lookup-title">
-								<CardHeader>
-									<CardTitle id="lookup-title">{t("lookupTitle")}</CardTitle>
-									<CardDescription>{t("lookupDescription")}</CardDescription>
-								</CardHeader>
-								<CardContent>
-									<form
-										className="bo-form"
-										noValidate
-										aria-busy={busy}
-										onSubmit={form.handleSubmit(onLookup, onInvalid)}
-									>
-										<div className="bo-field">
-											<label htmlFor="organization">{t("organization")}</label>
-											<Input
-												id="organization"
-												disabled={busy}
-												required
-												autoCapitalize="none"
-												spellCheck={false}
-												placeholder="00000000-0000-4000-8000-000000000000"
-												{...form.register("organizationId")}
-												aria-invalid={!!form.formState.errors.organizationId}
-												aria-describedby={
-													form.formState.errors.organizationId
-														? "organization-error"
-														: "organization-help"
-												}
-											/>
-											{form.formState.errors.organizationId ? (
-												<p id="organization-error" className="bo-field-error">
-													{t("organizationError")}
-												</p>
+					<div
+						className={
+							organizations
+								? "bo-workspace bo-organizations"
+								: "bo-workspace bo-signed-out"
+						}
+					>
+						{organizations && (
+							<div className="bo-main-column">
+								{detail && (
+									<a className="bo-nav-link" href={`/${locale}`}>
+										{t("backOrganizations")}
+									</a>
+								)}
+								{!detail && directory}
+
+								{detail && (
+									<Card aria-labelledby="overview-title" aria-busy={busy}>
+										<CardHeader>
+											<div className="bo-section-title">
+												<CardTitle id="overview-title" tabIndex={-1}>
+													{t("overview")}
+												</CardTitle>
+												{result && <Badge>{result.lifecycle}</Badge>}
+											</div>
+											<CardDescription>
+												{t("overviewDescription")}
+											</CardDescription>
+										</CardHeader>
+										<CardContent>
+											{result ? (
+												<div className="bo-result">
+													<h3>{result.name}</h3>
+													<dl className="bo-details">
+														<div>
+															<dt>{t("organization")}</dt>
+															<dd>
+																<code>{result.id}</code>
+															</dd>
+														</div>
+														<div>
+															<dt>{t("lifecycle")}</dt>
+															<dd>{result.lifecycle}</dd>
+														</div>
+														<div>
+															<dt>{t("seatLabel")}</dt>
+															<dd>
+																{t("seats", {
+																	occupied: result.seats.occupied,
+																	capacity:
+																		result.seats.capacity ?? t("unlimited"),
+																})}
+															</dd>
+														</div>
+														<div>
+															<dt>{t("timestamp")}</dt>
+															<dd>
+																<time dateTime={result.sourceTimestamp}>
+																	{format.dateTime(
+																		new Date(result.sourceTimestamp),
+																		{
+																			dateStyle: "medium",
+																			timeStyle: "medium",
+																			timeZone: "UTC",
+																		},
+																	)}{" "}
+																	UTC
+																</time>
+															</dd>
+														</div>
+														<div>
+															<dt>{t("audit")}</dt>
+															<dd>
+																<code>{result.auditReference}</code>
+															</dd>
+														</div>
+													</dl>
+												</div>
 											) : (
-												<p id="organization-help" className="bo-field-help">
-													{t("organizationHelp")}
-												</p>
+												<div className="bo-empty">
+													<span className="bo-empty-icon">
+														<Icon kind="organization" />
+													</span>
+													<h3>{t(busy ? "working" : "empty")}</h3>
+													<p>{t("emptyHelp")}</p>
+												</div>
 											)}
-										</div>
-										<div className="bo-field">
-											<label htmlFor="case">{t("case")}</label>
-											<Input
-												id="case"
-												disabled={busy}
-												required
-												maxLength={80}
-												autoCapitalize="none"
-												spellCheck={false}
-												placeholder="SUPPORT-1234"
-												{...form.register("caseReference")}
-												aria-invalid={!!form.formState.errors.caseReference}
-												aria-describedby={
-													form.formState.errors.caseReference
-														? "case-error"
-														: "case-help"
-												}
-											/>
-											{form.formState.errors.caseReference ? (
-												<p id="case-error" className="bo-field-error">
-													{t("caseError")}
-												</p>
-											) : (
-												<p id="case-help" className="bo-field-help">
-													{t("caseHelp")}
-												</p>
-											)}
-										</div>
-										<div className="bo-form-actions">
-											<Button type="submit" disabled={busy} aria-busy={busy}>
-												<Icon kind="search" />
-												<span>{t("lookup")}</span>
-											</Button>
-											<span className="bo-form-note">{t("audited")}</span>
-										</div>
-									</form>
-								</CardContent>
-							</Card>
-							<Card aria-labelledby="overview-title" aria-busy={busy}>
+										</CardContent>
+									</Card>
+								)}
+								<details
+									className="bo-lookup-shortcut"
+									open={detail ? !result : undefined}
+								>
+									<summary>
+										{t(detail ? "detailCase" : "lookupShortcut")}
+									</summary>{" "}
+									<Card id="organization-lookup" aria-labelledby="lookup-title">
+										<CardHeader>
+											<CardTitle id="lookup-title">
+												{t("lookupTitle")}
+											</CardTitle>
+											<CardDescription>
+												{t("lookupDescription")}
+											</CardDescription>
+										</CardHeader>
+										<CardContent>
+											<form
+												className="bo-form"
+												noValidate
+												aria-busy={busy}
+												onSubmit={form.handleSubmit(onLookup, onInvalid)}
+											>
+												<div className="bo-field">
+													<label htmlFor="organization">
+														{t("organization")}
+													</label>
+													<Input
+														id="organization"
+														readOnly={detail}
+														disabled={busy}
+														required
+														autoCapitalize="none"
+														spellCheck={false}
+														placeholder="00000000-0000-4000-8000-000000000000"
+														{...form.register("organizationId")}
+														aria-invalid={
+															!!form.formState.errors.organizationId
+														}
+														aria-describedby={
+															form.formState.errors.organizationId
+																? "organization-error"
+																: "organization-help"
+														}
+													/>
+													{form.formState.errors.organizationId ? (
+														<p
+															id="organization-error"
+															className="bo-field-error"
+														>
+															{t("organizationError")}
+														</p>
+													) : (
+														<p id="organization-help" className="bo-field-help">
+															{t("organizationHelp")}
+														</p>
+													)}
+												</div>
+												<div className="bo-field">
+													<label htmlFor="case">{t("case")}</label>
+													<Input
+														id="case"
+														disabled={busy}
+														required
+														maxLength={80}
+														autoCapitalize="none"
+														spellCheck={false}
+														placeholder="SUPPORT-1234"
+														{...form.register("caseReference")}
+														aria-invalid={!!form.formState.errors.caseReference}
+														aria-describedby={
+															form.formState.errors.caseReference
+																? "case-error"
+																: "case-help"
+														}
+													/>
+													{form.formState.errors.caseReference ? (
+														<p id="case-error" className="bo-field-error">
+															{t("caseError")}
+														</p>
+													) : (
+														<p id="case-help" className="bo-field-help">
+															{t("caseHelp")}
+														</p>
+													)}
+												</div>
+												<div className="bo-form-actions">
+													<Button
+														type="submit"
+														disabled={busy}
+														aria-busy={busy}
+													>
+														<Icon kind="search" />
+														<span>{t("lookup")}</span>
+													</Button>
+													<span className="bo-form-note">{t("audited")}</span>
+												</div>
+											</form>
+										</CardContent>
+									</Card>
+								</details>
+							</div>
+						)}
+						{!organizations && (
+							<Card
+								id="staff-access"
+								className="bo-access"
+								aria-labelledby="access-title"
+							>
 								<CardHeader>
-									<div className="bo-section-title">
-										<CardTitle id="overview-title">{t("overview")}</CardTitle>
-										{result && <Badge>{result.lifecycle}</Badge>}
+									<div className="bo-access-icon">
+										<Icon kind="key" />
 									</div>
-									<CardDescription>{t("overviewDescription")}</CardDescription>
+									<CardTitle id="access-title">{t("staffAccess")}</CardTitle>
+									<CardDescription>
+										{t(
+											authenticated
+												? "sessionDescription"
+												: "signInDescription",
+										)}
+									</CardDescription>
 								</CardHeader>
 								<CardContent>
-									{result ? (
-										<div className="bo-result">
-											<h3>{result.name}</h3>
-											<dl className="bo-details">
-												<div>
-													<dt>{t("organization")}</dt>
-													<dd>
-														<code>{result.id}</code>
-													</dd>
-												</div>
-												<div>
-													<dt>{t("lifecycle")}</dt>
-													<dd>{result.lifecycle}</dd>
-												</div>
-												<div>
-													<dt>{t("seatLabel")}</dt>
-													<dd>
-														{t("seats", {
-															occupied: result.seats.occupied,
-															capacity: result.seats.capacity ?? t("unlimited"),
-														})}
-													</dd>
-												</div>
-												<div>
-													<dt>{t("timestamp")}</dt>
-													<dd>
-														<time dateTime={result.sourceTimestamp}>
-															{format.dateTime(
-																new Date(result.sourceTimestamp),
-																{
-																	dateStyle: "medium",
-																	timeStyle: "medium",
-																	timeZone: "UTC",
-																},
-															)}{" "}
-															UTC
-														</time>
-													</dd>
-												</div>
-												<div>
-													<dt>{t("audit")}</dt>
-													<dd>
-														<code>{result.auditReference}</code>
-													</dd>
-												</div>
-											</dl>
-										</div>
-									) : (
-										<div className="bo-empty">
-											<span className="bo-empty-icon">
-												<Icon kind="organization" />
-											</span>
-											<h3>{t(busy ? "working" : "empty")}</h3>
-											<p>{t("emptyHelp")}</p>
+									<div className="bo-auth-actions">
+										{!authenticated && (
+											<Button disabled={busy} onClick={onSignIn}>
+												<Icon kind="key" />
+												{t("signIn")}
+											</Button>
+										)}
+										{authenticated && (
+											<Button
+												variant="secondary"
+												disabled={busy}
+												onClick={onSignOut}
+											>
+												{t("signOut")}
+											</Button>
+										)}
+									</div>
+									{!authenticated && (
+										<div className="bo-enrollment">
+											<h3>{t("newStaff")}</h3>
+											<p className="bo-field-help" id="invitation-help">
+												{t("enrollmentHelp")}
+											</p>
+											<div className="bo-field">
+												<label htmlFor="invitation">{t("invitation")}</label>
+												<Input
+													id="invitation"
+													disabled={busy}
+													type="password"
+													autoComplete="off"
+													aria-describedby="invitation-help"
+													value={invitation}
+													onChange={(event) =>
+														onInvitationChange(event.target.value)
+													}
+												/>
+											</div>
+											<Button
+												variant="secondary"
+												disabled={busy || !invitation}
+												onClick={onEnroll}
+											>
+												{t("enroll")}
+											</Button>
 										</div>
 									)}
 								</CardContent>
 							</Card>
-						</div>
-						<Card
-							id="staff-access"
-							className="bo-access"
-							aria-labelledby="access-title"
-						>
-							<CardHeader>
-								<div className="bo-access-icon">
-									<Icon kind="key" />
-								</div>
-								<CardTitle id="access-title">{t("staffAccess")}</CardTitle>
-								<CardDescription>{t("signInDescription")}</CardDescription>
-							</CardHeader>
-							<CardContent>
-								<div className="bo-auth-actions">
-									<Button disabled={busy} onClick={onSignIn}>
-										<Icon kind="key" />
-										{t("signIn")}
-									</Button>
-									<Button
-										variant="secondary"
-										disabled={busy}
-										onClick={onSignOut}
-									>
-										{t("signOut")}
-									</Button>
-								</div>
-								<div className="bo-enrollment">
-									<h3>{t("newStaff")}</h3>
-									<p className="bo-field-help" id="invitation-help">
-										{t("enrollmentHelp")}
-									</p>
-									<div className="bo-field">
-										<label htmlFor="invitation">{t("invitation")}</label>
-										<Input
-											id="invitation"
-											disabled={busy}
-											type="password"
-											autoComplete="off"
-											aria-describedby="invitation-help"
-											value={invitation}
-											onChange={(event) =>
-												onInvitationChange(event.target.value)
-											}
-										/>
-									</div>
-									<Button
-										variant="secondary"
-										disabled={busy || !invitation}
-										onClick={onEnroll}
-									>
-										{t("enroll")}
-									</Button>
-								</div>
-							</CardContent>
-						</Card>
+						)}
 					</div>
 				</main>
 			</div>

@@ -1,7 +1,7 @@
 {
 	"Backoffice": {
 		"title": "Staff backoffice",
-		"intro": "Look up organization details and manage your staff access. Every lookup is audited.",
+		"intro": "Browse your assigned organizations or look up an organization by its exact ID. Every search and lookup is audited.",
 		"signIn": "Sign in with a passkey",
 		"enroll": "Enroll invited passkey",
 		"invitation": "Invitation code",
@@ -44,6 +44,51 @@
 		"emptyHelp": "Sign in, then enter an organization ID and case reference to view its details.",
 		"signInDescription": "Use your invited staff passkey to access the workspace.",
 		"newStaff": "First time here?",
-		"enrollmentHelp": "Enter the invitation code provided by your security administrator to register your passkey."
+		"enrollmentHelp": "Enter the invitation code provided by your security administrator to register your passkey.",
+		"directory": {
+			"title": "Organization directory",
+			"description": "Browse your assigned organizations. Names are masked; account and contact details are omitted.",
+			"live": "Live source",
+			"checked": "Page checked at",
+			"observed": "Row observed at",
+			"freshnessHelp": "This is a snapshot of live data at the times shown. Refresh to check for changes.",
+			"count": "{count, plural, =0 {No organizations on this page.} one {# organization on this page.} other {# organizations on this page.}}",
+			"noResults": "No matching organizations in your current scope.",
+			"emptyContinue": "No matches in this part of your scope. Continue to check the next page.",
+			"id": "Organization ID",
+			"lifecycle": "Lifecycle filter",
+			"states": {
+				"active": "Active",
+				"owner_recovery_required": "Owner recovery required",
+				"suspended": "Suspended"
+			},
+			"audit": "Directory audit reference",
+			"idFilter": "Filter by exact organization ID (optional)",
+			"case": "Directory case reference",
+			"pageSize": "Rows per page",
+			"allStates": "All lifecycles",
+			"help": "Use an exact UUID if filtering by ID. A case reference is required: 1–80 letters, numbers, periods, underscores, colons or hyphens, starting with a letter or number.",
+			"refresh": "Refresh directory",
+			"search": "Search directory",
+			"next": "Next page",
+			"pending": "Loading directory…",
+			"ready": "Directory checked.",
+			"invalid": "Check the optional organization UUID and required case reference.",
+			"unavailable": "Directory unavailable. Your session, scope or page may have changed. Search again or sign in.",
+			"stateLabel": "Lifecycle",
+			"tableCaption": "Organizations assigned to your staff account",
+			"maskedName": "Masked name",
+			"actions": "Actions",
+			"details": "View details",
+			"detailsFor": "View details for {id}",
+			"previous": "Previous page"
+		},
+		"checkingSession": "Checking staff session…",
+		"signedOut": "Sign in or enroll your invited passkey to continue.",
+		"sessionDescription": "Your staff session is active. Sign out here when you have finished.",
+		"lookupShortcut": "Look up by organization ID",
+		"detailCase": "Case reference for this lookup",
+		"backOrganizations": "Back to organizations",
+		"detailReady": "Organization details loaded. This lookup has been audited."
 	}
 }

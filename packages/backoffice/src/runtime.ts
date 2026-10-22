@@ -7,6 +7,7 @@ import {
 } from "@saas-cook/backoffice-contracts";
 import { backofficeConfig } from "@saas-cook/config/backoffice";
 import { Pool } from "pg";
+import { createOrganizationDirectory } from "./directory";
 
 /** Composes only restricted BO pools. Call close during graceful shutdown; no customer identity/runtime is instantiated. */
 export function createBackofficeRuntime(env: NodeJS.ProcessEnv = process.env) {
@@ -32,6 +33,12 @@ export function createBackofficeRuntime(env: NodeJS.ProcessEnv = process.env) {
 	});
 	return {
 		identity,
+		directory: createOrganizationDirectory({
+			config,
+			identity,
+			queryPool,
+			controlPool,
+		}),
 		/** Audits one exact-ID metadata disclosure before returning bytes; missing and unauthorized IDs share a denial. */
 		async lookup(request: Request, raw: unknown) {
 			const input = organizationLookupInput.parse(raw);
@@ -161,6 +168,7 @@ export function createBackofficeRuntime(env: NodeJS.ProcessEnv = process.env) {
 					installationId: config.INSTALLATION_ID,
 					environment: config.BACKOFFICE_ENVIRONMENT,
 				});
+				await c.query("SELECT backoffice.assert_directory_compatibility()");
 				await c.query("SELECT id FROM backoffice.grants LIMIT 0");
 			} finally {
 				c.release();
