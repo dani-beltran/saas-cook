@@ -783,12 +783,14 @@ try {
 		await source.query("SELECT count(*)::int AS count FROM tenancy.projects")
 	).rows[0].count;
 	assert.equal(count, resourceCount);
+	stage = "storage-initialization";
 	storage = await createTestFileStorage(benchmarkOrigin);
 	const roleUrl = (value: string, role: string) => {
 		const url = new URL(value);
 		url.username = role;
 		return url.toString();
 	};
+	stage = "image-startup";
 	image = await startPerformanceImage({
 		...f.installation.env,
 		...storage.env,
@@ -807,6 +809,7 @@ try {
 		DEFAULT_PROJECT_CAPACITY: "unlimited",
 		DEFAULT_PROJECT_CREATES_PER_MONTH: "1000000",
 	});
+	stage = "identity-verification";
 	assert.equal(
 		(
 			await rpcClient(actors[0][0]).projects.get({
@@ -825,6 +828,7 @@ try {
 		(e: unknown) =>
 			e instanceof Error && "code" in e && e.code === "UNAUTHORIZED",
 	);
+	stage = "preflight-snapshots";
 	storageBefore = await storageSnapshot();
 	graphBefore = await graphSnapshot();
 	assert.equal(graphBefore.verifiedEmpty, true);
