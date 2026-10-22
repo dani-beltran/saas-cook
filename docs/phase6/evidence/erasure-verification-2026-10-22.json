@@ -1,0 +1,610 @@
+{
+	"version": 1,
+	"checkedAt": "2026-10-22T12:30:22.981126+00:00",
+	"baseCommit": "9aba148eb13308e394553a32616c63430ac82259",
+	"sourceDirty": true,
+	"implementationSha256": "cbf62a7bebe2e3789df879196b52bb1c88f04c0da459687eedc59fe0c42186a2",
+	"image": "sha256:2bf31c26cc77f8ed90c6a647477c1b5641ff5fed57815a675faed839778a2d7b",
+	"checks": [
+		{
+			"name": "source",
+			"command": "bun --no-env-file run check",
+			"status": "passed",
+			"log": "artifacts/phase6-erasure-verification/check-release.log"
+		},
+		{
+			"name": "types",
+			"command": "bun --no-env-file run typecheck",
+			"status": "passed",
+			"log": "artifacts/phase6-erasure-verification/typecheck-release.log"
+		},
+		{
+			"name": "unused",
+			"command": "bun --no-env-file run knip",
+			"status": "passed",
+			"log": "artifacts/phase6-erasure-verification/knip-release.log"
+		},
+		{
+			"name": "unit",
+			"command": "bun --no-env-file run test:unit",
+			"status": "passed",
+			"cases": 180,
+			"files": 32,
+			"log": "artifacts/phase6-erasure-verification/unit-release.log"
+		},
+		{
+			"name": "changed analytics/lifecycle/recovery",
+			"command": "bun --no-env-file run test:integration -- packages/db/src/analytics/service.integration.test.ts packages/db/src/lifecycle",
+			"status": "passed",
+			"cases": 14,
+			"files": 5,
+			"log": "artifacts/phase6-erasure-verification/integration-release-focused.log"
+		},
+		{
+			"name": "full integration before final queue-selection/security patch",
+			"command": "bun --no-env-file run test:integration",
+			"status": "passed for recorded earlier source",
+			"cases": 221,
+			"files": 37,
+			"log": "artifacts/phase6-erasure-verification/integration.log",
+			"limit": "Final-source changed paths rerun in focused suite; full current-source suite remains due in hosted CI."
+		},
+		{
+			"name": "full browser before final queue-selection/security patch",
+			"command": "bun --no-env-file run test:e2e",
+			"status": "passed for recorded earlier source",
+			"cases": 53,
+			"groups": 17,
+			"skipped": 0,
+			"unexpected": 0,
+			"log": "artifacts/phase6-erasure-verification/browser.log",
+			"limit": "Earlier execution is not relabeled as final source; hosted CI must validate final source."
+		},
+		{
+			"name": "skill boundaries",
+			"command": "bun --no-env-file run skills:check",
+			"status": "passed for recorded source before final queue selection/security patch",
+			"checks": 6,
+			"report": "artifacts/phase6-erasure-verification/skills/report.json",
+			"limit": "Skills, declared authoring tasks and evaluator controls unchanged. Prior independent candidates retain original provenance; no new live-agent behavior evaluation claimed."
+		},
+		{
+			"name": "production build",
+			"command": "bun --no-env-file run image:build",
+			"status": "passed",
+			"log": "artifacts/phase6-erasure-verification/image-build-release.log",
+			"implementationSha256": "cbf62a7bebe2e3789df879196b52bb1c88f04c0da459687eedc59fe0c42186a2"
+		},
+		{
+			"name": "storybook patched toolchain",
+			"command": "bun --no-env-file run storybook:build",
+			"status": "passed",
+			"log": "artifacts/phase6-erasure-verification/storybook-patched.log",
+			"limit": "Later accepted-receipt SQL selector does not affect Storybook inputs."
+		},
+		{
+			"name": "frozen install",
+			"command": "bun --no-env-file install --frozen-lockfile",
+			"status": "passed",
+			"log": "artifacts/phase6-erasure-verification/frozen-install.log"
+		},
+		{
+			"name": "container",
+			"command": "bun --no-env-file run test:image",
+			"status": "passed",
+			"checks": 17,
+			"report": "artifacts/phase6-erasure-verification/image-acceptance.json",
+			"image": "sha256:2bf31c26cc77f8ed90c6a647477c1b5641ff5fed57815a675faed839778a2d7b",
+			"implementationSha256": "cbf62a7bebe2e3789df879196b52bb1c88f04c0da459687eedc59fe0c42186a2"
+		},
+		{
+			"name": "security dependencies",
+			"status": "passed",
+			"policy": {
+				"scope": "dependencies",
+				"target": ".",
+				"status": "passed",
+				"blocked": [],
+				"checkedAt": "2026-10-22T11:02:36.313Z"
+			},
+			"report": "artifacts/phase6-erasure-verification/security/dependencies.json"
+		},
+		{
+			"name": "security image",
+			"status": "passed",
+			"policy": {
+				"scope": "image",
+				"target": "saas-cook:phase2",
+				"status": "passed",
+				"blocked": [],
+				"checkedAt": "2026-10-22T12:28:24.992Z"
+			},
+			"report": "artifacts/phase6-erasure-verification/security/image.json",
+			"image": "sha256:2bf31c26cc77f8ed90c6a647477c1b5641ff5fed57815a675faed839778a2d7b"
+		},
+		{
+			"name": "30 minute authorization performance",
+			"status": "running",
+			"controller": "artifacts/phase6-erasure-verification/benchmark-controller.json",
+			"log": "artifacts/phase6-erasure-verification/benchmark.log"
+		},
+		{
+			"name": "final commit hosted CI",
+			"status": "not yet published"
+		}
+	],
+	"providerFollowUp": {
+		"status": "pending",
+		"subject": "synthetic-acceptance-114c3509-44ad-4c7f-99c4-cba92192dce9",
+		"eventId": "503e1703-afb3-4809-9029-2aa0089d82c8",
+		"receipt": {
+			"personIds": ["87ec1ed7-121e-5bf0-9489-70ad907e4e0b"],
+			"requestedAt": "2026-10-21T12:02:58.050Z"
+		},
+		"observations": [
+			{
+				"checkedAt": "2026-10-22T10:39:47.721Z",
+				"outcome": "pending"
+			},
+			{
+				"checkedAt": "2026-10-22T12:29:10.832Z",
+				"outcome": "pending"
+			}
+		],
+		"newSubjectsCreated": 0,
+		"newDeletionRequests": 0,
+		"liveLateUncertainIngestionCompletion": "deferred operational follow-up; not passed",
+		"resumptionCommand": "node --env-file=.env.providers --import tsx scripts/phase6/posthog-erasure.ts artifacts/phase6-erasure-verification/existing-subject.json"
+	},
+	"acceptance": {
+		"criteriaRevisionAuthorized": true,
+		"closed": false,
+		"remainingReleaseGates": [
+			"full final-source authorization gate",
+			"final commit hosted CI"
+		],
+		"operationalFollowUps": [
+			"original synthetic erasure until verified",
+			"dependent actual-provider late/uncertain-ingestion completion drill",
+			"production worker/alert routing and provider erasure guarantees"
+		]
+	},
+	"retainedFailures": [
+		{
+			"kind": "source",
+			"path": "artifacts/phase6-erasure-verification/check-failure-1.log",
+			"resolution": "Removed assignment expression in fixture setup; source checks pass."
+		},
+		{
+			"kind": "dependency policy",
+			"path": "artifacts/phase6-erasure-verification/security-failure-1/dependencies-policy.json",
+			"resolution": "Aligned all workspace Storybook pins on patched 10.6.2; no security exception."
+		}
+	],
+	"sourceStability": {
+		"before": "cbf62a7bebe2e3789df879196b52bb1c88f04c0da459687eedc59fe0c42186a2",
+		"after": "cbf62a7bebe2e3789df879196b52bb1c88f04c0da459687eedc59fe0c42186a2"
+	},
+	"artifacts": [
+		{
+			"path": "artifacts/phase6-erasure-verification/browser/account-dashboard.json",
+			"bytes": 7831,
+			"sha256": "c4ab6f982e30cd37a456d463ecd8a7f6374608944791b409b15dafee7ad0c4eb"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/browser/appearance-previews.json",
+			"bytes": 3429,
+			"sha256": "9d194c782e162ce9b671a70545011c4e05157e41398d42bbb8cacd62ff7fa75b"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/browser/auth-experience.json",
+			"bytes": 14136,
+			"sha256": "2eea6f94fe03680f8c2e9d3d35420257b3636ce3b63850a725f03ed6c5a03426"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/browser/billing.json",
+			"bytes": 3383,
+			"sha256": "933f7c8ad8df679da932f03bd7259b7a02cbe8c655acc6de489fa6f733540829"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/browser/dashboard-visual.json",
+			"bytes": 3433,
+			"sha256": "4ad31ffcdc7080231d8970a653304a930a74ea2716189ed716cf8d51f7466bed"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/browser/data-jobs.json",
+			"bytes": 3398,
+			"sha256": "6c58b5110cc54c52efc66518ff429e26eba5ab90cc08dd81f67b54e8312f52f9"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/browser/example-customers.json",
+			"bytes": 7665,
+			"sha256": "597df902083beec0d888eb1822b00052ecd53bbd48c8d42db70d0ae9e286c9a3"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/browser/files.json",
+			"bytes": 3351,
+			"sha256": "7568fb5f516ed01e00678db6bd2bd0c3d1070e7b35c7ca91d9c0c201e3c2ecaa"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/browser/foundation.json",
+			"bytes": 5477,
+			"sha256": "2324243e97dd96f9833d318806fe9b364207392d6b5fa227debe77664df50db5"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/browser/identity.json",
+			"bytes": 10934,
+			"sha256": "98769220658dba8ee4d4a0363f7389c5a5b90fb48b3ae442e79c254e7d83bc90"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/browser/organization-dashboard.json",
+			"bytes": 3486,
+			"sha256": "8d29186b145c389d734e502f744d8046559c76280b36eaac3901259442a2814a"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/browser/personal-settings.json",
+			"bytes": 5640,
+			"sha256": "a7b72b1f7e5028ae5c30250b869dddf9d6a2038645543a4c6b809dc2602807da"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/browser/platform.json",
+			"bytes": 5538,
+			"sha256": "deda1c65e5aa7e1a784ce85567b5e9e01935f7663fad2f9bb081425eff500ccc"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/browser/privacy.json",
+			"bytes": 3364,
+			"sha256": "1412f4d2e1b40e29dad8f726332a94e9a0431c4faca2576ab0f18dbdcf61d8ff"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/browser/projects-dashboard.json",
+			"bytes": 5630,
+			"sha256": "733bbeba80cf683a478fa1ad66e4153bc409b2d35e3e17a128ff7244a4372509"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/browser/public-pages.json",
+			"bytes": 4456,
+			"sha256": "c80feeafe525cf5d03aedbd8d11311d0213031270ddfe6b6ace67b528fbcd65b"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/browser/theme.json",
+			"bytes": 7626,
+			"sha256": "c849dac35f8ef4da96b3eec55763de919c66e45787ded29900b428f4a44744bf"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/browser.log",
+			"bytes": 16553,
+			"sha256": "5275563c9881f1033ac950f9791c33f95c4316063f64dfb4bd2a9f095c778045"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/build-patched.log",
+			"bytes": 3415,
+			"sha256": "303b0f64ce816c27a1506e4e12b00fea15b4be40de02560e6b255bd92bc4a276"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/build.log",
+			"bytes": 3416,
+			"sha256": "2ab4f09718a213bab272c885de694f407de5463899d5d3e5b02d391d9cabe4fd"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/check-failure-1.log",
+			"bytes": 3529,
+			"sha256": "f297335e1eea2f137aacc99a6744d6b28f12187c18d4e067bc9314d0a3bfc790"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/check-final.log",
+			"bytes": 152,
+			"sha256": "deba756a1de60574b069e1db41a143f13cdab154659e84b1997a6235f791442f"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/check-patched.log",
+			"bytes": 152,
+			"sha256": "d118bbd06ce03e45edeb6d9c2d5e6e2e62bf608e0d8c06cbd87d2ff457568357"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/check-release.log",
+			"bytes": 152,
+			"sha256": "a6b032a63f757f1f9b8258c5b46ba089e1f37f78dbbb897ba2ff199928f9d4dc"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/check-serialization.log",
+			"bytes": 152,
+			"sha256": "7fc26bfc4a27422f8a17d4b6cf481a943b7660bbd41794066552d04251773d60"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/check.log",
+			"bytes": 3529,
+			"sha256": "f297335e1eea2f137aacc99a6744d6b28f12187c18d4e067bc9314d0a3bfc790"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/dependency-update-final.log",
+			"bytes": 174,
+			"sha256": "b3a7f4bd26d425ba902a05aaa1d19ae0d7c9b42a53df120b2949d4df83ae43c3"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/dependency-update.log",
+			"bytes": 235,
+			"sha256": "869b1a5863be9def6b91574c38da158fdcd5460982e8e01e27ffa799541f74a5"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/existing-subject-release.log",
+			"bytes": 57,
+			"sha256": "343354be9d598d2d77192cef9a0f189855aa8b86ce54e4ff1a6d9096912cde16"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/existing-subject.json",
+			"bytes": 564,
+			"sha256": "6620af71e07a828b2b91657e6df58acf3803b00b0e8ebdc8f6e2f4cb8602e60d"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/existing-subject.log",
+			"bytes": 57,
+			"sha256": "d0eb3a31f6de6264f1433d337f744d20a4fd5fc70ecb3eb013c6769318f611fb"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/format-concurrency.log",
+			"bytes": 103,
+			"sha256": "d0197d5057941ec2275e1f7762c2fae05c8a92678eafea24950fb08e5691a30d"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/format-final.log",
+			"bytes": 104,
+			"sha256": "227ab34efb5b85d688d4b50cdee743ebb296d17b3c56e9d1435c865a0a517d1b"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/format-query-test.log",
+			"bytes": 107,
+			"sha256": "ceabda41213db7019f99ed282d5a611e5ade5bf7bafaed9108b691c75bf563d9"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/format-release.log",
+			"bytes": 107,
+			"sha256": "66cf3013f3f69f83eb53f3e16abcd7dbf9c32d3d69b539440bcb52a191b56159"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/format-serialization.log",
+			"bytes": 103,
+			"sha256": "df290e6d92e4b895c941d51263b29418ca778cf6d73fd6381f5ea5dc902769a2"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/format.log",
+			"bytes": 1088,
+			"sha256": "5676f67798d8ff50013bd47b8f6b2a6805bd9390333aafcdfde54f03e76b8dbf"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/frozen-install.log",
+			"bytes": 96,
+			"sha256": "b528de4e77335296e0f1e2119c6f9e4f14d332fa333799ec8392308f79b3a30e"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/generated-declaration-patched.diff",
+			"bytes": 547,
+			"sha256": "3f54ffca65d756ad016250d1bee9bfe252168b4ea8d529eff7f3c60c802a67a1"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/generated-declaration.diff",
+			"bytes": 547,
+			"sha256": "3f54ffca65d756ad016250d1bee9bfe252168b4ea8d529eff7f3c60c802a67a1"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/image-acceptance.json",
+			"bytes": 1834,
+			"sha256": "40a7f480fd9e72b0a902d3f4772620786d519ae63dcdb63b12963a0ae7225381"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/image-build-final.log",
+			"bytes": 9055,
+			"sha256": "b9fa768b54e5f4fc76f6358fd801a16e39e8af1ae19b6dab32642f7da8d0927d"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/image-build-release.log",
+			"bytes": 9488,
+			"sha256": "ce78c5960fa213a5a070c0198f746028f08df12d52ed56cde3dc3967aef6510d"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/image-build.log",
+			"bytes": 9045,
+			"sha256": "32547ac7f6fcb76a81d151214d920c3682e6d5225e2a8c348c435369b7770dc2"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/image-test-release.log",
+			"bytes": 1883,
+			"sha256": "2acb4ab0dc57c4967d333df7a2d937adf01ebdafcff786808afa11175edffdc9"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/image-test.log",
+			"bytes": 1883,
+			"sha256": "771ccae94f1573cb7f631ba073bf77fe7ef4403195b277d8d538d551d26e2013"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/integration-final-focused.log",
+			"bytes": 1520,
+			"sha256": "ac590179a8ca4e77b340ee90a95d4bd70d5f06c279872244ad7015f9fe0fa71a"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/integration-release-focused.log",
+			"bytes": 1520,
+			"sha256": "e8fa1c50a43a938cf50cc164c30aac0faaafee02e5774c66b39b6fc2f1743ac6"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/integration.log",
+			"bytes": 17703,
+			"sha256": "67f78a727bcf68a378786e3fa6e39ad6b9b81dddc8ed8a64e0f11213ff5a7eab"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/knip-final.log",
+			"bytes": 37,
+			"sha256": "cdfc5fca5678e62e6a4571f5e55652910a0307746679c20ec62332598c3cc4dc"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/knip-patched.log",
+			"bytes": 37,
+			"sha256": "cdfc5fca5678e62e6a4571f5e55652910a0307746679c20ec62332598c3cc4dc"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/knip-release.log",
+			"bytes": 37,
+			"sha256": "cdfc5fca5678e62e6a4571f5e55652910a0307746679c20ec62332598c3cc4dc"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/knip.log",
+			"bytes": 37,
+			"sha256": "cdfc5fca5678e62e6a4571f5e55652910a0307746679c20ec62332598c3cc4dc"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/next-env-build.d.ts",
+			"bytes": 288,
+			"sha256": "1862ac4bbbc5192d4bf562161df66ea547ed3e67173100656ab606ae9797db2b"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/security/dependencies-policy.json",
+			"bytes": 129,
+			"sha256": "f2590efab6cd1bad3c3140553e75d441d86d4fc2c563338adb6bade5a253cee8"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/security/dependencies.json",
+			"bytes": 595532,
+			"sha256": "0b116802e9a60b5be0ce94db8e4aa1124dc3cedaca16c14c97145de0f9d3eb49"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/security/image-policy.json",
+			"bytes": 137,
+			"sha256": "a6882e1199441dabec2532f4b0afa7cd885012e3259721a825638decd5eab3b0"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/security/image.json",
+			"bytes": 263305,
+			"sha256": "5eddf9b80b83d133af31431ebbc06de625d34245d812ff0dfdb0d7e09362577d"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/security-dependencies-final.log",
+			"bytes": 466,
+			"sha256": "d67a346b178a113201e06770acfe6d62b75c4ad59b3cac2389f22dd85d5329db"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/security-dependencies.log",
+			"bytes": 4166,
+			"sha256": "fa995be2c6f329abcccda9da67bd1bea11612cab35ac901c03e23d0a7ab39060"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/security-failure-1/dependencies-policy.json",
+			"bytes": 312,
+			"sha256": "e27c700f7b14e4a3f9e26b26f9674f9db93a383ba7c0b16b892a724bd13c622c"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/security-failure-1/dependencies.json",
+			"bytes": 599605,
+			"sha256": "6f2c05a569f2c6b666796e0785e71ce94d430c0b8e6bd46057353058354aa50a"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/security-image-release.log",
+			"bytes": 859,
+			"sha256": "6eed0983c3e104ca329ca50b158cfbf339579285967d3d4352dc7415efd8a876"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/skills/guard-negative-controls.log",
+			"bytes": 1145,
+			"sha256": "e12d5e464b36597e908fbefee3a0b2e63c4ebf523428b5263ccd720029037a93"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/skills/guard-negative-controls.xml",
+			"bytes": 14631,
+			"sha256": "0856a47512d1ed52ebb679cc67d058607cdbd3a83fad65af06e30b003f807070"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/skills/real-service-boundaries.log",
+			"bytes": 15527,
+			"sha256": "edea11acf8efbae1b76bc9df397e94b8c58aeec58edfc8f75dae1f0a5a3dd89d"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/skills/real-service-boundaries.xml",
+			"bytes": 52484,
+			"sha256": "f872b8aac79ed4db8d5764970518f4ea4a6e519cfa9a5e00303504bdfd3a9a1c"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/skills/report.json",
+			"bytes": 976,
+			"sha256": "07a05cb3683a06c521c9d4ecb74ddec0c3c3390bc8a09d68b83d1f4ab41930bb"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/skills.log",
+			"bytes": 486,
+			"sha256": "aa22d12ee3bf01b83c7bbe92f9219005e9f79570cf267ea80e46a1e3693b67fc"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/source-after.txt",
+			"bytes": 65,
+			"sha256": "fb2284b8239f75fc392bd462df8d02876379d3486d1192555e150faa2500cf6a"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/source-before.txt",
+			"bytes": 65,
+			"sha256": "53070c68cf3f99bf30e3cc7f6b5352e36ba38fbd3713cb5699a1900263d3633a"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/source-release.txt",
+			"bytes": 65,
+			"sha256": "fb2284b8239f75fc392bd462df8d02876379d3486d1192555e150faa2500cf6a"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/storybook-patched.log",
+			"bytes": 37151,
+			"sha256": "bd8a6263a91e3fb11840d74f168a395cec58a866838ece07e57766e3d66b9b59"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/storybook.log",
+			"bytes": 37151,
+			"sha256": "71249864f1afcc4ff884c7eec2e5faa5c2fdbb56f3b5545f543913407db95eff"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/typecheck-final.log",
+			"bytes": 123,
+			"sha256": "283777e737ed818c3ac2afe263a43436879ee916ad1bf9f2078ee3f16a913ca9"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/typecheck-patched.log",
+			"bytes": 123,
+			"sha256": "283777e737ed818c3ac2afe263a43436879ee916ad1bf9f2078ee3f16a913ca9"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/typecheck-release.log",
+			"bytes": 123,
+			"sha256": "283777e737ed818c3ac2afe263a43436879ee916ad1bf9f2078ee3f16a913ca9"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/typecheck-serialization.log",
+			"bytes": 123,
+			"sha256": "283777e737ed818c3ac2afe263a43436879ee916ad1bf9f2078ee3f16a913ca9"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/typecheck.log",
+			"bytes": 123,
+			"sha256": "283777e737ed818c3ac2afe263a43436879ee916ad1bf9f2078ee3f16a913ca9"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/unit-final.log",
+			"bytes": 5534,
+			"sha256": "d32f2258ab9c85184c7a736c61d9815a59c05943b2fd6bce96788a70c5b66e33"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/unit-patched.log",
+			"bytes": 5546,
+			"sha256": "5196f112a2060e586fed64c1ea76e241a00baf32e51009c3967b3ab7449aadba"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/unit-release.log",
+			"bytes": 5534,
+			"sha256": "8cfe7c51790fa53948f987f96f3aef857a60fbf9f27f97870e5d02103f815f25"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/unit-stable.log",
+			"bytes": 5642,
+			"sha256": "858027cf224c4cf38bb2e3beedd5b7913571a664820e8b4b6dba8b42587b3e1e"
+		},
+		{
+			"path": "artifacts/phase6-erasure-verification/unit.log",
+			"bytes": 5534,
+			"sha256": "70b75144bc9169eba1c56eaddbabef43b59f3dd0220e9f703aa6444708260612"
+		}
+	]
+}

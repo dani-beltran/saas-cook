@@ -25,3 +25,33 @@ PostHog protocol reference: [API overview](https://posthog.com/docs/api), [perso
 - **Retention:** the activated organization cohort, grouped by activation week; weeks 1–12 count later-week core activity only for cohorts with the entire observation week available. Empty denominators return null rates.
 
 Account and organization settings call the same preferences service. No client-supplied business event or tenant ID is trusted as analytics authority.
+
+## Durable erasure verification
+
+The application worker resumes accepted receipts for pending suppressed subjects independently of collection and the parent lifecycle scan. Keep the worker, lifecycle-role database access, independent attempt registry and PostHog cleanup credentials available even when collection is disabled. A deletion request is asynchronous: the receipt/status stays pending while cleanup runs. This does not hold a browser request open or grant permission to resume collection.
+
+Accepted receipts in `foundation.analytics_subjects.receipt` retain opaque subject, original person identities and request time. The optional `verification` object adds attempt count, latest check time/outcome, next check time, overdue marker and verified time. Existing receipts without this object remain readable and become due on their first worker pass; no migration or rewrite of applied history is needed. Provider checks back off for 1, 2, 4 and then 6 hours, with the next attempt persisted before network IO. A conditional update claims a due receipt across worker processes; a crashed process leaves a resumable scheduled attempt. A saved accepted receipt is reused, without repeating `bulk_delete` merely because verification is slow. Each verification scan selects at most ten due accepted-receipt groups; unresolved pre-submission subjects remain with the lifecycle retry/independent-ingestion barrier and cannot starve accepted receipts. The existing independent unresolved-ingestion barrier still precedes deletion: an acknowledgement, missing person, timeout or deadline never settles an uncertain write or certifies erasure.
+
+Completion requires a matching provider `completed` record with `delete_verified_at` and a forced-blocking, uncached, finished query finding no event for the retained person identities or opaque subject. Older receipts use their person identities. A surviving event, cached/unfinished query, provider outage or missing receipt leaves the job pending. The verified timestamp is retained before the subject becomes complete. Local event payloads are removed only after verification.
+
+After seven days from the accepted request, the worker persists `verification.alertedAt` and emits `worker.analytics_erasure_overdue` with an aggregate count, without subject identifiers or credentials. Configure production log alert routing and inspect pending rows using restricted lifecycle/operator access; the marker remains durable if the process exits before log delivery. Seven days is an escalation threshold, not a promise of provider processing time and never an automatic success/failure cutoff. Continue retries until verified or operator investigation resolves the provider issue. Example scoped operational inspection (use the lifecycle role, not the web role):
+
+```sql
+SELECT id, deletion_state, receipt->>'requestedAt' AS requested_at,
+       receipt->'verification' AS verification
+FROM foundation.analytics_subjects
+WHERE deletion_state='pending'
+ORDER BY receipt->>'requestedAt';
+```
+
+Application backup restoration still replays the independent deletion journal and subject/attempt registry before readiness. Application receipts/schedules can roll back with a backup; uncertain attempts cannot be assumed erased. Recovery must resolve provider identities/receipts before releasing pending cleanup. This environment does not establish independent-store retention, production worker uptime, alert delivery or provider physical/backup erasure guarantees.
+
+### Existing acceptance subject
+
+The original synthetic probe predates the application-owned subject queue. Its explicit resumable state is retained in [the tracked manifest](evidence/posthog-erasure-subject.json); mutable observations live under ignored `artifacts/phase6-erasure-verification/existing-subject.json`. Preserve both with acceptance evidence. Resume only this subject, using configured provider credentials:
+
+```sh
+node --env-file=.env.providers --import tsx scripts/phase6/posthog-erasure.ts artifacts/phase6-erasure-verification/existing-subject.json
+```
+
+The command checks provider scope, never captures or requests another deletion, atomically saves pending/error/verified observations, and exits without a daemon. If the mutable file is missing, copy the tracked manifest to that path first. Run one operator invocation at a time. No recurring chat automation or unattended local daemon is configured; production application-owned jobs use the normal worker. This synthetic request must remain listed until verified; moving it out of the M2 release gate does not mark it erased. The actual-provider late/uncertain-ingestion completion drill remains a separately tracked provider follow-up, while real-service fault tests of the application barrier remain mandatory for M2.

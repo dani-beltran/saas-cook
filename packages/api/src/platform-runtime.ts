@@ -19,6 +19,7 @@ import { createNotifications } from "@saas-cook/db/notifications";
 import { createResourceService } from "@saas-cook/db/resources";
 import { createSettingsService } from "@saas-cook/db/settings";
 import { type TenantActor, withTenantTransaction } from "@saas-cook/db/tenancy";
+import { logEvent } from "@saas-cook/observability";
 import { Pool } from "pg";
 /**
  * Creates opt-in domain services and coordinates their restricted database pools and worker consumers.
@@ -226,6 +227,13 @@ export function createPlatformRuntime(
 					}
 				},
 				() => collectAnalytics(lifecyclePool, analytics),
+				async () => {
+					const result = await analytics.verifyErasures();
+					if (result.overdue)
+						logEvent("worker.analytics_erasure_overdue", {
+							status: result.overdue,
+						});
+				},
 			];
 			const results = await Promise.allSettled(tasks.map((t) => t()));
 			if (results.some((r) => r.status === "rejected"))

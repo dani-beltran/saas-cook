@@ -12,6 +12,12 @@ import type {
 	AnalyticsProvider,
 } from "./provider";
 
+/**
+ * Create tenant-fenced analytics collection and resumable erasure services.
+ * Uses the restricted lifecycle pool and independent attempt registry. Provider
+ * failures remain pending; callers must keep the worker running after opt-out.
+ * Returns preference, delivery, suppression and bounded verification operations.
+ */
 export function createAnalyticsService(
 	pool: Pool,
 	hooks: Pick<ResourceHooks, "authorize">,
@@ -178,6 +184,28 @@ export function createAnalyticsService(
 		);
 	}
 	return {
+		/** Resume at most ten due subject groups after restart; report newly overdue jobs without identifiers. */
+		async verifyErasures() {
+			const due = (
+				await pool.query(
+					"SELECT user_id,organization_id FROM foundation.analytics_subjects WHERE deletion_state='pending' AND receipt IS NOT NULL AND COALESCE((receipt->'verification'->>'nextCheckAt')::timestamptz,'-infinity')<=clock_timestamp() ORDER BY COALESCE((receipt->'verification'->>'nextCheckAt')::timestamptz,'-infinity'),id LIMIT 10",
+				)
+			).rows;
+			for (const row of due) {
+				try {
+					await this.suppress(
+						row.organization_id ? "organization" : "account",
+						row.organization_id ?? row.user_id,
+					);
+				} catch {
+					/* Independent groups must progress during a provider outage. */
+				}
+			}
+			const alerted = await pool.query(
+				"UPDATE foundation.analytics_subjects SET receipt=jsonb_set(receipt,'{verification,alertedAt}',to_jsonb(clock_timestamp()::text)) WHERE deletion_state='pending' AND receipt->'verification' IS NOT NULL AND receipt->'verification'->>'alertedAt' IS NULL AND (receipt->>'requestedAt')::timestamptz<clock_timestamp()-interval '7 days' RETURNING id",
+			);
+			return { overdue: alerted.rowCount ?? 0 };
+		},
 		async preferences(a: TenantActor, org: string | null) {
 			return own(
 				a,
@@ -384,91 +412,151 @@ export function createAnalyticsService(
 				);
 				await c.query("COMMIT");
 				let complete = true;
-				for (const row of rows) {
-					if (row.deletion_state === "complete") continue;
-					let uncertain: boolean | number | null = (
-						await pool.query(
-							"SELECT 1 FROM foundation.analytics_events WHERE subject_id=$1 AND state IN ('inflight','ambiguous') LIMIT 1",
-							[row.id],
-						)
-					).rowCount;
-					const pending = [
-						...new Set([
-							...(await options.registry.unsettled(row.id)),
-							...(
-								await pool.query<{ id: string }>(
-									"SELECT id FROM foundation.analytics_events WHERE subject_id=$1 AND state IN ('inflight','ambiguous')",
-									[row.id],
-								)
-							).rows.map((r) => r.id),
-						]),
-					];
-					for (const event of pending) {
-						if (await options.provider?.confirmIngested?.(event)) {
-							await options.registry.settle(event);
-							await pool.query(
-								"UPDATE foundation.analytics_events SET state='delivered' WHERE id=$1",
-								[event],
-							);
-							row.receipt = null;
-							await pool.query(
-								"UPDATE foundation.analytics_subjects SET receipt=NULL WHERE id=$1",
-								[row.id],
-							);
-						}
+				for (const candidate of rows) {
+					const key = `analytics:erasure:${candidate.id}`;
+					const locked = await c.query(
+						"SELECT pg_try_advisory_lock(hashtextextended($1,0)) AS locked",
+						[key],
+					);
+					if (!locked.rows[0].locked) {
+						complete = false;
+						continue;
 					}
-					uncertain =
-						Boolean((await options.registry.unsettled(row.id)).length) ||
-						(
+					try {
+						// Serialize initial requests as well as retries across account/org scans and replicas.
+						const row = (
+							await c.query<{
+								id: string;
+								receipt: AnalyticsDeletion | null;
+								deletion_state: string;
+							}>(
+								"SELECT id,receipt,deletion_state FROM foundation.analytics_subjects WHERE id=$1",
+								[candidate.id],
+							)
+						).rows[0];
+						if (!row || row.deletion_state === "complete") continue;
+						if (
+							row.receipt?.verification &&
+							Date.parse(row.receipt.verification.nextCheckAt) > Date.now()
+						) {
+							complete = false;
+							continue;
+						}
+						let uncertain: boolean | number | null = (
 							await pool.query(
 								"SELECT 1 FROM foundation.analytics_events WHERE subject_id=$1 AND state IN ('inflight','ambiguous') LIMIT 1",
 								[row.id],
 							)
 						).rowCount;
-					const sent =
-						registered.some((r) => r.id === row.id) ||
-						(
-							await pool.query(
-								"SELECT 1 FROM foundation.analytics_events WHERE subject_id=$1 AND state IN ('delivered','inflight','ambiguous') LIMIT 1",
-								[row.id],
-							)
-						).rowCount;
-					// Do not erase before every possibly late ingestion has settled.
-					if (uncertain || (sent && !options.provider)) {
-						complete = false;
-						continue;
-					}
-					if (sent) {
-						try {
-							const receipt = await options.provider?.requestDeletion(
-								row.id,
-								row.receipt,
-							);
-							if (!receipt) {
-								complete = false;
-								continue;
+						const pending = [
+							...new Set([
+								...(await options.registry.unsettled(row.id)),
+								...(
+									await pool.query<{ id: string }>(
+										"SELECT id FROM foundation.analytics_events WHERE subject_id=$1 AND state IN ('inflight','ambiguous')",
+										[row.id],
+									)
+								).rows.map((r) => r.id),
+							]),
+						];
+						for (const event of pending) {
+							if (await options.provider?.confirmIngested?.(event)) {
+								await options.registry.settle(event);
+								await pool.query(
+									"UPDATE foundation.analytics_events SET state='delivered' WHERE id=$1",
+									[event],
+								);
+								row.receipt = null;
+								await pool.query(
+									"UPDATE foundation.analytics_subjects SET receipt=NULL WHERE id=$1",
+									[row.id],
+								);
 							}
-							await pool.query(
-								"UPDATE foundation.analytics_subjects SET receipt=$2 WHERE id=$1",
-								[row.id, JSON.stringify(receipt)],
-							);
-							if (!(await options.provider?.deletionComplete(receipt))) {
-								complete = false;
-								continue;
-							}
-						} catch {
+						}
+						uncertain =
+							Boolean((await options.registry.unsettled(row.id)).length) ||
+							(
+								await pool.query(
+									"SELECT 1 FROM foundation.analytics_events WHERE subject_id=$1 AND state IN ('inflight','ambiguous') LIMIT 1",
+									[row.id],
+								)
+							).rowCount;
+						const sent =
+							registered.some((r) => r.id === row.id) ||
+							(
+								await pool.query(
+									"SELECT 1 FROM foundation.analytics_events WHERE subject_id=$1 AND state IN ('delivered','inflight','ambiguous') LIMIT 1",
+									[row.id],
+								)
+							).rowCount;
+						// Do not erase before every possibly late ingestion has settled.
+						if (uncertain || (sent && !options.provider)) {
 							complete = false;
 							continue;
 						}
+						if (sent) {
+							try {
+								const receipt =
+									row.receipt ??
+									(await options.provider?.requestDeletion(row.id, null));
+								if (!receipt) {
+									complete = false;
+									continue;
+								}
+								const attempts = (receipt.verification?.attempts ?? 0) + 1;
+								const previous = receipt.verification;
+								receipt.verification = {
+									...previous,
+									attempts,
+									outcome: "error",
+									lastCheckedAt: new Date().toISOString(),
+									nextCheckAt: new Date(
+										Date.now() +
+											Math.min(6, 2 ** Math.min(attempts - 1, 3)) * 3600000,
+									).toISOString(),
+								};
+								// Persist the receipt and retry lease before IO; a crash cannot lose or hot-loop this job.
+								const claimed = await pool.query(
+									"UPDATE foundation.analytics_subjects SET receipt=$2 WHERE id=$1 AND deletion_state='pending' AND (receipt IS NULL OR COALESCE((receipt->'verification'->>'nextCheckAt')::timestamptz,'-infinity')<=clock_timestamp()) RETURNING id",
+									[row.id, JSON.stringify(receipt)],
+								);
+								if (!claimed.rowCount) {
+									complete = false;
+									continue;
+								}
+								const verified =
+									await options.provider?.deletionComplete(receipt);
+								receipt.verification.outcome = verified
+									? "verified"
+									: "pending";
+								if (verified)
+									receipt.verification.verifiedAt = new Date().toISOString();
+								await pool.query(
+									"UPDATE foundation.analytics_subjects SET receipt=$2 WHERE id=$1",
+									[row.id, JSON.stringify(receipt)],
+								);
+								if (!verified) {
+									complete = false;
+									continue;
+								}
+							} catch {
+								complete = false;
+								continue;
+							}
+						}
+						await pool.query(
+							"UPDATE foundation.analytics_subjects SET deletion_state='complete' WHERE id=$1",
+							[row.id],
+						);
+						await pool.query(
+							"DELETE FROM foundation.analytics_events WHERE subject_id=$1",
+							[row.id],
+						);
+					} finally {
+						await c.query("SELECT pg_advisory_unlock(hashtextextended($1,0))", [
+							key,
+						]);
 					}
-					await pool.query(
-						"UPDATE foundation.analytics_subjects SET deletion_state='complete' WHERE id=$1",
-						[row.id],
-					);
-					await pool.query(
-						"DELETE FROM foundation.analytics_events WHERE subject_id=$1",
-						[row.id],
-					);
 				}
 				return complete;
 			} catch (e) {
