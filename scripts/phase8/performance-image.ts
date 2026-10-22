@@ -6,6 +6,11 @@ import { resolve } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import { promisify } from "node:util";
 import { sourceFingerprint } from "../phase1/source-fingerprint";
+import {
+	type PerformanceEnvironment,
+	performanceEnvironment,
+	performanceEnvironmentNames,
+} from "./performance-environment";
 
 const execute = promisify(execFile);
 async function docker(args: string[]) {
@@ -27,20 +32,25 @@ async function docker(args: string[]) {
 /**
  * Map known disposable Compose loopback endpoints to their private service addresses.
  * @param value Fixture URL, including any restricted-role credentials and database name.
+ * @param profile Validated isolated profile containing only this attempt's published ports.
  * @returns A URL on the Compose network only for the exact documented protocol/loopback/port
  * combinations. Externally supplied URLs and unknown local ports are returned unchanged.
  * No credentials are logged; malformed URL input throws before container startup.
  */
-export function performanceContainerUrl(value: string) {
+export function performanceContainerUrl(
+	value: string,
+	profile: PerformanceEnvironment,
+) {
+	const { ports } = profile;
 	const url = new URL(value);
 	if (!["127.0.0.1", "localhost"].includes(url.hostname)) return value;
 	const services: Record<string, readonly [string, string]> = {
-		"postgres:55433": ["postgres", "5432"],
-		"postgresql:55433": ["postgres", "5432"],
-		"postgres:55434": ["control-postgres", "5432"],
-		"postgresql:55434": ["control-postgres", "5432"],
-		"http:18081": ["openfga", "8080"],
-		"http:19000": ["storage", "8333"],
+		[`postgres:${ports.postgres}`]: ["postgres", "5432"],
+		[`postgresql:${ports.postgres}`]: ["postgres", "5432"],
+		[`postgres:${ports.control}`]: ["control-postgres", "5432"],
+		[`postgresql:${ports.control}`]: ["control-postgres", "5432"],
+		[`http:${ports.openfga}`]: ["openfga", "8080"],
+		[`http:${ports.storage}`]: ["storage", "8333"],
 	};
 	const service = services[`${url.protocol}${url.port}`];
 	if (!service) return value;
@@ -54,6 +64,16 @@ export function performanceContainerUrl(value: string) {
  * Throws before load if the image is stale or startup fails. Caller must call stop before fixture cleanup.
  */
 export async function startPerformanceImage(env: Record<string, string>) {
+	const profile = performanceEnvironment();
+	const names = performanceEnvironmentNames(profile);
+	const [network] = JSON.parse(
+		await docker(["network", "inspect", names.network]),
+	);
+	assert.equal(
+		network.Labels?.["com.docker.compose.project"],
+		names.project,
+		"Benchmark network must belong to this attempt",
+	);
 	const reference = process.env.TEST_IMAGE ?? "saas-cook:phase2";
 	const metadata = JSON.parse(await docker(["image", "inspect", reference]))[0];
 	assert.equal(
@@ -82,7 +102,7 @@ export async function startPerformanceImage(env: Record<string, string>) {
 		Object.entries(env).map(([key, value]) => [
 			key,
 			/(?:DATABASE_URL|API_URL|ENDPOINT)$/.test(key)
-				? performanceContainerUrl(value)
+				? performanceContainerUrl(value, profile)
 				: value,
 		]),
 	);
@@ -91,7 +111,9 @@ export async function startPerformanceImage(env: Record<string, string>) {
 		"run",
 		"--detach",
 		"--network",
-		"saas-cook-phase1_default",
+		names.network,
+		"--label",
+		`dev.saas-cook.phase8.image=${names.project}`,
 		"--read-only",
 		"--tmpfs",
 		"/tmp:rw,noexec,nosuid,size=128m",
