@@ -12,7 +12,7 @@ The checkout directory and root package are `saas-cook`, and active workspace pa
 
 The template builds one Docker image containing the web app and background worker, with external data services configured at runtime.
 
-**Status: M1 Foundation is complete through Phase 4.** The [Foundation acceptance record](docs/foundation/acceptance.md) covers identity and tenancy, direct-Organization Projects, scoped service accounts/API keys, local capacity, the full authorization benchmark, current image/security checks, hosted CI and two refreshed skill evaluations. See the [Phase 2 setup](docs/phase2/README.md), [Phase 3 upgrade guide](docs/phase3/README.md) and [Phase 4 skills](docs/phase4/README.md). Phase 5 implementation and its outstanding acceptance gates are recorded [here](docs/phase5/acceptance.md). Phase 6 is partially implemented: [search, activity and API-key administration](docs/phase6/README.md). The remaining Phase 6 modules, Phases 7–8 and Backoffice remain pending.
+**Status: M1 Foundation and M2 Commercial core are accepted.** The [Foundation acceptance record](docs/foundation/acceptance.md), [Phase 5 acceptance](docs/phase5/acceptance.md) and [Phase 6 acceptance](docs/phase6/acceptance.md) record their scope and evidence. Phase 6 uses revised asynchronous-provider criteria; provider erasure remains unverified. The [next planned delivery](docs/06-delivery-roadmap.md#commercial-release-sequence--2026-10-22) is Phase 8 hardening and a Commercial template release directly after Phase 6. Phase 7 is an optional Enterprise extension deferred until later; M3 remains pending until Phase 7 and applicable Enterprise hardening pass. Optional Backoffice also remains deferred.
 
 ## Local development
 
