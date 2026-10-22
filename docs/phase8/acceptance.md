@@ -35,6 +35,19 @@ The `skills` gate requires the independent evidence and its reviewed applicabili
 
 ## Merge and sign-off procedure
 
+The opened stack is:
+
+| Order | Work package | PR / current base |
+| --- | --- | --- |
+| 1 | P8-01 scope and evidence contract | [#14](https://github.com/dani-beltran/saas-cook/pull/14) → `main` |
+| 2 | P8-02 image and evidence foundation | [#15](https://github.com/dani-beltran/saas-cook/pull/15) → #14 |
+| 3 | P8-05 migration and compatibility | [#16](https://github.com/dani-beltran/saas-cook/pull/16) → #15 |
+| 4 | P8-06 customer accessibility | [#17](https://github.com/dani-beltran/saas-cook/pull/17) → #16 |
+| 5 | P8-04 failure and recovery | [#18](https://github.com/dani-beltran/saas-cook/pull/18) → #17 |
+| 6 | P8-03 sustained image performance | [#19](https://github.com/dani-beltran/saas-cook/pull/19) → #18 |
+| 7 | P8-07 template and skill workflows | [#20](https://github.com/dani-beltran/saas-cook/pull/20) → #19 |
+| 8 | P8-08 candidate evidence and sign-off | [#21](https://github.com/dani-beltran/saas-cook/pull/21) → #20 |
+
 1. Merge the scope/evidence contract, image foundation, compatibility, customer accessibility, recovery, performance, template and final evidence PRs in that order. The implementation stack uses one predecessor per PR to keep shared-file diffs reviewable; the work itself was implemented in parallel.
 2. After each squash merge, restack the next PR onto updated `main`, retarget it to `main`, inspect its remaining diff and rerun required checks. Preserve the old base commit while restacking. Do not merge a child with an unresolved parent or stale checks.
 3. On the final merged candidate, inventory tags again, install frozen dependencies, rebuild both images and run the declared release matrix. CI's manual `phase8_full=true` dispatch runs the sustained image workload instead of its smoke. Reserve an otherwise idle load host.
