@@ -1,6 +1,10 @@
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { dirname, join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { publicConfig } from "../../packages/config/src/client";
 import {
+	adoptTemplateFixture,
 	templatePresetEnvironment,
 	validateTemplatePreset,
 } from "./template-workflows";
@@ -70,4 +74,34 @@ describe("declared template presets use actual runtime validation", () => {
 			).toThrow();
 		},
 	);
+});
+
+it("renames the actual optional Backoffice image references and preserves a completed repeat", async () => {
+	const candidate = await mkdtemp(join(tmpdir(), "phase8-image-rename-"));
+	const names = [
+		"scripts/backoffice/image-build.ts",
+		"scripts/backoffice/image-test.ts",
+		"scripts/phase8/image.ts",
+	];
+	try {
+		await writeFile(
+			join(candidate, ".phase8-disposable-template"),
+			"synthetic adoption fixture\n",
+		);
+		for (const name of names) {
+			const source = await readFile(name, "utf8");
+			expect(source).toContain("saas-cook-backoffice:local");
+			await mkdir(dirname(join(candidate, name)), { recursive: true });
+			await writeFile(join(candidate, name), source);
+		}
+		expect(await adoptTemplateFixture(candidate, names)).toEqual(names);
+		for (const name of names) {
+			const adopted = await readFile(join(candidate, name), "utf8");
+			expect(adopted).toContain("northstar-work-backoffice:local");
+			expect(adopted).not.toContain("saas-cook-backoffice:local");
+		}
+		expect(await adoptTemplateFixture(candidate, names)).toEqual([]);
+	} finally {
+		await rm(candidate, { recursive: true, force: true });
+	}
 });

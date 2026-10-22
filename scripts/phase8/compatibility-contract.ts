@@ -28,22 +28,24 @@ const manifestSchema = z.strictObject({
 	upgradePolicy: z.literal("initial-release-exact-contract"),
 });
 
-async function digestFiles(files: string[]) {
+async function digestFiles(files: string[], root: string) {
 	const hash = createHash("sha256");
 	for (const file of files.sort())
 		hash
 			.update(file)
 			.update("\0")
-			.update(await readFile(file))
+			.update(await readFile(path.join(root, file)))
 			.update("\0");
 	return hash.digest("hex");
 }
-async function sourceFiles(directory: string): Promise<string[]> {
+async function sourceFiles(directory: string, root: string): Promise<string[]> {
 	const files: string[] = [];
-	for (const entry of await readdir(directory, { withFileTypes: true })) {
+	for (const entry of await readdir(path.join(root, directory), {
+		withFileTypes: true,
+	})) {
 		const file = path.join(directory, entry.name);
-		if (entry.isDirectory()) files.push(...(await sourceFiles(file)));
-		else if (file.endsWith(".ts") && !file.endsWith(".test.ts"))
+		if (entry.isDirectory()) files.push(...(await sourceFiles(file, root)));
+		else if (/\.tsx?$/.test(file) && !/\.test\.tsx?$/.test(file))
 			files.push(file);
 	}
 	return files;
@@ -51,13 +53,20 @@ async function sourceFiles(directory: string): Promise<string[]> {
 
 /**
  * Build deterministic compatibility metadata from current reviewed source files.
- * Run at the repository root; target selects which application owns the manifest.
+ * Target selects which application owns the manifest. sourceRoot defaults to the
+ * current repository and can select a disposable source copy for regression checks.
  * Initial release permits exact contracts only, never guesses an older version pair.
  * Returns metadata without secrets; unreadable files or invalid journals throw.
  */
-export async function compatibilityManifest(target: "customer" | "backoffice") {
+export async function compatibilityManifest(
+	target: "customer" | "backoffice",
+	sourceRoot = process.cwd(),
+) {
 	const journal = JSON.parse(
-		await readFile("packages/db/migrations/meta/_journal.json", "utf8"),
+		await readFile(
+			path.join(sourceRoot, "packages/db/migrations/meta/_journal.json"),
+			"utf8",
+		),
 	) as { entries: Array<{ idx: number; tag: string }> };
 	if (
 		!journal.entries.length ||
@@ -73,10 +82,20 @@ export async function compatibilityManifest(target: "customer" | "backoffice") {
 	const operatorSchema = journal.entries.find(({ tag }) =>
 		tag.endsWith("_backoffice_identity"),
 	)?.tag;
+	const runtimePackages = [
+		"db",
+		"authz",
+		"auth",
+		"config",
+		"api-contracts",
+		"api",
+		"email",
+		"observability",
+	];
 	const shared = (
 		await Promise.all(
-			["db", "authz", "auth", "config", "api-contracts"].map((name) =>
-				sourceFiles(`packages/${name}/src`),
+			runtimePackages.map((name) =>
+				sourceFiles(`packages/${name}/src`, sourceRoot),
 			),
 		)
 	).flat();
@@ -86,21 +105,32 @@ export async function compatibilityManifest(target: "customer" | "backoffice") {
 		applicationSchema: {
 			min: schemas.length,
 			max: schemas.length,
-			historySha256: await digestFiles([
-				"packages/db/migrations/meta/_journal.json",
-				...schemas,
-			]),
+			historySha256: await digestFiles(
+				["packages/db/migrations/meta/_journal.json", ...schemas],
+				sourceRoot,
+			),
 		},
 		operatorSchema,
 		tenantModel: modelHash,
 		operatorModel: target === "backoffice" ? operatorModelHash : null,
-		controlContractSha256: await digestFiles([
-			"packages/authz/src/control.ts",
-			"packages/authz/src/journal.ts",
-			"packages/authz/src/recovery.ts",
-			"packages/authz/src/platform/schema.ts",
-		]),
-		sharedServiceSha256: await digestFiles(shared),
+		controlContractSha256: await digestFiles(
+			[
+				"packages/authz/src/control.ts",
+				"packages/authz/src/journal.ts",
+				"packages/authz/src/recovery.ts",
+				"packages/authz/src/platform/schema.ts",
+			],
+			sourceRoot,
+		),
+		sharedServiceSha256: await digestFiles(
+			[
+				"bun.lock",
+				"package.json",
+				...runtimePackages.map((name) => `packages/${name}/package.json`),
+				...shared,
+			],
+			sourceRoot,
+		),
 		protocols: { deletionJournal: 1, stripeApi: stripeApiVersion },
 		upgradePolicy: "initial-release-exact-contract",
 	});

@@ -157,7 +157,10 @@ export async function adoptTemplateFixture(
 		if (name === "package.json" || name.startsWith("scripts/"))
 			after = after
 				.replaceAll("saas-cook:phase2", "northstar-work:phase2")
-				.replaceAll("saas-cook:backoffice", "northstar-work:backoffice");
+				.replaceAll(
+					"saas-cook-backoffice:local",
+					"northstar-work-backoffice:local",
+				);
 		if (name === "infra/docker/Dockerfile")
 			after = after.replaceAll(
 				'org.opencontainers.image.title="saas-cook',
