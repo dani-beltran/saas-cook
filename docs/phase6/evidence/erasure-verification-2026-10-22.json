@@ -266,20 +266,22 @@
 		],
 		"newSubjectsCreated": 0,
 		"newDeletionRequests": 0,
-		"liveLateUncertainIngestionCompletion": "deferred operational follow-up; not passed",
-		"resumptionCommand": "node --env-file=.env.providers --import tsx scripts/phase6/posthog-erasure.ts artifacts/phase6-erasure-verification/existing-subject.json"
+		"liveLateUncertainIngestionCompletion": "not required by explicit user decision; not executed or passed",
+		"resumptionCommand": "node --env-file=.env.providers --import tsx scripts/phase6/posthog-erasure.ts artifacts/phase6-erasure-verification/existing-subject.json",
+		"disposition": "closed-provider-owned-handoff",
+		"manualFollowUpRequired": false,
+		"erasureVerified": false,
+		"decision": "posthog-handoff-2026-10-22.json"
 	},
 	"acceptance": {
 		"criteriaRevisionAuthorized": true,
 		"closed": true,
 		"remainingReleaseGates": [],
 		"operationalFollowUps": [
-			"original synthetic erasure until verified",
-			"dependent actual-provider late/uncertain-ingestion completion drill",
 			"production worker/alert routing and provider erasure guarantees"
 		],
 		"acceptedImplementationSha256": "cbf62a7bebe2e3789df879196b52bb1c88f04c0da459687eedc59fe0c42186a2",
-		"acceptanceBasis": "User-authorized asynchronous-provider criteria; unresolved provider erasure/drill are retained operational follow-ups and are not marked passed."
+		"acceptanceBasis": "User-authorized asynchronous-provider criteria and provider-owned handoff without further manual follow-up; historical erasure remains unverified."
 	},
 	"retainedFailures": [
 		{

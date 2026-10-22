@@ -46,12 +46,8 @@ ORDER BY receipt->>'requestedAt';
 
 Application backup restoration still replays the independent deletion journal and subject/attempt registry before readiness. Application receipts/schedules can roll back with a backup; uncertain attempts cannot be assumed erased. Recovery must resolve provider identities/receipts before releasing pending cleanup. This environment does not establish independent-store retention, production worker uptime, alert delivery or provider physical/backup erasure guarantees.
 
-### Existing acceptance subject
+### Historical acceptance subject
 
-The original synthetic probe predates the application-owned subject queue. Its explicit resumable state is retained in [the tracked manifest](evidence/posthog-erasure-subject.json); mutable observations live under ignored `artifacts/phase6-erasure-verification/existing-subject.json`. Preserve both with acceptance evidence. Resume only this subject, using configured provider credentials:
+The original synthetic probe predates the application-owned subject queue. Its [manifest](evidence/posthog-erasure-subject.json) and ignored observations are retained as historical evidence. The last observation was pending, and erasure remains unverified.
 
-```sh
-node --env-file=.env.providers --import tsx scripts/phase6/posthog-erasure.ts artifacts/phase6-erasure-verification/existing-subject.json
-```
-
-The command checks provider scope, never captures or requests another deletion, atomically saves pending/error/verified observations, and exits without a daemon. If the mutable file is missing, copy the tracked manifest to that path first. Run one operator invocation at a time. No recurring chat automation or unattended local daemon is configured; production application-owned jobs use the normal worker. This synthetic request must remain listed until verified; moving it out of the M2 release gate does not mark it erased. The actual-provider late/uncertain-ingestion completion drill remains a separately tracked provider follow-up, while real-service fault tests of the application barrier remain mandatory for M2.
+The user [closed the manual follow-up](evidence/posthog-handoff-2026-10-22.json) and removed the dependent actual-provider late/uncertain-ingestion completion drill. PostHog owns execution of the submitted deletion. No further manual polling, new subject, or live drill is required; no recurring chat automation or historical-probe daemon exists. The standalone probe command remains available as a diagnostic utility, without an ongoing obligation to run it. Application-owned jobs continue to use the normal worker verification, suppression and retry behavior described above.
