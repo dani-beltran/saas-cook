@@ -8,8 +8,10 @@ import { Pool, type PoolClient } from "pg";
  * Apply reviewed migrations under the dedicated migrator role and advisory lock.
  * Accepts a database URL and optional fixture migration directory. Existing applied
  * hashes/timestamps must be an exact prefix of local history; changed, missing or
- * future migrations reject before DDL. Runtime processes must never call this.
- * Resolves after migration and always closes its pool; SQL/history errors propagate.
+ * future migrations and unordered local timestamps reject before DDL. Runtime
+ * processes must never call this. Resolves only after the complete applied history
+ * matches local history and always closes its pool. SQL/history errors propagate;
+ * a postcondition failure may follow committed DDL and requires forward repair.
  */
 export async function runMigrations(options: {
 	databaseUrl: string;
@@ -37,6 +39,18 @@ export async function runMigrations(options: {
 			options.migrationsFolder ??
 			fileURLToPath(new URL("../migrations", import.meta.url));
 		const expected = readMigrationFiles({ migrationsFolder });
+		if (
+			expected.some(
+				(migration, index) =>
+					!Number.isSafeInteger(migration.folderMillis) ||
+					migration.folderMillis < 0 ||
+					(index > 0 &&
+						migration.folderMillis <= expected[index - 1].folderMillis),
+			)
+		)
+			throw new Error(
+				"Local migration journal timestamps must be nonnegative safe integers in strictly increasing order",
+			);
 		const exists = await client.query(
 			"SELECT to_regclass('drizzle.__drizzle_migrations') AS name",
 		);
@@ -59,6 +73,20 @@ export async function runMigrations(options: {
 		await migrate(drizzle(client), {
 			migrationsFolder,
 		});
+		const completed = await client.query<{ hash: string; created_at: string }>(
+			"SELECT hash,created_at FROM drizzle.__drizzle_migrations ORDER BY created_at,id",
+		);
+		if (
+			completed.rows.length !== expected.length ||
+			completed.rows.some(
+				(row, index) =>
+					row.hash !== expected[index]?.hash ||
+					Number(row.created_at) !== expected[index]?.folderMillis,
+			)
+		)
+			throw new Error(
+				"Migration completed without the exact expected history; inspect committed changes and use forward repair",
+			);
 	} finally {
 		if (client) {
 			await client
