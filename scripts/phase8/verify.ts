@@ -20,6 +20,7 @@ const commands: Record<string, string[][]> = {
 	"security-dependencies": [["security:scan", "dependencies"]],
 	accessibility: [
 		["test:e2e", "tests/e2e/accessibility.spec.ts", "--workers=2"],
+		["storybook:build"],
 		["test:theme", "--workers=4"],
 	],
 	compatibility: [
