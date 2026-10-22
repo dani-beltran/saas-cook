@@ -50,7 +50,8 @@ function interrupt(reason: string) {
 	interrupted = true;
 	child?.kill("SIGTERM");
 	if (child && !forceTimer)
-		forceTimer = setTimeout(() => child?.kill("SIGKILL"), 30000);
+		// Allow the driver's bounded fixture cleanup and 90-second wrapper handshake to retain failure evidence.
+		forceTimer = setTimeout(() => child?.kill("SIGKILL"), 120000);
 }
 const log = performanceLog(logPath, () => {
 	infrastructureHealthy = false;
