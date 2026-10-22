@@ -15,6 +15,7 @@
 	"scripts": {
 		"phase8:performance": "node --import tsx scripts/phase8/performance.ts",
 		"phase8:performance:smoke": "node --import tsx scripts/phase8/performance.ts --smoke",
+		"phase8:verify": "node --import tsx scripts/phase8/verify.ts",
 		"phase8:image": "node --import tsx scripts/phase8/image.ts",
 		"phase8:compatibility": "node --import tsx scripts/phase8/compatibility.ts",
 		"phase8:recovery": "node --import tsx scripts/phase8/recovery.ts",

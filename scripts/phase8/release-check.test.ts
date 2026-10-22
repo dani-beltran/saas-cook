@@ -15,7 +15,7 @@ function fixture() {
 			JSON.stringify({
 				version: 1,
 				gate,
-				preset: "commercial-local",
+				preset: gate === "image-backoffice" ? "backoffice" : "commercial-local",
 				source: { ...source, dirty: false },
 				startedAt: "2026-10-22T00:00:00.000Z",
 				finishedAt: "2026-10-22T00:01:00.000Z",
@@ -23,7 +23,9 @@ function fixture() {
 				checks: [{ name: "behavior", passed: true }],
 				limitations: [],
 				artifacts: [{ path: "artifacts/report.json", sha256: sha(supporting) }],
-				...(gate.startsWith("image-")
+				...(gate.startsWith("image-") ||
+				gate === "performance-full" ||
+				gate === "recovery"
 					? {
 							image: {
 								id: `sha256:${"c".repeat(64)}`,
@@ -93,5 +95,25 @@ describe("release completion cannot be inferred from partial evidence", () => {
 		await expect(checkReleaseIndex(f.index, f.read)).rejects.toThrow(
 			"failed, stale, dirty",
 		);
+	});
+	it("requires the declared preset and same customer image for workload and recovery evidence", async () => {
+		for (const gate of ["performance-full", "recovery"] as const) {
+			for (const change of ["preset", "missing-image", "id", "architecture"]) {
+				const f = fixture();
+				const entry = f.index.entries.find((entry) => entry.gate === gate);
+				if (!entry) throw new Error("Missing test entry");
+				const receipt = JSON.parse(
+					Buffer.from(await f.read(entry.receipt)).toString("utf8"),
+				);
+				if (change === "preset") receipt.preset = "foundation";
+				else if (change === "missing-image") delete receipt.image;
+				else if (change === "id") receipt.image.id = `sha256:${"d".repeat(64)}`;
+				else receipt.image.architecture = "arm64";
+				const bytes = Buffer.from(JSON.stringify(receipt));
+				f.files.set(entry.receipt, bytes);
+				entry.sha256 = f.sha(bytes);
+				await expect(checkReleaseIndex(f.index, f.read)).rejects.toThrow();
+			}
+		}
 	});
 });

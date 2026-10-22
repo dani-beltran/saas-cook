@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
+import { isDeepStrictEqual } from "node:util";
 import { z } from "zod";
 import { evidenceSchema } from "./evidence";
 
@@ -58,6 +59,7 @@ export async function checkReleaseIndex(
 			releaseGates.length
 	)
 		throw new Error("Every release gate needs exactly one receipt");
+	const receipts = new Map<string, z.output<typeof evidenceSchema>>();
 	for (const entry of index.entries) {
 		const bytes = await read(entry.receipt);
 		if (createHash("sha256").update(bytes).digest("hex") !== entry.sha256)
@@ -77,7 +79,18 @@ export async function checkReleaseIndex(
 			);
 		if (!receipt.artifacts.length)
 			throw new Error(`Supporting artifacts are required: ${entry.gate}`);
-		if (entry.gate.startsWith("image-") && !receipt.image)
+		const preset =
+			entry.gate === "image-backoffice" ? "backoffice" : "commercial-local";
+		if (receipt.preset !== preset)
+			throw new Error(
+				`Receipt does not cover the declared release preset: ${entry.gate}`,
+			);
+		if (
+			(entry.gate.startsWith("image-") ||
+				entry.gate === "performance-full" ||
+				entry.gate === "recovery") &&
+			!receipt.image
+		)
 			throw new Error(`Immutable image identity is required: ${entry.gate}`);
 		for (const artifact of receipt.artifacts) {
 			artifactPath.parse(artifact.path);
@@ -88,6 +101,15 @@ export async function checkReleaseIndex(
 			)
 				throw new Error(`Supporting artifact digest mismatch: ${entry.gate}`);
 		}
+		receipts.set(entry.gate, receipt);
 	}
+	for (const gate of ["performance-full", "recovery"])
+		if (
+			!isDeepStrictEqual(
+				receipts.get(gate)?.image,
+				receipts.get("image-customer")?.image,
+			)
+		)
+			throw new Error(`Evidence must use the accepted customer image: ${gate}`);
 	return index;
 }
