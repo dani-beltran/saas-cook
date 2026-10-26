@@ -81,7 +81,7 @@
 		"test:image:backoffice": "node --import tsx scripts/backoffice/image-test.ts"
 	},
 	"devDependencies": {
-		"next": "16.3.8",
+		"next": "16.4.1",
 		"react": "19.3.0",
 		"react-dom": "19.3.0",
 		"better-auth": "1.7.5",
@@ -97,7 +97,7 @@
 		"@react-email/components": "1.0.12",
 		"@react-email/render": "2.1.0",
 		"react-email": "6.9.5",
-		"zod": "4.6.5",
+		"zod": "4.6.6",
 		"react-hook-form": "7.88.0",
 		"@hookform/resolvers": "5.9.1",
 		"vitest": "5.0.1",
