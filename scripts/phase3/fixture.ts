@@ -1,5 +1,4 @@
 import { randomUUID } from "node:crypto";
-import { Pool } from "pg";
 import { createAuthorizationService } from "../../packages/authz/src/index";
 import { createResourceService } from "../../packages/db/src/resources";
 import {
@@ -7,30 +6,55 @@ import {
 	type TenantActor,
 } from "../../packages/db/src/tenancy";
 import { createTestInstallation } from "../../packages/testing/src/installation";
+import {
+	closeFixturePool,
+	createFixturePool,
+	type FixturePoolOptions,
+} from "../../packages/testing/src/pool";
 
-/** Disposable real-service fixture; application operations always use the restricted role. */
+/** Creates disposable real-service resources with restricted application roles.
+ * @param options Resource policy, pool size and optional failure observation/SQL bounds.
+ * @returns Services, fixture pools and cleanup that attempts all pool/installation closes.
+ * @throws Setup or cleanup failures; raw database errors can contain connection details.
+ */
 export async function resourceFixture(
-	options: {
+	options: FixturePoolOptions & {
 		defaultProjectCapacity?: number | null;
 		defaultProjectCreatesPerMonth?: number | null;
 		onFenceWait?: (milliseconds: number) => void;
 		poolSize?: number;
 	} = {},
 ) {
-	const installation = await createTestInstallation();
-	const app = new Pool({ connectionString: installation.migrationUrl, max: 5 });
-	const web = new Pool({
-		connectionString: installation.env.DATABASE_URL,
-		max: options.poolSize ?? 8,
-	});
-	const identity = new Pool({
-		connectionString: installation.env.IDENTITY_DATABASE_URL,
-		max: 5,
-	});
-	const reader = new Pool({
-		connectionString: installation.env.CONTROL_DATABASE_URL,
-		max: options.poolSize ?? 8,
-	});
+	const installation = await createTestInstallation(options);
+	const app = createFixturePool(
+		{ connectionString: installation.migrationUrl, max: 5 },
+		"resource-application",
+		options,
+	);
+	const web = createFixturePool(
+		{
+			connectionString: installation.env.DATABASE_URL,
+			max: options.poolSize ?? 8,
+		},
+		"resource-web",
+		options,
+	);
+	const identity = createFixturePool(
+		{
+			connectionString: installation.env.IDENTITY_DATABASE_URL,
+			max: 5,
+		},
+		"resource-identity",
+		options,
+	);
+	const reader = createFixturePool(
+		{
+			connectionString: installation.env.CONTROL_DATABASE_URL,
+			max: options.poolSize ?? 8,
+		},
+		"resource-control",
+		options,
+	);
 	const authorization = createAuthorizationService({
 		controlPool: reader,
 		installationId: installation.env.INSTALLATION_ID,
@@ -99,8 +123,19 @@ export async function resourceFixture(
 		).rows[0].id;
 	}
 	async function cleanup() {
-		await Promise.all([app.end(), web.end(), identity.end(), reader.end()]);
-		await installation.cleanup();
+		const closed = await Promise.allSettled(
+			[app, web, identity, reader].map((pool) => closeFixturePool(pool)),
+		);
+		const failures: unknown[] = closed.flatMap((result) =>
+			result.status === "rejected" ? [result.reason] : [],
+		);
+		try {
+			await installation.cleanup();
+		} catch (error) {
+			failures.push(error);
+		}
+		if (failures.length)
+			throw new AggregateError(failures, "Resource fixture cleanup failed");
 	}
 	return {
 		installation,

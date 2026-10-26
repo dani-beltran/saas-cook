@@ -8,10 +8,36 @@ import {
 	PutBucketVersioningCommand,
 	S3Client,
 } from "@aws-sdk/client-s3";
-/** Disposable local bucket. Never reads ambient cloud credentials or touches an existing bucket. */
-export async function createTestFileStorage(origin: string) {
+/**
+ * Create an owned disposable bucket using fixed synthetic credentials.
+ * @param origin Browser CORS origin for this fixture.
+ * @param endpoint Optional explicit loopback HTTP endpoint for isolated service stacks.
+ * @returns Restricted application configuration and cleanup for only the generated bucket.
+ * Rejects remote/authenticated endpoints before network work; setup/cleanup service errors propagate.
+ */
+export async function createTestFileStorage(
+	origin: string,
+	endpoint = "http://127.0.0.1:19000",
+) {
+	let parsed: URL;
+	try {
+		parsed = new URL(endpoint);
+	} catch {
+		throw new Error("Test storage requires an explicit local HTTP endpoint");
+	}
+	if (
+		parsed.protocol !== "http:" ||
+		!["127.0.0.1", "localhost"].includes(parsed.hostname) ||
+		!parsed.port ||
+		parsed.username ||
+		parsed.password ||
+		parsed.pathname !== "/" ||
+		parsed.search ||
+		parsed.hash
+	)
+		throw new Error("Test storage requires an explicit local HTTP endpoint");
 	const client = new S3Client({
-		endpoint: "http://127.0.0.1:19000",
+		endpoint,
 		region: "us-east-1",
 		forcePathStyle: true,
 		credentials: {
@@ -73,7 +99,7 @@ export async function createTestFileStorage(origin: string) {
 			cleanup,
 			env: {
 				FILES_ENABLED: "true",
-				FILES_S3_ENDPOINT: "http://127.0.0.1:19000",
+				FILES_S3_ENDPOINT: endpoint,
 				FILES_S3_REGION: "us-east-1",
 				FILES_S3_BUCKET: bucket,
 				FILES_S3_UPLOAD_KEY: "local_phase1",
