@@ -118,6 +118,13 @@ export const operatorGrant = bo
 		},
 		(t) => [
 			index("operator_grant_lookup").on(t.userId, t.organizationId),
+			index("operator_directory_scope").on(
+				t.userId,
+				t.epoch,
+				t.environment,
+				t.organizationId,
+				t.id,
+			),
 			pgPolicy("operator_management", {
 				for: "all",
 				to: ["saas_cook_migrator", "saas_cook_bo_manager"],
@@ -127,7 +134,7 @@ export const operatorGrant = bo
 			pgPolicy("operator_scope", {
 				for: "select",
 				to: ["saas_cook_bo_query"],
-				using: sql`${t.organizationId}::text = current_setting('backoffice.organization_id', true) AND ${t.userId} = current_setting('backoffice.operator_id', true) AND ${t.epoch}::text = current_setting('backoffice.epoch', true) AND ${t.environment} = current_setting('backoffice.environment', true)`,
+				using: sql`(${t.organizationId}::text = current_setting('backoffice.organization_id', true) OR current_setting('backoffice.directory', true) = 'on') AND ${t.userId} = current_setting('backoffice.operator_id', true) AND ${t.epoch}::text = current_setting('backoffice.epoch', true) AND ${t.environment} = current_setting('backoffice.environment', true)`,
 			}),
 		],
 	)

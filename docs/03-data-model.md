@@ -195,3 +195,16 @@ A billing account holds one current subscription projection; immutable sold cata
 command/inbox/reconciliation/audit receipts retain history. The logical SUBSCRIPTION relationship
 above does not authorize multiple concurrent provider subscriptions or a second charging system.
 No applied predecessor migration is rewritten. See [fresh/upgrade evidence](phase5/acceptance.md).
+
+### Backoffice directory extension (0026)
+
+The optional organization directory uses existing `backoffice.grants` with a
+composite `(user_id, epoch, environment, organization_id, id)` index. Forced RLS
+allows directory mode to read only the current operator's epoch/environment scope;
+the existing exact-organization mode remains supported. No customer table SELECT
+privileges or new data projections are granted. Directory transactions acquire
+organization fences in UUID order and retain the minimum authority/page deadline
+through the deferred audit expiry guard. Page and target disclosures use existing
+append-only audit rows, with no personal filter text or cursor payloads. Full
+field, pagination and compatibility details are in the
+[BO-02.1 decision](feature-briefs/backoffice.md#bo-021-directory-evolution--2026-10-22).

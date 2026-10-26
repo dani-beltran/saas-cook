@@ -183,6 +183,13 @@
 			"when": 1792586387494,
 			"tag": "0025_backoffice_identity",
 			"breakpoints": true
+		},
+		{
+			"idx": 26,
+			"version": "7",
+			"when": 1792688615444,
+			"tag": "0026_backoffice_directory",
+			"breakpoints": true
 		}
 	]
 }

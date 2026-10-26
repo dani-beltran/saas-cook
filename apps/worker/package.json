@@ -11,7 +11,7 @@
 		"@saas-cook/observability": "workspace:*",
 		"pg": "8.23.0",
 		"pg-boss": "12.33.4",
-		"zod": "4.6.5",
+		"zod": "4.6.6",
 		"@saas-cook/authz": "workspace:*",
 		"@saas-cook/email": "workspace:*",
 		"@saas-cook/api": "workspace:*"

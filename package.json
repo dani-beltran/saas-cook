@@ -70,7 +70,7 @@
 		"analytics:report": "node --env-file-if-exists=.env --import tsx scripts/phase6/command.ts analytics-report",
 		"flags:set": "node --env-file-if-exists=.env --import tsx scripts/phase6/command.ts flags-set",
 		"control:schema": "node --env-file-if-exists=.env --import tsx scripts/phase6/command.ts control-schema",
-		"dev:backoffice": "node --env-file-if-exists=.env node_modules/next/dist/bin/next dev apps/backoffice --hostname 127.0.0.1 --port 3001",
+		"dev:backoffice": "node --env-file-if-exists=.env --import tsx scripts/backoffice/dev.ts",
 		"build:customer": "node node_modules/turbo/bin/turbo run build --filter=@saas-cook/web && node --import tsx scripts/phase1/build-runtime.ts",
 		"build:backoffice": "node node_modules/turbo/bin/turbo run build --filter=@saas-cook/backoffice-app && node --import tsx scripts/backoffice/build-runtime.ts",
 		"start:backoffice": "node --env-file-if-exists=.env apps/backoffice/.next/standalone/apps/backoffice/server.js",
