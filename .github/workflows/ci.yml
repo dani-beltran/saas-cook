@@ -200,6 +200,7 @@ jobs:
         run: bun run image:build
       - run: bun run services:up
       - run: bun run phase8:image customer
+      - run: bun run phase8:recovery
       - name: Record image identity
         if: always()
         run: |

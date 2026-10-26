@@ -9,6 +9,9 @@ import { createResourceService } from "../resources";
 import { createBulkService } from "./service";
 
 let worker: Pool;
+let loseCreateAcknowledgement = false;
+let exportOutage = false;
+let exportCalls = 0;
 let f: Awaited<ReturnType<typeof resourceFixture>>,
 	bucket: Awaited<ReturnType<typeof createTestFileStorage>>,
 	service: ReturnType<typeof createBulkService>,
@@ -49,7 +52,18 @@ beforeAll(async () => {
 			operationKey: randomUUID(),
 		})
 	).id;
-	const storage = configuredFileStorage(bucket.env);
+	const actualStorage = configuredFileStorage(bucket.env);
+	if (!actualStorage) throw new Error("Disposable storage required");
+	const storage = {
+		...actualStorage,
+		async writeExport(key: string, bytes: Buffer) {
+			exportCalls++;
+			if (exportOutage) throw new Error("Synthetic export storage outage");
+			if (!actualStorage.writeExport)
+				throw new Error("Export storage required");
+			return actualStorage.writeExport(key, bytes);
+		},
+	};
 	files = createFileService(
 		f.web,
 		{ authorize: f.authorization.authorizeResource },
@@ -82,7 +96,17 @@ beforeAll(async () => {
 			secret: "synthetic-bulk-key-0000000000000000000",
 			storage,
 			files,
-			resources: workerResources,
+			resources: {
+				...workerResources,
+				async createProject(...args) {
+					const result = await workerResources.createProject(...args);
+					if (loseCreateAcknowledgement) {
+						loseCreateAcknowledgement = false;
+						throw new Error("Synthetic lost create acknowledgement");
+					}
+					return result;
+				},
+			},
 			ready: f.authorization.publication,
 			resolveActor: async (session, user) => {
 				if (session !== actor.sessionId || user !== actor.userId || expired)
@@ -233,4 +257,147 @@ it("cancels queued work and rejects revoked actors before effects", async () => 
 	expect(
 		(await service.list(actor, org)).find((j) => j.id === blocked.id)?.state,
 	).toBe("failed");
+});
+
+it("reconciles an import effect committed before its row receipt and honors the durable retry lease", async () => {
+	const csv = Buffer.from(
+		"Title,Slug\nCommitted before receipt,recovered-import\n",
+	);
+	const upload = await files.initiate(actor, org, {
+		projectId: parent,
+		operationKey: randomUUID(),
+		name: "recovery.csv",
+		contentType: "text/csv",
+		bytes: csv.length,
+		sha256: fileDigest(csv),
+	});
+	expect(
+		(
+			await fetch(upload.url, {
+				method: "PUT",
+				headers: upload.headers,
+				body: csv,
+			})
+		).ok,
+	).toBe(true);
+	await files.finalize(actor, org, parent, upload.file.id);
+	const job = await service.start(actor, org, {
+		kind: "projects.import",
+		operationKey: randomUUID(),
+		projectId: parent,
+		fileId: upload.file.id,
+		mapping: { name: "Title", slug: "Slug" },
+		duplicates: "skip",
+	});
+	loseCreateAcknowledgement = true;
+	await service.run(org, job.id);
+	expect(
+		(
+			await f.app.query(
+				"SELECT state,progress,attempts,available_at>now() AS delayed FROM tenancy.bulk_jobs WHERE id=$1",
+				[job.id],
+			)
+		).rows[0],
+	).toEqual({ state: "pending", progress: 0, attempts: 1, delayed: true });
+	const project = (
+		await f.app.query(
+			"SELECT id FROM tenancy.projects WHERE organization_id=$1 AND slug='recovered-import'",
+			[org],
+		)
+	).rows[0];
+	expect(project).toBeDefined();
+	expect(
+		(
+			await f.app.query("SELECT * FROM tenancy.bulk_rows WHERE job_id=$1", [
+				job.id,
+			])
+		).rowCount,
+	).toBe(0);
+	await service.run(org, job.id);
+	expect(
+		(
+			await f.app.query("SELECT attempts FROM tenancy.bulk_jobs WHERE id=$1", [
+				job.id,
+			])
+		).rows[0].attempts,
+	).toBe(1);
+	const returnedAt = performance.now();
+	await f.app.query(
+		"UPDATE tenancy.bulk_jobs SET available_at=now() WHERE id=$1",
+		[job.id],
+	);
+	await service.run(org, job.id);
+	await service.run(org, job.id);
+	expect(performance.now() - returnedAt).toBeLessThan(60_000);
+	expect(
+		(
+			await f.app.query(
+				"SELECT state,progress FROM tenancy.bulk_jobs WHERE id=$1",
+				[job.id],
+			)
+		).rows[0],
+	).toEqual({ state: "complete", progress: 1 });
+	expect(
+		(
+			await f.app.query(
+				"SELECT resource_id,state FROM tenancy.bulk_rows WHERE job_id=$1",
+				[job.id],
+			)
+		).rows,
+	).toEqual([{ resource_id: project.id, state: "created" }]);
+	expect(
+		(
+			await f.app.query(
+				"SELECT count(*)::int AS n FROM tenancy.audit_events WHERE target_id=$1 AND action='project.created'",
+				[project.id],
+			)
+		).rows[0].n,
+	).toBe(1);
+});
+
+it("bounds persistent export retries and releases allocation through expiry after dependency failure", async () => {
+	const job = await service.start(actor, org, {
+		kind: "projects.export",
+		operationKey: randomUUID(),
+	});
+	const before = exportCalls;
+	exportOutage = true;
+	try {
+		for (let attempt = 1; attempt <= 5; attempt++) {
+			await f.app.query(
+				"UPDATE tenancy.bulk_jobs SET available_at=now() WHERE id=$1",
+				[job.id],
+			);
+			await service.run(org, job.id);
+			expect(
+				(
+					await f.app.query(
+						"SELECT state,attempts FROM tenancy.bulk_jobs WHERE id=$1",
+						[job.id],
+					)
+				).rows[0],
+			).toEqual({
+				state: attempt < 5 ? "pending" : "failed",
+				attempts: attempt,
+			});
+		}
+		await service.run(org, job.id);
+		expect(exportCalls - before).toBe(5);
+	} finally {
+		exportOutage = false;
+	}
+	await f.app.query(
+		"UPDATE tenancy.bulk_jobs SET expires_at=now()-interval '1 second' WHERE id=$1",
+		[job.id],
+	);
+	await service.run(org, job.id);
+	await service.run(org, job.id);
+	expect(
+		(
+			await f.app.query(
+				"SELECT j.state,r.state AS reservation_state FROM tenancy.bulk_jobs j JOIN tenancy.capacity_reservations r ON r.id=j.reservation_id WHERE j.id=$1",
+				[job.id],
+			)
+		).rows[0],
+	).toEqual({ state: "expired", reservation_state: "released" });
 });
