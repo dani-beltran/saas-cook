@@ -49,6 +49,8 @@ Milestones:
 
 The [Phase 8 parallel PR plan](phase8/development-plan.md) divides implementation into eight reviewable PRs, assigns shared-change ownership and merge dependencies, and defines the Backoffice handoff without coupling customer-only release acceptance to optional Backoffice delivery.
 
+The [Phase 8 release candidate record](phase8/acceptance.md) tracks the implemented PR stack, evidence commands and remaining merged-source sign-off. The stack is not merged or tagged by its implementation task; Phase 8 acceptance remains pending until the declared evidence and final-main checks are complete.
+
 Proceed from accepted Phase 6/M2 directly to Phase 8. Keep phase numbers stable for existing requirement and evidence references. Phase 7 remains available as a later Enterprise extension; implementing it later requires current application/image checks and the applicable performance, failure, recovery, compatibility and accessibility evidence before M3 can be accepted. Commercial release evidence alone cannot accept Enterprise behavior.
 
 Phase 8 must verify performance and tenant fairness, including sustained execution against the built image; failure and expanded recovery scenarios for enabled Commercial modules; accessible UI states; supported previous-release upgrade paths; bootstrap/rename presets; production image packaging, runtime configuration and security checks; and applicable skill evaluations. Record the source, preset/modules, image, supported upgrade baseline, results and limitations before tagging the template release. Missing evidence stays open; any unsupported upgrade baseline must be explicitly resolved before release sign-off.

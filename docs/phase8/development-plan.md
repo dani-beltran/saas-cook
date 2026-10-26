@@ -1,6 +1,6 @@
 # Phase 8 — parallel PR delivery plan
 
-Planning date: 2026-10-22. Status: planned; implementation and release acceptance pending. The [roadmap](../06-delivery-roadmap.md) remains the acceptance register. This plan implements the [Commercial release decision](../feature-briefs/commercial-template-release.md); PR IDs below are work identifiers, not opened GitHub PRs.
+Planning date: 2026-10-22. Status: implementation in review; release acceptance pending. The [roadmap](../06-delivery-roadmap.md) remains the acceptance register. This plan implements the [Commercial release decision](../feature-briefs/commercial-template-release.md). P8 identifiers below identify work packages; the actual review stack and evidence status are recorded in the [release candidate record](acceptance.md).
 
 ## Scope and ownership
 
@@ -66,4 +66,4 @@ A customer-only release does not wait for BO-07. Selecting Backoffice for a rele
 - Resolve upgrade support before P8-08. If no supported previous product release exists, record that finding and an explicitly reviewed initial-release support policy, with available predecessor-fixture coverage labeled accurately. Until resolved, upgrade acceptance remains open.
 - Run existing source/type/unused-code, unit/integration, browser, Storybook, image and security checks appropriate to each change. Final release follows the full required CI and declared release matrix; new long-running harness commands must be implemented and documented before being cited as executed.
 - New shared changes after evidence capture require source-delta review and affected reruns. A test-only change may justify retained behavior evidence; a changed workload, service, schema, dependency, runtime or image needs its relevant checks refreshed.
-- This planning update records no passed Phase 8 checks and creates no release tag or GitHub PR.
+- The original planning update recorded no passed Phase 8 checks. Implementation evidence and opened PRs are tracked separately in the release candidate record; no release tag is authorized before merged-source acceptance.

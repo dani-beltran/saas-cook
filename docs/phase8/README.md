@@ -1,6 +1,6 @@
 # Phase 8 Commercial release contract
 
-Status: implementation in progress; acceptance pending. The [delivery plan](development-plan.md) identifies P8-01–08. The [roadmap](../06-delivery-roadmap.md) remains the acceptance authority. Work is delivered through unmerged PRs; final merged-source checks and tagging follow review and merge.
+Status: implementation in review; acceptance pending. The [delivery plan](development-plan.md) identifies P8-01–08. The [roadmap](../06-delivery-roadmap.md) remains the acceptance authority. Work is delivered through unmerged PRs; final merged-source checks and tagging follow review and merge.
 
 ## Presets and support
 
