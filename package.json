@@ -13,6 +13,7 @@
 		"packages/*"
 	],
 	"scripts": {
+		"phase8:image": "node --import tsx scripts/phase8/image.ts",
 		"phase0:test": "node node_modules/vitest/vitest.mjs run --config vitest.phase0.config.ts",
 		"phase0:typecheck": "node node_modules/typescript/bin/tsc --noEmit",
 		"phase0:build": "node node_modules/turbo/bin/turbo run build --filter=@common-sass/phase0-api",
@@ -81,7 +82,7 @@
 		"test:image:backoffice": "node --import tsx scripts/backoffice/image-test.ts"
 	},
 	"devDependencies": {
-		"next": "16.3.8",
+		"next": "16.4.1",
 		"react": "19.3.0",
 		"react-dom": "19.3.0",
 		"better-auth": "1.7.5",

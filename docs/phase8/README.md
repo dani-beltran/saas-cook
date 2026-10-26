@@ -44,6 +44,8 @@ Expanded fault fixtures use a **60-second local recovery observation budget afte
 
 ## Evidence interface and coordination
 
+Implemented P8-02 commands: `bun run phase8:image customer` and `bun run phase8:image backoffice` run existing exact-image behavioral checks and the existing security policy against the resolved immutable image ID. Build with `image:build` or `image:build:backoffice` first. The wrapper requires current source labels and writes exclusive versioned pass/failure receipts. CI uses these wrappers and retains their receipts; the Storybook job also runs browser theme/keyboard checks. This does not create a release publication path or a signed provenance claim.
+
 P8-02 supplies `scripts/phase8/evidence.ts`: a versioned receipt records gate/preset, start/end times, outcome, current source commit and implementation fingerprint, optional exact image identity, command labels, checks and limitations. Evidence writers must sanitize labels and never retain environment values or command secrets. File digests bind supporting artifacts. Failure receipts are retained; no caller can manufacture success from missing checks. P8-03/04/05 consume the interface or attach existing reports through it without changing workload semantics.
 
 Raw artifacts live under ignored `artifacts/phase8/`; committed summaries point to fingerprints and durable CI artifacts. The integration owner handles CI/root files and migration/model coordination. Feature agents work in separate managed worktrees. Final combined evidence is evaluated after all PR implementations exist, as requested; hosted CI is not awaited between PRs. P8-08 remains pending sign-off until the merged release candidate is checked. Backoffice development does not depend on a Phase 8 release tag.

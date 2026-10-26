@@ -163,6 +163,14 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/setup
       - run: bun run storybook:build
+      - run: node node_modules/@playwright/test/cli.js install --with-deps chromium
+      - run: bun run test:theme
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: theme-${{ github.sha }}
+          path: artifacts/theme/
+          retention-days: 30
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: storybook-${{ github.sha }}
@@ -191,8 +199,7 @@ jobs:
       - name: Build the combined application image
         run: bun run image:build
       - run: bun run services:up
-      - run: bun run test:image
-      - run: bun run security:scan image saas-cook:phase2
+      - run: bun run phase8:image customer
       - name: Record image identity
         if: always()
         run: |
@@ -207,6 +214,7 @@ jobs:
           name: image-${{ github.sha }}
           path: |
             artifacts/image/
+            artifacts/phase8/
             artifacts/security/
           retention-days: 30
   monetization:
@@ -245,8 +253,7 @@ jobs:
       - run: bun run build:backoffice
       - run: bun run test:e2e:backoffice
       - run: bun run image:build:backoffice
-      - run: bun run test:image:backoffice
-      - run: bun run security:scan image saas-cook-backoffice:local
+      - run: bun run phase8:image backoffice
       - run: docker compose -f infra/compose.yaml down --volumes
         if: always()
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -255,6 +262,7 @@ jobs:
           name: backoffice-${{ github.sha }}
           path: |
             artifacts/backoffice/
+            artifacts/phase8/
             artifacts/security/
           retention-days: 30
   required:
