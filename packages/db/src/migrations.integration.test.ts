@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import {
 	copyFile,
+	cp,
 	mkdir,
 	mkdtemp,
 	readFile,
@@ -78,7 +79,146 @@ async function precedingSchema(databaseUrl: string, count: number) {
 	await runMigrations({ databaseUrl, migrationsFolder: previous });
 }
 
+async function appendedMigration(
+	sql: string,
+	timestamp: (previous: number) => number | null = (previous) => previous + 1,
+) {
+	const folder = await mkdtemp(path.join(tmpdir(), "saas-cook-journal-"));
+	cleanup.push(() => rm(folder, { recursive: true, force: true }));
+	await cp(migrationsFolder, folder, { recursive: true });
+	const journalPath = path.join(folder, "meta/_journal.json");
+	const journal = JSON.parse(await readFile(journalPath, "utf8"));
+	const previous = journal.entries.at(-1);
+	const tag = "9999_phase8_journal_probe";
+	journal.entries.push({
+		...previous,
+		idx: previous.idx + 1,
+		tag,
+		when: timestamp(previous.when),
+	});
+	await writeFile(journalPath, JSON.stringify(journal));
+	await writeFile(path.join(folder, `${tag}.sql`), sql);
+	return folder;
+}
+
 describe("real PostgreSQL migration and runtime role boundary", () => {
+	it.each([
+		["backdated", (previous: number) => previous - 1],
+		["duplicate", (previous: number) => previous],
+		["invalid", () => null],
+	] as const)(
+		"rejects an appended %s timestamp before DDL instead of silently skipping it",
+		async (_name, timestamp) => {
+			const f = await fixture();
+			await runMigrations({ databaseUrl: f.migrator });
+			const db = new Pool({ connectionString: f.migrator });
+			cleanup.push(() => db.end());
+			const before = await db.query(
+				"SELECT id,hash,created_at FROM drizzle.__drizzle_migrations ORDER BY created_at,id",
+			);
+			const folder = await appendedMigration(
+				"CREATE TABLE foundation.phase8_journal_probe(id integer)",
+				timestamp,
+			);
+			await expect(
+				runMigrations({ databaseUrl: f.migrator, migrationsFolder: folder }),
+			).rejects.toThrow("strictly increasing order");
+			expect(
+				(
+					await db.query(
+						"SELECT to_regclass('foundation.phase8_journal_probe') AS name",
+					)
+				).rows,
+			).toEqual([{ name: null }]);
+			expect(
+				(
+					await db.query(
+						"SELECT id,hash,created_at FROM drizzle.__drizzle_migrations ORDER BY created_at,id",
+					)
+				).rows,
+			).toEqual(before.rows);
+			// Repair only the copied journal, then verify the append applies exactly once.
+			const journalPath = path.join(folder, "meta/_journal.json");
+			const journal = JSON.parse(await readFile(journalPath, "utf8"));
+			journal.entries.at(-1).when = Number(before.rows.at(-1).created_at) + 1;
+			await writeFile(journalPath, JSON.stringify(journal));
+			await runMigrations({
+				databaseUrl: f.migrator,
+				migrationsFolder: folder,
+			});
+			await runMigrations({
+				databaseUrl: f.migrator,
+				migrationsFolder: folder,
+			});
+			expect(
+				(
+					await db.query(
+						"SELECT to_regclass('foundation.phase8_journal_probe') AS name",
+					)
+				).rows,
+			).toEqual([{ name: "foundation.phase8_journal_probe" }]);
+			expect(
+				(
+					await db.query(
+						"SELECT count(*)::int AS count FROM drizzle.__drizzle_migrations",
+					)
+				).rows,
+			).toEqual([{ count: before.rows.length + 1 }]);
+		},
+	);
+	it("reports failure when committed SQL leaves an incomplete migration history", async () => {
+		const f = await fixture();
+		await runMigrations({ databaseUrl: f.migrator });
+		const folder = await appendedMigration(
+			"DELETE FROM drizzle.__drizzle_migrations WHERE id=(SELECT min(id) FROM drizzle.__drizzle_migrations)",
+		);
+		await expect(
+			runMigrations({ databaseUrl: f.migrator, migrationsFolder: folder }),
+		).rejects.toThrow("Migration completed without the exact expected history");
+		// The migrator must fail closed on a retry as well; DDL is already committed.
+		await expect(
+			runMigrations({ databaseUrl: f.migrator, migrationsFolder: folder }),
+		).rejects.toThrow("Applied migration history is incompatible");
+	});
+	it("refuses altered or unknown applied history before effects and accepts the restored exact history", async () => {
+		const f = await fixture();
+		await runMigrations({ databaseUrl: f.migrator });
+		const db = new Pool({ connectionString: f.migrator });
+		cleanup.push(() => db.end());
+		const before = await db.query(
+			"SELECT id,hash,created_at FROM drizzle.__drizzle_migrations ORDER BY created_at,id",
+		);
+		const first = before.rows[0];
+		await db.query(
+			"UPDATE drizzle.__drizzle_migrations SET hash=$1 WHERE id=$2",
+			["0".repeat(64), first.id],
+		);
+		await expect(runMigrations({ databaseUrl: f.migrator })).rejects.toThrow(
+			"Applied migration history is incompatible",
+		);
+		await db.query(
+			"UPDATE drizzle.__drizzle_migrations SET hash=$1 WHERE id=$2",
+			[first.hash, first.id],
+		);
+		await db.query(
+			"INSERT INTO drizzle.__drizzle_migrations(hash,created_at) VALUES($1,$2)",
+			["f".repeat(64), Number(before.rows.at(-1).created_at) + 1],
+		);
+		await expect(runMigrations({ databaseUrl: f.migrator })).rejects.toThrow(
+			"Applied migration history is incompatible",
+		);
+		await db.query("DELETE FROM drizzle.__drizzle_migrations WHERE hash=$1", [
+			"f".repeat(64),
+		]);
+		await runMigrations({ databaseUrl: f.migrator });
+		expect(
+			(
+				await db.query(
+					"SELECT id,hash,created_at FROM drizzle.__drizzle_migrations ORDER BY created_at,id",
+				)
+			).rows,
+		).toEqual(before.rows);
+	});
 	it("upgrades the populated 0024 schema without changing customer rows or readiness", async () => {
 		const f = await fixture();
 		await precedingSchema(f.migrator, 25);

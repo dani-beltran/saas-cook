@@ -1,4 +1,8 @@
-import { spawn } from "node:child_process";
+import { execFile, spawn } from "node:child_process";
+import { randomUUID } from "node:crypto";
+import { copyFile, mkdir, readdir } from "node:fs/promises";
+import { isDeepStrictEqual, promisify } from "node:util";
+import { compatibilityManifest } from "./compatibility-contract";
 import { evidenceImage, evidenceSource, writeEvidence } from "./evidence";
 
 const target = process.argv[2];
@@ -9,6 +13,10 @@ const source = await evidenceSource();
 const checks: Array<{ name: string; passed: boolean }> = [];
 let image: Awaited<ReturnType<typeof evidenceImage>> | undefined;
 const preset = target === "customer" ? "commercial-local" : "backoffice";
+const directory = `artifacts/phase8/images/${target}-${randomUUID()}`;
+await mkdir(directory, { recursive: true });
+const retainedArtifacts = async () =>
+	(await readdir(directory)).map((file) => `${directory}/${file}`);
 try {
 	image = await evidenceImage(
 		target === "customer"
@@ -23,6 +31,32 @@ try {
 	});
 	if (!checks.at(-1)?.passed)
 		throw new Error("Build the image from this checkout before verification");
+	const manifestPath =
+		target === "customer"
+			? "/app/dist/compatibility.json"
+			: "/app/compatibility.json";
+	const embedded = await promisify(execFile)("docker", [
+		"run",
+		"--rm",
+		"--network",
+		"none",
+		"--entrypoint",
+		"/nodejs/bin/node",
+		image.id,
+		"-e",
+		`process.stdout.write(require('node:fs').readFileSync('${manifestPath}','utf8'))`,
+	]);
+	checks.push({
+		name: "embedded-compatibility-contract",
+		passed: isDeepStrictEqual(
+			JSON.parse(embedded.stdout),
+			await compatibilityManifest(target),
+		),
+	});
+	if (!checks.at(-1)?.passed)
+		throw new Error(
+			"Embedded image compatibility contract does not match source",
+		);
 	for (const command of [
 		target === "customer" ? "test:image" : "test:image:backoffice",
 		"security:scan",
@@ -41,6 +75,7 @@ try {
 						...process.env,
 						TEST_IMAGE: image?.id,
 						BACKOFFICE_TEST_IMAGE: image?.id,
+						SECURITY_ARTIFACT_DIRECTORY: directory,
 					},
 				},
 			);
@@ -49,10 +84,21 @@ try {
 		});
 		checks.push({ name: command, passed: code === 0 });
 		if (code !== 0) throw new Error("Required image check failed");
+		if (command !== "security:scan")
+			await copyFile(
+				target === "customer"
+					? "artifacts/image/acceptance.json"
+					: "artifacts/backoffice/image.json",
+				`${directory}/acceptance.json`,
+			);
 	}
+	const after = await evidenceSource();
 	checks.push({
 		name: "stable-source",
-		passed: source.fingerprint === (await evidenceSource()).fingerprint,
+		passed:
+			source.fingerprint === after.fingerprint &&
+			source.commit === after.commit &&
+			source.dirty === after.dirty,
 	});
 	if (!checks.at(-1)?.passed)
 		throw new Error("Source changed during image verification");
@@ -70,30 +116,29 @@ try {
 					"Local image acceptance does not establish production availability",
 				],
 			},
-			[
-				target === "customer"
-					? "artifacts/image/acceptance.json"
-					: "artifacts/backoffice/image.json",
-			],
+			await retainedArtifacts(),
 		),
 	);
 } catch {
 	checks.push({ name: "verification-completed", passed: false });
 	// A mismatched image is recorded as a failed binding check, never as current-source image evidence.
 	console.error(
-		await writeEvidence({
-			gate: `image-${target}`,
-			preset,
-			startedAt,
-			source,
-			...(image?.fingerprint === source.fingerprint &&
-			image?.revision === source.commit
-				? { image }
-				: {}),
-			outcome: "failed",
-			checks,
-			limitations: ["See retained verification diagnostics"],
-		}),
+		await writeEvidence(
+			{
+				gate: `image-${target}`,
+				preset,
+				startedAt,
+				source,
+				...(image?.fingerprint === source.fingerprint &&
+				image?.revision === source.commit
+					? { image }
+					: {}),
+				outcome: "failed",
+				checks,
+				limitations: ["See retained verification diagnostics"],
+			},
+			await retainedArtifacts(),
+		),
 	);
 	process.exitCode = 1;
 }
