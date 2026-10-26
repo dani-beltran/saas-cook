@@ -13,6 +13,6 @@
 		"@saas-cook/backoffice-contracts": "workspace:*",
 		"@saas-cook/config": "workspace:*",
 		"pg": "8.23.0",
-		"zod": "4.6.5"
+		"zod": "4.6.6"
 	}
 }

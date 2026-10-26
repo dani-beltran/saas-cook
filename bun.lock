@@ -104,7 +104,7 @@
         "react-dom": "19.3.0",
         "react-hook-form": "7.88.0",
         "sharp": "0.35.5",
-        "zod": "4.6.5",
+        "zod": "4.6.6",
       },
       "devDependencies": {
         "@storybook/nextjs-vite": "10.6.2",
@@ -127,7 +127,7 @@
         "@saas-cook/observability": "workspace:*",
         "pg": "8.23.0",
         "pg-boss": "12.33.4",
-        "zod": "4.6.5",
+        "zod": "4.6.6",
       },
     },
     "packages/api": {
@@ -157,7 +157,7 @@
       "version": "0.1.0",
       "dependencies": {
         "@orpc/contract": "1.15.3",
-        "zod": "4.6.5",
+        "zod": "4.6.6",
       },
       "devDependencies": {
         "typescript": "7.0.2",
@@ -175,7 +175,7 @@
         "drizzle-orm": "0.45.3",
         "pg": "8.23.0",
         "sharp": "0.35.5",
-        "zod": "4.6.5",
+        "zod": "4.6.6",
       },
       "devDependencies": {
         "@types/pg": "8.23.1",
@@ -202,21 +202,21 @@
         "@saas-cook/backoffice-contracts": "workspace:*",
         "@saas-cook/config": "workspace:*",
         "pg": "8.23.0",
-        "zod": "4.6.5",
+        "zod": "4.6.6",
       },
     },
     "packages/backoffice-contracts": {
       "name": "@saas-cook/backoffice-contracts",
       "version": "0.1.0",
       "dependencies": {
-        "zod": "4.6.5",
+        "zod": "4.6.6",
       },
     },
     "packages/config": {
       "name": "@saas-cook/config",
       "dependencies": {
         "@t3-oss/env-core": "0.13.11",
-        "zod": "4.6.5",
+        "zod": "4.6.6",
       },
     },
     "packages/db": {
@@ -229,7 +229,7 @@
         "drizzle-orm": "0.45.3",
         "pg": "8.23.0",
         "stripe": "23.0.0",
-        "zod": "4.6.5",
+        "zod": "4.6.6",
       },
       "devDependencies": {
         "@saas-cook/testing": "workspace:*",
@@ -247,7 +247,7 @@
         "pg": "8.23.0",
         "react": "19.3.0",
         "react-dom": "19.3.0",
-        "zod": "4.6.5",
+        "zod": "4.6.6",
       },
       "devDependencies": {
         "@types/react": "19.3.0",
@@ -282,7 +282,7 @@
         "lucide-react": "1.59.0",
         "next-intl": "4.14.6",
         "react-hook-form": "7.88.0",
-        "zod": "4.6.5",
+        "zod": "4.6.6",
       },
       "devDependencies": {
         "@storybook/nextjs-vite": "10.6.2",
@@ -2019,26 +2019,6 @@
     "@react-email/components/@react-email/render": ["@react-email/render@2.0.6", "", { "dependencies": { "html-to-text": "^9.0.5", "prettier": "^3.5.3" }, "peerDependencies": { "react": "^18.0 || ^19.0 || ^19.0.0-rc", "react-dom": "^18.0 || ^19.0 || ^19.0.0-rc" } }, "sha512-xOzaYkH3jLZKqN5MqrTXYnmqBYUnZSVbkxdb5PGGmDcK6sKDVMliaDiSwfXajRC9JtSHTcGc2tmGLHWuCgVpog=="],
 
     "@rollup/pluginutils/estree-walker": ["estree-walker@2.0.2", "", {}, "sha512-Rfkk/Mp/DL7JVje3u18FxFujQlTNR2q6QfMSMB7AvCBx91NGj/ba3kCfza0f6dVDbw7YlRf/nDrn7pQrCCyQ/w=="],
-
-    "@saas-cook/api-contracts/zod": ["zod@4.6.5", "", {}, "sha512-v5l/aFXZQeai4awLbOpSoHecE9UiMrnfx75tEXLjNonXVARxQ5mOeipTjROUchszUNCqnE+hqAMujRsRHsut2Q=="],
-
-    "@saas-cook/auth/zod": ["zod@4.6.5", "", {}, "sha512-v5l/aFXZQeai4awLbOpSoHecE9UiMrnfx75tEXLjNonXVARxQ5mOeipTjROUchszUNCqnE+hqAMujRsRHsut2Q=="],
-
-    "@saas-cook/backoffice/zod": ["zod@4.6.5", "", {}, "sha512-v5l/aFXZQeai4awLbOpSoHecE9UiMrnfx75tEXLjNonXVARxQ5mOeipTjROUchszUNCqnE+hqAMujRsRHsut2Q=="],
-
-    "@saas-cook/backoffice-contracts/zod": ["zod@4.6.5", "", {}, "sha512-v5l/aFXZQeai4awLbOpSoHecE9UiMrnfx75tEXLjNonXVARxQ5mOeipTjROUchszUNCqnE+hqAMujRsRHsut2Q=="],
-
-    "@saas-cook/config/zod": ["zod@4.6.5", "", {}, "sha512-v5l/aFXZQeai4awLbOpSoHecE9UiMrnfx75tEXLjNonXVARxQ5mOeipTjROUchszUNCqnE+hqAMujRsRHsut2Q=="],
-
-    "@saas-cook/db/zod": ["zod@4.6.5", "", {}, "sha512-v5l/aFXZQeai4awLbOpSoHecE9UiMrnfx75tEXLjNonXVARxQ5mOeipTjROUchszUNCqnE+hqAMujRsRHsut2Q=="],
-
-    "@saas-cook/email/zod": ["zod@4.6.5", "", {}, "sha512-v5l/aFXZQeai4awLbOpSoHecE9UiMrnfx75tEXLjNonXVARxQ5mOeipTjROUchszUNCqnE+hqAMujRsRHsut2Q=="],
-
-    "@saas-cook/ui/zod": ["zod@4.6.5", "", {}, "sha512-v5l/aFXZQeai4awLbOpSoHecE9UiMrnfx75tEXLjNonXVARxQ5mOeipTjROUchszUNCqnE+hqAMujRsRHsut2Q=="],
-
-    "@saas-cook/web/zod": ["zod@4.6.5", "", {}, "sha512-v5l/aFXZQeai4awLbOpSoHecE9UiMrnfx75tEXLjNonXVARxQ5mOeipTjROUchszUNCqnE+hqAMujRsRHsut2Q=="],
-
-    "@saas-cook/worker/zod": ["zod@4.6.5", "", {}, "sha512-v5l/aFXZQeai4awLbOpSoHecE9UiMrnfx75tEXLjNonXVARxQ5mOeipTjROUchszUNCqnE+hqAMujRsRHsut2Q=="],
 
     "@tailwindcss/node/lightningcss": ["lightningcss@1.32.0", "", { "dependencies": { "detect-libc": "^2.0.3" }, "optionalDependencies": { "lightningcss-android-arm64": "1.32.0", "lightningcss-darwin-arm64": "1.32.0", "lightningcss-darwin-x64": "1.32.0", "lightningcss-freebsd-x64": "1.32.0", "lightningcss-linux-arm-gnueabihf": "1.32.0", "lightningcss-linux-arm64-gnu": "1.32.0", "lightningcss-linux-arm64-musl": "1.32.0", "lightningcss-linux-x64-gnu": "1.32.0", "lightningcss-linux-x64-musl": "1.32.0", "lightningcss-win32-arm64-msvc": "1.32.0", "lightningcss-win32-x64-msvc": "1.32.0" } }, "sha512-NXYBzinNrblfraPGyrbPoD19C1h9lfI/1mzgWYvXUTe414Gz/X1FD2XBZSZM7rRTrMA8JL3OtAaGifrIKhQ5yQ=="],
 
