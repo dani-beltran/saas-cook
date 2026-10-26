@@ -47,6 +47,40 @@ For subsequent sign-ins, use your verified email and password. Email sign-in lin
 
 Local service data is stored in memory and is lost when the containers stop or are recreated, including registered accounts. After a reset, repeat `services:up`, `db:migrate` and `bootstrap` before `dev`, then register again. Keep the database targets in `.env` consistent with `.env.example`; Compose creates `saas_cook` and `saas_cook_control`, not temporary test databases. See [startup troubleshooting](docs/phase2/README.md#local-startup-troubleshooting) for worker failures.
 
+### Run the Backoffice locally
+
+The optional Backoffice is a separate Next.js staff application in `apps/backoffice`, with its own identity, sessions and authorization model. Invited staff can browse their assigned organizations and read audited organization metadata, including lifecycle and seat usage. Customer accounts and organization roles do not grant staff access. It has no separate worker and can run alongside the customer app on port 3001.
+
+The `.env` copied during local setup already contains the Backoffice settings as comments. Uncomment the five Backoffice runtime settings and replace `BACKOFFICE_AUTH_SECRET` with a new independent secret of at least 32 characters, for example generated with `openssl rand -hex 32`. Do not reuse `AUTH_SECRET`. The other supplied values work with the default local services; change the origin or database URLs only if your local host, port or database targets differ. Leave management-only settings commented out until setting up staff invitations. Disposable Compose setup provisions the restricted Backoffice database roles.
+
+With services running, apply the current migrations, initialize the control schema extension and publish the separate staff authorization model:
+
+```sh
+bun run db:migrate
+bun run control:schema
+bun run backoffice:publish
+bun run dev:backoffice
+```
+
+Run these commands from the repository root. Schema/publication commands use the dedicated `MIGRATION_DATABASE_URL` and `CONTROL_ADMIN_DATABASE_URL` from local setup. Production Backoffice processes require only their restricted runtime configuration; management, migration, recovery and control-administrator credentials belong to their separate commands.
+
+Open [Backoffice](http://localhost:3001/en). Use `localhost` consistently with `BACKOFFICE_ORIGIN`; host/origin checks also apply locally. Loopback HTTP is supported for development. The customer web app and worker do not need to be running for the staff sign-in page, but PostgreSQL, the control database and OpenFGA are required for readiness and staff access.
+
+There is no default staff account or public staff registration. Enrollment requires an invitation created by `bun run backoffice:manage APPROVAL_FILE PRIVATE_OUTPUT_FILE`, with two independent Ed25519 approvals and exact organization grants. Staff then enroll a user-verified passkey. See [independent staff management](docs/backoffice/implementation.md#independent-staff-management) for approval claims, command-only configuration and invitation handling; customer registration and Mailpit do not create staff access.
+
+To check startup:
+
+```sh
+curl -i http://localhost:3001/health/live
+curl -i http://localhost:3001/health/ready
+```
+
+Liveness reports whether the server can respond. Readiness additionally checks restricted roles, the application schema and installation binding, customer and staff authorization publications, and OpenFGA. A rendered sign-in page or successful liveness check does not establish readiness. `503 {"status":"unavailable"}` means one of those prerequisites failed; the HTTP response intentionally omits infrastructure details.
+
+For a fresh or reset disposable database, complete `services:up`, `db:migrate` and `bootstrap` before the Backoffice setup commands. An empty control store causes `Independent authorization readiness required`; missing application migrations also block readiness. If initialized data was expected, check database targets and `INSTALLATION_ID` first. Existing or restored installations require the documented [upgrade](docs/phase3/README.md) or [recovery](docs/phase6/recovery.md) workflow, rather than fresh initialization. After a Compose data reset, staff invitations and passkeys must also be set up again.
+
+The [Backoffice implementation guide](docs/backoffice/implementation.md) covers schema compatibility, signed management and the separate production image. [Acceptance evidence](docs/backoffice/acceptance.md) tracks completed checks and remaining release gates.
+
 ## Customize the template
 
 Start with the [feature workflow](docs/development/feature-workflow.md) to understand where schema, services, API contracts, dashboard views and translations belong. Follow the [theming guide](docs/development/theming.md) to change the product's appearance and the [email guide](docs/development/email-workflow.md) for transactional messages.
