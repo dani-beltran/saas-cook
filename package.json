@@ -51,6 +51,7 @@
 		"authz:benchmark": "node --env-file-if-exists=.env --import tsx scripts/phase3/benchmark.ts",
 		"authz:smoke": "node --env-file-if-exists=.env --import tsx scripts/phase3/benchmark.ts --smoke",
 		"skills:check": "node --env-file-if-exists=.env --import tsx scripts/phase4/check.ts",
+		"phase8:template": "node --env-file-if-exists=.env --import tsx scripts/phase8/template.ts",
 		"skills:evaluate": "node --import tsx scripts/phase4/evaluate.ts",
 		"security:scan": "node --import tsx scripts/phase1/security-scan.ts",
 		"services:up": "docker compose -f infra/compose.yaml up -d --wait && node --env-file-if-exists=.env --import tsx scripts/phase1/services-ready.ts",
